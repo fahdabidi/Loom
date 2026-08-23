@@ -13,7 +13,7 @@ class _WorkflowAction extends StatelessWidget {
 
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -65,7 +65,7 @@ class _WorkflowAction extends StatelessWidget {
         ),
       );
     }
-    if (view.state == LoomPersonaWorkflowState.actor) {
+    if (view.state == LoomRoleWorkflowState.actor) {
       return Align(
         alignment: Alignment.centerRight,
         child: SizedBox(
@@ -85,7 +85,7 @@ class _WorkflowAction extends StatelessWidget {
         ),
       );
     }
-    if (view.state == LoomPersonaWorkflowState.receiver) {
+    if (view.state == LoomRoleWorkflowState.receiver) {
       return Align(
         alignment: Alignment.centerRight,
         child: SizedBox(
@@ -105,7 +105,7 @@ class _WorkflowAction extends StatelessWidget {
         ),
       );
     }
-    if (view.state == LoomPersonaWorkflowState.readOnly) {
+    if (view.state == LoomRoleWorkflowState.readOnly) {
       return Align(
         alignment: Alignment.centerRight,
         child: _StateBadge(
@@ -772,7 +772,7 @@ List<_ActionSurfaceDetail> _actionProofRowsFor(_RichWorkflowLayout layout) {
         icon: Icons.groups_outlined,
         title: 'Roster records',
         body:
-            'Member names, roles, counts, status, and protected fields are visible according to persona.',
+            'Member names, roles, counts, status, and protected fields are visible according to the active actor identity.',
       ),
       _ActionSurfaceDetail(
         icon: Icons.privacy_tip_outlined,

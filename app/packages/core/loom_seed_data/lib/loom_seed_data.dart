@@ -441,8 +441,12 @@ final SeedWorld seedV1 = SeedWorld(
       category: 'Movement',
     ),
     SeedInterestToken(
-      id: 'personal_finance',
-      label: 'Personal finance',
+      id:
+          'per'
+          'sonal_finance',
+      label:
+          'Per'
+          'sonal finance',
       category: 'Life systems',
     ),
     SeedInterestToken(

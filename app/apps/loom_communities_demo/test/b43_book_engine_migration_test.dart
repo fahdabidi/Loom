@@ -22,7 +22,7 @@ void main() {
     await installShippedEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
 
-    await _selectPersona(tester, 'book-member');
+    await _selectActorIdentity(tester, 'book-member');
 
     expect(find.byKey(const ValueKey('community-tab-books')), findsOneWidget);
     expect(
@@ -162,7 +162,7 @@ void main() {
       findsOneWidget,
     );
 
-    await _selectPersona(tester, 'book-organizer');
+    await _selectActorIdentity(tester, 'book-organizer');
     expect(find.byKey(const ValueKey('community-tab-admin')), findsOneWidget);
     await _selectTab(tester, 'admin');
     await _waitForFinder(
@@ -207,7 +207,7 @@ void main() {
       findsNothing,
     );
 
-    await _selectPersona(tester, 'book-member');
+    await _selectActorIdentity(tester, 'book-member');
     expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
     await _selectTab(tester, 'home');
     await _waitForFinder(
@@ -290,8 +290,8 @@ Future<void> _tapEngineAction(
   await _pumpForUi(tester);
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectActorIdentity(tester, fanId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

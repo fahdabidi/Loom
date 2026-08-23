@@ -1,11 +1,11 @@
 class AdPreferences {
   const AdPreferences({
     required this.passportId,
-    required this.personalizedAds,
+    required this.interestBasedAds,
     required this.updatedAt,
   });
 
   final String passportId;
-  final bool personalizedAds;
+  final bool interestBasedAds;
   final DateTime updatedAt;
 }

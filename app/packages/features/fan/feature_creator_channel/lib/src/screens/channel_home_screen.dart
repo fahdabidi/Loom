@@ -190,8 +190,8 @@ class _CreatorChannelHomeScreenState extends State<CreatorChannelHomeScreen> {
                 ),
                 if (widget.onAskArchive != null) ...[
                   const SizedBox(height: 12),
-                  _ArchivePersonaEntry(
-                    persona: config.aiPersona,
+                  _ArchiveAiGuideEntry(
+                    guideProfile: config.aiGuideProfile,
                     theme: theme,
                     onPressed: () => widget.onAskArchive?.call(home.creatorId),
                   ),
@@ -243,7 +243,7 @@ class _CreatorChannelHomeScreenState extends State<CreatorChannelHomeScreen> {
           icon: Icons.travel_explore_rounded,
           theme: theme,
           child: Text(
-            '${config.aiPersona}\nAd posture: ${config.adPosture}',
+            '${config.aiGuideProfile}\nAd posture: ${config.adPosture}',
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: theme.text, height: 1.28),
@@ -340,14 +340,14 @@ class _CreatorChannelHomeScreenState extends State<CreatorChannelHomeScreen> {
   }
 }
 
-class _ArchivePersonaEntry extends StatelessWidget {
-  const _ArchivePersonaEntry({
-    required this.persona,
+class _ArchiveAiGuideEntry extends StatelessWidget {
+  const _ArchiveAiGuideEntry({
+    required this.guideProfile,
     required this.theme,
     required this.onPressed,
   });
 
-  final String persona;
+  final String guideProfile;
   final LoomChannelTheme theme;
   final VoidCallback onPressed;
 
@@ -357,7 +357,7 @@ class _ArchivePersonaEntry extends StatelessWidget {
       key: const ValueKey('p5_open_archive_qa_button'),
       onPressed: onPressed,
       icon: const Icon(Icons.auto_awesome_rounded),
-      label: Text(persona, maxLines: 2, overflow: TextOverflow.ellipsis),
+      label: Text(guideProfile, maxLines: 2, overflow: TextOverflow.ellipsis),
       style: FilledButton.styleFrom(
         backgroundColor: theme.primary,
         foregroundColor: Colors.white,

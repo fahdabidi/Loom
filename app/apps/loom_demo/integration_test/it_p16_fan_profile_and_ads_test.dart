@@ -8,7 +8,7 @@ import 'package:loom_demo/main.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('it_p16_persona_and_ads', (tester) async {
+  testWidgets('it_p16_fan_profile_and_ads', (tester) async {
     resetAppShellDependencies();
     await configureDemoDependencies(persistent: false);
 

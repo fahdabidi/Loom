@@ -150,9 +150,9 @@ Future<_InstalledTabletop> _install(
   }
 }
 
-LoomPersonaDefinition _persona(_InstalledTabletop installed, String id) =>
-    installed.experience.personas!.firstWhere(
-      (persona) => persona.roleId == id,
+LoomActorIdentity _actorIdentity(_InstalledTabletop installed, String id) =>
+    installed.experience.actorIdentities!.firstWhere(
+      (actorIdentity) => actorIdentity.roleId == id,
     );
 
 String _identityFieldName(
@@ -201,7 +201,7 @@ Widget _calendar(
           child: EngineNativeCalendarSurface(
             key: ValueKey('a11-calendar-$roleId-$revision'),
             experience: installed.experience,
-            persona: _persona(installed, roleId),
+            actorIdentity: _actorIdentity(installed, roleId),
             accent: Colors.deepPurple,
             modernTheme: null,
             engine: installed.engine,
@@ -546,8 +546,8 @@ Future<void> _selectAgendaById(WidgetTester tester, String instanceId) async {
 Future<LoomAuthApi> _useFixtureAccounts(_InstalledTabletop installed) async {
   final auth = LocalAuthApi();
   final seedFrom =
-      installed.experience.personas?.any(
-            (persona) => persona.roleId == 'tabletop-member',
+      installed.experience.actorIdentities?.any(
+            (actorIdentity) => actorIdentity.roleId == 'tabletop-member',
           ) ==
           true
       ? 'ext_verify_tabletop_club'
@@ -597,11 +597,11 @@ Future<WorkflowInstance?> _customResponseFor(
   required String eventField,
   required String eventId,
   required String fanId,
-  String persona = _customGardenOrganizerId,
+  String actorIdentity = _customGardenOrganizerId,
 }) async {
   final page = await installed.engine.queryInstances(
     tabId: 'calendar',
-    fanId: persona,
+    fanId: actorIdentity,
     limit: 250,
   );
   final identityField = _identityFieldName(
@@ -623,11 +623,11 @@ Future<List<WorkflowInstance>> _customResponseRowsForEvent(
   required String responseWorkflowType,
   required String eventField,
   required String eventId,
-  String persona = _customGardenOrganizerId,
+  String actorIdentity = _customGardenOrganizerId,
 }) async {
   final page = await installed.engine.queryInstances(
     tabId: 'calendar',
-    fanId: persona,
+    fanId: actorIdentity,
     limit: 500,
   );
   return page.items
@@ -860,7 +860,7 @@ void main() {
           find.descendant(of: attendees, matching: find.text('• Jordan W.')),
           findsOneWidget,
         );
-        // The frozen list includes this legacy, unseeded persona id. It must
+        // The frozen list includes this legacy, unseeded actorIdentity id. It must
         // remain visible even when account lookup cannot resolve it.
         expect(
           find.descendant(
@@ -981,8 +981,8 @@ void main() {
       // accounts already has a row on the only event that has any. So make one
       // -- a real, typed member with no response row.
       //
-      // Registering the persona type is the part that matters. Without it the
-      // account has no entry in `_personaTypeById`, so `allowedRoleIds` on
+      // Registering the actorIdentity type is the part that matters. Without it the
+      // account has no entry in `_roleIdByFanId`, so `allowedRoleIds` on
       // `respond-going` refuses it and no actions resolve -- which looks
       // identical to the bug under test while having nothing to do with it.
       final engine = installed.engine;
@@ -1356,7 +1356,7 @@ void main() {
             eventField: _customGardenResponseEventField,
             eventId: _customGardenEventId,
             fanId: _customGardenMemberAccountId,
-            persona: _customGardenMemberAccountId,
+            actorIdentity: _customGardenMemberAccountId,
           ),
         );
         expect(seededResponse, isNotNull);
@@ -1484,7 +1484,7 @@ void main() {
             eventField: _customGardenResponseEventField,
             eventId: seeded.eventId,
             fanId: _customGardenMemberAccountId,
-            persona: _customGardenMemberAccountId,
+            actorIdentity: _customGardenMemberAccountId,
           ),
         );
         expect(beforeResponse?.instanceId, seeded.responseId);
@@ -1513,7 +1513,7 @@ void main() {
             eventField: _customGardenResponseEventField,
             eventId: seeded.eventId,
             fanId: _customGardenMemberAccountId,
-            persona: _customGardenMemberAccountId,
+            actorIdentity: _customGardenMemberAccountId,
           ),
         );
         expect(afterResponse?.currentState, 'going');
@@ -1654,7 +1654,7 @@ void main() {
             eventField: _customGardenResponseEventField,
             eventId: _customGardenEventId,
             fanId: _customGardenMemberAccountId,
-            persona: _customGardenMemberAccountId,
+            actorIdentity: _customGardenMemberAccountId,
           ),
         );
         expect(beforeResponse, isNotNull);
@@ -1676,7 +1676,7 @@ void main() {
             eventField: _customGardenResponseEventField,
             eventId: _customGardenEventId,
             fanId: _customGardenMemberAccountId,
-            persona: _customGardenMemberAccountId,
+            actorIdentity: _customGardenMemberAccountId,
           );
           return _PollObservation(
             pending?.instanceData['reminderDueAt'] == dueAt,
@@ -1691,7 +1691,7 @@ void main() {
             eventField: _customGardenResponseEventField,
             eventId: _customGardenEventId,
             fanId: _customGardenMemberAccountId,
-            persona: _customGardenMemberAccountId,
+            actorIdentity: _customGardenMemberAccountId,
           ),
         );
         expect(after?.instanceData['reminderDueAt'], dueAt);
@@ -2092,17 +2092,17 @@ void main() {
     },
   );
 
-  testWidgets('new event control is hidden from a non-creatable persona', (
+  testWidgets('new event control is hidden from a non-creatable actorIdentity', (
     tester,
   ) async {
     final installed = (await tester.runAsync(() => _install('calr3-hidden')))!;
     try {
       await tester.pumpWidget(_app(installed));
       await _selectCalendar(tester);
-      // Switch to the tabletop-member persona so the creatable-action
+      // Switch to the tabletop-member actorIdentity so the creatable-action
       // FAB is hidden (the fixture only lists tabletop-organizer
       // in creatable.byRoleIds).
-      await selectTestTabletopPersona(tester, 'tabletop-member');
+      await selectTestTabletopActorIdentity(tester, 'tabletop-member');
       await _pollUntilObservation(tester, () async {
         final eventFabCount = find
             .byKey(const ValueKey('creatable-fab-event-rsvp'))
@@ -2116,7 +2116,7 @@ void main() {
           eventFabCount == 0 && speedDialCount == 0,
           'eventFabMatches=$eventFabCount, speedDialMatches=$speedDialCount',
         );
-      }, description: 'member persona hides event creation controls');
+      }, description: 'member actorIdentity hides event creation controls');
       expect(
         find.byKey(const ValueKey('creatable-fab-event-rsvp')),
         findsNothing,

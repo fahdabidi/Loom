@@ -355,37 +355,39 @@ void main() {
       emitProgress(
         'workflow-start',
         phase: 'B17',
-        workflowId: 'wf_persona-role-inventory-capability-matrix',
+        workflowId: 'wf_actor-identity-inventory-capability-matrix',
         communityName: mosqueTarget.communityName,
       );
       await ensureTargetOpen(mosqueTarget);
-      await selectPersona(tester, mosqueAdminRoleId);
-      await capture('B17_persona_inventory_active_admin');
-      await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+      await selectActorIdentity(tester, mosqueAdminRoleId);
+      await capture('B17_actor_identity_inventory_active_admin');
+      await tester.tap(
+        find.byKey(const ValueKey('actor-identity-picker-button')),
+      );
       await tester.pumpAndSettle();
-      await capture('B17_persona_inventory_picker');
+      await capture('B17_actor_identity_inventory_picker');
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       recordEvidenceEntry({
         'phase': 'B17',
-        'appId': 'persona-role-inventory',
-        'workflowId': 'wf_persona-role-inventory-capability-matrix',
+        'appId': 'actor-identity-role-inventory',
+        'workflowId': 'wf_actor-identity-inventory-capability-matrix',
         'expectedAssertions': [
-          'all demo communities define two or more personas',
-          'all workflow/persona matrix rows have actor, receiver, read-only, or disabled state',
+          'all demo communities define two or more actorIdentities',
+          'all workflow/actorIdentity matrix rows have actor, receiver, read-only, or disabled state',
           'receiver rows declare dependency evidence',
-          'matrix rows: ${await _personaMatrixRowCount(evidenceTargets)}',
+          'matrix rows: ${await _roleMatrixRowCount(evidenceTargets)}',
         ],
         'screenshotNames': [
-          'B17_persona_inventory_active_admin',
-          'B17_persona_inventory_picker',
+          'B17_actor_identity_inventory_active_admin',
+          'B17_actor_identity_inventory_picker',
         ],
         'status': 'pass',
       });
       emitProgress(
         'workflow-complete',
         phase: 'B17',
-        workflowId: 'wf_persona-role-inventory-capability-matrix',
+        workflowId: 'wf_actor-identity-inventory-capability-matrix',
         communityName: mosqueTarget.communityName,
       );
     }
@@ -399,9 +401,11 @@ void main() {
         communityName: mosqueTarget.communityName,
       );
       await ensureTargetOpen(mosqueTarget);
-      await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+      await tester.tap(
+        find.byKey(const ValueKey('actor-identity-picker-button')),
+      );
       await tester.pumpAndSettle();
-      await capture('B18_persona_picker_dialog');
+      await capture('B18_actor_identity_picker_dialog');
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       await _showShippedWorkflowInstance(
@@ -411,7 +415,7 @@ void main() {
         selector: announcement,
         roleId: mosqueMemberRoleId,
       );
-      await capture('B18_persona_picker_member_selected');
+      await capture('B18_actor_identity_picker_member_selected');
       recordEvidenceEntry({
         'phase': 'B18',
         'appId': mosqueTarget.extensionId,
@@ -419,13 +423,13 @@ void main() {
         'communityName': mosqueTarget.communityName,
         'workflowId': 'wf_demo-app-persona-picker',
         'expectedAssertions': [
-          'people icon opens the test persona picker',
-          'Community Member persona becomes active',
+          'people icon opens the test actor identity picker',
+          'Community Member actor identity becomes active',
           'Public announcement is waiting for admin action instead of exposing an admin action',
         ],
         'screenshotNames': [
-          'B18_persona_picker_dialog',
-          'B18_persona_picker_member_selected',
+          'B18_actor_identity_picker_dialog',
+          'B18_actor_identity_picker_member_selected',
         ],
         'status': 'pass',
       });
@@ -478,9 +482,9 @@ void main() {
         'communityName': mosqueTarget.communityName,
         'workflowId': 'wf_community-persona-aware-ux',
         'expectedAssertions': [
-          'member persona can create the protected care request',
-          'member persona cannot create the public announcement',
-          'admin persona can create the public announcement',
+          'member role can create the protected care request',
+          'member role cannot create the public announcement',
+          'admin role can create the public announcement',
         ],
         'screenshotNames': [
           'B19_member_care_request_actor',
@@ -514,7 +518,7 @@ void main() {
             adminRoleId: mosqueAdminRoleId,
             capture: capture,
           );
-      await selectPersona(tester, mosqueMemberRoleId);
+      await selectActorIdentity(tester, mosqueMemberRoleId);
       await _selectPackageTab(
         tester: tester,
         target: mosqueTarget,
@@ -578,7 +582,7 @@ void main() {
         tabId: 'messages',
       );
       await capture('B20_member_messages_tab');
-      await selectPersona(tester, mosqueAdminRoleId);
+      await selectActorIdentity(tester, mosqueAdminRoleId);
       await _selectPackageTab(
         tester: tester,
         target: mosqueTarget,
@@ -596,7 +600,7 @@ void main() {
         'expectedAssertions': [
           'admin creates the public announcement',
           'member receives the same announcement after admin completion',
-          'widget sweep covers all demo app workflow/persona rows',
+          'widget sweep covers all demo app workflow/actorIdentity rows',
         ],
         'screenshotNames': [
           'B20_announcement_admin_start',
@@ -646,7 +650,7 @@ void main() {
 
       if (includeGardenCapability) {
         await ensureTargetOpen(gardenTarget);
-        await selectPersona(tester, gardenMemberRoleId);
+        await selectActorIdentity(tester, gardenMemberRoleId);
         await _selectPackageTab(
           tester: tester,
           target: gardenTarget,
@@ -678,7 +682,7 @@ void main() {
 
       if (includeHoaCapability) {
         await ensureTargetOpen(hoaTarget);
-        await selectPersona(tester, 'hoa-homeowner');
+        await selectActorIdentity(tester, 'hoa-homeowner');
         await _selectCommunityTab(tester, 'documents');
         await capture('B20_app_shell_hoa_documents_pinning_policy');
         capabilityScreenshots.add('B20_app_shell_hoa_documents_pinning_policy');
@@ -1053,7 +1057,7 @@ Future<List<String>> _runShippedWorkflowWalkthrough({
     ]);
     await signInEvidenceAccount(tester, displayName);
   } else {
-    await selectPersona(tester, selector.roleId);
+    await selectActorIdentity(tester, selector.roleId);
   }
   expect(find.text(package.experience.tagline), findsOneWidget);
 
@@ -1401,7 +1405,8 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
     );
   }
   final packageRoleIds = {
-    for (final persona in package.experience.personas!) persona.roleId,
+    for (final actorIdentity in package.experience.actorIdentities!)
+      actorIdentity.roleId,
   };
   final rawExperience = package.source['experience'] as Map<String, dynamic>;
   final rawWorkflowDefinitions = Map<String, Object?>.from(
@@ -1537,7 +1542,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
   }
   fail(
     'Walkthrough workflow $workflowType could not derive an actionable '
-    'instance, persona, and tab from the shipped ${target.extensionId} '
+    'instance, actorIdentity, and tab from the shipped ${target.extensionId} '
     'experience and appShell.',
   );
 }
@@ -2022,14 +2027,14 @@ String _packageRoleId({
   required ShippedEvidencePackage package,
   required String label,
 }) {
-  final matches = package.experience.personas!
-      .where((persona) => persona.label == label)
+  final matches = package.experience.actorIdentities!
+      .where((actorIdentity) => actorIdentity.label == label)
       .toList(growable: false);
   if (matches.length != 1) {
     fail(
-      'Shipped package ${target.extensionId} must expose exactly one persona '
+      'Shipped package ${target.extensionId} must expose exactly one actor identity '
       'labelled "$label"; found '
-      '${matches.map((persona) => persona.roleId).toList()}.',
+      '${matches.map((actorIdentity) => actorIdentity.roleId).toList()}.',
     );
   }
   return matches.single.roleId;
@@ -2044,7 +2049,7 @@ Future<void> _showShippedWorkflowInstance({
   bool selectRole = true,
 }) async {
   if (selectRole) {
-    await selectPersona(tester, roleId);
+    await selectActorIdentity(tester, roleId);
   }
   final tabs = appShellTabsFor(
     experience: package.experience,
@@ -2110,7 +2115,7 @@ Future<void> _selectPackageTab({
     contains(tabId),
     reason:
         'Shipped package ${target.extensionId} did not declare tab $tabId '
-        'for persona $roleId. Package tabs for that persona: $packageTabIds.',
+        'for role $roleId. Package tabs for that role: $packageTabIds.',
   );
   await _selectCommunityTab(tester, tabId);
 }
@@ -2123,7 +2128,7 @@ Future<String> _createAndPublishShippedAnnouncement({
   required String adminRoleId,
   required Future<void> Function(String name) capture,
 }) async {
-  await selectPersona(tester, adminRoleId);
+  await selectActorIdentity(tester, adminRoleId);
   final creationBindings = selector.machine.renderBindings.where(
     (binding) =>
         binding.states.contains(selector.machine.initialState) &&
@@ -2392,14 +2397,14 @@ Future<void> _selectCommunityTab(WidgetTester tester, String tabId) async {
   await tester.pumpAndSettle();
 }
 
-Future<int> _personaMatrixRowCount(
+Future<int> _roleMatrixRowCount(
   List<LoomEvidenceTarget> evidenceTargets,
 ) async {
   var total = 0;
   for (final target in evidenceTargets) {
     final package = await readShippedEvidencePackage(target);
     total +=
-        package.experience.personas!.length *
+        package.experience.actorIdentities!.length *
         package.experience.workflowDefinitions!.length;
   }
   return total;

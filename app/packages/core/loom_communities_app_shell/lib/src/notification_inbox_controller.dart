@@ -17,7 +17,7 @@ class NotificationInboxController {
     required this.fanId,
   });
 
-  /// Counts this persona's unread notification instances by their real FSM
+  /// Counts this actor identity's unread notification instances by their real FSM
   /// state, using the engine's reserved `$state` aggregate field.
   Future<int> unreadCount() async {
     final count = await engine.aggregate(
@@ -47,7 +47,7 @@ class NotificationInboxController {
     tabId: tabId,
   );
 
-  /// Fetches one page and removes notifications addressed to another persona.
+  /// Fetches one page and removes notifications addressed to another actor identity.
   ///
   /// [queryInstances] does not apply arbitrary instance-data filters, so this
   /// post-filter is part of the controller's list-scoping contract.
@@ -72,7 +72,7 @@ class NotificationInboxController {
   }
 
   /// Filters a RepeaterSurface-fetched page (or any raw instance list) down
-  /// to this persona's own notification instances.
+  /// to this actor identity's own notification instances.
   List<WorkflowInstance> filterMine(List<WorkflowInstance> items) => items
       .where(
         (item) =>
@@ -84,7 +84,7 @@ class NotificationInboxController {
   /// Marks [notification] read through the workflow's guarded transition.
   ///
   /// The engine enforces the `actorEqualsField` guard, so callers cannot use
-  /// this method to mark another persona's notification read.
+  /// this method to mark another actor identity's notification read.
   Future<void> markRead(WorkflowInstance notification) async {
     await engine.applyTransition(
       workflowType: workflowType,

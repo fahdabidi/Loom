@@ -82,7 +82,9 @@ void main() {
       expect(package.experience.workflowDefinitions, isNotEmpty);
       expect(package.experience.workflowInstances, isNotEmpty);
       expect(
-        package.experience.personas!.map((persona) => persona.roleId).toSet(),
+        package.experience.actorIdentities!
+            .map((actorIdentity) => actorIdentity.roleId)
+            .toSet(),
         entry.value,
       );
       expect(package.appShellConfiguration['tabs'], isNotEmpty);

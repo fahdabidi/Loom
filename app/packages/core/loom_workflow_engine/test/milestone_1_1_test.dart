@@ -217,7 +217,7 @@ void main() {
       expect(evaluateGuard(guard, 'anyone', {}), isTrue);
     });
 
-    test('actorInList: present=true and persona IS in list → passes', () {
+    test('actorInList: present=true and fan IS in list → passes', () {
       final guard = const WorkflowGuard(
         actorInList: ListMembershipGuard(key: 'queuedFanIds', present: true),
       );
@@ -229,7 +229,7 @@ void main() {
       );
     });
 
-    test('actorInList: present=true and persona NOT in list → fails', () {
+    test('actorInList: present=true and fan NOT in list → fails', () {
       final guard = const WorkflowGuard(
         actorInList: ListMembershipGuard(key: 'queuedFanIds', present: true),
       );
@@ -241,7 +241,7 @@ void main() {
       );
     });
 
-    test('actorInList: present=false and persona NOT in list → passes', () {
+    test('actorInList: present=false and fan NOT in list → passes', () {
       final guard = const WorkflowGuard(
         actorInList: ListMembershipGuard(key: 'queuedFanIds', present: false),
       );
@@ -253,7 +253,7 @@ void main() {
       );
     });
 
-    test('actorInList: present=false and persona IS in list → fails', () {
+    test('actorInList: present=false and fan IS in list → fails', () {
       final guard = const WorkflowGuard(
         actorInList: ListMembershipGuard(key: 'queuedFanIds', present: false),
       );
@@ -947,12 +947,12 @@ void main() {
       machine = _parseFixture('equipment-loan');
     });
 
-    test('role "any" matches regardless of persona roles', () {
+    test('role "any" matches regardless of actor roles', () {
       // published state has one binding: role = "any".
       final bindings = resolveBindings(
         machine,
         'published',
-        [], // persona with no roles
+        [], // fan with no roles
       );
       expect(bindings.length, 1);
       expect(bindings.first.role, 'any');
@@ -963,7 +963,7 @@ void main() {
       final bindings = resolveBindings(
         machine,
         'draft',
-        {'actor'}, // persona holding the actor role
+        {'actor'}, // actor holding the actor role
       );
       expect(bindings.length, 1);
       expect(bindings.first.role, 'actor');
@@ -971,7 +971,7 @@ void main() {
     });
 
     test(
-      'actor role does NOT match if persona only holds receiver role on draft',
+      'actor role does NOT match if actor only holds receiver role on draft',
       () {
         final bindings = resolveBindings(machine, 'draft', {'receiver'});
         // draft binding is role: "actor" only — receiver doesn't match.
@@ -980,7 +980,7 @@ void main() {
     );
 
     test(
-      'persona holding TWO roles on pending-review resolves BOTH matching bindings',
+      'actor holding TWO roles on pending-review resolves BOTH matching bindings',
       () {
         // pending-review has two bindings:
         //   role: "actor"   → listing-status-badge (summary)
@@ -1001,16 +1001,11 @@ void main() {
       },
     );
 
-    test(
-      'persona holding only one of the two roles gets only that binding',
-      () {
-        final bindings = resolveBindings(machine, 'pending-review', {
-          'receiver',
-        });
-        expect(bindings.length, 1);
-        expect(bindings.first.cardSurfaceFamily, 'listing-review-queue-item');
-      },
-    );
+    test('actor holding only one of the two roles gets only that binding', () {
+      final bindings = resolveBindings(machine, 'pending-review', {'receiver'});
+      expect(bindings.length, 1);
+      expect(bindings.first.cardSurfaceFamily, 'listing-review-queue-item');
+    });
 
     test('state not listed in any binding returns empty', () {
       final bindings = resolveBindings(machine, 'nonexistent-state', {'any'});

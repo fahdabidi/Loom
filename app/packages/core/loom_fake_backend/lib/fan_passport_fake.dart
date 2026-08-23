@@ -10,7 +10,7 @@ import 'package:loom_local_store/loom_local_store.dart'
 
 /// Implements [FanPassportApi] over [DemoLocalStore].
 ///
-/// Seed tables used: `creators`; writes `fan_passports`, `personas`,
+/// Seed tables used: `creators`; writes fan passport profiles,
 /// `follows`, `consent_grants`, and `idempotency_records`.
 class FanPassportFake implements FanPassportApi {
   const FanPassportFake(
@@ -42,18 +42,18 @@ class FanPassportFake implements FanPassportApi {
   }
 
   @override
-  Future<Persona> setPersona({
+  Future<FanProfile> setFanProfile({
     required String passportId,
     required String label,
     required String idempotencyKey,
   }) async {
     await Future<void>.delayed(latency);
-    final record = await _store.setPersona(
+    final record = await _store.setFanProfile(
       passportId: passportId,
       label: label,
       idempotencyKey: idempotencyKey,
     );
-    return Persona(
+    return FanProfile(
       id: record.id,
       passportId: record.passportId,
       label: record.label,
@@ -271,7 +271,7 @@ FanPassportClaim _mapPassport(FanPassportRecord record) {
   return FanPassportClaim(
     id: record.id,
     displayName: record.displayName,
-    activePersonaId: record.activePersonaId,
+    activeFanProfileId: record.activeFanProfileId,
     createdAt: record.createdAt,
   );
 }

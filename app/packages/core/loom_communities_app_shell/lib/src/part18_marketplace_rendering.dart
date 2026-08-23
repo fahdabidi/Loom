@@ -48,7 +48,7 @@ class _WorkflowAudienceSelectorFieldState
     _emit();
   }
 
-  void _togglePersona(String fanId, bool selected) {
+  void _toggleFan(String fanId, bool selected) {
     setState(() {
       if (_scope == 'individual') {
         _selectedFanIds = selected ? {fanId} : <String>{};
@@ -97,11 +97,11 @@ class _WorkflowAudienceSelectorFieldState
             children: widget.availableFanIds
                 .map(
                   (fanId) => CheckboxListTile(
-                    key: ValueKey('audience-selector-persona-$fanId'),
+                    key: ValueKey('audience-selector-fan-$fanId'),
                     title: Text(fanId),
                     value: _selectedFanIds.contains(fanId),
                     onChanged: (selected) =>
-                        _togglePersona(fanId, selected ?? false),
+                        _toggleFan(fanId, selected ?? false),
                   ),
                 )
                 .toList(growable: false),
@@ -112,13 +112,13 @@ class _WorkflowAudienceSelectorFieldState
             children: widget.availableFanIds
                 .map(
                   (fanId) => ListTile(
-                    key: ValueKey('audience-selector-persona-$fanId'),
+                    key: ValueKey('audience-selector-fan-$fanId'),
                     title: Text(fanId),
                     selected: _selectedFanIds.contains(fanId),
                     trailing: _selectedFanIds.contains(fanId)
                         ? const Icon(Icons.check_circle)
                         : const Icon(Icons.radio_button_unchecked),
-                    onTap: () => _togglePersona(fanId, true),
+                    onTap: () => _toggleFan(fanId, true),
                   ),
                 )
                 .toList(growable: false),
@@ -570,14 +570,11 @@ class WorkflowFactPillRow extends StatelessWidget {
         accent: accent,
       );
     }
-    if (type == 'personaid' ||
-        type == 'personaid[]' ||
-        type == 'fanid' ||
-        type == 'fanid[]') {
-      return _WorkflowPersonaFact(
-        key: ValueKey('workflow-fact-persona-$field'),
+    if (type == 'fanid' || type == 'fanid[]') {
+      return _WorkflowFanFact(
+        key: ValueKey('workflow-fact-fan-$field'),
         label: label,
-        isCollection: type == 'personaid[]' || type == 'fanid[]',
+        isCollection: type == 'fanid[]',
         foreground: foreground,
         accent: accent,
         maxLines: schema.maxLines,
@@ -944,8 +941,8 @@ class _WorkflowFactParagraph extends StatelessWidget {
   }
 }
 
-class _WorkflowPersonaFact extends StatelessWidget {
-  const _WorkflowPersonaFact({
+class _WorkflowFanFact extends StatelessWidget {
+  const _WorkflowFanFact({
     super.key,
     required this.label,
     required this.isCollection,

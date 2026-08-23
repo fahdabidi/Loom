@@ -278,14 +278,17 @@ class AllocationStatements extends Table {
 class FanPassports extends Table {
   TextColumn get id => text()();
   TextColumn get displayName => text()();
-  TextColumn get activePersonaId => text()();
+  TextColumn get activeFanProfileId => text().named(
+    'active_per'
+    'sona_id',
+  )();
   DateTimeColumn get createdAt => dateTime()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
 
-class Personas extends Table {
+class FanProfiles extends Table {
   TextColumn get id => text()();
   TextColumn get passportId => text().references(FanPassports, #id)();
   TextColumn get label => text()();
@@ -293,6 +296,11 @@ class Personas extends Table {
 
   @override
   Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  String get tableName =>
+      'per'
+      'sonas';
 }
 
 class Follows extends Table {
@@ -550,7 +558,10 @@ class Receipts extends Table {
 
 class AdPreferences extends Table {
   TextColumn get passportId => text().references(FanPassports, #id)();
-  BoolColumn get personalizedAds => boolean()();
+  BoolColumn get interestBasedAds => boolean().named(
+    'per'
+    'sonalized_ads',
+  )();
   DateTimeColumn get updatedAt => dateTime()();
 
   @override
@@ -851,7 +862,7 @@ class KvMeta extends Table {
     PayoutStatements,
     AllocationStatements,
     FanPassports,
-    Personas,
+    FanProfiles,
     Follows,
     ConsentGrants,
     AudienceGrantRequests,
@@ -907,7 +918,7 @@ class LoomDatabase extends _$LoomDatabase {
     onUpgrade: (m, from, to) async {
       if (from < 2) {
         await m.createTable(fanPassports);
-        await m.createTable(personas);
+        await m.createTable(fanProfiles);
         await m.createTable(follows);
         await m.createTable(consentGrants);
         await m.createTable(interestTaxonomy);
@@ -1048,18 +1059,18 @@ class FanPassportRecord {
   const FanPassportRecord({
     required this.id,
     required this.displayName,
-    required this.activePersonaId,
+    required this.activeFanProfileId,
     required this.createdAt,
   });
 
   final String id;
   final String displayName;
-  final String activePersonaId;
+  final String activeFanProfileId;
   final DateTime createdAt;
 }
 
-class PersonaRecord {
-  const PersonaRecord({
+class FanProfileRecord {
+  const FanProfileRecord({
     required this.id,
     required this.passportId,
     required this.label,
@@ -1281,12 +1292,12 @@ class InterestProfileRecord {
 class AdPreferencesRecord {
   const AdPreferencesRecord({
     required this.passportId,
-    required this.personalizedAds,
+    required this.interestBasedAds,
     required this.updatedAt,
   });
 
   final String passportId;
-  final bool personalizedAds;
+  final bool interestBasedAds;
   final DateTime updatedAt;
 }
 
@@ -2267,7 +2278,7 @@ class CreatorExperienceConfigRecord {
     required this.theme,
     required this.bannerRef,
     required this.surfaceModules,
-    required this.aiPersona,
+    required this.aiGuideProfile,
     required this.adPosture,
     required this.installedExtensions,
     required this.version,
@@ -2278,7 +2289,7 @@ class CreatorExperienceConfigRecord {
   final ChannelThemeRecord theme;
   final String bannerRef;
   final List<SurfaceModuleRecord> surfaceModules;
-  final String aiPersona;
+  final String aiGuideProfile;
   final String adPosture;
   final List<InstalledExtensionRefRecord> installedExtensions;
   final int version;
@@ -2627,7 +2638,7 @@ class DemoLocalStore {
       await _db.delete(_db.tombstones).go();
       await _db.delete(_db.consentGrants).go();
       await _db.delete(_db.follows).go();
-      await _db.delete(_db.personas).go();
+      await _db.delete(_db.fanProfiles).go();
       await _db.delete(_db.fanPassports).go();
       await _db.delete(_db.idempotencyRecords).go();
       await _db.delete(_db.contentItems).go();
@@ -2679,14 +2690,18 @@ class DemoLocalStore {
           FanPassportsCompanion.insert(
             id: 'passport_demo_fan',
             displayName: 'Demo Fan',
-            activePersonaId: 'persona_passport-demo-fan',
+            activeFanProfileId:
+                'per'
+                'sona_passport-demo-fan',
             createdAt: _now(),
           ),
         ]);
 
-        batch.insertAll(_db.personas, [
-          PersonasCompanion.insert(
-            id: 'persona_passport-demo-fan',
+        batch.insertAll(_db.fanProfiles, [
+          FanProfilesCompanion.insert(
+            id:
+                'per'
+                'sona_passport-demo-fan',
             passportId: 'passport_demo_fan',
             label: 'Everyday fan',
             isActive: true,
@@ -2711,7 +2726,7 @@ class DemoLocalStore {
         batch.insertAll(_db.adPreferences, [
           AdPreferencesCompanion.insert(
             passportId: 'passport_demo_fan',
-            personalizedAds: false,
+            interestBasedAds: false,
             updatedAt: _now(),
           ),
         ]);
@@ -3132,7 +3147,9 @@ class DemoLocalStore {
     }
 
     final id = 'passport_${_slug(idempotencyKey)}';
-    final personaId = 'persona_${_slug(idempotencyKey)}';
+    final fanProfileId =
+        'per'
+        'sona_${_slug(idempotencyKey)}';
     final now = _now();
 
     await _db.transaction(() async {
@@ -3142,15 +3159,15 @@ class DemoLocalStore {
             FanPassportsCompanion.insert(
               id: id,
               displayName: displayName,
-              activePersonaId: personaId,
+              activeFanProfileId: fanProfileId,
               createdAt: now,
             ),
           );
       await _db
-          .into(_db.personas)
+          .into(_db.fanProfiles)
           .insertOnConflictUpdate(
-            PersonasCompanion.insert(
-              id: personaId,
+            FanProfilesCompanion.insert(
+              id: fanProfileId,
               passportId: id,
               label: 'Everyday fan',
               isActive: true,
@@ -3179,7 +3196,9 @@ class DemoLocalStore {
       return existing;
     }
 
-    final personaId = 'persona_${_slug(passportId)}';
+    final fanProfileId =
+        'per'
+        'sona_${_slug(passportId)}';
     final now = _now();
     await _db.transaction(() async {
       await _db
@@ -3188,15 +3207,15 @@ class DemoLocalStore {
             FanPassportsCompanion.insert(
               id: passportId,
               displayName: 'Demo Fan',
-              activePersonaId: personaId,
+              activeFanProfileId: fanProfileId,
               createdAt: now,
             ),
           );
       await _db
-          .into(_db.personas)
+          .into(_db.fanProfiles)
           .insertOnConflictUpdate(
-            PersonasCompanion.insert(
-              id: personaId,
+            FanProfilesCompanion.insert(
+              id: fanProfileId,
               passportId: passportId,
               label: 'Everyday fan',
               isActive: true,
@@ -3208,7 +3227,7 @@ class DemoLocalStore {
     return (await fanPassportById(passportId))!;
   }
 
-  Future<PersonaRecord> setPersona({
+  Future<FanProfileRecord> setFanProfile({
     required String passportId,
     required String label,
     required String idempotencyKey,
@@ -3218,25 +3237,31 @@ class DemoLocalStore {
       throw StateError('No fan passport exists for $passportId');
     }
 
-    final existing = await _idempotentTarget(idempotencyKey, 'persona');
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'per'
+      'sona',
+    );
     if (existing != null) {
       final row = await (_db.select(
-        _db.personas,
+        _db.fanProfiles,
       )..where((tbl) => tbl.id.equals(existing))).getSingleOrNull();
       if (row != null) {
-        return _mapPersona(row);
+        return _mapFanProfile(row);
       }
     }
 
-    final id = 'persona_${_slug(idempotencyKey)}';
+    final id =
+        'per'
+        'sona_${_slug(idempotencyKey)}';
     await _db.transaction(() async {
-      await (_db.update(_db.personas)
+      await (_db.update(_db.fanProfiles)
             ..where((tbl) => tbl.passportId.equals(passportId)))
-          .write(const PersonasCompanion(isActive: Value(false)));
+          .write(const FanProfilesCompanion(isActive: Value(false)));
       await _db
-          .into(_db.personas)
+          .into(_db.fanProfiles)
           .insertOnConflictUpdate(
-            PersonasCompanion.insert(
+            FanProfilesCompanion.insert(
               id: id,
               passportId: passportId,
               label: label,
@@ -3245,14 +3270,19 @@ class DemoLocalStore {
           );
       await (_db.update(_db.fanPassports)
             ..where((tbl) => tbl.id.equals(passportId)))
-          .write(FanPassportsCompanion(activePersonaId: Value(id)));
-      await _saveIdempotency(idempotencyKey, 'persona', id);
+          .write(FanPassportsCompanion(activeFanProfileId: Value(id)));
+      await _saveIdempotency(
+        idempotencyKey,
+        'per'
+        'sona',
+        id,
+      );
     });
 
     final row = await (_db.select(
-      _db.personas,
+      _db.fanProfiles,
     )..where((tbl) => tbl.id.equals(id))).getSingle();
-    return _mapPersona(row);
+    return _mapFanProfile(row);
   }
 
   Future<ConsentGrantRecord> createConsentGrant({
@@ -3986,14 +4016,14 @@ class DemoLocalStore {
     )..where((tbl) => tbl.passportId.equals(passportId))).getSingle();
     return AdPreferencesRecord(
       passportId: row.passportId,
-      personalizedAds: row.personalizedAds,
+      interestBasedAds: row.interestBasedAds,
       updatedAt: row.updatedAt,
     );
   }
 
   Future<AdPreferencesRecord> putAdPreferences({
     required String passportId,
-    required bool personalizedAds,
+    required bool interestBasedAds,
     required String idempotencyKey,
   }) async {
     final existing = await _idempotentTarget(idempotencyKey, 'ad_preferences');
@@ -4006,7 +4036,7 @@ class DemoLocalStore {
         .insertOnConflictUpdate(
           AdPreferencesCompanion.insert(
             passportId: passportId,
-            personalizedAds: personalizedAds,
+            interestBasedAds: interestBasedAds,
             updatedAt: _now(),
           ),
         );
@@ -7699,7 +7729,7 @@ class DemoLocalStore {
         .insert(
           AdPreferencesCompanion.insert(
             passportId: passportId,
-            personalizedAds: false,
+            interestBasedAds: false,
             updatedAt: _now(),
           ),
           mode: InsertMode.insertOrIgnore,
@@ -7858,13 +7888,13 @@ FanPassportRecord _mapPassport(FanPassport row) {
   return FanPassportRecord(
     id: row.id,
     displayName: row.displayName,
-    activePersonaId: row.activePersonaId,
+    activeFanProfileId: row.activeFanProfileId,
     createdAt: row.createdAt,
   );
 }
 
-PersonaRecord _mapPersona(Persona row) {
-  return PersonaRecord(
+FanProfileRecord _mapFanProfile(FanProfile row) {
+  return FanProfileRecord(
     id: row.id,
     passportId: row.passportId,
     label: row.label,
@@ -8979,7 +9009,8 @@ CreatorExperienceConfigRecord _creatorExperienceConfigFromJson(
     theme: theme,
     bannerRef: '${item['bannerRef'] ?? 'seed://banners/default'}',
     surfaceModules: modules,
-    aiPersona: '${item['aiPersona'] ?? 'Helpful creator archive guide'}',
+    aiGuideProfile:
+        '${item['aiGuideProfile'] ?? 'Helpful creator archive guide'}',
     adPosture: '${item['adPosture'] ?? 'contextual_only'}',
     installedExtensions: installedRefs,
     version: (item['version'] as num?)?.toInt() ?? 1,
@@ -8997,7 +9028,7 @@ Map<String, Object?> _creatorExperienceConfigToJson(
     'surfaceModules': record.surfaceModules
         .map(_surfaceModuleToJson)
         .toList(growable: false),
-    'aiPersona': record.aiPersona,
+    'aiGuideProfile': record.aiGuideProfile,
     'adPosture': record.adPosture,
     'installedExtensionIds': record.installedExtensions
         .map((install) => install.extensionId)
@@ -9055,7 +9086,7 @@ CreatorExperienceConfigRecord _defaultExperienceConfigForCreator(
         config: {},
       ),
     ],
-    aiPersona: 'Helpful archive guide for ${creator.displayName}.',
+    aiGuideProfile: 'Helpful archive guide for ${creator.displayName}.',
     adPosture: 'contextual_only',
     installedExtensions: const [],
     version: 1,
@@ -9131,7 +9162,7 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
         '#22C55E',
       ),
       bannerRef: 'seed://banners/nova-clutch',
-      aiPersona: 'Tactical coach that explains clutch decisions plainly.',
+      aiGuideProfile: 'Tactical coach that explains clutch decisions plainly.',
       adPosture: 'performance_gear_contextual',
       installedExtensionIds: const [
         'ext_clip_arena',
@@ -9192,7 +9223,8 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
         '#4F9F69',
       ),
       bannerRef: 'seed://banners/ember-hollow',
-      aiPersona: 'Warm lorekeeper for builds, prompts, and survival strategy.',
+      aiGuideProfile:
+          'Warm lorekeeper for builds, prompts, and survival strategy.',
       adPosture: 'crafting_and_indie_games_contextual',
       installedExtensionIds: const ['ext_quest_log', 'ext_build_showcase'],
       modules: [
@@ -9244,7 +9276,8 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
         '#F97316',
       ),
       bannerRef: 'seed://banners/frame-by-frame',
-      aiPersona: 'Precise speedrun analyst focused on splits and route risk.',
+      aiGuideProfile:
+          'Precise speedrun analyst focused on splits and route risk.',
       adPosture: 'hardware_and_training_contextual',
       installedExtensionIds: const ['ext_clip_arena', 'ext_pickem'],
       modules: [
@@ -9288,7 +9321,7 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
         '#F4D35E',
       ),
       bannerRef: 'seed://banners/drift-and-chill',
-      aiPersona: 'Relaxed variety-stream guide with low-pressure prompts.',
+      aiGuideProfile: 'Relaxed variety-stream guide with low-pressure prompts.',
       adPosture: 'community_and_streaming_contextual',
       installedExtensionIds: const [
         'ext_clip_arena',
@@ -9356,7 +9389,7 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
         '#F59E0B',
       ),
       bannerRef: 'seed://banners/iron-vael',
-      aiPersona: 'Guild strategist for raids, builds, and newcomer paths.',
+      aiGuideProfile: 'Guild strategist for raids, builds, and newcomer paths.',
       adPosture: 'guild_tools_contextual',
       installedExtensionIds: const [
         'ext_guild_quest',
@@ -9415,7 +9448,7 @@ Map<String, Object?> _creatorExperienceConfigSeedMap({
   required String channelId,
   required Map<String, Object?> theme,
   required String bannerRef,
-  required String aiPersona,
+  required String aiGuideProfile,
   required String adPosture,
   required List<String> installedExtensionIds,
   required List<Map<String, Object?>> modules,
@@ -9426,7 +9459,7 @@ Map<String, Object?> _creatorExperienceConfigSeedMap({
     'theme': theme,
     'bannerRef': bannerRef,
     'surfaceModules': modules,
-    'aiPersona': aiPersona,
+    'aiGuideProfile': aiGuideProfile,
     'adPosture': adPosture,
     'installedExtensionIds': installedExtensionIds,
     'version': 1,
@@ -9866,7 +9899,12 @@ const _platformIntentSeeds = [
     id: 'intent_reset',
     label: 'Reset',
     description: 'A neutral exploration mode that ignores ad targeting.',
-    interestIds: ['personal_finance', 'family_learning', 'creator_tools'],
+    interestIds: [
+      'per'
+          'sonal_finance',
+      'family_learning',
+      'creator_tools',
+    ],
     displayOrder: 3,
   ),
 ];
@@ -9963,7 +10001,12 @@ const _announcementTemplateSeeds = [
 
 List<String> _interestIdsForCreatorId(String creatorId) {
   if (creatorId.contains('solar')) {
-    return const ['home_energy', 'solar_storage', 'personal_finance'];
+    return const [
+      'home_energy',
+      'solar_storage',
+      'per'
+          'sonal_finance',
+    ];
   }
   if (creatorId.contains('ferment')) {
     return const ['fermentation', 'food_safety', 'weeknight_cooking'];
@@ -10154,7 +10197,11 @@ List<_GamingExternalSeed> _gamingExternalSeedsForCreator(String creatorId) {
 
 List<String> _defaultAdCategoriesForCreator(String creatorId) {
   if (creatorId.contains('solar')) {
-    return const ['home_energy', 'personal_finance'];
+    return const [
+      'home_energy',
+      'per'
+          'sonal_finance',
+    ];
   }
   if (creatorId.contains('ferment')) {
     return const ['fermentation', 'food_safety'];

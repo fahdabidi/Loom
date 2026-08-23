@@ -170,12 +170,12 @@ class LocalExtensionScreen extends StatefulWidget {
 
 class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   final Set<String> _completedWorkflowIds = {};
-  final Set<String> _receivedWorkflowPersonaKeys = {};
+  final Set<String> _receivedWorkflowRoleKeys = {};
   final Map<String, String> _selectedResponseByWorkflowId = {};
   final Set<String> _reminderEnabledWorkflowIds = {};
   final Map<String, String> _selectedTabIdByRoleId = {};
   final Set<String> _heroDismissedForCommunity = {};
-  final Map<String, String> _focusedWorkflowIdByPersonaTab = {};
+  final Map<String, String> _focusedWorkflowIdByRoleTab = {};
   final Map<String, GlobalKey> _workflowSurfaceKeysById = {};
   WorkflowInstance? _focusedInstanceForActiveTab;
   late final ScrollController _surfaceScrollController;
@@ -193,9 +193,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   late final LoomAuthApi _authApi =
       widget.authApi ??
       LocalAuthApi(
-        personaResolver: (communityExtensionId) {
+        actorIdentityResolver: (communityExtensionId) {
           final experience = _experienceForCommunity();
-          return personasForExtensionId(
+          return actorIdentitiesForExtensionId(
             communityExtensionId,
             experience: experience,
           );
@@ -204,13 +204,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       );
 
   /// The individual account id when signed in, otherwise the selected
-  /// persona's declared fan id.
+  /// actor identity's declared fan id.
   String? get _activeFanId {
     final session = _authApi.currentSession;
     return session?.account.accountId ?? _selectedFanId;
   }
 
-  /// The persona type of the signed-in account, or [_selectedRoleId].
+  /// The role of the signed-in account, or [_selectedRoleId].
   String? get _activeRoleId {
     final session = _authApi.currentSession;
     return session?.account.roleId ?? _selectedRoleId;
@@ -240,11 +240,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         experience.workflowDefinitions!.isEmpty;
   }
 
-  /// Serializes the account-to-persona mapping with the entry check.
+  /// Serializes the account-to-role mapping with the entry check.
   ///
   /// Engine-native surfaces use the signed-in account id as their actor id,
   /// while the policy engine needs that id mapped back to its declared
-  /// persona type. Do not publish the content tree until that mapping is
+  /// role. Do not publish the content tree until that mapping is
   /// installed; otherwise the first query can be denied and the surface has
   /// no event to cause a retry. The future is cleared after each run so a
   /// newly signed-up account is also registered before its first render.
@@ -252,7 +252,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final inFlight = _engineAuthorizationSync;
     if (inFlight != null) return inFlight;
 
-    final sync = _syncEnginePersonaTypes();
+    final sync = _syncEngineRoleIds();
     late final Future<void> tracked;
     tracked = sync.whenComplete(() {
       if (identical(_engineAuthorizationSync, tracked)) {
@@ -377,12 +377,12 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
 
   Future<void> _openCreatableAction({
     required _CreatableWorkflowAction action,
-    required LoomPersonaDefinition activePersona,
+    required LoomActorIdentity activeActorIdentity,
     required String presentationStyle,
   }) async {
     final content = await _creationContentFor(
       action: action,
-      activePersona: activePersona,
+      activeActorIdentity: activeActorIdentity,
     );
     if (!mounted) return;
     final created = switch (presentationStyle) {
@@ -408,7 +408,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
 
   Future<Widget> _creationContentFor({
     required _CreatableWorkflowAction action,
-    required LoomPersonaDefinition activePersona,
+    required LoomActorIdentity activeActorIdentity,
   }) async {
     final experience = experienceForExtensionId(
       community.extensionId,
@@ -428,16 +428,16 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       workflowType: action.workflowType,
       machine: action.machine,
       engine: engine,
-      fanId: activePersona.fanId,
+      fanId: activeActorIdentity.fanId,
       keyPrefix: keyPrefix,
       title: action.label,
       resolvedInitialValues: action.resolvedInitialValues,
       audienceCandidates: [
-        for (final persona
-            in experience.personas ?? const <LoomPersonaDefinition>[])
+        for (final actorIdentity
+            in experience.actorIdentities ?? const <LoomActorIdentity>[])
           AudienceMultiSelectCandidate(
-            roleId: persona.roleId,
-            label: persona.label,
+            roleId: actorIdentity.roleId,
+            label: actorIdentity.label,
           ),
       ],
     );
@@ -495,14 +495,14 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     _refreshCommunityEntryGate();
   }
 
-  /// Registers every seeded account's individual-id → persona-type mapping
+  /// Registers every seeded account's individual-id → role mapping
   /// with the engine so [allowedRoleIds] guards can check the type.
   ///
   /// No-op for legacy-schema communities (any community whose
   /// [LoomExperienceDefinition.workflowDefinitions] is null or empty —
   /// these communities never install an engine-native experience, so there
   /// is nothing to sync and attempting the lookup would throw).
-  Future<void> _syncEnginePersonaTypes() async {
+  Future<void> _syncEngineRoleIds() async {
     final experience = experienceForExtensionId(
       community.extensionId,
       displayName: community.displayName,
@@ -559,7 +559,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         viewportHeight -
         (MediaQuery.maybeOf(context)?.padding.bottom ?? 0) -
         96;
-    final currentFocused = _focusedWorkflowIdByPersonaTab[focusKey];
+    final currentFocused = _focusedWorkflowIdByRoleTab[focusKey];
     var nextFocused = _visibleWorkflowIds.first;
     var largestVisibleExtent = -1.0;
     var currentFocusedExtent = -1.0;
@@ -602,10 +602,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         !currentStillVisible ||
         largestVisibleExtent > currentFocusedExtent + hysteresisPx;
     if (shouldSwitch &&
-        _focusedWorkflowIdByPersonaTab[focusKey] != nextFocused &&
+        _focusedWorkflowIdByRoleTab[focusKey] != nextFocused &&
         mounted) {
       setState(() {
-        _focusedWorkflowIdByPersonaTab[focusKey] = nextFocused;
+        _focusedWorkflowIdByRoleTab[focusKey] = nextFocused;
         if (_expandedWorkflowId != null &&
             !_visibleWorkflowIds.contains(_expandedWorkflowId)) {
           _expandedWorkflowId = null;
@@ -623,7 +623,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     required String focusKey,
   }) {
     setState(() {
-      _focusedWorkflowIdByPersonaTab[focusKey] = workflowId;
+      _focusedWorkflowIdByRoleTab[focusKey] = workflowId;
       _expandedWorkflowId = workflowId;
     });
   }
@@ -634,20 +634,22 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     }
   }
 
-  LoomPersonaDefinition _activePersona(LoomExperienceDefinition experience) {
-    final personas = personasForExtensionId(
+  LoomActorIdentity _activeActorIdentity(LoomExperienceDefinition experience) {
+    final actorIdentities = actorIdentitiesForExtensionId(
       experience.extensionId,
       experience: experience,
     );
     final typeId = _activeRoleId;
     final match = typeId == null
         ? null
-        : personas.where((persona) => persona.roleId == typeId).firstOrNull;
-    final resolved = match ?? personas.first;
+        : actorIdentities
+              .where((actorIdentity) => actorIdentity.roleId == typeId)
+              .firstOrNull;
+    final resolved = match ?? actorIdentities.first;
     // Carry the specific signed-in account id (when signed in as one)
     // alongside the resolved role, without changing what `.roleId` means
-    // for role/policy-scoped callers -- see LoomPersonaDefinition.accountId.
-    return LoomPersonaDefinition(
+    // for role/policy-scoped callers -- see LoomActorIdentity.accountId.
+    return LoomActorIdentity(
       fanId: _activeFanId ?? resolved.fanId,
       roleId: resolved.roleId,
       label: resolved.label,
@@ -682,13 +684,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       LoomCardTheme.deriveFromAccent(accent, lightSurface: usesModernCardTheme),
       experience.themeOverride,
     );
-    final activePersona = _activePersona(experience);
+    final activeActorIdentity = _activeActorIdentity(experience);
     ActiveIdentityScope.of(
       identityContext,
     ).setCurrentActiveAccountId(_activeFanId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
-      roleId: activePersona.roleId,
+      roleId: activeActorIdentity.roleId,
       appShellConfiguration: community.appShellConfiguration,
       hasActiveMembership: _activeAccountHasActiveMembership,
     );
@@ -768,8 +770,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
 
   Future<void> _receiveWorkflow({
     required LoomWorkflowDefinition workflow,
-    required LoomPersonaDefinition persona,
-    required LoomWorkflowPersonaPolicy policy,
+    required LoomActorIdentity actorIdentity,
+    required LoomWorkflowRolePolicy policy,
     required BuildContext identityContext,
   }) async {
     final contract = productionWorkflowContractFor(
@@ -816,10 +818,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     _focusWorkflowAfterAction(
       workflow,
       identityContext: identityContext,
-      mutateState: () => _receivedWorkflowPersonaKeys.add(
-        workflowPersonaReceiptKey(
+      mutateState: () => _receivedWorkflowRoleKeys.add(
+        workflowRoleReceiptKey(
           workflowId: workflow.workflowId,
-          roleId: persona.roleId,
+          roleId: actorIdentity.roleId,
         ),
       ),
     );
@@ -836,13 +838,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
-    final activePersona = _activePersona(experience);
+    final activeActorIdentity = _activeActorIdentity(experience);
     ActiveIdentityScope.of(
       identityContext,
     ).setCurrentActiveAccountId(_activeFanId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
-      roleId: activePersona.roleId,
+      roleId: activeActorIdentity.roleId,
       appShellConfiguration: community.appShellConfiguration,
       hasActiveMembership: _activeAccountHasActiveMembership,
     );
@@ -855,11 +857,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           ),
       orElse: () => tabSpecs.first,
     );
-    final focusKey = '${activePersona.roleId}:${targetTab.tabId}';
+    final focusKey = '${activeActorIdentity.roleId}:${targetTab.tabId}';
     setState(() {
       mutateState();
-      _selectedTabIdByRoleId[activePersona.roleId] = targetTab.tabId;
-      _focusedWorkflowIdByPersonaTab[focusKey] = workflow.workflowId;
+      _selectedTabIdByRoleId[activeActorIdentity.roleId] = targetTab.tabId;
+      _focusedWorkflowIdByRoleTab[focusKey] = workflow.workflowId;
       _expandedWorkflowId = workflow.workflowId;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -878,13 +880,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     });
   }
 
-  Future<void> _showPersonaPicker(
+  Future<void> _showActorIdentityPicker(
     BuildContext context,
     LoomExperienceDefinition experience,
-    LoomPersonaDefinition activePersona,
+    LoomActorIdentity activeActorIdentity,
   ) async {
     final productionAuthSession = loomAuthSession;
-    final personas = personasForExtensionId(
+    final actorIdentities = actorIdentitiesForExtensionId(
       experience.extensionId,
       experience: experience,
     );
@@ -913,7 +915,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       builder: (context) {
         final dialogAccent = communityCard?.accent;
         return AlertDialog(
-          key: const ValueKey('persona-picker-dialog'),
+          key: const ValueKey('actor-identity-picker-dialog'),
           backgroundColor: communityCard?.resolvedFill,
           shape: communityCard != null
               ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
@@ -967,30 +969,34 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     ),
                   ],
                   const SizedBox(height: 8),
-                  for (final persona in personas)
+                  for (final actorIdentity in actorIdentities)
                     ListTile(
-                      key: ValueKey('persona-option-${persona.roleId}'),
-                      selected: persona.roleId == activePersona.roleId,
+                      key: ValueKey(
+                        'actor-identity-option-${actorIdentity.roleId}',
+                      ),
+                      selected:
+                          actorIdentity.roleId == activeActorIdentity.roleId,
                       selectedTileColor: dialogAccent?.withValues(alpha: 0.08),
                       leading: Icon(
-                        persona.roleId == activePersona.roleId
+                        actorIdentity.roleId == activeActorIdentity.roleId
                             ? Icons.radio_button_checked
                             : Icons.radio_button_unchecked,
                         color: dialogAccent,
                       ),
                       title: Text(
-                        persona.label,
+                        actorIdentity.label,
                         style: communityCard != null
                             ? TextStyle(color: communityCard.resolvedHeading)
                             : null,
                       ),
                       subtitle: Text(
-                        '${persona.roleLabel} - ${persona.description}',
+                        '${actorIdentity.roleLabel} - ${actorIdentity.description}',
                         style: communityCard != null
                             ? TextStyle(color: communityCard.resolvedBody)
                             : null,
                       ),
-                      onTap: () => Navigator.of(context).pop(persona.roleId),
+                      onTap: () =>
+                          Navigator.of(context).pop(actorIdentity.roleId),
                     ),
                   const Divider(),
                   if (productionAuthSession != null)
@@ -1013,7 +1019,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                           Navigator.of(context).pop('_production-login'),
                     ),
                   ListTile(
-                    key: const ValueKey('persona-sign-in-specific-person'),
+                    key: const ValueKey(
+                      'actor-identity-sign-in-specific-person',
+                    ),
                     leading: Icon(Icons.login, color: dialogAccent),
                     title: Text(
                       'Sign in as a specific person…',
@@ -1079,11 +1087,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       );
       return;
     }
-    final selectedPersona = personas.firstWhere(
-      (persona) => persona.roleId == selected,
+    final selectedActorIdentity = actorIdentities.firstWhere(
+      (actorIdentity) => actorIdentity.roleId == selected,
     );
     setState(() {
-      _selectedFanId = selectedPersona.fanId;
+      _selectedFanId = selectedActorIdentity.fanId;
       _selectedRoleId = selected;
       _selectedTabIdByRoleId.putIfAbsent(selected, () => 'home');
     });
@@ -1091,24 +1099,24 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
 
   Widget _workflowPresenterFor({
     required LoomExperienceDefinition experience,
-    required LoomPersonaDefinition activePersona,
+    required LoomActorIdentity activeActorIdentity,
     required LoomWorkflowDefinition workflow,
     required SurfacePresentationState state,
     required CommunityAppShellCustomizationSpec shellSpec,
     required String focusKey,
     required BuildContext identityContext,
   }) {
-    final policy = personaPolicyForWorkflow(
+    final policy = rolePolicyForWorkflow(
       experience.extensionId,
       workflow.workflowId,
       experience: experience,
     );
-    final view = personaWorkflowViewFor(
+    final view = roleWorkflowViewFor(
       extensionId: experience.extensionId,
       workflow: workflow,
-      roleId: activePersona.roleId,
+      roleId: activeActorIdentity.roleId,
       completedWorkflowIds: _completedWorkflowIds,
-      receivedWorkflowPersonaKeys: _receivedWorkflowPersonaKeys,
+      receivedWorkflowRoleKeys: _receivedWorkflowRoleKeys,
       experience: experience,
     );
     final workflowCardTheme = shellSpec.cardThemeFor(workflow);
@@ -1127,7 +1135,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           _confirmWorkflow(workflow, identityContext: identityContext),
       onReceivePressed: () => _receiveWorkflow(
         workflow: workflow,
-        persona: activePersona,
+        actorIdentity: activeActorIdentity,
         policy: policy,
         identityContext: identityContext,
       ),
@@ -1146,7 +1154,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
             _confirmWorkflow(workflow, identityContext: identityContext),
         onReceivePressed: () => _receiveWorkflow(
           workflow: workflow,
-          persona: activePersona,
+          actorIdentity: activeActorIdentity,
           policy: policy,
           identityContext: identityContext,
         ),
@@ -1194,7 +1202,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
     );
-    final activePersona = _activePersona(experience);
+    final activeActorIdentity = _activeActorIdentity(experience);
     final activeIdentity = ActiveIdentityScope.of(context);
     final activeSession = activeIdentity.authApi.currentSession?.account;
     final activeAccountDisplayName =
@@ -1204,12 +1212,12 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     ActiveIdentityScope.of(context).setCurrentActiveAccountId(_activeFanId);
     final tabSpecs = appShellTabsFor(
       experience: experience,
-      roleId: activePersona.roleId,
+      roleId: activeActorIdentity.roleId,
       appShellConfiguration: community.appShellConfiguration,
       hasActiveMembership: _activeAccountHasActiveMembership,
     );
     final selectedTabId = _selectedTabIdFor(
-      roleId: activePersona.roleId,
+      roleId: activeActorIdentity.roleId,
       tabs: tabSpecs,
     );
     final selectedTab = tabSpecs.firstWhere(
@@ -1225,12 +1233,12 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     ];
     final shellSpec = CommunityAppShellCustomizationSpec.fromSelection(
       experience: experience,
-      persona: activePersona,
+      actorIdentity: activeActorIdentity,
       tabs: tabSpecs,
       selectedTab: selectedTab,
       visibleWorkflowIds: visibleWorkflowIds,
       focusedWorkflowId:
-          _focusedWorkflowIdByPersonaTab['${activePersona.roleId}:${selectedTab.tabId}'] ??
+          _focusedWorkflowIdByRoleTab['${activeActorIdentity.roleId}:${selectedTab.tabId}'] ??
           (visibleWorkflowIds.isNotEmpty ? visibleWorkflowIds.first : null),
       expandedWorkflowId: _expandedWorkflowId,
     );
@@ -1255,7 +1263,8 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
               if (binding.tabId == selectedTab.tabId &&
                   action.kind == 'create' &&
                   (action.scope == null || action.scope == 'tab') &&
-                  action.byRoleIds?.contains(activePersona.roleId) == true)
+                  action.byRoleIds?.contains(activeActorIdentity.roleId) ==
+                      true)
                 _CreatableWorkflowAction(
                   workflowType: definition.key,
                   machine: definition.value,
@@ -1264,7 +1273,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                   responseTable: binding.responseTable,
                   resolvedInitialValues: resolveTabScopedPrefill(
                     action.prefill,
-                    activePersona.fanId,
+                    activeActorIdentity.fanId,
                   ),
                 ),
     ];
@@ -1280,7 +1289,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     if (action.kind == 'create' &&
                         action.scope == 'instance' &&
                         action.presentation == 'fab' &&
-                        action.byRoleIds?.contains(activePersona.roleId) ==
+                        action.byRoleIds?.contains(
+                              activeActorIdentity.roleId,
+                            ) ==
                             true)
                       if (experience.workflowDefinitions![action.workflowType ??
                               definition.key]
@@ -1298,7 +1309,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                           resolvedInitialValues: resolveInstanceScopedPrefill(
                             action.prefill,
                             focusedInstance,
-                            actorId: activePersona.fanId,
+                            actorId: activeActorIdentity.fanId,
                           ),
                         ),
     ];
@@ -1381,21 +1392,24 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           if (experience.resolvedNotificationPresentationStyle == 'bell')
             NotificationBellButton(
               extensionId: community.extensionId,
-              fanId: activePersona.fanId,
+              fanId: activeActorIdentity.fanId,
             ),
           IconButton(
             key: const ValueKey('messages-button'),
             tooltip: 'Messages',
             onPressed: () => setState(() {
-              _selectedTabIdByRoleId[activePersona.roleId] = 'messages';
+              _selectedTabIdByRoleId[activeActorIdentity.roleId] = 'messages';
             }),
             icon: const Icon(Icons.chat_bubble_outline),
           ),
           IconButton(
-            key: const ValueKey('persona-picker-button'),
+            key: const ValueKey('actor-identity-picker-button'),
             tooltip: 'Switch role',
-            onPressed: () =>
-                _showPersonaPicker(context, experience, activePersona),
+            onPressed: () => _showActorIdentityPicker(
+              context,
+              experience,
+              activeActorIdentity,
+            ),
             icon: const Icon(Icons.people_outline),
           ),
         ],
@@ -1557,9 +1571,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                             ],
                           ),
                           const SizedBox(height: 18),
-                          _PersonaStatusStrip(
-                            persona: activePersona,
-                            personaCount: personasForExtensionId(
+                          _ActorIdentityStatusStrip(
+                            actorIdentity: activeActorIdentity,
+                            actorIdentityCount: actorIdentitiesForExtensionId(
                               experience.extensionId,
                               experience: experience,
                             ).length,
@@ -1594,7 +1608,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
             _SelectedTabHeader(
               tab: selectedTab,
               accent: accent,
-              persona: activePersona,
+              actorIdentity: activeActorIdentity,
               modernTheme: shellSpec.theme.usesModernCardTheme
                   ? shellSpec.theme.tabCard
                   : null,
@@ -1605,11 +1619,11 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 selectedTab.tabId == 'home')
               NotificationFixedCard(
                 extensionId: community.extensionId,
-                fanId: activePersona.fanId,
+                fanId: activeActorIdentity.fanId,
               ),
             _TabNativeRenderer(
               experience: experience,
-              persona: activePersona,
+              actorIdentity: activeActorIdentity,
               selectedTab: selectedTab,
               sections: selectedSections,
               focusedWorkflowId: focusedWorkflowId,
@@ -1618,7 +1632,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
               theme: shellSpec.theme,
               workflowBuilder: (workflow, state) => _workflowPresenterFor(
                 experience: experience,
-                activePersona: activePersona,
+                activeActorIdentity: activeActorIdentity,
                 workflow: workflow,
                 state: state,
                 shellSpec: shellSpec,
@@ -1632,7 +1646,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 }
               }),
               onSelectCalendarDate: (workflowId) => setState(() {
-                _focusedWorkflowIdByPersonaTab[focusKey] = workflowId;
+                _focusedWorkflowIdByRoleTab[focusKey] = workflowId;
               }),
               onConfirmWorkflow: (workflow) =>
                   _confirmWorkflow(workflow, identityContext: context),
@@ -1660,10 +1674,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                         resolvedInitialValues: resolveInstanceScopedPrefill(
                           action.prefill,
                           instance,
-                          actorId: activePersona.fanId,
+                          actorId: activeActorIdentity.fanId,
                         ),
                       ),
-                      activePersona: activePersona,
+                      activeActorIdentity: activeActorIdentity,
                       presentationStyle: presentationStyle,
                     );
                   },
@@ -1718,7 +1732,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         selectedTabId: selectedTabId,
         accent: accent,
         onSelected: (tabId) => setState(() {
-          _selectedTabIdByRoleId[activePersona.roleId] = tabId;
+          _selectedTabIdByRoleId[activeActorIdentity.roleId] = tabId;
         }),
       ),
       floatingActionButton:
@@ -1733,7 +1747,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 if (experience.resolvedNotificationPresentationStyle == 'fab')
                   NotificationFab(
                     extensionId: community.extensionId,
-                    fanId: activePersona.fanId,
+                    fanId: activeActorIdentity.fanId,
                   ),
                 if (experience.resolvedNotificationPresentationStyle == 'fab' &&
                     (creatableActions.isNotEmpty ||
@@ -1748,7 +1762,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     tooltip: action.label,
                     onPressed: () => _openCreatableAction(
                       action: action,
-                      activePersona: activePersona,
+                      activeActorIdentity: activeActorIdentity,
                       presentationStyle: presentationStyle,
                     ),
                     icon: const Icon(Icons.add),
@@ -1764,7 +1778,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     popupContentBuilder: (action) => FutureBuilder<Widget>(
                       future: _creationContentFor(
                         action: action,
-                        activePersona: activePersona,
+                        activeActorIdentity: activeActorIdentity,
                       ),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) return snapshot.data!;
@@ -1776,7 +1790,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     },
                     onSelected: (action) => _openCreatableAction(
                       action: action,
-                      activePersona: activePersona,
+                      activeActorIdentity: activeActorIdentity,
                       presentationStyle: presentationStyle,
                     ),
                   ),

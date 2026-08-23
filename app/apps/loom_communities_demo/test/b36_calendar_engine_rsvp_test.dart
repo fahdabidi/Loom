@@ -19,7 +19,7 @@ void main() {
       final fixture = _writeTabletopCalendarFixture('same-date');
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'tabletop-member');
+      await selectActorIdentity(tester, 'tabletop-member');
       await tapCommunityTab(tester, 'calendar');
       await _waitForEvent(tester, _gameNightId);
 
@@ -55,7 +55,7 @@ void main() {
       );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'tabletop-member');
+      await selectActorIdentity(tester, 'tabletop-member');
       await tapCommunityTab(tester, 'calendar');
       await _waitForEvent(tester, _gameNightId);
 
@@ -121,7 +121,7 @@ void main() {
       final fixture = _writeTabletopCalendarFixture('maybe');
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'tabletop-member');
+      await selectActorIdentity(tester, 'tabletop-member');
       await tapCommunityTab(tester, 'calendar');
       await _waitForEvent(tester, _gameNightId);
 
@@ -136,7 +136,7 @@ void main() {
       final fixture = _writeTabletopCalendarFixture('declined');
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'tabletop-member');
+      await selectActorIdentity(tester, 'tabletop-member');
       await tapCommunityTab(tester, 'calendar');
       await _waitForEvent(tester, _gameNightId);
 
@@ -154,7 +154,7 @@ void main() {
       );
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'tabletop-member');
+      await selectActorIdentity(tester, 'tabletop-member');
       await tapCommunityTab(tester, 'calendar');
       await _waitForEvent(tester, _tournamentId);
 
@@ -185,7 +185,7 @@ void main() {
       final fixture = _writeTabletopCalendarFixture('facts');
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'tabletop-member');
+      await selectActorIdentity(tester, 'tabletop-member');
       await tapCommunityTab(tester, 'calendar');
       await _waitForEvent(tester, _gameNightId);
 

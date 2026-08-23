@@ -24,7 +24,7 @@ class ParsedCommunityPackage {
     required this.displayName,
     required this.extensionId,
     required this.specVersion,
-    required this.personas,
+    required this.roles,
     required this.rawWorkflowDefinitions,
     required this.workflowDefinitions,
   });
@@ -37,7 +37,7 @@ class ParsedCommunityPackage {
   final String displayName;
   final String extensionId;
   final int specVersion;
-  final List<MigrationPersona> personas;
+  final List<MigrationRole> roles;
   final Map<String, Object?> rawWorkflowDefinitions;
   final Map<String, LoomWorkflowStateMachine> workflowDefinitions;
 
@@ -105,34 +105,30 @@ class ParsedCommunityPackage {
       );
     }
 
-    final rawPersonas = experience['roles'];
-    if (rawPersonas is! List || rawPersonas.isEmpty) {
+    final rawRoles = experience['roles'];
+    if (rawRoles is! List || rawRoles.isEmpty) {
       throw const FormatException('experience.roles must not be empty.');
     }
-    const personasPath = 'experience.roles';
-    final personas = <MigrationPersona>[];
-    for (var index = 0; index < rawPersonas.length; index++) {
-      final raw = rawPersonas[index];
+    const rolesPath = 'experience.roles';
+    final roles = <MigrationRole>[];
+    for (var index = 0; index < rawRoles.length; index++) {
+      final raw = rawRoles[index];
       if (raw is! Map) {
-        throw FormatException('$personasPath[$index] must be an object.');
+        throw FormatException('$rolesPath[$index] must be an object.');
       }
-      final persona = Map<String, dynamic>.from(raw);
-      personas.add(
-        MigrationPersona(
+      final role = Map<String, dynamic>.from(raw);
+      roles.add(
+        MigrationRole(
           roleId: _requiredString(
-            persona,
+            role,
             'roleId',
-            prefix: '$personasPath[$index].',
+            prefix: '$rolesPath[$index].',
           ),
-          label: _requiredString(
-            persona,
-            'label',
-            prefix: '$personasPath[$index].',
-          ),
+          label: _requiredString(role, 'label', prefix: '$rolesPath[$index].'),
           roleLabel: _requiredString(
-            persona,
+            role,
             'roleLabel',
-            prefix: '$personasPath[$index].',
+            prefix: '$rolesPath[$index].',
           ),
         ),
       );
@@ -147,15 +143,15 @@ class ParsedCommunityPackage {
       displayName: _requiredString(decoded, 'displayName'),
       extensionId: _requiredString(decoded, 'extensionId'),
       specVersion: specVersion,
-      personas: List.unmodifiable(personas),
+      roles: List.unmodifiable(roles),
       rawWorkflowDefinitions: Map.unmodifiable(rawDefinitions),
       workflowDefinitions: Map.unmodifiable(parsedDefinitions),
     );
   }
 }
 
-class MigrationPersona {
-  const MigrationPersona({
+class MigrationRole {
+  const MigrationRole({
     required this.roleId,
     required this.label,
     required this.roleLabel,

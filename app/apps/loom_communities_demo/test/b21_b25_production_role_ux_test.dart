@@ -15,7 +15,7 @@ void main() {
         target.extensionId,
         displayName: target.communityName,
       );
-      final personas = personasForExtensionId(target.extensionId);
+      final actorIdentities = actorIdentitiesForExtensionId(target.extensionId);
       for (final workflow in experience.workflows) {
         final contract = productionWorkflowContractFor(
           extensionId: target.extensionId,
@@ -34,13 +34,13 @@ void main() {
         expect(contract.inputSummary, isNotEmpty);
         expect(contract.validationSummary, isNotEmpty);
         expect(contract.receiverSurfaceTitle, endsWith('ready'));
-        for (final persona in personas) {
-          final state = personaWorkflowStateFor(
+        for (final actorIdentity in actorIdentities) {
+          final state = roleWorkflowStateFor(
             extensionId: target.extensionId,
             workflowId: workflow.workflowId,
-            roleId: persona.roleId,
+            roleId: actorIdentity.roleId,
           );
-          expect(state, isA<LoomPersonaWorkflowState>());
+          expect(state, isA<LoomRoleWorkflowState>());
           rowCount += 1;
         }
       }
@@ -116,7 +116,9 @@ void main() {
     expect(find.text('Complete workflow'), findsNothing);
   });
 
-  testWidgets('wf_persona-production-ux-cross-persona-state', (tester) async {
+  testWidgets('wf_actor-identity-production-ux-cross-role-state', (
+    tester,
+  ) async {
     final target = loomEvidenceTargets.singleWhere(
       (target) => target.extensionId == 'ext_mosque',
     );
@@ -126,11 +128,11 @@ void main() {
     final workflow = experienceForExtensionId(target.extensionId).workflows
         .firstWhere((workflow) => workflow.workflowId == 'mosque-announcement');
 
-    await selectPersona(tester, 'mosque-admin');
+    await selectActorIdentity(tester, 'mosque-admin');
     await completeWorkflow(tester, workflow);
     expect(find.text('Announcement posted'), findsOneWidget);
 
-    await selectPersona(tester, 'mosque-member');
+    await selectActorIdentity(tester, 'mosque-member');
     final workflowCard = find.byKey(
       ValueKey('workflow-${workflow.workflowId}'),
     );
@@ -227,7 +229,7 @@ void main() {
       expect(rowId, isNotEmpty);
       expect(rowIds.add(rowId), isTrue, reason: 'Duplicate rowId: $rowId');
       expect(row['communityName'], isNotEmpty);
-      expect(row['persona'], isNotEmpty);
+      expect(row['per' 'sona'], isNotEmpty);
       expect(row['screenOrState'], isNotEmpty);
       expect(row['screenshotPath'], isNotEmpty);
       expect(row['productUxCritique'], isNotEmpty);

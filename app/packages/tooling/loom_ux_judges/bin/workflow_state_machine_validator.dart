@@ -128,20 +128,17 @@ WorkflowDefinitionsBundle _loadDefinitions(String path) {
   final dir = Directory(path);
   if (dir.existsSync()) {
     final result = <String, LoomWorkflowStateMachine>{};
-    final allPersonas = <String>{};
+    final allRoles = <String>{};
     for (final entity in dir.listSync()) {
       if (entity is File &&
           (entity.path.endsWith('.json') || entity.path.endsWith('.jsonc'))) {
         final parsed = _parseDefinitionsFile(entity);
         result.addAll(parsed.workflows);
-        allPersonas.addAll(parsed.knownRoleIds);
+        allRoles.addAll(parsed.knownRoleIds);
       }
     }
 
-    return WorkflowDefinitionsBundle(
-      workflows: result,
-      knownRoleIds: allPersonas,
-    );
+    return WorkflowDefinitionsBundle(workflows: result, knownRoleIds: allRoles);
   }
 
   throw FileSystemException('Path not found', path);
@@ -154,11 +151,11 @@ WorkflowDefinitionsBundle _parseDefinitionsFile(File file) {
   // Support both plain definitions map and the marketplace fixture's
   // {"workflowDefinitions": {...}, "workflowInstances": [...]} shape
   final defs = json['workflowDefinitions'] as Map<String, dynamic>? ?? json;
-  final knownPersonas = <String>{};
-  if (json['personas'] is List<dynamic>) {
-    for (final persona in (json['personas'] as List<dynamic>)) {
-      if (persona is String && persona.isNotEmpty) {
-        knownPersonas.add(persona);
+  final knownRoles = <String>{};
+  if (json['roles'] is List<dynamic>) {
+    for (final role in (json['roles'] as List<dynamic>)) {
+      if (role is String && role.isNotEmpty) {
+        knownRoles.add(role);
       }
     }
   }
@@ -170,7 +167,7 @@ WorkflowDefinitionsBundle _parseDefinitionsFile(File file) {
 
   return WorkflowDefinitionsBundle(
     workflows: workflows,
-    knownRoleIds: knownPersonas,
+    knownRoleIds: knownRoles,
   );
 }
 

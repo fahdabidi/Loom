@@ -11,9 +11,15 @@ Future<void> main(List<String> args) async {
   await startValidatorServer(port: port);
   stdout.writeln('Loom community package validator listening on port $port');
   stdout.writeln('  GET  /health');
-  stdout.writeln('  POST /validate      (body: community package JSON or JSONC)');
-  stdout.writeln('  POST /package       (body: same as /validate; returns a downloadable zip)');
-  stdout.writeln('  POST /package.json  (body: same as /validate; returns the same pair as JSON)');
+  stdout.writeln(
+    '  POST /validate      (body: community package JSON or JSONC)',
+  );
+  stdout.writeln(
+    '  POST /package       (body: same as /validate; returns a downloadable zip)',
+  );
+  stdout.writeln(
+    '  POST /package.json  (body: same as /validate; returns the same pair as JSON)',
+  );
 }
 
 int? _intArg(List<String> args, String flag) {

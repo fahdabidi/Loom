@@ -102,7 +102,7 @@ class _WorkflowSurfacePresenter extends StatelessWidget {
 
   final String extensionId;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final SurfacePresentationState state;
   final LoomCardTheme theme;
 
@@ -246,7 +246,7 @@ class _MinimizedWorkflowSurface extends StatelessWidget {
   });
 
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final LoomProductionWorkflowContract contract;
   final LoomCardTheme theme;
 
@@ -418,7 +418,7 @@ class _WorkflowTile extends StatelessWidget {
 
   final String extensionId;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final SurfacePresentationState state;
 
   /// The cascade-resolved accent (community -> tab -> workflow) to use when
@@ -512,11 +512,11 @@ class _WorkflowTile extends StatelessWidget {
                 Icon(
                   complete
                       ? Icons.check_circle_outline
-                      : view.state == LoomPersonaWorkflowState.receiver
+                      : view.state == LoomRoleWorkflowState.receiver
                       ? Icons.notifications_none
-                      : view.state == LoomPersonaWorkflowState.actor
+                      : view.state == LoomRoleWorkflowState.actor
                       ? Icons.radio_button_unchecked
-                      : view.state == LoomPersonaWorkflowState.readOnly
+                      : view.state == LoomRoleWorkflowState.readOnly
                       ? Icons.visibility_outlined
                       : Icons.radio_button_unchecked,
                   color: foreground,
@@ -561,9 +561,9 @@ class _WorkflowTile extends StatelessWidget {
                       ),
                       Offstage(
                         child: Text(
-                          view.personaRationale,
+                          view.roleRationale,
                           key: ValueKey(
-                            'workflow-persona-state-${workflow.workflowId}',
+                            'workflow-role-state-${workflow.workflowId}',
                           ),
                         ),
                       ),
@@ -658,7 +658,7 @@ class _RichWorkflowTile extends StatelessWidget {
   final String extensionId;
   final _RichWorkflowSpec spec;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final SurfacePresentationState state;
 
   /// Non-null only for communities that opted into the modern card theme —
@@ -887,8 +887,8 @@ class _RichWorkflowTile extends StatelessWidget {
               ),
             Offstage(
               child: Text(
-                view.personaRationale,
-                key: ValueKey('workflow-persona-state-${workflow.workflowId}'),
+                view.roleRationale,
+                key: ValueKey('workflow-role-state-${workflow.workflowId}'),
               ),
             ),
             if (view.completed)
@@ -933,7 +933,7 @@ class _RichProductSurfaceTile extends StatelessWidget {
   final String extensionId;
   final _RichWorkflowSpec spec;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 

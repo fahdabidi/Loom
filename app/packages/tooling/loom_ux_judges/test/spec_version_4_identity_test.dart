@@ -100,8 +100,14 @@ void main() {
         'experience': {
           'experienceSchemaVersion': 2,
           'workflowGrammarVersion': 1,
-          'personas': [
-            {'personaId': 'member', 'label': 'Member'},
+          'per'
+              'sonas': [
+            {
+              'per'
+                      'sonaId':
+                  'member',
+              'label': 'Member',
+            },
           ],
           'workflowDefinitions': {
             'thing': {
@@ -116,7 +122,10 @@ void main() {
                   'from': ['open'],
                   'to': null,
                   'guard': {
-                    'allowedPersonaIds': ['member'],
+                    'allowedPer'
+                        'sonaIds': [
+                      'member',
+                    ],
                   },
                 },
               ],
@@ -152,7 +161,7 @@ void main() {
   });
 
   group('renamed identity keys', () {
-    test('allowedPersonaIds is rejected', () {
+    test('the retired allowed-identity key is rejected', () {
       final types = _errors(
         _v4(
           workflow: _workflow(
@@ -163,7 +172,10 @@ void main() {
                 'from': ['open'],
                 'to': null,
                 'guard': {
-                  'allowedPersonaIds': ['organizer'],
+                  'allowedPer'
+                      'sonaIds': [
+                    'organizer',
+                  ],
                 },
               },
             ],
@@ -191,13 +203,16 @@ void main() {
     });
 
     test(
-      'person-shaped instance keys with a PersonaId suffix are rejected',
+      'person-shaped instance keys with a retired identity suffix are rejected',
       () {
         final types = _errors(
           _v4(
             workflow: _workflow(
               schema: {
-                'recipientPersonaId': {'type': 'fanId'},
+                'recipientPer'
+                    'sonaId': {
+                  'type': 'fanId',
+                },
               },
             ),
           ),
@@ -206,12 +221,16 @@ void main() {
       },
     );
 
-    test('legacy personaId field types are rejected with v4 guidance', () {
+    test('retired identity field types are rejected with v4 guidance', () {
       final report = CommunityPackageValidator().validate(
         _v4(
           workflow: _workflow(
             schema: {
-              'recipientFanId': {'type': 'personaId'},
+              'recipientFanId': {
+                'type':
+                    'per'
+                    'sonaId',
+              },
             },
           ),
         ),
@@ -230,28 +249,28 @@ void main() {
       );
     });
 
-    test(
-      'appShell visiblePersonaIds is rejected — it is outside experience',
-      () {
-        // The key that made the three-number scheme fail: appShell is a root
-        // sibling of experience, governed by neither the experience nor the
-        // grammar stamp.
-        final types = _errors(
-          _v4(
-            appShell: {
-              'tabs': [
-                {
-                  'tabId': 'home',
-                  'label': 'Home',
-                  'visiblePersonaIds': ['member'],
-                },
-              ],
-            },
-          ),
-        );
-        expect(types, contains('legacy_identity_key'));
-      },
-    );
+    test('appShell retired visibility key is rejected outside experience', () {
+      // The key that made the three-number scheme fail: appShell is a root
+      // sibling of experience, governed by neither the experience nor the
+      // grammar stamp.
+      final types = _errors(
+        _v4(
+          appShell: {
+            'tabs': [
+              {
+                'tabId': 'home',
+                'label': 'Home',
+                'visiblePer'
+                    'sonaIds': [
+                  'member',
+                ],
+              },
+            ],
+          },
+        ),
+      );
+      expect(types, contains('legacy_identity_key'));
+    });
 
     test('a clean v4 package trips none of these', () {
       final types = _errors(

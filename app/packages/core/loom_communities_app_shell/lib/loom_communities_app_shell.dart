@@ -31,7 +31,7 @@ part 'src/part08_garden_and_helpers.dart';
 part 'src/part09_action_surfaces.dart';
 part 'src/part10_result_and_extras.dart';
 part 'src/part11_shell_models.dart';
-part 'src/part12_persona_and_tabs.dart';
+part 'src/part12_actor_identity_and_tabs.dart';
 part 'src/part13_workflow_copy_catalog.dart';
 part 'src/part14_copy_helpers.dart';
 part 'src/part15_evidence_catalog.dart';

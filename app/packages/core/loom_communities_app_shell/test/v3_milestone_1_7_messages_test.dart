@@ -240,7 +240,7 @@ void main() {
       roleId: _memberId,
     );
     await tester.pumpWidget(_host(first, firstAuth));
-    await selectTestTabletopPersona(tester, _memberId);
+    await selectTestTabletopActorIdentity(tester, _memberId);
     await _openMessages(
       tester,
       find.byKey(const ValueKey('engine-native-list-item-messages-one-0')),
@@ -274,7 +274,7 @@ void main() {
       roleId: _memberId,
     );
     await tester.pumpWidget(_host(second, secondAuth));
-    await selectTestTabletopPersona(tester, _memberId);
+    await selectTestTabletopActorIdentity(tester, _memberId);
     await _openMessages(
       tester,
       find.byKey(const ValueKey('engine-native-list-item-messages-one-0')),
@@ -298,7 +298,7 @@ void main() {
       roleId: _memberId,
     );
     await tester.pumpWidget(_host(community, auth));
-    await selectTestTabletopPersona(tester, _memberId);
+    await selectTestTabletopActorIdentity(tester, _memberId);
     final threadItem = find.text('Persistence thread');
     await _openMessages(tester, threadItem);
     await _tapVisible(
@@ -331,7 +331,7 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpWidget(_host(community, auth));
-    await selectTestTabletopPersona(tester, _memberId);
+    await selectTestTabletopActorIdentity(tester, _memberId);
     await _openMessages(tester, threadItem);
     expect(
       find.text('This reply must survive reconstruction.'),
@@ -351,7 +351,7 @@ void main() {
       roleId: _memberId,
     );
     await tester.pumpWidget(_host(community, auth));
-    await selectTestTabletopPersona(tester, _memberId);
+    await selectTestTabletopActorIdentity(tester, _memberId);
     final threadItem = find.text('Archive persistence thread');
     await _openMessages(tester, threadItem);
     await _tapVisible(
@@ -363,7 +363,7 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpWidget(_host(community, auth));
-    await selectTestTabletopPersona(tester, _memberId);
+    await selectTestTabletopActorIdentity(tester, _memberId);
     await _openMessages(
       tester,
       find.byKey(const ValueKey('engine-native-list-empty-messages')),

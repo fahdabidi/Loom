@@ -348,7 +348,7 @@ void _expectCommunityListReady(WidgetTester tester) {
   }
 }
 
-Future<void> selectPersona(WidgetTester tester, String fanId) async {
+Future<void> selectActorIdentity(WidgetTester tester, String fanId) async {
   await _waitForCommunityEntryResolution(tester);
   // Shipped engine-native packages bind role policy to an active account, so
   // enter through the real account form. Metadata fixtures remain on the
@@ -360,40 +360,52 @@ Future<void> selectPersona(WidgetTester tester, String fanId) async {
     await _createEvidenceAccount(tester, fanId);
     await _waitForEvidenceFinder(
       tester,
-      find.byKey(const ValueKey('persona-picker-button')),
+      find.byKey(const ValueKey('actor-identity-picker-button')),
       description: 'community content after signing up as $fanId',
     );
     return;
   }
 
-  final pickerButton = find.byKey(const ValueKey('persona-picker-button'));
+  final pickerButton = find.byKey(
+    const ValueKey('actor-identity-picker-button'),
+  );
   await _waitForEvidenceFinder(
     tester,
     pickerButton,
-    description: 'persona picker while selecting $fanId',
+    description: 'actor identity picker while selecting $fanId',
   );
   await tester.tap(pickerButton);
   await tester.pumpAndSettle();
-  expect(find.byKey(const ValueKey('persona-picker-dialog')), findsOneWidget);
+  expect(
+    find.byKey(const ValueKey('actor-identity-picker-dialog')),
+    findsOneWidget,
+  );
 
-  final personaOption = find.byKey(ValueKey('persona-option-$fanId'));
-  if (personaOption.evaluate().isEmpty) {
+  final actorIdentityOption = find.byKey(
+    ValueKey('actor-identity-option-$fanId'),
+  );
+  if (actorIdentityOption.evaluate().isEmpty) {
     fail(
-      'Persona $fanId was not available in the persona picker. '
+      'Actor identity $fanId was not available in the actor identity picker. '
       '${_visibleScreenDescription()}',
     );
   }
-  final selectedPersona = tester.widget<ListTile>(personaOption).selected;
+  final selectedActorIdentity = tester
+      .widget<ListTile>(actorIdentityOption)
+      .selected;
   final signedInAccount = find.textContaining('Signed in as ');
-  if (signedInAccount.evaluate().isEmpty || selectedPersona) {
-    await tester.tap(personaOption);
+  if (signedInAccount.evaluate().isEmpty || selectedActorIdentity) {
+    await tester.tap(actorIdentityOption);
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('persona-picker-dialog')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('actor-identity-picker-dialog')),
+      findsNothing,
+    );
     return;
   }
 
   final specificPerson = find.byKey(
-    const ValueKey('persona-sign-in-specific-person'),
+    const ValueKey('actor-identity-sign-in-specific-person'),
   );
   await tester.ensureVisible(specificPerson);
   await tester.tap(specificPerson);
@@ -454,16 +466,18 @@ Future<void> signInEvidenceAccount(
 ) async {
   await _waitForCommunityEntryResolution(tester);
   if (find.byKey(const ValueKey('community-entry-gate')).evaluate().isEmpty) {
-    final pickerButton = find.byKey(const ValueKey('persona-picker-button'));
+    final pickerButton = find.byKey(
+      const ValueKey('actor-identity-picker-button'),
+    );
     await _waitForEvidenceFinder(
       tester,
       pickerButton,
-      description: 'persona picker before signing in as $displayName',
+      description: 'actor identity picker before signing in as $displayName',
     );
     await tester.tap(pickerButton);
     await tester.pumpAndSettle();
     final specificPerson = find.byKey(
-      const ValueKey('persona-sign-in-specific-person'),
+      const ValueKey('actor-identity-sign-in-specific-person'),
     );
     await tester.ensureVisible(specificPerson);
     await tester.tap(specificPerson);
@@ -488,7 +502,7 @@ Future<void> signInEvidenceAccount(
   await tester.tap(accountRow.first, warnIfMissed: false);
   await _waitForEvidenceFinder(
     tester,
-    find.byKey(const ValueKey('persona-picker-button')),
+    find.byKey(const ValueKey('actor-identity-picker-button')),
     description: 'community content after signing in as $displayName',
   );
 }
@@ -511,11 +525,9 @@ Future<void> _waitForCommunityEntryResolution(WidgetTester tester) async {
 
 Future<void> _createEvidenceAccount(WidgetTester tester, String fanId) async {
   final displayName = find.byKey(const ValueKey('open-signup-display-name'));
-  final personaDropdown = find.byKey(
-    const ValueKey('open-signup-persona-dropdown'),
-  );
+  final roleDropdown = find.byKey(const ValueKey('open-signup-role-dropdown'));
   final submit = find.byKey(const ValueKey('open-signup-submit'));
-  for (final finder in [displayName, personaDropdown, submit]) {
+  for (final finder in [displayName, roleDropdown, submit]) {
     if (finder.evaluate().isEmpty) {
       fail(
         'The community entry account form was incomplete while selecting '
@@ -524,20 +536,20 @@ Future<void> _createEvidenceAccount(WidgetTester tester, String fanId) async {
     }
   }
 
-  await tester.ensureVisible(personaDropdown);
-  await tester.tap(personaDropdown);
+  await tester.ensureVisible(roleDropdown);
+  await tester.tap(roleDropdown);
   await tester.pumpAndSettle();
-  final personaChoice = find.byKey(ValueKey('open-signup-persona-$fanId'));
-  if (personaChoice.evaluate().isEmpty) {
+  final roleChoice = find.byKey(ValueKey('open-signup-role-$fanId'));
+  if (roleChoice.evaluate().isEmpty) {
     fail(
-      'Persona $fanId was not offered by the community entry account '
+      'Actor identity $fanId was not offered by the community entry account '
       'form. ${_visibleScreenDescription()}',
     );
   }
   // DropdownMenuItem renders the selected value in the button and another
   // copy in the open modal route. The overlay copy is last in paint order;
-  // target it explicitly so selecting the initial persona is unambiguous.
-  await tester.tap(personaChoice.last, warnIfMissed: false);
+  // target it explicitly so selecting the initial actorIdentity is unambiguous.
+  await tester.tap(roleChoice.last, warnIfMissed: false);
   await tester.pumpAndSettle();
 
   await tester.ensureVisible(displayName);
@@ -600,8 +612,8 @@ String _visibleScreenDescription() {
     find.byKey(const ValueKey('load-local-community-button')),
   );
   addMarker(
-    'personaPicker',
-    find.byKey(const ValueKey('persona-picker-dialog')),
+    'actorIdentityPicker',
+    find.byKey(const ValueKey('actor-identity-picker-dialog')),
   );
   addMarker('localExtensionScreen', find.byType(LocalExtensionScreen));
   addMarker('alertDialog', find.byType(AlertDialog));
@@ -806,8 +818,8 @@ Future<void> completeWorkflowAsActor(
   required String extensionId,
   required LoomWorkflowDefinition workflow,
 }) async {
-  final policy = personaPolicyForWorkflow(extensionId, workflow.workflowId);
-  await selectPersona(tester, policy.actorRoleIds.first);
+  final policy = rolePolicyForWorkflow(extensionId, workflow.workflowId);
+  await selectActorIdentity(tester, policy.actorRoleIds.first);
   await completeWorkflow(tester, workflow);
 }
 
@@ -983,8 +995,8 @@ Future<ShippedEvidencePackage> readShippedEvidencePackage(
       parsedExperience.workflowDefinitions!.isEmpty ||
       parsedExperience.workflowInstances == null ||
       parsedExperience.workflowInstances!.isEmpty ||
-      parsedExperience.personas == null ||
-      parsedExperience.personas!.isEmpty) {
+      parsedExperience.actorIdentities == null ||
+      parsedExperience.actorIdentities!.isEmpty) {
     throw StateError(
       'Shipped community package ${target.extensionId} must parse genuine '
       'roles, workflow definitions, and workflow instances.',

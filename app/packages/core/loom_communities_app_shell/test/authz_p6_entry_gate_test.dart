@@ -24,7 +24,7 @@ const _entryWorkflowDefinitions = <String, Object?>{
   },
 };
 
-const _openPersona = <String, Object?>{
+const _openRole = <String, Object?>{
   'roleId': 'open-member',
   'label': 'Open member',
   'roleLabel': 'Member',
@@ -32,7 +32,7 @@ const _openPersona = <String, Object?>{
   'accessMode': 'open',
 };
 
-const _approvalPersona = <String, Object?>{
+const _approvalRole = <String, Object?>{
   'roleId': 'approval-member',
   'label': 'Approval member',
   'roleLabel': 'Member',
@@ -40,7 +40,7 @@ const _approvalPersona = <String, Object?>{
   'accessMode': 'requiresApproval',
 };
 
-const _invitePersona = <String, Object?>{
+const _inviteRole = <String, Object?>{
   'roleId': 'invite-member',
   'label': 'Invite member',
   'roleLabel': 'Member',
@@ -51,7 +51,7 @@ const _invitePersona = <String, Object?>{
 LocalInstalledCommunity _engineCommunity({
   required String communityId,
   required String displayName,
-  required List<Map<String, Object?>> personas,
+  required List<Map<String, Object?>> actorIdentities,
 }) {
   return LocalInstalledCommunity(
     communityId: communityId,
@@ -64,14 +64,14 @@ LocalInstalledCommunity _engineCommunity({
     specVersion: currentCommunitySpecVersion,
     experienceConfiguration: <String, Object?>{
       'tagline': 'AuthZ.P6 entry gate fixture',
-      'roles': personas,
+      'roles': actorIdentities,
       'workflowDefinitions': _entryWorkflowDefinitions,
       'workflowInstances': <Object?>[
         <String, Object?>{
           'instanceId': 'entry-content-1',
           'workflowType': 'entry-content',
           'currentState': 'ready',
-          'createdByFanId': personas.first['roleId'],
+          'createdByFanId': actorIdentities.first['roleId'],
           'instanceData': <String, Object?>{'title': 'Community content'},
         },
       ],
@@ -110,7 +110,7 @@ void main() {
           _engineCommunity(
             communityId: 'open',
             displayName: 'Open community',
-            personas: [_openPersona],
+            actorIdentities: [_openRole],
           ),
         ),
       );
@@ -142,7 +142,7 @@ void main() {
           _engineCommunity(
             communityId: 'approval',
             displayName: 'Approval community',
-            personas: [_approvalPersona],
+            actorIdentities: [_approvalRole],
           ),
         ),
       );
@@ -181,7 +181,7 @@ void main() {
           _engineCommunity(
             communityId: 'invite',
             displayName: 'Invite community',
-            personas: [_invitePersona],
+            actorIdentities: [_inviteRole],
           ),
         ),
       );
@@ -197,7 +197,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('invite-redeem-persona-dropdown')),
+        find.byKey(const ValueKey('invite-redeem-role-dropdown')),
         findsOneWidget,
       );
       expect(

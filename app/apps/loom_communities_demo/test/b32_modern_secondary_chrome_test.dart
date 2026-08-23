@@ -15,101 +15,100 @@ Color _lightFillFor(Color accent) {
 
 void main() {
   group('B32 modern secondary chrome and controls', () {
-    testWidgets(
-      'wf_themed-community-gets-accent-chrome-and-solid-accent-buttons',
-      (tester) async {
-        final fixture = _writeChromeFixture();
-        await tester.pumpWidget(const LoomCommunitiesDemoApp());
-        await _installAndOpen(tester, fixture);
+    testWidgets('wf_themed-community-gets-accent-chrome-and-solid-accent-buttons', (
+      tester,
+    ) async {
+      final fixture = _writeChromeFixture();
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await _installAndOpen(tester, fixture);
 
-        // Sponsored banner: ink text on the themed fill, not hardcoded white.
-        final bannerText = tester.widget<Text>(
-          find.text('No sponsored message right now.'),
-        );
-        expect(bannerText.style?.color, isNot(Colors.white));
-        final bannerBox = tester.widget<DecoratedBox>(
-          find
-              .ancestor(
-                of: find.text('No sponsored message right now.'),
-                matching: find.byType(DecoratedBox),
-              )
-              .first,
-        );
-        expect(
-          (bannerBox.decoration as BoxDecoration).color,
-          _lightFillFor(_accent),
-        );
+      // Sponsored banner: ink text on the themed fill, not hardcoded white.
+      final bannerText = tester.widget<Text>(
+        find.text('No sponsored message right now.'),
+      );
+      expect(bannerText.style?.color, isNot(Colors.white));
+      final bannerBox = tester.widget<DecoratedBox>(
+        find
+            .ancestor(
+              of: find.text('No sponsored message right now.'),
+              matching: find.byType(DecoratedBox),
+            )
+            .first,
+      );
+      expect(
+        (bannerBox.decoration as BoxDecoration).color,
+        _lightFillFor(_accent),
+      );
 
-        // Persona status strip inside the hero card: accent-tinted, not the
-        // gray foreground-tinted wash.
-        final personaStrip = tester.widget<DecoratedBox>(
-          find.byKey(const ValueKey('active-persona-card')),
-        );
-        expect(
-          (personaStrip.decoration as BoxDecoration).color,
-          _accent.withValues(alpha: 0.08),
-        );
+      // Actor identity status strip inside the hero card: accent-tinted, not the
+      // gray foreground-tinted wash.
+      final actorIdentityStrip = tester.widget<DecoratedBox>(
+        find.byKey(const ValueKey('active-actor-identity-card')),
+      );
+      expect(
+        (actorIdentityStrip.decoration as BoxDecoration).color,
+        _accent.withValues(alpha: 0.08),
+      );
 
-        // V4 renders the real transition row directly on its seeded instance
-        // card. The primary action is a solid accent pill with a white label.
-        const instanceId = 'tabletop-game-night-rsvp';
-        expect(
-          find.byKey(const ValueKey('engine-native-list-root-home')),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(const ValueKey('generic-instance-card-$instanceId')),
-          findsOneWidget,
-        );
-        final goingFinder = find.byKey(
-          const ValueKey('generic-instance-$instanceId-action-going'),
-        );
-        await waitForEngineNativeWidget(
-          tester,
-          goingFinder,
-          description: 'member RSVP transition controls',
-        );
-        final going = tester.widget<FilledButton>(goingFinder);
-        expect(going.style?.backgroundColor?.resolve({}), _accent);
-        expect(going.style?.foregroundColor?.resolve({}), Colors.white);
+      // V4 renders the real transition row directly on its seeded instance
+      // card. The primary action is a solid accent pill with a white label.
+      const instanceId = 'tabletop-game-night-rsvp';
+      expect(
+        find.byKey(const ValueKey('engine-native-list-root-home')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('generic-instance-card-$instanceId')),
+        findsOneWidget,
+      );
+      final goingFinder = find.byKey(
+        const ValueKey('generic-instance-$instanceId-action-going'),
+      );
+      await waitForEngineNativeWidget(
+        tester,
+        goingFinder,
+        description: 'member RSVP transition controls',
+      );
+      final going = tester.widget<FilledButton>(goingFinder);
+      expect(going.style?.backgroundColor?.resolve({}), _accent);
+      expect(going.style?.foregroundColor?.resolve({}), Colors.white);
 
-        final maybe = tester.widget<OutlinedButton>(
-          find.byKey(
-            const ValueKey('generic-instance-$instanceId-action-maybe'),
-          ),
-        );
-        expect(
-          maybe.style?.backgroundColor?.resolve({}),
-          _accent.withValues(alpha: 0.12),
-        );
+      final maybe = tester.widget<OutlinedButton>(
+        find.byKey(const ValueKey('generic-instance-$instanceId-action-maybe')),
+      );
+      expect(
+        maybe.style?.backgroundColor?.resolve({}),
+        _accent.withValues(alpha: 0.12),
+      );
 
-        final errorColor = Colors.red.shade700;
-        final cantGo = tester.widget<FilledButton>(
-          find.byKey(
-            const ValueKey('generic-instance-$instanceId-action-cant-go'),
-          ),
-        );
-        expect(cantGo.style?.backgroundColor?.resolve({}), errorColor);
-        expect(cantGo.style?.backgroundColor?.resolve({}), isNot(_accent));
+      final errorColor = Colors.red.shade700;
+      final cantGo = tester.widget<FilledButton>(
+        find.byKey(
+          const ValueKey('generic-instance-$instanceId-action-cant-go'),
+        ),
+      );
+      expect(cantGo.style?.backgroundColor?.resolve({}), errorColor);
+      expect(cantGo.style?.backgroundColor?.resolve({}), isNot(_accent));
 
-        await scrollFinderIntoViewport(tester, goingFinder);
-        await tester.tap(goingFinder);
-        await tester.pumpAndSettle();
-        await waitForEngineNativeWidget(
-          tester,
-          find.text('Response: Going'),
-          description: 'persisted Going workflow state',
-        );
+      await scrollFinderIntoViewport(tester, goingFinder);
+      await tester.tap(goingFinder);
+      await tester.pumpAndSettle();
+      await waitForEngineNativeWidget(
+        tester,
+        find.text('Response: Going'),
+        description: 'persisted Going workflow state',
+      );
 
-        // Persona picker dialog is restyled to the community's light fill.
-        await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
-        await tester.pumpAndSettle();
-        final dialog = tester.widget<AlertDialog>(
-          find.byKey(const ValueKey('persona-picker-dialog')),
-        );
-        expect(dialog.backgroundColor, _lightFillFor(_accent));
-      },
-    );
+      // Actor identity picker dialog is restyled to the community's light fill.
+      await tester.tap(
+        find.byKey(const ValueKey('actor-identity-picker-button')),
+      );
+      await tester.pumpAndSettle();
+      final dialog = tester.widget<AlertDialog>(
+        find.byKey(const ValueKey('actor-identity-picker-dialog')),
+      );
+      expect(dialog.backgroundColor, _lightFillFor(_accent));
+    });
 
     testWidgets('wf_bespoke-catalog-community-chrome-is-pixel-unchanged', (
       tester,
@@ -140,11 +139,13 @@ void main() {
         Colors.white.withValues(alpha: 0.10),
       );
 
-      // Persona picker stays the stock, unstyled AlertDialog.
-      await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+      // Actor identity picker stays the stock, unstyled AlertDialog.
+      await tester.tap(
+        find.byKey(const ValueKey('actor-identity-picker-button')),
+      );
       await tester.pumpAndSettle();
       final dialog = tester.widget<AlertDialog>(
-        find.byKey(const ValueKey('persona-picker-dialog')),
+        find.byKey(const ValueKey('actor-identity-picker-dialog')),
       );
       expect(dialog.backgroundColor, isNull);
     });
@@ -173,7 +174,7 @@ Future<void> _installAndOpen(
     ),
   );
   await tester.pumpAndSettle();
-  await selectPersona(tester, 'tabletop-member');
+  await selectActorIdentity(tester, 'tabletop-member');
   await waitForEngineNativeWidget(
     tester,
     find.byKey(const ValueKey('engine-native-list-root-home')),

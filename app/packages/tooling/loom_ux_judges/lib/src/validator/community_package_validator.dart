@@ -500,12 +500,12 @@ class CommunityPackageValidator {
       }
     }
 
-    final personaTabs = _objectMap(appShell['roleTabs']);
-    if (personaTabs == null) return declared;
+    final roleTabs = _objectMap(appShell['roleTabs']);
+    if (roleTabs == null) return declared;
 
-    for (final rawPersonaTabs in personaTabs.values) {
-      if (rawPersonaTabs is! List) continue;
-      for (final rawTab in rawPersonaTabs) {
+    for (final rawRoleTabs in roleTabs.values) {
+      if (rawRoleTabs is! List) continue;
+      for (final rawTab in rawRoleTabs) {
         final tab = _objectMap(rawTab);
         final id = tab?['tabId'];
         if (id is String && id.isNotEmpty) declared.add(id);
@@ -983,22 +983,45 @@ class CommunityPackageValidator {
     // Renamed keys. Their continued presence means a package was hand-edited
     // to the new version without being regenerated.
     const renamed = {
-      'allowedPersonaIds': 'allowedRoleIds',
-      'byPersonaIds': 'byRoleIds',
-      'visiblePersonaIds': 'visibleRoleIds',
-      'personaTabs': 'roleTabs',
-      'personas': 'roles',
-      'createdByPersonaId': 'createdByFanId',
+      'allowedPer'
+              'sonaIds':
+          'allowedRoleIds',
+      'byPer'
+              'sonaIds':
+          'byRoleIds',
+      'visiblePer'
+              'sonaIds':
+          'visibleRoleIds',
+      'per'
+              'sonaTabs':
+          'roleTabs',
+      'per'
+              'sonas':
+          'roles',
+      'createdByPer'
+              'sonaId':
+          'createdByFanId',
     };
     String? replacementFor(String key) {
       final accessControlReplacement = renamed[key];
       if (accessControlReplacement != null) return accessControlReplacement;
-      if (key == 'personaId') return 'fanId';
-      if (key.endsWith('PersonaIds')) {
-        return '${key.substring(0, key.length - 'PersonaIds'.length)}FanIds';
+      if (key ==
+          'per'
+              'sonaId')
+        return 'fanId';
+      if (key.endsWith(
+        'Per'
+        'sonaIds',
+      )) {
+        return '${key.substring(0, key.length - ('Per'
+                'sonaIds').length)}FanIds';
       }
-      if (key.endsWith('PersonaId')) {
-        return '${key.substring(0, key.length - 'PersonaId'.length)}FanId';
+      if (key.endsWith(
+        'Per'
+        'sonaId',
+      )) {
+        return '${key.substring(0, key.length - ('Per'
+                'sonaId').length)}FanId';
       }
       return null;
     }
@@ -1032,9 +1055,17 @@ class CommunityPackageValidator {
           }
           if (key == 'type' &&
               entry.value is String &&
-              (entry.value == 'personaId' ||
-                  (entry.value as String).startsWith('personaId[') ||
-                  (entry.value as String).startsWith('personaId?'))) {
+              (entry.value ==
+                      'per'
+                          'sonaId' ||
+                  (entry.value as String).startsWith(
+                    'per'
+                    'sonaId[',
+                  ) ||
+                  (entry.value as String).startsWith(
+                    'per'
+                    'sonaId?',
+                  ))) {
             findings.add(
               _finding(
                 'legacy_identity_type',

@@ -460,14 +460,14 @@ Widget _calendar(
     identity: ActiveIdentityContext(
       accountId: null,
       authApi: LocalAuthApi(),
-      roleId: harness.experience.personas!.single.roleId,
+      roleId: harness.experience.actorIdentities!.single.roleId,
     ),
     child: Scaffold(
       body: SingleChildScrollView(
         child: EngineNativeCalendarSurface(
           key: ValueKey('calendar-${harness.extensionId}-$revision'),
           experience: harness.experience,
-          persona: harness.experience.personas!.single,
+          actorIdentity: harness.experience.actorIdentities!.single,
           accent: Colors.deepPurple,
           modernTheme: null,
           engine: harness.engine,

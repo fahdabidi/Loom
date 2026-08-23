@@ -492,14 +492,13 @@ class ArchetypeResolver {
       final candidates = declared.isEmpty
           ? bespoke
           : bespoke
-              .where(
-                (family) =>
-                    declared.every(
-                      (action) =>
-                          bespokeVocabularies[family]?.contains(action) ?? false,
-                    ),
-              )
-              .toList();
+                .where(
+                  (family) => declared.every(
+                    (action) =>
+                        bespokeVocabularies[family]?.contains(action) ?? false,
+                  ),
+                )
+                .toList();
       if (candidates.length == 1) {
         return ResolvedArchetype(
           family: candidates.single,

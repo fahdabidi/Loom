@@ -5,36 +5,36 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 const _communityId = 'authz-p5-membership-community';
 
-const _personas = [
-  LoomPersonaDefinition(
+const _actorIdentities = [
+  LoomActorIdentity(
     fanId: 'admin',
     roleId: 'admin',
     label: 'Community admin',
     roleLabel: 'Admin',
     description: 'Manages community membership.',
   ),
-  LoomPersonaDefinition(
+  LoomActorIdentity(
     fanId: 'member',
     roleId: 'member',
     label: 'Member',
     roleLabel: 'Member',
     description: 'Joins community activities.',
   ),
-  LoomPersonaDefinition(
+  LoomActorIdentity(
     fanId: 'applicant',
     roleId: 'applicant',
     label: 'Applicant',
     roleLabel: 'Applicant',
     description: 'Requests access to the community.',
-    accessMode: LoomPersonaAccessMode.requiresApproval,
+    accessMode: LoomActorIdentityAccessMode.requiresApproval,
   ),
-  LoomPersonaDefinition(
+  LoomActorIdentity(
     fanId: 'invited',
     roleId: 'invited',
     label: 'Invited member',
     roleLabel: 'Member',
     description: 'Joins with an invitation.',
-    accessMode: LoomPersonaAccessMode.requiresInvite,
+    accessMode: LoomActorIdentityAccessMode.requiresInvite,
   ),
 ];
 
@@ -45,7 +45,7 @@ LoomExperienceDefinition _experience() {
     tagline: 'Membership flow fixture',
     accentColor: 0xff246b62,
     workflows: const [],
-    personas: _personas,
+    actorIdentities: _actorIdentities,
     workflowDefinitions: {
       'membership-review': LoomWorkflowStateMachine(
         workflowType: 'membership-review',
@@ -80,7 +80,7 @@ LoomExperienceDefinition _experience() {
 LocalAuthApi _api() {
   final experience = _experience();
   final api = LocalAuthApi(
-    personaResolver: (_) => _personas,
+    actorIdentityResolver: (_) => _actorIdentities,
     experienceResolver: (_) => experience,
   );
   api.seedAccounts(_communityId, const [
@@ -147,7 +147,7 @@ void main() {
             isA<LoomAuthException>().having(
               (error) => error.code,
               'code',
-              LoomAuthErrorCode.personaRequiresInvite,
+              LoomAuthErrorCode.roleRequiresInvite,
             ),
           ),
         );
@@ -264,22 +264,22 @@ void main() {
     );
 
     testWidgets(
-      'requiresInvite personas are absent from the open signup picker',
+      'requiresInvite actorIdentities are absent from the open signup picker',
       (tester) async {
         final api = _api();
         await tester.pumpWidget(_authScreen(api));
         await tester.pumpAndSettle();
 
         expect(
-          find.byKey(const ValueKey('open-signup-persona-dropdown')),
+          find.byKey(const ValueKey('open-signup-role-dropdown')),
           findsOneWidget,
         );
         expect(
-          find.byKey(const ValueKey('open-signup-persona-invited')),
+          find.byKey(const ValueKey('open-signup-role-invited')),
           findsNothing,
         );
         expect(
-          find.byKey(const ValueKey('invite-redeem-persona-invited')),
+          find.byKey(const ValueKey('invite-redeem-role-invited')),
           findsOneWidget,
         );
         expect(find.text('Redeem an invite'), findsOneWidget);

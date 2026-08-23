@@ -279,7 +279,7 @@ void main() {
             'payment on the Giving tab.',
       );
 
-      await _selectPersona(tester, 'soccer-coach');
+      await _selectActorIdentity(tester, 'soccer-coach');
       expect(find.byKey(const ValueKey('community-tab-admin')), findsOneWidget);
       expect(find.byKey(const ValueKey('community-tab-giving')), findsNothing);
       await _selectTab(tester, 'admin');
@@ -337,7 +337,7 @@ void main() {
         findsWidgets,
       );
 
-      await _selectPersona(tester, 'soccer-owner');
+      await _selectActorIdentity(tester, 'soccer-owner');
       final ownerAccountId = _activeAccountId(tester);
       expect(
         ownerAccountId,
@@ -515,8 +515,8 @@ Future<void> _tapEngineAction(
   await _pumpForUi(tester);
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectActorIdentity(tester, fanId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

@@ -26,7 +26,7 @@ abstract class FanVaultApi {
 
   Future<AdPreferences> putAdPreferences({
     required String passportId,
-    required bool personalizedAds,
+    required bool interestBasedAds,
     required String idempotencyKey,
   });
 

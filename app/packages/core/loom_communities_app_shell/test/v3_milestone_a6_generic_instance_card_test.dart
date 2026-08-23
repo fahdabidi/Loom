@@ -360,13 +360,13 @@ GenericWorkflowInstanceCard _card(
   LocalWorkflowEngineApi api,
   WorkflowInstance instance, {
   String context = 'tile',
-  String persona = 'person',
+  String actorIdentity = 'person',
   LoomWorkflowStateMachine? machine,
 }) => GenericWorkflowInstanceCard(
   instance: instance,
   machine: machine ?? _machine(),
   engine: api,
-  fanId: persona,
+  fanId: actorIdentity,
   displayContext: context,
 );
 
@@ -1584,7 +1584,7 @@ void main() {
       final machineB = _machine();
       Widget card(
         WorkflowInstance row,
-        String persona,
+        String actorIdentity,
         LoomWorkflowStateMachine machine,
         WorkflowEngineApi engine,
       ) => _host(
@@ -1592,7 +1592,7 @@ void main() {
           instance: row,
           machine: machine,
           engine: engine,
-          fanId: persona,
+          fanId: actorIdentity,
         ),
       );
       await tester.pumpWidget(card(a, 'person', machineA, controlledA));
@@ -1649,7 +1649,7 @@ void main() {
       final callbacks = <WorkflowInstance>[];
       Widget card(
         WorkflowInstance row,
-        String persona,
+        String actorIdentity,
         LoomWorkflowStateMachine machine,
         WorkflowEngineApi engine,
       ) => _host(
@@ -1657,7 +1657,7 @@ void main() {
           instance: row,
           machine: machine,
           engine: engine,
-          fanId: persona,
+          fanId: actorIdentity,
           onInstanceChanged: callbacks.add,
         ),
       );
@@ -1812,12 +1812,12 @@ void main() {
     )).items.singleWhere((row) => row.instanceId == bId);
     final controlled = _ControlledEngine(api);
     final machine = _machine();
-    Widget card(WorkflowInstance row, String persona) => _host(
+    Widget card(WorkflowInstance row, String actorIdentity) => _host(
       GenericWorkflowInstanceCard(
         instance: row,
         machine: machine,
         engine: controlled,
-        fanId: persona,
+        fanId: actorIdentity,
       ),
     );
     await tester.pumpWidget(card(a, 'person'));

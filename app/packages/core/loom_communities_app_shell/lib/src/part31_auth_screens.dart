@@ -1,7 +1,7 @@
 part of '../loom_communities_app_shell.dart';
 
 /// Full-screen sign-in / sign-up flow.  Loads the seeded demo accounts and
-/// offers a simple form to create a new account for a chosen persona type.
+/// offers a simple form to create a new account for a chosen role.
 class LoomAuthScreen extends StatefulWidget {
   const LoomAuthScreen({
     super.key,
@@ -225,7 +225,7 @@ class _AccountList extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 8, bottom: 4),
             child: Text(
-              _personaLabelFor(group.key),
+              _roleLabelFor(group.key),
               style: textTheme.labelSmall?.copyWith(
                 color: accent,
                 fontWeight: FontWeight.w600,
@@ -291,13 +291,13 @@ class _AccountList extends StatelessWidget {
     );
   }
 
-  String _personaLabelFor(String typeId) {
-    final persona = personasForExtensionId(
+  String _roleLabelFor(String typeId) {
+    final actorIdentity = actorIdentitiesForExtensionId(
       experience.extensionId,
       experience: experience,
     ).where((candidate) => candidate.roleId == typeId).firstOrNull;
-    if (persona == null) return typeId;
-    return '${persona.label} (${persona.roleLabel})';
+    if (actorIdentity == null) return typeId;
+    return '${actorIdentity.label} (${actorIdentity.roleLabel})';
   }
 }
 
@@ -339,14 +339,15 @@ class _PendingAndInvitesSurfaceState extends State<_PendingAndInvitesSurface> {
   String? _error;
   bool _issuing = false;
 
-  List<LoomPersonaDefinition> get _invitePersonas =>
-      personasForExtensionId(
+  List<LoomActorIdentity> get _inviteActorIdentities =>
+      actorIdentitiesForExtensionId(
             widget.experience.extensionId,
             experience: widget.experience,
           )
           .where(
-            (persona) =>
-                persona.accessMode == LoomPersonaAccessMode.requiresInvite,
+            (actorIdentity) =>
+                actorIdentity.accessMode ==
+                LoomActorIdentityAccessMode.requiresInvite,
           )
           .toList();
 
@@ -354,13 +355,13 @@ class _PendingAndInvitesSurfaceState extends State<_PendingAndInvitesSurface> {
     final account = widget.authApi.currentSession?.account;
     return account != null &&
         account.status == MembershipStatus.active &&
-        _personaCanAdministerAnyWorkflow(widget.experience, account.roleId);
+        _roleCanAdministerAnyWorkflow(widget.experience, account.roleId);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _selectedInviteRoleId ??= _invitePersonas.firstOrNull?.roleId;
+    _selectedInviteRoleId ??= _inviteActorIdentities.firstOrNull?.roleId;
   }
 
   Future<void> _approve(LoomAccount account) async {
@@ -406,7 +407,7 @@ class _PendingAndInvitesSurfaceState extends State<_PendingAndInvitesSurface> {
     final pendingAccounts = widget.accounts
         .where((account) => account.status == MembershipStatus.pendingApproval)
         .toList();
-    final invitePersonas = _invitePersonas;
+    final inviteActorIdentities = _inviteActorIdentities;
     final textTheme = Theme.of(context).textTheme;
     return Card(
       key: const ValueKey('pending-invites-surface'),
@@ -424,7 +425,7 @@ class _PendingAndInvitesSurfaceState extends State<_PendingAndInvitesSurface> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Review new membership requests and create invite codes for invite-only personas.',
+              'Review new membership requests and create invite codes for invite-only roles.',
             ),
             const SizedBox(height: 14),
             Text(
@@ -455,27 +456,27 @@ class _PendingAndInvitesSurfaceState extends State<_PendingAndInvitesSurface> {
                 ),
             const Divider(height: 28),
             Text(
-              'Invite-only personas',
+              'Invite-only roles',
               style: textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
-            if (invitePersonas.isEmpty)
-              const Text('No invite-only personas are declared.')
+            if (inviteActorIdentities.isEmpty)
+              const Text('No invite-only roles are declared.')
             else ...[
               DropdownButtonFormField<String>(
-                key: const ValueKey('issue-invite-persona-dropdown'),
+                key: const ValueKey('issue-invite-role-dropdown'),
                 initialValue: _selectedInviteRoleId,
                 decoration: const InputDecoration(
-                  labelText: 'Persona type',
+                  labelText: 'Role',
                   border: OutlineInputBorder(),
                 ),
-                items: invitePersonas.map((persona) {
+                items: inviteActorIdentities.map((actorIdentity) {
                   return DropdownMenuItem(
-                    key: ValueKey('issue-invite-persona-${persona.roleId}'),
-                    value: persona.roleId,
-                    child: Text(persona.label),
+                    key: ValueKey('issue-invite-role-${actorIdentity.roleId}'),
+                    value: actorIdentity.roleId,
+                    child: Text(actorIdentity.label),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -560,9 +561,9 @@ class _SignUpFormState extends State<_SignUpForm> {
   final _displayNameController = TextEditingController();
   final _inviteDisplayNameController = TextEditingController();
   final _inviteCodeController = TextEditingController();
-  late final List<LoomPersonaDefinition> _personas;
-  late final List<LoomPersonaDefinition> _openPersonas;
-  late final List<LoomPersonaDefinition> _invitePersonas;
+  late final List<LoomActorIdentity> _actorIdentities;
+  late final List<LoomActorIdentity> _openActorIdentities;
+  late final List<LoomActorIdentity> _inviteActorIdentities;
   late String? _selectedType;
   late String? _selectedInviteType;
   bool _submitting = false;
@@ -571,26 +572,30 @@ class _SignUpFormState extends State<_SignUpForm> {
   @override
   void initState() {
     super.initState();
-    _personas = personasForExtensionId(
+    _actorIdentities = actorIdentitiesForExtensionId(
       widget.experience.extensionId,
       experience: widget.experience,
     );
-    _openPersonas = _personas
+    _openActorIdentities = _actorIdentities
         .where(
-          (persona) =>
-              persona.accessMode != LoomPersonaAccessMode.requiresInvite,
+          (actorIdentity) =>
+              actorIdentity.accessMode !=
+              LoomActorIdentityAccessMode.requiresInvite,
         )
         .toList();
-    _invitePersonas = _personas
+    _inviteActorIdentities = _actorIdentities
         .where(
-          (persona) =>
-              persona.accessMode == LoomPersonaAccessMode.requiresInvite,
+          (actorIdentity) =>
+              actorIdentity.accessMode ==
+              LoomActorIdentityAccessMode.requiresInvite,
         )
         .toList();
-    _selectedType = _openPersonas.isEmpty ? null : _openPersonas.first.roleId;
-    _selectedInviteType = _invitePersonas.isEmpty
+    _selectedType = _openActorIdentities.isEmpty
         ? null
-        : _invitePersonas.first.roleId;
+        : _openActorIdentities.first.roleId;
+    _selectedInviteType = _inviteActorIdentities.isEmpty
+        ? null
+        : _inviteActorIdentities.first.roleId;
   }
 
   @override
@@ -666,7 +671,7 @@ class _SignUpFormState extends State<_SignUpForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (_openPersonas.isNotEmpty)
+        if (_openActorIdentities.isNotEmpty)
           Form(
             key: _formKey,
             child: Column(
@@ -696,17 +701,17 @@ class _SignUpFormState extends State<_SignUpForm> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  key: const ValueKey('open-signup-persona-dropdown'),
+                  key: const ValueKey('open-signup-role-dropdown'),
                   initialValue: _selectedType,
                   decoration: const InputDecoration(
-                    labelText: 'Persona type',
+                    labelText: 'Role',
                     border: OutlineInputBorder(),
                   ),
-                  items: _openPersonas.map((persona) {
+                  items: _openActorIdentities.map((actorIdentity) {
                     return DropdownMenuItem(
-                      key: ValueKey('open-signup-persona-${persona.roleId}'),
-                      value: persona.roleId,
-                      child: Text(persona.label),
+                      key: ValueKey('open-signup-role-${actorIdentity.roleId}'),
+                      value: actorIdentity.roleId,
+                      child: Text(actorIdentity.label),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -724,14 +729,16 @@ class _SignUpFormState extends State<_SignUpForm> {
               ],
             ),
           ),
-        if (_openPersonas.isNotEmpty && _invitePersonas.isNotEmpty)
+        if (_openActorIdentities.isNotEmpty &&
+            _inviteActorIdentities.isNotEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Divider(),
           ),
-        if (_invitePersonas.isNotEmpty) _buildInviteRedemption(textTheme),
-        if (_openPersonas.isEmpty && _invitePersonas.isEmpty)
-          const Text('No sign-up personas are available for this community.'),
+        if (_inviteActorIdentities.isNotEmpty)
+          _buildInviteRedemption(textTheme),
+        if (_openActorIdentities.isEmpty && _inviteActorIdentities.isEmpty)
+          const Text('No sign-up roles are available for this community.'),
       ],
     );
   }
@@ -753,21 +760,21 @@ class _SignUpFormState extends State<_SignUpForm> {
           ),
           const SizedBox(height: 6),
           const Text(
-            'This community uses invite-only membership for the persona selected below.',
+            'This community uses invite-only membership for the role selected below.',
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            key: const ValueKey('invite-redeem-persona-dropdown'),
+            key: const ValueKey('invite-redeem-role-dropdown'),
             initialValue: _selectedInviteType,
             decoration: const InputDecoration(
-              labelText: 'Invite-only persona',
+              labelText: 'Invite-only role',
               border: OutlineInputBorder(),
             ),
-            items: _invitePersonas.map((persona) {
+            items: _inviteActorIdentities.map((actorIdentity) {
               return DropdownMenuItem(
-                key: ValueKey('invite-redeem-persona-${persona.roleId}'),
-                value: persona.roleId,
-                child: Text(persona.label),
+                key: ValueKey('invite-redeem-role-${actorIdentity.roleId}'),
+                value: actorIdentity.roleId,
+                child: Text(actorIdentity.label),
               );
             }).toList(),
             onChanged: (value) {

@@ -212,7 +212,7 @@ class CreatorExperienceConfig {
     required this.theme,
     required this.bannerRef,
     required this.surfaceModules,
-    required this.aiPersona,
+    required this.aiGuideProfile,
     required this.adPosture,
     required this.installedExtensions,
     required this.version,
@@ -223,7 +223,7 @@ class CreatorExperienceConfig {
   final ChannelTheme theme;
   final String bannerRef;
   final List<SurfaceModule> surfaceModules;
-  final String aiPersona;
+  final String aiGuideProfile;
   final String adPosture;
   final List<InstalledExtensionRef> installedExtensions;
   final int version;

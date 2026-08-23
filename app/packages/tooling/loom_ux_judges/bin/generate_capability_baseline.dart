@@ -118,8 +118,7 @@ String renderDartBaseline() {
     output.writeln("  '$capability',");
   }
   output
-    ..writeln('};')
-    ..writeln();
+    ..writeln('};');
   return output.toString();
 }
 

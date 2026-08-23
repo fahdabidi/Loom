@@ -103,13 +103,13 @@ class _SelectedTabHeader extends StatelessWidget {
   const _SelectedTabHeader({
     required this.tab,
     required this.accent,
-    required this.persona,
+    required this.actorIdentity,
     this.modernTheme,
   });
 
   final LoomAppShellTabSpec tab;
   final Color accent;
-  final LoomPersonaDefinition persona;
+  final LoomActorIdentity actorIdentity;
   final LoomCardTheme? modernTheme;
 
   @override
@@ -145,7 +145,7 @@ class _SelectedTabHeader extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    tab.descriptionFor(persona),
+                    tab.descriptionFor(actorIdentity),
                     style: Theme.of(
                       context,
                     ).textTheme.bodyMedium?.copyWith(color: body),
@@ -165,13 +165,13 @@ class _SelectedTabHeader extends StatelessWidget {
 class _MessagesTabSurface extends StatefulWidget {
   const _MessagesTabSurface({
     required this.experience,
-    required this.persona,
+    required this.actorIdentity,
     required this.accent,
     this.modernTheme,
   });
 
   final LoomExperienceDefinition experience;
-  final LoomPersonaDefinition persona;
+  final LoomActorIdentity actorIdentity;
   final Color accent;
   final LoomCardTheme? modernTheme;
 
@@ -205,8 +205,8 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
   @override
   void didUpdateWidget(_MessagesTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if ((oldWidget.persona.roleId != widget.persona.roleId ||
-        oldWidget.persona.accountId != widget.persona.accountId)) {
+    if ((oldWidget.actorIdentity.roleId != widget.actorIdentity.roleId ||
+        oldWidget.actorIdentity.accountId != widget.actorIdentity.accountId)) {
       _selectedThread = null;
       unawaited(_load());
     }
@@ -215,7 +215,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
   Future<void> _load() async {
     try {
       await _store.ensureReady();
-      final threads = await _store.threadsFor(widget.persona.fanId);
+      final threads = await _store.threadsFor(widget.actorIdentity.fanId);
       if (!mounted) return;
       setState(() {
         _visibleThreadCount = threads.length;
@@ -236,7 +236,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
       setState(() => _selectedThread = null);
       return;
     }
-    await _store.markRead(thread: thread, fanId: widget.persona.fanId);
+    await _store.markRead(thread: thread, fanId: widget.actorIdentity.fanId);
     if (mounted) setState(() => _selectedThread = thread);
   }
 
@@ -247,12 +247,12 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
     await _store.postMessage(
       thread: thread,
       body: text,
-      fanId: widget.persona.fanId,
+      fanId: widget.actorIdentity.fanId,
     );
     _composerController.clear();
     final refreshed = await _store.threadById(
       thread.instanceId,
-      widget.persona.fanId,
+      widget.actorIdentity.fanId,
     );
     if (mounted && refreshed != null)
       setState(() => _selectedThread = refreshed);
@@ -262,11 +262,11 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
     await _store.setMuted(
       thread: thread,
       muted: !_store.isMuted(thread),
-      fanId: widget.persona.fanId,
+      fanId: widget.actorIdentity.fanId,
     );
     final refreshed = await _store.threadById(
       thread.instanceId,
-      widget.persona.fanId,
+      widget.actorIdentity.fanId,
     );
     if (mounted && refreshed != null)
       setState(() => _selectedThread = refreshed);
@@ -276,7 +276,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
     await _store.setArchived(
       thread: thread,
       archived: !_store.isArchived(thread),
-      fanId: widget.persona.fanId,
+      fanId: widget.actorIdentity.fanId,
     );
     if (mounted) setState(() => _selectedThread = null);
     await _load();
@@ -304,7 +304,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
         foreground: foreground,
         accent: widget.accent,
         modernTheme: widget.modernTheme,
-        fanId: widget.persona.fanId,
+        fanId: widget.actorIdentity.fanId,
         composerController: _composerController,
         muted: _store.isMuted(selectedThread),
         onSend: _sendReply,
@@ -331,7 +331,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
               ),
               const SizedBox(height: 8),
               Text(
-                '${widget.experience.displayName} hasn\'t published any threads for ${widget.persona.label} yet.',
+                '${widget.experience.displayName} hasn\'t published any threads for ${widget.actorIdentity.label} yet.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: foreground.withValues(alpha: 0.86),
@@ -384,12 +384,12 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
           ),
         ),
         RepeaterSurface.live(
-          key: ValueKey('messages-repeater-${widget.persona.fanId}'),
+          key: ValueKey('messages-repeater-${widget.actorIdentity.fanId}'),
           refreshInterval: const Duration(milliseconds: 50),
           querySource: RepeaterQuerySource(
             engine: _store.engine,
             workflowType: _MessagesEngineStore.workflowType,
-            fanId: widget.persona.fanId,
+            fanId: widget.actorIdentity.fanId,
             tabId: 'messages',
           ),
           listShrinkWrap: true,
@@ -397,11 +397,14 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
           itemBuilder: (context, item) {
             final instance = item as WorkflowInstance;
             final thread = _store.toThread(instance);
-            if (!_store.isVisibleTo(instance, widget.persona.fanId) ||
+            if (!_store.isVisibleTo(instance, widget.actorIdentity.fanId) ||
                 _store.isArchived(instance)) {
               return const SizedBox.shrink();
             }
-            final unread = _store.isUnread(instance, widget.persona.fanId);
+            final unread = _store.isUnread(
+              instance,
+              widget.actorIdentity.fanId,
+            );
             final preview = _store.lastPreview(instance);
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -684,11 +687,11 @@ class _MessagesEngineStore {
   static const workflowType = 'discussion-thread';
   static const messageWorkflowType = 'discussion-message';
   // Real per-account ids (see part30_local_auth_api.dart's
-  // _seedTabletopAccounts) -- not the two generic persona-type ids. Seed
+  // _seedTabletopAccounts) -- not the two generic role ids. Seed
   // threads must list actual accounts as participants so an individually
   // signed-in member's own threadsFor(fanId) query (which checks
   // participantFanIds.contains(fanId) against the real signed-in
-  // account id, not the persona type) actually finds them.
+  // account id, not the role) actually finds them.
   static const _allTabletopAccountIds = [
     'tabletop-organizer',
     'tabletop-member-03',
@@ -1034,7 +1037,7 @@ typedef _WorkflowSurfaceBuilder =
 class _TabNativeRenderer extends StatelessWidget {
   const _TabNativeRenderer({
     required this.experience,
-    required this.persona,
+    required this.actorIdentity,
     required this.selectedTab,
     required this.sections,
     required this.focusedWorkflowId,
@@ -1052,7 +1055,7 @@ class _TabNativeRenderer extends StatelessWidget {
   });
 
   final LoomExperienceDefinition experience;
-  final LoomPersonaDefinition persona;
+  final LoomActorIdentity actorIdentity;
   final LoomAppShellTabSpec selectedTab;
   final List<_CommunityWorkflowSection> sections;
   final String? focusedWorkflowId;
@@ -1078,7 +1081,7 @@ class _TabNativeRenderer extends StatelessWidget {
       case 'CalendarTabSurface':
         return EngineNativeCalendarSurface(
           experience: experience,
-          persona: persona,
+          actorIdentity: actorIdentity,
           tabId: selectedTab.tabId,
           accent: accent,
           modernTheme: modernTheme,
@@ -1088,14 +1091,14 @@ class _TabNativeRenderer extends StatelessWidget {
       case 'NotificationDedicatedTabSurface':
         return _NotificationDedicatedTabSurface(
           experience: experience,
-          persona: persona,
+          actorIdentity: actorIdentity,
           accent: accent,
           modernTheme: modernTheme,
         );
       case 'MessagesTabSurface':
         return EngineNativeListSurface(
           experience: experience,
-          persona: persona,
+          actorIdentity: actorIdentity,
           tabId: selectedTab.tabId,
           accent: accent,
           modernTheme: modernTheme,
@@ -1104,7 +1107,7 @@ class _TabNativeRenderer extends StatelessWidget {
       case 'EngineNativeGenericListSurface':
         return EngineNativeListSurface(
           experience: experience,
-          persona: persona,
+          actorIdentity: actorIdentity,
           tabId: selectedTab.tabId,
           accent: accent,
           modernTheme: modernTheme,
@@ -1113,7 +1116,7 @@ class _TabNativeRenderer extends StatelessWidget {
       case 'MarketplaceTabSurface':
         return EngineNativeMarketplaceSurface(
           experience: experience,
-          persona: persona,
+          actorIdentity: actorIdentity,
           tabId: selectedTab.tabId,
           accent: accent,
           modernTheme: modernTheme,
@@ -1121,7 +1124,7 @@ class _TabNativeRenderer extends StatelessWidget {
       case 'PaymentGivingTabSurface':
         return EngineNativeListSurface(
           experience: experience,
-          persona: persona,
+          actorIdentity: actorIdentity,
           tabId: selectedTab.tabId,
           accent: accent,
           modernTheme: modernTheme,
@@ -1155,7 +1158,7 @@ class _TabNativeRenderer extends StatelessWidget {
       case 'AdminReviewComposeTabSurface':
         return EngineNativeListSurface(
           experience: experience,
-          persona: persona,
+          actorIdentity: actorIdentity,
           tabId: selectedTab.tabId,
           accent: accent,
           modernTheme: modernTheme,
@@ -1169,7 +1172,7 @@ class _TabNativeRenderer extends StatelessWidget {
               machine,
               instance,
               viewerFanId: viewerFanId,
-              viewerRoleId: persona.roleId,
+              viewerRoleId: actorIdentity.roleId,
             );
           },
         );
@@ -1249,7 +1252,8 @@ class _HomeTabSurfaceStack extends StatelessWidget {
           icon: Icons.home_outlined,
           title: '${experience.displayName} home',
           body:
-              'A personalized community home with curated surfaces, theme tokens, and minimized/medium/expanded presentation.',
+              'A person'
+              'alized community home with curated surfaces, theme tokens, and minimized/medium/expanded presentation.',
           accent: accent,
           modernTheme: modernTheme,
           facts: [
@@ -1432,7 +1436,7 @@ class _CalendarEventDetailState extends State<CalendarEventDetail> {
     WorkflowInstance? instance,
   ) {
     final data = instance?.instanceData ?? const <String, dynamic>{};
-    final responseId = _responseIdForPersona(data, widget.fanId);
+    final responseId = _responseIdForFan(data, widget.fanId);
     final responseLabel = responseId == null
         ? ''
         : _labelForResponse(responseId);
@@ -1460,7 +1464,7 @@ class _CalendarEventDetailState extends State<CalendarEventDetail> {
   ) {
     final machine = widget.machine;
     if (machine == null || instance == null) return const [];
-    final currentResponseId = _responseIdForPersona(
+    final currentResponseId = _responseIdForFan(
       instance.instanceData,
       widget.fanId,
     );
@@ -1511,8 +1515,8 @@ class _CalendarEventDetailState extends State<CalendarEventDetail> {
   }
 }
 
-String? _responseIdForPersona(Map<String, dynamic> instanceData, String fanId) {
-  final responseMap = instanceData['rsvpByPersona'];
+String? _responseIdForFan(Map<String, dynamic> instanceData, String fanId) {
+  final responseMap = instanceData['rsvpByFan'];
   if (responseMap is Map) {
     final response = responseMap[fanId];
     if (response is String && response.trim().isNotEmpty) {

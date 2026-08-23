@@ -206,13 +206,13 @@ void main() {
       'a4-role-access-mode',
       specVersion: currentCommunitySpecVersion,
       experienceConfiguration: config,
-    ).personas!;
+    ).actorIdentities!;
 
-    expect(roles.map((role) => role.accessMode), <LoomPersonaAccessMode>[
-      LoomPersonaAccessMode.open,
-      LoomPersonaAccessMode.requiresApproval,
-      LoomPersonaAccessMode.requiresInvite,
-      LoomPersonaAccessMode.open,
+    expect(roles.map((role) => role.accessMode), <LoomActorIdentityAccessMode>[
+      LoomActorIdentityAccessMode.open,
+      LoomActorIdentityAccessMode.requiresApproval,
+      LoomActorIdentityAccessMode.requiresInvite,
+      LoomActorIdentityAccessMode.open,
     ]);
   });
 

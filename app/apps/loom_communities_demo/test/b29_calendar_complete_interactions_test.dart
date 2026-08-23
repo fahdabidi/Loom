@@ -195,7 +195,7 @@ Future<void> _installAndOpen(
     find.byKey(ValueKey('community-card-${fixture.communityId}')),
   );
   await tester.pumpAndSettle();
-  await selectPersona(tester, 'tabletop-member');
+  await selectActorIdentity(tester, 'tabletop-member');
 }
 
 ({EvidencePackagePair package, String communityId})

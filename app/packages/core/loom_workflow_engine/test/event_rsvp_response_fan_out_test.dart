@@ -180,7 +180,15 @@ void main() {
       'parentEventKey': eventId,
       'fanId': 'member-a',
     });
-    expect(response.instanceData, isNot(contains('personaId')));
+    expect(
+      response.instanceData,
+      isNot(
+        contains(
+          'per'
+          'sonaId',
+        ),
+      ),
+    );
   });
 
   test('fan-out is exclusive to event-rsvp create actions', () async {

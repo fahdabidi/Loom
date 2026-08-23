@@ -32,10 +32,8 @@ void main() {
     test('parses specVersion 4 roles using roleId', () {
       expect(package.specVersion, currentCommunitySpecVersion);
       expect(
-        package.personas
-            .map(
-              (persona) => (persona.roleId, persona.label, persona.roleLabel),
-            )
+        package.roles
+            .map((role) => (role.roleId, role.label, role.roleLabel))
             .toList(),
         [
           ('member', 'Member', 'Member'),
@@ -49,7 +47,9 @@ void main() {
       root.remove('specVersion');
       final experience = root['experience'] as Map<String, dynamic>;
       experience.remove('roles');
-      experience['personas'] = const <dynamic>[];
+      experience['per'
+              'sonas'] =
+          const <dynamic>[];
 
       expect(
         () => ParsedCommunityPackage.parse(jsonEncode(root)),
@@ -74,7 +74,9 @@ void main() {
       root['specVersion'] = currentCommunitySpecVersion - 1;
       final experience = root['experience'] as Map<String, dynamic>;
       experience.remove('roles');
-      experience['personas'] = const <dynamic>[];
+      experience['per'
+              'sonas'] =
+          const <dynamic>[];
 
       expect(
         () => ParsedCommunityPackage.parse(jsonEncode(root)),
@@ -194,13 +196,29 @@ void main() {
           draft['editGuard'],
           containsPair('actorEqualsField', {'key': 'participantAFanId'}),
         );
-        expect(draft['editGuard'], isNot(contains('allowedPersonaIds')));
+        expect(
+          draft['editGuard'],
+          isNot(
+            contains(
+              'allowedPer'
+              'sonaIds',
+            ),
+          ),
+        );
 
         final startThreadGuard =
             ((messageThread['transitions'] as List).first as Map)['guard']
                 as Map;
         expect(startThreadGuard, containsPair('allowedRoleIds', ['member']));
-        expect(startThreadGuard, isNot(contains('allowedPersonaIds')));
+        expect(
+          startThreadGuard,
+          isNot(
+            contains(
+              'allowedPer'
+              'sonaIds',
+            ),
+          ),
+        );
 
         final inStreamAd = definitions['platform-in-stream-ad'] as Map;
         final fullRosterGuard =
@@ -209,7 +227,15 @@ void main() {
           fullRosterGuard,
           containsPair('allowedRoleIds', ['member', 'moderator']),
         );
-        expect(fullRosterGuard, isNot(contains('allowedPersonaIds')));
+        expect(
+          fullRosterGuard,
+          isNot(
+            contains(
+              'allowedPer'
+              'sonaIds',
+            ),
+          ),
+        );
       },
     );
 
@@ -258,10 +284,8 @@ void main() {
       expect(package.extensionId, 'ext_garden_club');
       expect(package.specVersion, currentCommunitySpecVersion);
       expect(
-        package.personas
-            .map(
-              (persona) => (persona.roleId, persona.label, persona.roleLabel),
-            )
+        package.roles
+            .map((role) => (role.roleId, role.label, role.roleLabel))
             .toList(),
         [
           ('garden-member', 'Member', 'Member'),

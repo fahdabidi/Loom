@@ -99,8 +99,8 @@ Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder to disappear');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectTestTabletopPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectTestTabletopActorIdentity(tester, fanId);
 }
 
 Future<void> _selectTab(
@@ -133,14 +133,14 @@ void main() {
             ),
           ),
         );
-        final personaPicker = find.byKey(
-          const ValueKey('persona-picker-button'),
+        final actorIdentityPicker = find.byKey(
+          const ValueKey('actor-identity-picker-button'),
         );
-        await _pumpUntil(tester, personaPicker);
-        await tester.tap(personaPicker);
+        await _pumpUntil(tester, actorIdentityPicker);
+        await tester.tap(actorIdentityPicker);
         await tester.pump();
         final member = find.byKey(
-          const ValueKey('persona-option-tabletop-member'),
+          const ValueKey('actor-identity-option-tabletop-member'),
         );
         await _pumpUntil(tester, member);
         await tester.tap(member);
@@ -279,7 +279,7 @@ void main() {
             ),
           ),
         );
-        await _selectPersona(tester, 'tabletop-member');
+        await _selectActorIdentity(tester, 'tabletop-member');
 
         await _selectTab(
           tester,

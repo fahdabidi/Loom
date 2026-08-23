@@ -13,7 +13,7 @@ class _SurfaceActionOrResult extends StatelessWidget {
   final _RichWorkflowSpec spec;
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -80,8 +80,8 @@ class _SurfaceActionOrResult extends StatelessWidget {
         ),
         Offstage(
           child: Text(
-            view.personaRationale,
-            key: ValueKey('workflow-persona-state-${workflow.workflowId}'),
+            view.roleRationale,
+            key: ValueKey('workflow-role-state-${workflow.workflowId}'),
           ),
         ),
       ],

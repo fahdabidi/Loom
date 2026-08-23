@@ -181,7 +181,7 @@ Future<void> _installAndOpen(
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(ValueKey('community-card-$communityId')));
   await tester.pumpAndSettle();
-  await selectPersona(tester, fanId);
+  await selectActorIdentity(tester, fanId);
 }
 
 ({EvidencePackagePair package, String communityId})

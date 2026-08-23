@@ -1781,7 +1781,7 @@ class WorkflowValidator {
   // editableFields declared with no editGuard. editGuard's absent-default is
   // the OPPOSITE of every other guard in this grammar (guards.md/
   // workflow-grammar.md): with no editGuard, the App Shell never renders any
-  // field editor for that state, for any persona -- the editableFields
+  // field editor for that state, for any role -- the editableFields
   // declaration is silently inert, not "anyone may edit." This is the
   // "implemented edit, but nothing can actually save it" pattern.
   // ---------------------------------------------------------------------------
@@ -1803,7 +1803,7 @@ class WorkflowValidator {
               'State "$stateName" declares editableFields '
               '(${state.editableFields!.join(', ')}) but no editGuard. An '
               'absent editGuard means editing is not exposed at all for this '
-              'state, for any persona -- the editableFields declaration has '
+              'state, for any role -- the editableFields declaration has '
               'no effect. Add an editGuard (e.g. '
               '{"allowedRoleIds": [...]}) naming who may edit, or remove '
               'editableFields if this state was never meant to be editable.',

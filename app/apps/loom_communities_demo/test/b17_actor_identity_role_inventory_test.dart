@@ -2,23 +2,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
 
 void main() {
-  test('wf_persona-role-inventory-capability-matrix', () {
+  test('wf_actor-identity-inventory-capability-matrix', () {
     for (final target in loomEvidenceTargets) {
       final experience = experienceForExtensionId(
         target.extensionId,
         displayName: target.communityName,
       );
-      final personas = personasForExtensionId(target.extensionId);
-      final matrix = personaWorkflowMatrixForExtensionId(target.extensionId);
+      final actorIdentities = actorIdentitiesForExtensionId(target.extensionId);
+      final matrix = roleWorkflowMatrixForExtensionId(target.extensionId);
       final dependencies = workflowDependenciesForExtensionId(
         target.extensionId,
       );
 
-      expect(personas.length, greaterThanOrEqualTo(2));
-      expect(matrix, hasLength(personas.length * experience.workflows.length));
+      expect(actorIdentities.length, greaterThanOrEqualTo(2));
+      expect(
+        matrix,
+        hasLength(actorIdentities.length * experience.workflows.length),
+      );
 
       for (final workflow in experience.workflows) {
-        final policy = personaPolicyForWorkflow(
+        final policy = rolePolicyForWorkflow(
           target.extensionId,
           workflow.workflowId,
         );
@@ -29,7 +32,7 @@ void main() {
         );
         for (final actorRoleId in policy.actorRoleIds) {
           expect(
-            personas.map((persona) => persona.roleId),
+            actorIdentities.map((actorIdentity) => actorIdentity.roleId),
             contains(actorRoleId),
           );
         }
@@ -56,20 +59,20 @@ void main() {
     }
 
     expect(
-      personaWorkflowStateFor(
+      roleWorkflowStateFor(
         extensionId: 'ext_mosque',
         workflowId: 'mosque-announcement',
         roleId: 'mosque-admin',
       ),
-      LoomPersonaWorkflowState.actor,
+      LoomRoleWorkflowState.actor,
     );
     expect(
-      personaWorkflowStateFor(
+      roleWorkflowStateFor(
         extensionId: 'ext_mosque',
         workflowId: 'mosque-announcement',
         roleId: 'mosque-member',
       ),
-      LoomPersonaWorkflowState.receiver,
+      LoomRoleWorkflowState.receiver,
     );
   });
 }

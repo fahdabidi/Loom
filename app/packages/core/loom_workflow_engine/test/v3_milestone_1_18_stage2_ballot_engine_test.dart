@@ -14,18 +14,18 @@ class _BallotStore {
     limit: 100,
   )).items.singleWhere((i) => i.instanceId == id);
 
-  Future<void> cast(String ballot, String persona, String choice) async {
+  Future<void> cast(String ballot, String fanId, String choice) async {
     await api.updateInstanceFields(
       workflowType: 'ballot',
       instanceId: ballot,
       fieldUpdates: {'pendingChoice': choice},
-      fanId: persona,
+      fanId: fanId,
     );
     await api.applyTransition(
       workflowType: 'ballot',
       instanceId: ballot,
       transitionId: 'cast-vote',
-      fanId: persona,
+      fanId: fanId,
     );
   }
 
@@ -192,7 +192,7 @@ void main() {
       {'Catan', 'Azul'},
     );
   });
-  test('non-going persona cannot cast a guarded vote', () async {
+  test('non-going fan cannot cast a guarded vote', () async {
     final id = await ballot();
     await api.updateInstanceFields(
       workflowType: 'ballot',

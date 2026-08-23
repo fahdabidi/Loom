@@ -58,7 +58,7 @@ RepeaterSurface _live(LocalWorkflowEngineApi api, String fanId) =>
 void main() {
   testWidgets(
     'per-item action for a related-list-guarded transition is hidden for '
-    'an ineligible persona and shown/tappable for an eligible one',
+    'an ineligible actorIdentity and shown/tappable for an eligible one',
     (tester) async {
       final api = LocalWorkflowEngineApi(
         db: WorkflowDatabase.memory(),

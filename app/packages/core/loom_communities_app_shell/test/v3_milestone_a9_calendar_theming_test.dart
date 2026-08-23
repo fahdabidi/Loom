@@ -106,10 +106,10 @@ Future<_InstalledTabletop> _install(
   }
 }
 
-LoomPersonaDefinition _member(_InstalledTabletop installed) => installed
+LoomActorIdentity _member(_InstalledTabletop installed) => installed
     .experience
-    .personas!
-    .firstWhere((persona) => persona.roleId == 'tabletop-member');
+    .actorIdentities!
+    .firstWhere((actorIdentity) => actorIdentity.roleId == 'tabletop-member');
 
 Widget _engineCalendar(
   _InstalledTabletop installed,
@@ -128,7 +128,7 @@ Widget _engineCalendar(
       body: SingleChildScrollView(
         child: EngineNativeCalendarSurface(
           experience: installed.experience,
-          persona: _member(installed),
+          actorIdentity: _member(installed),
           accent: Colors.deepPurple,
           modernTheme: theme,
           engine: installed.engine,

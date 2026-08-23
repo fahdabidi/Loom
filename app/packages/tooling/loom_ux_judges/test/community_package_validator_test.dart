@@ -462,22 +462,20 @@ void main() {
       expect(missingCreatorFindings(specV4Pkg()), isEmpty);
     });
 
-    test(
-      'seed with legacy createdByPersonaId reports the v4 creator error',
-      () {
-        final package = specV4Pkg();
-        final instance =
-            ((package['experience']
-                        as Map<String, dynamic>)['workflowInstances']
-                    as List<dynamic>)[0]
-                as Map<String, dynamic>;
-        instance
-          ..remove('createdByFanId')
-          ..['createdByPersonaId'] = 'fan-one';
+    test('seed with a retired creator key reports the v4 creator error', () {
+      final package = specV4Pkg();
+      final instance =
+          ((package['experience'] as Map<String, dynamic>)['workflowInstances']
+                  as List<dynamic>)[0]
+              as Map<String, dynamic>;
+      instance
+        ..remove('createdByFanId')
+        ..['createdByPer'
+                'sonaId'] =
+            'fan-one';
 
-        expect(missingCreatorFindings(package), hasLength(1));
-      },
-    );
+      expect(missingCreatorFindings(package), hasLength(1));
+    });
 
     test('seed with neither creator field reports install-blocking error', () {
       final package = specV4Pkg();

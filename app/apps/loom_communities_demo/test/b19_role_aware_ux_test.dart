@@ -24,7 +24,7 @@ void main() {
     await installMetadataEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
 
-    await selectPersona(tester, 'mosque-admin');
+    await selectActorIdentity(tester, 'mosque-admin');
     await tester.scrollUntilVisible(
       find.byKey(ValueKey('workflow-${announcement.workflowId}')),
       180,
@@ -35,7 +35,7 @@ void main() {
       findsOneWidget,
     );
 
-    await selectPersona(tester, 'mosque-member');
+    await selectActorIdentity(tester, 'mosque-member');
     await tester.scrollUntilVisible(
       find.byKey(ValueKey('workflow-${announcement.workflowId}')),
       180,
@@ -60,7 +60,7 @@ void main() {
       findsOneWidget,
     );
 
-    await selectPersona(tester, 'mosque-admin');
+    await selectActorIdentity(tester, 'mosque-admin');
     await tester.scrollUntilVisible(
       find.byKey(ValueKey('workflow-${careRequest.workflowId}')),
       180,

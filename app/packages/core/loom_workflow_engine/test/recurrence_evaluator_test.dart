@@ -125,13 +125,16 @@ void main() {
     });
   });
 
-  test('parses stringly typed numeric literals and rejects out-of-range values', () {
-    final parsed = _rule({'freq': 'weekly', 'interval': '2', 'count': '3'});
-    expect(parsed.interval, 2);
-    expect(parsed.count, 3);
-    expect(
-      () => _rule({'freq': 'weekly', 'count': 5000}),
-      throwsA(isA<StateError>()),
-    );
-  });
+  test(
+    'parses stringly typed numeric literals and rejects out-of-range values',
+    () {
+      final parsed = _rule({'freq': 'weekly', 'interval': '2', 'count': '3'});
+      expect(parsed.interval, 2);
+      expect(parsed.count, 3);
+      expect(
+        () => _rule({'freq': 'weekly', 'count': 5000}),
+        throwsA(isA<StateError>()),
+      );
+    },
+  );
 }

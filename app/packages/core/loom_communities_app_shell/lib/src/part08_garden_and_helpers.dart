@@ -9,7 +9,7 @@ class _GardenEventRsvpTile extends StatelessWidget {
   });
 
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -191,7 +191,7 @@ class _GardenPlantExchangeTile extends StatelessWidget {
   });
 
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -601,18 +601,18 @@ String _displayTitleFor(LoomWorkflowDefinition workflow) {
 String _domainSummaryFor(
   String category,
   LoomWorkflowDefinition workflow,
-  LoomPersonaWorkflowView view,
+  LoomRoleWorkflowView view,
 ) {
   if (view.waitingForPrerequisite) {
     return _waitingSummaryFor(category);
   }
-  if (view.state == LoomPersonaWorkflowState.disabled) {
+  if (view.state == LoomRoleWorkflowState.disabled) {
     return 'Another community role manages this item.';
   }
-  if (view.state == LoomPersonaWorkflowState.readOnly) {
+  if (view.state == LoomRoleWorkflowState.readOnly) {
     return 'You can read the current details without changing them.';
   }
-  if (view.state == LoomPersonaWorkflowState.receiver) {
+  if (view.state == LoomRoleWorkflowState.receiver) {
     switch (category) {
       case 'Event':
         return 'An event update is ready with your attendance choice.';

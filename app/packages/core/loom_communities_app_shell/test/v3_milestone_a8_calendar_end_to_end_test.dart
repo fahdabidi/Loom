@@ -145,9 +145,9 @@ Widget _appShell(_InstalledTabletop installed) => MaterialApp(
   ),
 );
 
-LoomPersonaDefinition _persona(_InstalledTabletop installed, String id) =>
-    installed.experience.personas!.firstWhere(
-      (persona) => persona.roleId == id,
+LoomActorIdentity _actorIdentity(_InstalledTabletop installed, String id) =>
+    installed.experience.actorIdentities!.firstWhere(
+      (actorIdentity) => actorIdentity.roleId == id,
     );
 
 String _fixtureFanIdForRole(String roleId) => switch (roleId) {
@@ -182,7 +182,7 @@ Widget _calendar(
           child: EngineNativeCalendarSurface(
             key: ValueKey('a8-calendar-$roleId-$revision'),
             experience: installed.experience,
-            persona: _persona(installed, roleId),
+            actorIdentity: _actorIdentity(installed, roleId),
             accent: Colors.deepPurple,
             modernTheme: null,
             engine: installed.engine,
@@ -1332,7 +1332,7 @@ void main() {
   );
 
   testWidgets(
-    'Make recurring creates no duplicate event/persona response pairs',
+    'Make recurring creates no duplicate event/actorIdentity response pairs',
     (tester) async {
       const accounts = <LoomAccount>[
         LoomAccount(
@@ -2921,7 +2921,7 @@ void main() {
             child: Scaffold(
               body: EngineNativeCalendarSurface(
                 experience: installed.experience,
-                persona: _persona(installed, 'tabletop-member'),
+                actorIdentity: _actorIdentity(installed, 'tabletop-member'),
                 accent: Colors.deepPurple,
                 modernTheme: null,
                 engine: engine,

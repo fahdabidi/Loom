@@ -70,7 +70,7 @@ class HttpLiveMigrationExecutor implements LiveMigrationExecutor {
   ) async {
     if (plan.findings.isNotEmpty) {
       throw StateError(
-        'Execution refused: ${plan.findings.length} persona-to-role '
+        'Execution refused: ${plan.findings.length} role-to-role '
         'translation finding(s) require a human decision.',
       );
     }

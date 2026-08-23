@@ -103,7 +103,7 @@ class SurfaceQuery {
 /// or remote Firestore) must satisfy this interface. Card-surface UI code only
 /// ever talks to this abstraction.
 abstract class WorkflowEngineApi {
-  /// READ a collection of instances visible on a given tab for a given persona.
+  /// READ a collection of instances visible on a given tab for a given fan.
   Future<InstancePage> queryInstances({
     required String tabId,
     required String fanId,
@@ -112,7 +112,7 @@ abstract class WorkflowEngineApi {
     String? cursor,
   });
 
-  /// READ the transitions available on ONE instance for one persona.
+  /// READ the transitions available on ONE instance for one fan.
   List<LoomWorkflowTransition> availableTransitions({
     required String workflowType,
     required String instanceId,

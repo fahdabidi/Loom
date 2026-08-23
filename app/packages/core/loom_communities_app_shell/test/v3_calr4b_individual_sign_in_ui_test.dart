@@ -211,43 +211,46 @@ Future<void> _signInAs(WidgetTester tester, String displayName) async {
     await tester.tap(find.text(displayName).first);
     await _pumpUntil(
       tester,
-      find.byKey(const ValueKey('persona-picker-button')),
+      find.byKey(const ValueKey('actor-identity-picker-button')),
     );
     await _settle(tester);
     return;
   }
-  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+  await tester.tap(find.byKey(const ValueKey('actor-identity-picker-button')));
   await _pumpUntil(
     tester,
-    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+    find.byKey(const ValueKey('actor-identity-sign-in-specific-person')),
   );
   await tester.ensureVisible(
-    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+    find.byKey(const ValueKey('actor-identity-sign-in-specific-person')),
   );
   await tester.pump();
   await tester.tap(
-    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+    find.byKey(const ValueKey('actor-identity-sign-in-specific-person')),
   );
   await _pumpUntil(tester, find.text(displayName));
   await tester.ensureVisible(find.text(displayName).first);
   await tester.pump();
   await tester.tap(find.text(displayName).first);
-  await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('actor-identity-picker-button')),
+  );
   await _settle(tester);
 }
 
 Future<void> _openSpecificPersonSignIn(WidgetTester tester) async {
-  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+  await tester.tap(find.byKey(const ValueKey('actor-identity-picker-button')));
   await _pumpUntil(
     tester,
-    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+    find.byKey(const ValueKey('actor-identity-sign-in-specific-person')),
   );
   await tester.ensureVisible(
-    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+    find.byKey(const ValueKey('actor-identity-sign-in-specific-person')),
   );
   await tester.pump();
   await tester.tap(
-    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+    find.byKey(const ValueKey('actor-identity-sign-in-specific-person')),
   );
   await _pumpUntil(tester, find.text('Create New Account'));
 }
@@ -337,7 +340,7 @@ void main() {
   );
 
   testWidgets(
-    'sign-up persona options come from the open community declaration',
+    'sign-up actorIdentity options come from the open community declaration',
     (tester) async {
       final community = _apartmentEventsCommunity();
       await tester.pumpWidget(
@@ -424,17 +427,19 @@ void main() {
         await tester.pumpAndSettle();
         await _pumpUntil(
           tester,
-          find.byKey(const ValueKey('persona-picker-button')),
+          find.byKey(const ValueKey('actor-identity-picker-button')),
         );
 
-        await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+        await tester.tap(
+          find.byKey(const ValueKey('actor-identity-picker-button')),
+        );
         await _pumpUntil(
           tester,
-          find.byKey(const ValueKey('persona-picker-dialog')),
+          find.byKey(const ValueKey('actor-identity-picker-dialog')),
         );
         expect(
           find.descendant(
-            of: find.byKey(const ValueKey('persona-picker-dialog')),
+            of: find.byKey(const ValueKey('actor-identity-picker-dialog')),
             matching: find.text('Signed in as Priya N.'),
           ),
           findsOneWidget,

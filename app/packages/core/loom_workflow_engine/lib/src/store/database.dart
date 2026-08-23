@@ -105,7 +105,7 @@ class WorkflowDatabase {
         instance_data TEXT NOT NULL,
         created_at ${_dialect.isSqlite ? 'INTEGER' : 'BIGINT'} NOT NULL,
         updated_at ${_dialect.isSqlite ? 'INTEGER' : 'BIGINT'} NOT NULL,
-        created_by_persona_id TEXT NOT NULL
+        created_by_fan_id TEXT NOT NULL
       );
     ''');
     await _db.runCustom('''
@@ -240,11 +240,11 @@ class WorkflowDatabase {
       _dialect.isSqlite
           ? 'INSERT INTO workflow_instances '
                 '(instance_id, community_id, workflow_type, current_state, '
-                'instance_data, created_at, updated_at, created_by_persona_id) '
+                'instance_data, created_at, updated_at, created_by_fan_id) '
                 'VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
           : r'INSERT INTO workflow_instances '
                 '(instance_id, community_id, workflow_type, current_state, '
-                'instance_data, created_at, updated_at, created_by_persona_id) '
+                'instance_data, created_at, updated_at, created_by_fan_id) '
                 r'VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
       [
         instanceId,
@@ -427,10 +427,10 @@ class WorkflowDatabase {
     final result = await _db.runSelect(
       _dialect.isSqlite
           ? 'SELECT * FROM workflow_instances '
-                'WHERE community_id = ? AND created_by_persona_id = ? '
+                'WHERE community_id = ? AND created_by_fan_id = ? '
                 'ORDER BY workflow_type ASC, instance_id ASC'
           : r'SELECT * FROM workflow_instances '
-                r'WHERE community_id = $1 AND created_by_persona_id = $2 '
+                r'WHERE community_id = $1 AND created_by_fan_id = $2 '
                 'ORDER BY workflow_type ASC, instance_id ASC',
       [communityId, fanId],
     );
@@ -561,7 +561,7 @@ class WorkflowInstanceRow {
       instanceData: row['instance_data'] as String,
       createdAt: row['created_at'] as int,
       updatedAt: row['updated_at'] as int,
-      createdByFanId: row['created_by_persona_id'] as String,
+      createdByFanId: row['created_by_fan_id'] as String,
     );
   }
 }

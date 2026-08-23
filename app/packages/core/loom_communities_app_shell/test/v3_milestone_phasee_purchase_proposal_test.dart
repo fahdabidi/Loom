@@ -100,8 +100,8 @@ Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder to disappear');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectTestTabletopPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectTestTabletopActorIdentity(tester, fanId);
 }
 
 Future<void> _selectTab(
@@ -343,7 +343,7 @@ void main() {
             ),
           ),
         );
-        await _selectPersona(tester, 'tabletop-member');
+        await _selectActorIdentity(tester, 'tabletop-member');
 
         const approvedTitle = 'Phase E Approved Game';
         const rejectedTitle = 'Phase E Rejected Game';
@@ -405,7 +405,7 @@ void main() {
         );
         expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
 
-        await _selectPersona(tester, 'tabletop-organizer');
+        await _selectActorIdentity(tester, 'tabletop-organizer');
         await _selectTab(
           tester,
           tabId: 'admin',
@@ -473,7 +473,7 @@ void main() {
           'tabletop-organizer',
         );
 
-        await _selectPersona(tester, 'tabletop-member');
+        await _selectActorIdentity(tester, 'tabletop-member');
         await _selectTab(
           tester,
           tabId: 'home',
@@ -573,7 +573,7 @@ void main() {
 
         // A second Admin query after resubmission must show the revised
         // proposal again in the pending queue.
-        await _selectPersona(tester, 'tabletop-organizer');
+        await _selectActorIdentity(tester, 'tabletop-organizer');
         await _selectTab(
           tester,
           tabId: 'admin',

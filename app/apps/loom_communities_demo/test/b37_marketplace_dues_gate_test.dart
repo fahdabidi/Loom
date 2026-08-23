@@ -15,7 +15,7 @@ void main() {
       final fixture = _writeFixture();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'tabletop-member');
+      await selectActorIdentity(tester, 'tabletop-member');
       await _tapTab(tester, 'marketplace');
       await _openListingDetail(tester, 'listing-root');
 
@@ -41,7 +41,7 @@ void main() {
       final fixture = _writeFixture();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _installAndOpen(tester, fixture);
-      await selectPersona(tester, 'tabletop-member');
+      await selectActorIdentity(tester, 'tabletop-member');
       await _tapTab(tester, 'giving');
 
       final pay = find.byKey(

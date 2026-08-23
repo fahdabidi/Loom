@@ -70,7 +70,7 @@ void main() {
                 ),
               )
               .toList(growable: false),
-          aiPersona: config.aiPersona,
+          aiGuideProfile: config.aiGuideProfile,
           adPosture: config.adPosture,
           installedExtensions: config.installedExtensions,
           version: config.version + 1,

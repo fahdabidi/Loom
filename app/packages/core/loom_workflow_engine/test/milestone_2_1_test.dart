@@ -63,7 +63,7 @@ LoomWorkflowStateMachine _calendarInviteMachine() {
       'title': InstanceDataField(type: 'text', required: true),
       'audienceScope': InstanceDataField(type: 'audienceSelector'),
       'invitedFanIds': InstanceDataField(type: 'fanId[]'),
-      'rsvpByFan': InstanceDataField(type: 'personaResponseMap'),
+      'rsvpByFan': InstanceDataField(type: 'fanResponseMap'),
     },
   );
 }
@@ -143,7 +143,7 @@ void main() {
       expect(individualMatches, ['bob']);
     });
 
-    test('selected audience excludes non-invited persona receiver binding', () {
+    test('selected audience excludes non-invited fan receiver binding', () {
       final bindings = resolveBindings(
         _calendarInviteMachine(),
         'scheduled',
@@ -159,7 +159,7 @@ void main() {
     });
 
     test(
-      'queryInstances fans out on read for persona audience membership',
+      'queryInstances fans out on read for fan audience membership',
       () async {
         final api = _makeApi();
         for (var index = 0; index < 5; index += 1) {

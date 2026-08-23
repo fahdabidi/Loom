@@ -257,9 +257,9 @@ void main() {
       );
     });
 
-    test('validates allowedRoleIds against the supplied persona registry', () {
+    test('validates allowedRoleIds against the supplied role registry', () {
       final a = makeMachine(
-        workflowType: 'persona-source',
+        workflowType: 'role-source',
         initialState: 'start',
         states: {
           'start': {'label': 'Start'},
@@ -279,7 +279,7 @@ void main() {
       );
 
       final b = makeMachine(
-        workflowType: 'bad-persona',
+        workflowType: 'bad-role',
         initialState: 'start',
         states: {
           'start': {'label': 'Start'},
@@ -299,7 +299,7 @@ void main() {
       );
 
       final c = makeMachine(
-        workflowType: 'bad-persona-dup',
+        workflowType: 'bad-role-dup',
         initialState: 'start',
         states: {
           'start': {'label': 'Start'},
@@ -320,7 +320,7 @@ void main() {
 
       final report = WorkflowValidator(
         knownRoleIds: {'known-user'},
-      ).validate({'persona-source': a, 'bad-persona': b, 'bad-persona-dup': c});
+      ).validate({'role-source': a, 'bad-role': b, 'bad-role-dup': c});
 
       final warnings = report.warnings
           .where((f) => f.type == 'dangling_allowed_persona_id')
@@ -336,7 +336,7 @@ void main() {
         warnings.any((f) => f.message.contains('known-user')),
         isFalse,
         reason:
-            'A valid persona ID in the supplied registry should not be flagged',
+            'A valid role ID in the supplied registry should not be flagged',
       );
       expect(
         report.warnings.any(
@@ -345,13 +345,13 @@ void main() {
               f.message.contains('typo-user'),
         ),
         isTrue,
-        reason: 'Expected dangling_allowed_persona_id warnings for typo-user',
+        reason: 'Expected role-registry warnings for typo-user',
       );
     });
 
     test('flags a missing allowedRoleIds entry', () {
       final machine = makeMachine(
-        workflowType: 'bad-allowed-persona',
+        workflowType: 'bad-allowed-role',
         initialState: 'start',
         states: {
           'start': {'label': 'Start'},
@@ -372,7 +372,7 @@ void main() {
 
       final report = WorkflowValidator(
         knownRoleIds: {'known-user'},
-      ).validate({'bad-allowed-persona': machine});
+      ).validate({'bad-allowed-role': machine});
       expect(
         report.warnings.any(
           (f) =>
@@ -380,8 +380,7 @@ void main() {
               f.message.contains('unknown-user'),
         ),
         isTrue,
-        reason:
-            'Expected a dangling_allowed_persona_id warning for unknown-user',
+        reason: 'Expected a role-registry warning for unknown-user',
       );
     });
 

@@ -1,40 +1,40 @@
 part of '../loom_communities_app_shell.dart';
 
 String _entryTextForState({
-  required LoomPersonaWorkflowState state,
+  required LoomRoleWorkflowState state,
   required LoomWorkflowDefinition workflow,
-  required LoomWorkflowPersonaPolicy policy,
+  required LoomWorkflowRolePolicy policy,
   required bool waiting,
 }) {
   if (waiting) {
     return 'Waiting for the required prior action.';
   }
-  if (state == LoomPersonaWorkflowState.receiver) {
+  if (state == LoomRoleWorkflowState.receiver) {
     return policy.receiverEntryText ??
         'A completed result is ready for this role.';
   }
-  if (state == LoomPersonaWorkflowState.readOnly) {
+  if (state == LoomRoleWorkflowState.readOnly) {
     return policy.readOnlyText ??
         'This role can read the current record without editing.';
   }
-  if (state == LoomPersonaWorkflowState.disabled) {
+  if (state == LoomRoleWorkflowState.disabled) {
     return policy.disabledReason;
   }
   return workflow.entryText;
 }
 
 String _actionTextForState(
-  LoomPersonaWorkflowState state,
-  LoomWorkflowPersonaPolicy policy,
+  LoomRoleWorkflowState state,
+  LoomWorkflowRolePolicy policy,
   LoomWorkflowDefinition workflow,
 ) {
-  if (state == LoomPersonaWorkflowState.receiver) {
+  if (state == LoomRoleWorkflowState.receiver) {
     return _receiverActionLabel(workflow: workflow, policy: policy);
   }
-  if (state == LoomPersonaWorkflowState.readOnly) {
+  if (state == LoomRoleWorkflowState.readOnly) {
     return 'View only';
   }
-  if (state == LoomPersonaWorkflowState.disabled) {
+  if (state == LoomRoleWorkflowState.disabled) {
     return 'Not available';
   }
   return _primaryActionLabelFor(workflow);
@@ -42,34 +42,34 @@ String _actionTextForState(
 
 String _resultTextForState(
   LoomWorkflowDefinition workflow,
-  LoomWorkflowPersonaPolicy policy,
-  LoomPersonaWorkflowState state,
+  LoomWorkflowRolePolicy policy,
+  LoomRoleWorkflowState state,
 ) {
-  if (state == LoomPersonaWorkflowState.receiver) {
+  if (state == LoomRoleWorkflowState.receiver) {
     return policy.receiverResultText ?? 'Community update received.';
   }
   return workflow.resultText;
 }
 
 String _rationaleForState(
-  LoomPersonaWorkflowState state,
-  LoomWorkflowPersonaPolicy policy,
+  LoomRoleWorkflowState state,
+  LoomWorkflowRolePolicy policy,
 ) {
   switch (state) {
-    case LoomPersonaWorkflowState.actor:
+    case LoomRoleWorkflowState.actor:
       return 'You can manage this item.';
-    case LoomPersonaWorkflowState.receiver:
+    case LoomRoleWorkflowState.receiver:
       return 'This item is ready after the first action is finished.';
-    case LoomPersonaWorkflowState.readOnly:
+    case LoomRoleWorkflowState.readOnly:
       return 'You can read this item without editing it.';
-    case LoomPersonaWorkflowState.disabled:
+    case LoomRoleWorkflowState.disabled:
       return policy.disabledReason;
   }
 }
 
 String _receiverActionLabel({
   required LoomWorkflowDefinition workflow,
-  required LoomWorkflowPersonaPolicy policy,
+  required LoomWorkflowRolePolicy policy,
 }) {
   final label = policy.receiverActionText;
   if (label == null || label == 'Receive') {
@@ -708,15 +708,15 @@ String _surfaceInputFor(String category, LoomWorkflowDefinition workflow) {
   return _domainSummaryFor(
     category,
     workflow,
-    LoomPersonaWorkflowView(
-      state: LoomPersonaWorkflowState.actor,
+    LoomRoleWorkflowView(
+      state: LoomRoleWorkflowState.actor,
       completed: false,
       received: false,
       waitingForPrerequisite: false,
       entryText: workflow.entryText,
       actionText: workflow.actionText,
       resultText: workflow.resultText,
-      personaRationale: 'Actor may complete this action.',
+      roleRationale: 'Actor may complete this action.',
       waitingText: '',
     ),
   );

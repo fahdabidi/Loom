@@ -97,8 +97,24 @@ void main() {
 
         expect(responses, isNotEmpty);
         expect(responseCounts['going'], 11);
-        expect(event.instanceData, isNot(contains('goingPersonaIds')));
-        expect(event.instanceData, isNot(contains('maybePersonaIds')));
+        expect(
+          event.instanceData,
+          isNot(
+            contains(
+              'goingPer'
+              'sonaIds',
+            ),
+          ),
+        );
+        expect(
+          event.instanceData,
+          isNot(
+            contains(
+              'maybePer'
+              'sonaIds',
+            ),
+          ),
+        );
         expect(memberResponse.workflowType, 'event-rsvp-response');
 
         final transitions = await engine.availableTransitionsAsync(

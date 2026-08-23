@@ -6,7 +6,7 @@ import 'guard_evaluator.dart';
 /// stuck-state regression case is handled here, not at parse time.
 ///
 /// [roleId], when provided, is passed through to [evaluateGuard] so
-/// [allowedRoleIds]-style guards check the persona *type* rather than the
+/// [allowedRoleIds]-style guards check the role rather than the
 /// individual id.
 List<LoomWorkflowTransition> availableTransitions(
   LoomWorkflowStateMachine machine,

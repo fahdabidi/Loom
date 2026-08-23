@@ -74,7 +74,8 @@ void main() {
       expect(
         documented,
         isNotEmpty,
-        reason: 'Parsed no vocabularies out of permissions.md — the §4 table '
+        reason:
+            'Parsed no vocabularies out of permissions.md — the §4 table '
             'format has probably changed, and this test is no longer '
             'checking anything.',
       );
@@ -84,7 +85,8 @@ void main() {
       expect(
         documented.keys.toSet(),
         equals(ArchetypeResolver.bespokeVocabularies.keys.toSet()),
-        reason: 'permissions.md §4 documents a different set of bespoke '
+        reason:
+            'permissions.md §4 documents a different set of bespoke '
             'families than ArchetypeResolver implements. If a family was '
             'promoted or demoted, both must change together — and check '
             'whether it has a dispatcher case before calling it bespoke.',
@@ -96,7 +98,8 @@ void main() {
         expect(
           documented[family],
           equals(ArchetypeResolver.bespokeVocabularies[family]),
-          reason: 'The action vocabulary for "$family" differs between '
+          reason:
+              'The action vocabulary for "$family" differs between '
               'permissions.md §4 and ArchetypeResolver. Adding an action to '
               'one without the other makes the doc lie to authoring agents, '
               'or makes the validator reject values the doc invites.',
@@ -112,21 +115,24 @@ void main() {
       expect(
         families.difference(ArchetypeResolver.permissionPrefixes.keys.toSet()),
         isEmpty,
-        reason: 'A family with no prefix derives no permission id at all, so '
+        reason:
+            'A family with no prefix derives no permission id at all, so '
             'its transitions would silently grant nothing.',
       );
     });
 
     test('bespoke and generic families are disjoint, and table is generic', () {
       expect(
-        ArchetypeResolver.bespokeFamilies
-            .intersection(ArchetypeResolver.genericFamilies),
+        ArchetypeResolver.bespokeFamilies.intersection(
+          ArchetypeResolver.genericFamilies,
+        ),
         isEmpty,
       );
       expect(
         ArchetypeResolver.genericFamilies,
         contains('table'),
-        reason: '`table` renders as a grid but has no dispatcher case — that '
+        reason:
+            '`table` renders as a grid but has no dispatcher case — that '
             'is list layout, not a semantic contract. It derives '
             'structurally and takes no action field.',
       );

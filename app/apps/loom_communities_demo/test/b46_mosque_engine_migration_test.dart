@@ -268,7 +268,7 @@ void main() {
             'member\'s private care notification.',
       );
 
-      await _selectPersona(tester, 'masjid-admin');
+      await _selectActorIdentity(tester, 'masjid-admin');
       expect(find.byKey(const ValueKey('community-tab-admin')), findsOneWidget);
       await _selectTab(tester, 'admin');
       await _waitForFinder(
@@ -347,8 +347,8 @@ Future<void> _tapEngineAction(
   await _pumpForUi(tester);
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectActorIdentity(tester, fanId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

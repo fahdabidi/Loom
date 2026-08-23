@@ -106,7 +106,7 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
 }
 
 Future<void> _openMarketplaceAsMember(WidgetTester tester) async {
-  await selectTestTabletopPersona(tester, 'tabletop-member');
+  await selectTestTabletopActorIdentity(tester, 'tabletop-member');
   final marketplace = find.byKey(const ValueKey('community-tab-marketplace'));
   await _pumpUntil(tester, marketplace);
   await tester.ensureVisible(marketplace);
@@ -115,7 +115,7 @@ Future<void> _openMarketplaceAsMember(WidgetTester tester) async {
 }
 
 Future<void> _openCatanAsMember(WidgetTester tester) async {
-  await selectTestTabletopPersona(tester, 'tabletop-member');
+  await selectTestTabletopActorIdentity(tester, 'tabletop-member');
   final marketplace = find.byKey(const ValueKey('community-tab-marketplace'));
   await _pumpUntil(tester, marketplace);
   await tester.ensureVisible(marketplace);

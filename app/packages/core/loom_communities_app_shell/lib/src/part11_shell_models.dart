@@ -636,9 +636,9 @@ class LoomAppShellTabSpec {
     return cardSurfaceFamilies.contains(registry.cardSurfaceFamily);
   }
 
-  String descriptionFor(LoomPersonaDefinition persona) {
+  String descriptionFor(LoomActorIdentity actorIdentity) {
     if (visibleRoleIds.isEmpty) return description;
-    return '$description Tuned for ${persona.label}.';
+    return '$description Tuned for ${actorIdentity.label}.';
   }
 
   bool get declaresPinnedSurfaces => pinnedWorkflowIds.isNotEmpty;
@@ -702,7 +702,7 @@ class LoomDeclarativeTabSpec {
 class CommunityAppShellCustomizationSpec {
   const CommunityAppShellCustomizationSpec({
     required this.experience,
-    required this.persona,
+    required this.actorIdentity,
     required this.tabs,
     required this.selectedTab,
     required this.visibleWorkflowIds,
@@ -714,7 +714,7 @@ class CommunityAppShellCustomizationSpec {
 
   factory CommunityAppShellCustomizationSpec.fromSelection({
     required LoomExperienceDefinition experience,
-    required LoomPersonaDefinition persona,
+    required LoomActorIdentity actorIdentity,
     required List<LoomAppShellTabSpec> tabs,
     required LoomAppShellTabSpec selectedTab,
     required List<String> visibleWorkflowIds,
@@ -744,11 +744,11 @@ class CommunityAppShellCustomizationSpec {
         : _screenBackgroundFor(accent);
     return CommunityAppShellCustomizationSpec(
       experience: experience,
-      persona: persona,
+      actorIdentity: actorIdentity,
       tabs: List.unmodifiable(tabs),
       selectedTab: selectedTab,
       visibleWorkflowIds: List.unmodifiable(visibleWorkflowIds),
-      focusKey: '${persona.roleId}:${selectedTab.tabId}',
+      focusKey: '${actorIdentity.roleId}:${selectedTab.tabId}',
       focusedWorkflowId: focusedWorkflowId,
       presentationStatesByWorkflowId: Map.unmodifiable(states),
       theme: LoomSurfaceTheme(
@@ -765,7 +765,7 @@ class CommunityAppShellCustomizationSpec {
   }
 
   final LoomExperienceDefinition experience;
-  final LoomPersonaDefinition persona;
+  final LoomActorIdentity actorIdentity;
   final List<LoomAppShellTabSpec> tabs;
   final LoomAppShellTabSpec selectedTab;
   final List<String> visibleWorkflowIds;
@@ -832,9 +832,9 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     ],
     requiredInteractions: [
       'resolveCommunityTheme',
-      'resolvePersonaTabs',
-      'getPersonaSurfacePresentationState',
-      'updatePersonaSurfacePresentationState',
+      'resolveRoleTabs',
+      'getActorIdentitySurfacePresentationState',
+      'updateActorIdentitySurfacePresentationState',
       'previewNavigationConfiguration',
     ],
     requiredStates: ['minimized', 'medium', 'expanded', 'pinned or no-pin'],
@@ -857,7 +857,7 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     requiredInteractions: const [
       'queryInstances',
       'resolveCommunityTheme',
-      'resolvePersonaTabs',
+      'resolveRoleTabs',
     ],
     requiredStates: const [
       'Workflow instances as declared in community JSON',
@@ -1044,7 +1044,7 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     requiredStates: ['member selected', 'member not selected'],
     evidenceRequirements: ['audience picker screenshot'],
     fallbackPolicy:
-        'Audience fields require structured persona IDs rather than comma-separated text.',
+        'Audience fields require structured fan IDs rather than comma-separated text.',
   ),
   'single-item-preference': LoomTabRendererContract(
     rendererId: 'SingleItemPreferenceTabSurface',
@@ -1376,8 +1376,8 @@ class LoomExperienceDefinition {
     required this.tagline,
     required this.accentColor,
     required this.workflows,
-    this.personas,
-    this.personaPolicies,
+    this.actorIdentities,
+    this.rolePolicies,
     this.threads,
     this.notifications,
     this.exportWizard,
@@ -1405,8 +1405,8 @@ class LoomExperienceDefinition {
   final String tagline;
   final int accentColor;
   final List<LoomWorkflowDefinition> workflows;
-  final List<LoomPersonaDefinition>? personas;
-  final Map<String, LoomWorkflowPersonaPolicy>? personaPolicies;
+  final List<LoomActorIdentity>? actorIdentities;
+  final Map<String, LoomWorkflowRolePolicy>? rolePolicies;
   final List<LoomMessageThread>? threads;
   final List<LoomNotificationItem>? notifications;
   final LoomExportWizardSeed? exportWizard;
@@ -1534,37 +1534,37 @@ class LoomEvidenceTarget {
   final List<String> seedDataFiles;
 }
 
-enum LoomPersonaAccessMode {
+enum LoomActorIdentityAccessMode {
   open,
   requiresApproval,
   requiresInvite;
 
-  static LoomPersonaAccessMode fromJson(Object? value) {
+  static LoomActorIdentityAccessMode fromJson(Object? value) {
     return switch (value) {
-      null => LoomPersonaAccessMode.open,
-      'open' => LoomPersonaAccessMode.open,
-      'requiresApproval' => LoomPersonaAccessMode.requiresApproval,
-      'requiresInvite' => LoomPersonaAccessMode.requiresInvite,
+      null => LoomActorIdentityAccessMode.open,
+      'open' => LoomActorIdentityAccessMode.open,
+      'requiresApproval' => LoomActorIdentityAccessMode.requiresApproval,
+      'requiresInvite' => LoomActorIdentityAccessMode.requiresInvite,
       _ => throw FormatException(
-        'Invalid persona accessMode "$value". Expected one of: '
+        'Invalid actor-identity accessMode "$value". Expected one of: '
         'open, requiresApproval, requiresInvite.',
       ),
     };
   }
 }
 
-class LoomPersonaDefinition {
-  const LoomPersonaDefinition({
+class LoomActorIdentity {
+  const LoomActorIdentity({
     required this.fanId,
     required this.roleId,
     required this.label,
     required this.roleLabel,
     required this.description,
     this.accountId,
-    this.accessMode = LoomPersonaAccessMode.open,
+    this.accessMode = LoomActorIdentityAccessMode.open,
   });
 
-  /// The individual account id represented by this selectable persona.
+  /// The individual account id represented by this selectable actor identity.
   final String fanId;
 
   /// The role id (e.g. `tabletop-member`) -- shared by every account
@@ -1575,19 +1575,19 @@ class LoomPersonaDefinition {
   final String label;
   final String roleLabel;
   final String description;
-  final LoomPersonaAccessMode accessMode;
+  final LoomActorIdentityAccessMode accessMode;
 
   /// The specific signed-in individual account's id (e.g.
   /// `tabletop-member-03`), when signed in as a specific person via "Sign in
-  /// as a specific person...". Null when the selectable persona's [fanId]
+  /// as a specific person...". Null when the selectable actor identity's [fanId]
   /// itself is the active individual.
   final String? accountId;
 }
 
-enum LoomPersonaWorkflowState { actor, receiver, readOnly, disabled }
+enum LoomRoleWorkflowState { actor, receiver, readOnly, disabled }
 
-class LoomWorkflowPersonaPolicy {
-  const LoomWorkflowPersonaPolicy({
+class LoomWorkflowRolePolicy {
+  const LoomWorkflowRolePolicy({
     required this.actorRoleIds,
     this.receiverRoleIds = const [],
     this.readOnlyRoleIds = const [],
@@ -1596,7 +1596,7 @@ class LoomWorkflowPersonaPolicy {
     this.receiverActionText,
     this.receiverResultText,
     this.readOnlyText,
-    this.disabledReason = 'Not available for this persona',
+    this.disabledReason = 'Not available for this actor identity',
   });
 
   final List<String> actorRoleIds;
@@ -1610,8 +1610,8 @@ class LoomWorkflowPersonaPolicy {
   final String disabledReason;
 }
 
-class LoomPersonaWorkflowView {
-  const LoomPersonaWorkflowView({
+class LoomRoleWorkflowView {
+  const LoomRoleWorkflowView({
     required this.state,
     required this.completed,
     required this.received,
@@ -1619,23 +1619,23 @@ class LoomPersonaWorkflowView {
     required this.entryText,
     required this.actionText,
     required this.resultText,
-    required this.personaRationale,
+    required this.roleRationale,
     required this.waitingText,
   });
 
-  final LoomPersonaWorkflowState state;
+  final LoomRoleWorkflowState state;
   final bool completed;
   final bool received;
   final bool waitingForPrerequisite;
   final String entryText;
   final String actionText;
   final String resultText;
-  final String personaRationale;
+  final String roleRationale;
   final String waitingText;
 }
 
-class LoomPersonaWorkflowMatrixRow {
-  const LoomPersonaWorkflowMatrixRow({
+class LoomRoleWorkflowMatrixRow {
+  const LoomRoleWorkflowMatrixRow({
     required this.extensionId,
     required this.workflowId,
     required this.roleId,
@@ -1647,7 +1647,7 @@ class LoomPersonaWorkflowMatrixRow {
   final String extensionId;
   final String workflowId;
   final String roleId;
-  final LoomPersonaWorkflowState state;
+  final LoomRoleWorkflowState state;
   final String rationale;
   final String? prerequisiteWorkflowId;
 }

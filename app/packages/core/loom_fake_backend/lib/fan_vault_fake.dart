@@ -72,7 +72,7 @@ class FanVaultFake implements FanVaultApi {
     final record = await _store.adPreferences(passportId);
     return AdPreferences(
       passportId: record.passportId,
-      personalizedAds: record.personalizedAds,
+      interestBasedAds: record.interestBasedAds,
       updatedAt: record.updatedAt,
     );
   }
@@ -80,18 +80,18 @@ class FanVaultFake implements FanVaultApi {
   @override
   Future<AdPreferences> putAdPreferences({
     required String passportId,
-    required bool personalizedAds,
+    required bool interestBasedAds,
     required String idempotencyKey,
   }) async {
     await Future<void>.delayed(latency);
     final record = await _store.putAdPreferences(
       passportId: passportId,
-      personalizedAds: personalizedAds,
+      interestBasedAds: interestBasedAds,
       idempotencyKey: idempotencyKey,
     );
     return AdPreferences(
       passportId: record.passportId,
-      personalizedAds: record.personalizedAds,
+      interestBasedAds: record.interestBasedAds,
       updatedAt: record.updatedAt,
     );
   }

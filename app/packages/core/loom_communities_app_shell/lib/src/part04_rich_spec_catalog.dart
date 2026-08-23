@@ -2495,7 +2495,7 @@ _RichWorkflowSpec _exportRichSpecFor(String id) {
             icon: Icons.rule_outlined,
             title: 'Policy reason',
             body:
-                'Each masked field shows guardian or coach visibility policy and the persona allowed to reveal it.',
+                'Each masked field shows guardian or coach visibility policy and the actor identity allowed to reveal it.',
           ),
           _ActionSurfaceDetail(
             icon: Icons.preview_outlined,
@@ -3288,7 +3288,7 @@ Widget? _domainPreviewPanelFor(
               icon: Icons.rule_outlined,
               title: 'Policy reason',
               body:
-                  'Each redaction lists the policy and the persona allowed to reveal it.',
+                  'Each redaction lists the policy and the actor identity allowed to reveal it.',
             ),
             _DomainPreviewRow(
               icon: Icons.preview_outlined,

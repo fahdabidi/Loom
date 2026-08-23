@@ -7,7 +7,7 @@ class EngineNativeListSurface extends StatefulWidget {
   const EngineNativeListSurface({
     super.key,
     required this.experience,
-    required this.persona,
+    required this.actorIdentity,
     required this.tabId,
     required this.accent,
     required this.modernTheme,
@@ -17,7 +17,7 @@ class EngineNativeListSurface extends StatefulWidget {
   });
 
   final LoomExperienceDefinition experience;
-  final LoomPersonaDefinition persona;
+  final LoomActorIdentity actorIdentity;
   final String tabId;
   final Color accent;
   final LoomCardTheme? modernTheme;
@@ -53,7 +53,7 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
     if (!hadDefinitions ||
         oldWidget.experience.extensionId != widget.experience.extensionId ||
         oldWidget.engine != widget.engine ||
-        oldWidget.persona.roleId != widget.persona.roleId ||
+        oldWidget.actorIdentity.roleId != widget.actorIdentity.roleId ||
         oldWidget.tabId != widget.tabId) {
       _load();
     }
@@ -106,7 +106,7 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
         final engine = snapshot.data!;
         final fanId = ActiveIdentityScope.of(
           context,
-        ).resolveEngineFanId(widget.persona.fanId);
+        ).resolveEngineFanId(widget.actorIdentity.fanId);
         return EngineNativeBindingDispatcher(
           engine: engine,
           definitions: definitions,
@@ -118,7 +118,7 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
                 definitions,
                 instance,
                 viewerFanId,
-                widget.persona.roleId,
+                widget.actorIdentity.roleId,
               ),
           builder: (context, bindings, changed) {
             if (bindings.isEmpty) {
@@ -165,7 +165,7 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
                         engine: engine,
                         communityExtensionId: widget.experience.extensionId,
                         fanId: fanId,
-                        roleId: widget.persona.roleId,
+                        roleId: widget.actorIdentity.roleId,
                         accent: widget.accent,
                         modernTheme: widget.modernTheme,
                         onInstanceChanged: changed,
@@ -182,7 +182,7 @@ class _EngineNativeListSurfaceState extends State<EngineNativeListSurface> {
                         engine: engine,
                         communityExtensionId: widget.experience.extensionId,
                         fanId: fanId,
-                        roleId: widget.persona.roleId,
+                        roleId: widget.actorIdentity.roleId,
                         accent: widget.accent,
                         onInstanceChanged: changed,
                         onInstanceScopedCreate: widget.onInstanceScopedCreate,

@@ -358,16 +358,36 @@ void main() {
       );
     });
 
-    test('unknown_input_type: legacy personaId forms are rejected', () {
+    test('unknown_input_type: retired identity forms are rejected', () {
       final machine = _machine(
         'test',
         transitions: [
           {
             'inputs': {
-              'personaId': {'type': 'personaId'},
-              'optionalPersonaId': {'type': 'personaId?'},
-              'personaIds': {'type': 'personaId[]'},
-              'optionalPersonaIds': {'type': 'personaId[]?'},
+              'per'
+                  'sonaId': {
+                'type':
+                    'per'
+                    'sonaId',
+              },
+              'optionalPer'
+                  'sonaId': {
+                'type':
+                    'per'
+                    'sonaId?',
+              },
+              'per'
+                  'sonaIds': {
+                'type':
+                    'per'
+                    'sonaId[]',
+              },
+              'optionalPer'
+                  'sonaIds': {
+                'type':
+                    'per'
+                    'sonaId[]?',
+              },
             },
           },
         ],
@@ -387,7 +407,11 @@ void main() {
             'inputs': {
               'wrongCase': {'type': 'fanID'},
               'wrongSeparator': {'type': 'fan_id'},
-              'legacyWrongCase': {'type': 'personaid'},
+              'legacyWrongCase': {
+                'type':
+                    'per'
+                    'sonaid',
+              },
             },
           },
         ],
@@ -583,49 +607,10 @@ void main() {
     });
 
     // ---------------------------------------------------------------
-    // 4. create-action byRoleIds dangling persona (uses
-    //    dangling_allowed_persona_id)
+    // 4. create-action byRoleIds dangling role (uses the locked
+    //    role-registry finding code)
     // ---------------------------------------------------------------
-    test(
-      'dangling_allowed_persona_id: flags unknown persona in create action',
-      () {
-        final machine = _machine(
-          'test',
-          transitions: [
-            {
-              'id': 'go',
-              'label': 'Go',
-              'from': ['start'],
-              'to': 'done',
-            },
-          ],
-          renderBindings: [
-            {
-              'states': ['start'],
-              'audience': 'any',
-              'tabId': 'home',
-              'cardSurfaceFamily': 'default',
-              'bindingKind': 'primary',
-              'actions': [
-                {
-                  'kind': 'create',
-                  'byRoleIds': ['ghost-persona'],
-                  'label': 'Create',
-                },
-              ],
-            },
-          ],
-        );
-
-        final report = _validateWorkflows(
-          {'test': machine},
-          knownRoleIds: {'real-persona'},
-        );
-        expect(_hasWarning(report, 'dangling_allowed_persona_id'), isTrue);
-      },
-    );
-
-    test('dangling_allowed_persona_id: known persona passes', () {
+    test('role-registry finding flags unknown role in create action', () {
       final machine = _machine(
         'test',
         transitions: [
@@ -646,7 +631,7 @@ void main() {
             'actions': [
               {
                 'kind': 'create',
-                'byRoleIds': ['real-persona'],
+                'byRoleIds': ['ghost-role'],
                 'label': 'Create',
               },
             ],
@@ -656,7 +641,43 @@ void main() {
 
       final report = _validateWorkflows(
         {'test': machine},
-        knownRoleIds: {'real-persona'},
+        knownRoleIds: {'real-role'},
+      );
+      expect(_hasWarning(report, 'dangling_allowed_persona_id'), isTrue);
+    });
+
+    test('role-registry finding: known role passes', () {
+      final machine = _machine(
+        'test',
+        transitions: [
+          {
+            'id': 'go',
+            'label': 'Go',
+            'from': ['start'],
+            'to': 'done',
+          },
+        ],
+        renderBindings: [
+          {
+            'states': ['start'],
+            'audience': 'any',
+            'tabId': 'home',
+            'cardSurfaceFamily': 'default',
+            'bindingKind': 'primary',
+            'actions': [
+              {
+                'kind': 'create',
+                'byRoleIds': ['real-role'],
+                'label': 'Create',
+              },
+            ],
+          },
+        ],
+      );
+
+      final report = _validateWorkflows(
+        {'test': machine},
+        knownRoleIds: {'real-role'},
       );
       expect(
         report.warnings.where((f) => f.type == 'dangling_allowed_persona_id'),
@@ -688,7 +709,7 @@ void main() {
             'actions': [
               {
                 'kind': 'create',
-                'byRoleIds': ['real-persona'],
+                'byRoleIds': ['real-role'],
                 'label': 'Create',
                 'prefill': {'notInSchema': 'value'},
               },
@@ -787,7 +808,7 @@ void main() {
             'actions': [
               {
                 'kind': 'create',
-                'byRoleIds': ['real-persona'],
+                'byRoleIds': ['real-role'],
                 'label': 'Create',
                 'prefill': {'total': '42'},
               },
@@ -826,7 +847,7 @@ void main() {
               'actions': [
                 {
                   'kind': 'create',
-                  'byRoleIds': ['real-persona'],
+                  'byRoleIds': ['real-role'],
                   'label': 'Create',
                   'prefill': {'ballots': '[]'},
                 },

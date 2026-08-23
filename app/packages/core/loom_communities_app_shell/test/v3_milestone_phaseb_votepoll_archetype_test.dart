@@ -118,8 +118,8 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectTestTabletopPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectTestTabletopActorIdentity(tester, fanId);
 }
 
 Future<List<WorkflowInstance>> _voteRows(
@@ -215,7 +215,7 @@ Widget _app(_InstalledTabletop installed) => MaterialApp(
 
 void main() {
   testWidgets(
-    'real frozen ballot renders persona-aware votePoll behavior and casts a row',
+    'real frozen ballot renders fan-aware votePoll behavior and casts a row',
     (tester) async {
       final installed = (await tester.runAsync(
         () => _install('phaseb-votepoll'),
@@ -223,7 +223,7 @@ void main() {
       try {
         await tester.pumpWidget(_app(installed));
 
-        await _selectPersona(tester, 'tabletop-organizer');
+        await _selectActorIdentity(tester, 'tabletop-organizer');
         await _pumpUntil(
           tester,
           find.byKey(const ValueKey('votepoll-card-ballot-summer-tournament')),
@@ -329,7 +329,7 @@ void main() {
         );
         await tester.pump();
 
-        await _selectPersona(tester, 'tabletop-member');
+        await _selectActorIdentity(tester, 'tabletop-member');
         await _pumpUntil(
           tester,
           find.byKey(
@@ -396,7 +396,7 @@ void main() {
       ))!;
       try {
         await tester.pumpWidget(_app(installed));
-        await _selectPersona(tester, 'tabletop-organizer');
+        await _selectActorIdentity(tester, 'tabletop-organizer');
 
         final initialBallot = (await tester.runAsync(
           () => _instanceById(
@@ -452,7 +452,7 @@ void main() {
       ))!;
       try {
         await tester.pumpWidget(_app(installed));
-        await _selectPersona(tester, 'tabletop-organizer');
+        await _selectActorIdentity(tester, 'tabletop-organizer');
 
         final closeButton = find.byKey(
           const ValueKey('votepoll-close-vote-ballot-summer-tournament'),
@@ -553,7 +553,7 @@ void main() {
         ))!;
         expect(beforeRows, hasLength(4));
 
-        // The organizer is allowed by cast-vote's persona list but is not in
+        // The organizer is allowed by cast-vote's actorIdentity list but is not in
         // the related tournament-event goingFanIds list. The engine must
         // reject the transition itself, not merely omit a UI button.
         Object? refusalError;

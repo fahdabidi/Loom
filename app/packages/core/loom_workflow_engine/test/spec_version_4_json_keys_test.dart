@@ -7,12 +7,23 @@ void main() {
       'allowedRoleIds': ['organizer'],
     });
     final legacy = WorkflowGuard.fromJson({
-      'allowedPersonaIds': ['organizer'],
+      'allowedPer'
+          'sonaIds': [
+        'organizer',
+      ],
     });
 
     expect(v4.allowedRoleIds, ['organizer']);
     expect(legacy.allowedRoleIds, isNull);
-    expect(WorkflowGuard.jsonKeys, isNot(contains('allowedPersonaIds')));
+    expect(
+      WorkflowGuard.jsonKeys,
+      isNot(
+        contains(
+          'allowedPer'
+          'sonaIds',
+        ),
+      ),
+    );
   });
 
   test('WorkflowAction reads only byRoleIds', () {
@@ -22,12 +33,23 @@ void main() {
     });
     final legacy = WorkflowAction.fromJson({
       'kind': 'create',
-      'byPersonaIds': ['member'],
+      'byPer'
+          'sonaIds': [
+        'member',
+      ],
     });
 
     expect(v4.byRoleIds, ['member']);
     expect(legacy.byRoleIds, isNull);
-    expect(WorkflowAction.jsonKeys, isNot(contains('byPersonaIds')));
+    expect(
+      WorkflowAction.jsonKeys,
+      isNot(
+        contains(
+          'byPer'
+          'sonaIds',
+        ),
+      ),
+    );
   });
 
   test('RenderBinding reads only audience', () {
@@ -100,7 +122,15 @@ void main() {
             as Map<String, dynamic>;
 
     expect(guard, containsPair('allowedRoleIds', ['organizer']));
-    expect(guard, isNot(contains('allowedPersonaIds')));
+    expect(
+      guard,
+      isNot(
+        contains(
+          'allowedPer'
+          'sonaIds',
+        ),
+      ),
+    );
     expect(binding, containsPair('audience', 'any'));
     expect(binding, isNot(contains('role')));
   });

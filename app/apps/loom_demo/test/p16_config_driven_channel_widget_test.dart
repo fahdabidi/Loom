@@ -76,7 +76,7 @@ void main() {
               config: {},
             ),
           ],
-          aiPersona: config.aiPersona,
+          aiGuideProfile: config.aiGuideProfile,
           adPosture: config.adPosture,
           installedExtensions: config.installedExtensions,
           version: config.version + 1,

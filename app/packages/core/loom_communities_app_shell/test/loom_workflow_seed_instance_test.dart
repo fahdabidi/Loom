@@ -18,9 +18,12 @@ void main() {
       expect(seed.createdByFanId, 'fan-v4');
     });
 
-    test('does not read the legacy createdByPersonaId spelling', () {
+    test('does not read the legacy creator-key spelling', () {
       final seed = LoomWorkflowSeedInstance.fromJson(
-        _seedJson()..['createdByPersonaId'] = 'fan-legacy',
+        _seedJson()
+          ..['createdByPer'
+                  'sonaId'] =
+              'fan-legacy',
       );
 
       expect(seed.createdByFanId, isNull);

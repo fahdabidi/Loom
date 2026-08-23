@@ -123,7 +123,7 @@ class CommunityMigrationDeriver {
         'displayName': package.displayName,
         'grammarVersion': package.specVersion,
         'roles': [
-          for (final role in package.personas)
+          for (final role in package.roles)
             {'roleId': role.roleId, 'label': role.roleLabel},
         ],
         'workflows': workflows,

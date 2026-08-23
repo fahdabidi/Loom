@@ -69,7 +69,7 @@ void main() {
     );
 
     // Documents the known gap Milestone 1.4 deferred: the sync variant
-    // still exposes the guarded transition to an ineligible persona.
+    // still exposes the guarded transition to an ineligible role.
     final syncForIneligible = api.availableTransitions(
       workflowType: 'vote',
       instanceId: vote,
@@ -89,7 +89,7 @@ void main() {
     );
     expect(asyncForIneligible.map((t) => t.id), isNot(contains('cast')));
 
-    // And correctly includes it for an eligible persona.
+    // And correctly includes it for an eligible role.
     final asyncForEligible = await api.availableTransitionsAsync(
       workflowType: 'vote',
       instanceId: vote,

@@ -124,7 +124,7 @@ Future<void> _installAndOpen(
   await tester.pumpAndSettle();
   // Marketplace and Giving are member-action tabs in this fixture. Enter as
   // that role so the shell's permission-derived tab visibility is exercised.
-  await selectPersona(tester, 'tabletop-member');
+  await selectActorIdentity(tester, 'tabletop-member');
   await waitForEngineNativeWidget(
     tester,
     find.byKey(const ValueKey('engine-native-list-root-home')),

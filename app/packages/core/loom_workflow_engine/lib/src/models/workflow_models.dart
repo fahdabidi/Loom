@@ -50,7 +50,7 @@ class TransitionInputSpec {
       );
 }
 
-/// A scalar field whose value must equal the acting individual persona ID.
+/// A scalar field whose value must equal the acting individual fan ID.
 class ActorEqualsFieldGuard {
   static const jsonKeys = <String>{'key'};
 
@@ -310,7 +310,7 @@ class RelatedListGuard {
       );
 }
 
-/// Guards that check list membership: whether a persona ID is present or absent
+/// Guards that check list membership: whether a fan ID is present or absent
 /// in a list-valued `instanceData` field.
 class ListMembershipGuard {
   static const jsonKeys = <String>{'key', 'present'};
@@ -369,7 +369,7 @@ class WorkflowEffect {
   /// ops (e.g. `removeFromTileGrid`) that don't touch instanceData at all.
   final String? key;
 
-  /// The value for the operation. `$actor` is resolved to the acting persona ID,
+  /// The value for the operation. `$actor` is resolved to the acting fan ID,
   /// `null` sets the key to null.
   final dynamic value;
   final String? workflowType;
@@ -595,7 +595,7 @@ final class WorkflowVisibilityFieldPrincipal
   const WorkflowVisibilityFieldPrincipal({required this.fieldName});
 }
 
-/// Every viewer whose explicitly resolved persona type equals [roleId].
+/// Every viewer whose explicitly resolved role equals [roleId].
 final class WorkflowVisibilityRolePrincipal
     extends WorkflowVisibilityPrincipal {
   final String roleId;

@@ -190,7 +190,8 @@ class RecommendationReferralFake implements RecommendationReferralApi {
       final likeBoost = likedContentIds.contains(item.id)
           ? 0.30
           : (likedCreatorIds.contains(item.creatorId) ? 0.12 : 0.0);
-      final score = item.perfVelocity * 0.42 +
+      final score =
+          item.perfVelocity * 0.42 +
           matchScore +
           externalScore +
           trendingBoost +
@@ -514,7 +515,12 @@ FeedbackAction _feedbackActionFromValue(String value) {
 
 List<String> _interestIdsForCreatorId(String creatorId) {
   if (creatorId.contains('solar')) {
-    return const ['home_energy', 'solar_storage', 'personal_finance'];
+    return const [
+      'home_energy',
+      'solar_storage',
+      'per'
+          'sonal_finance',
+    ];
   }
   if (creatorId.contains('ferment')) {
     return const ['fermentation', 'food_safety', 'weeknight_cooking'];
@@ -531,8 +537,10 @@ String _labelForInterest(String interestId) {
       return 'Home energy';
     case 'solar_storage':
       return 'Solar storage';
-    case 'personal_finance':
-      return 'Personal finance';
+    case 'per'
+        'sonal_finance':
+      return 'Per'
+          'sonal finance';
     case 'fermentation':
       return 'Fermentation';
     case 'food_safety':

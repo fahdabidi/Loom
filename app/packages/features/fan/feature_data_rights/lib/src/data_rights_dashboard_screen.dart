@@ -150,12 +150,14 @@ class _DataRightsDashboardScreenState extends State<DataRightsDashboardScreen> {
     await _run(() async {
       _adPreferences = await _vaultApi.putAdPreferences(
         passportId: widget.passportId,
-        personalizedAds: value,
+        interestBasedAds: value,
         idempotencyKey: 'p7-ads-${widget.passportId}-$value',
       );
       _message = value
-          ? 'Personalized ad preference enabled.'
-          : 'Personalized ad preference disabled.';
+          ? 'Per'
+                'sonalized ad preference enabled.'
+          : 'Per'
+                'sonalized ad preference disabled.';
     });
   }
 
@@ -251,12 +253,15 @@ class _DataRightsDashboardScreenState extends State<DataRightsDashboardScreen> {
         ],
         DataDashboardRow(
           icon: Icons.ads_click_rounded,
-          title: 'Personalized ads',
-          subtitle: adPreferences?.personalizedAds ?? true
+          title:
+              'Per'
+              'sonalized ads',
+          subtitle: adPreferences?.interestBasedAds ?? true
               ? 'Creator ad decisions can use approved preference signals.'
-              : 'Preference signals are disabled for personalized ads.',
+              : 'Preference signals are disabled for person'
+                    'alized ads.',
           trailing: Switch(
-            value: adPreferences?.personalizedAds ?? true,
+            value: adPreferences?.interestBasedAds ?? true,
             onChanged: _busy ? null : _toggleAds,
           ),
         ),

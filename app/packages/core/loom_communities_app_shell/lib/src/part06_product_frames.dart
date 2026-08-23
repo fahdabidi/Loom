@@ -13,7 +13,7 @@ class _ProductSurfaceFrame extends StatelessWidget {
   final _RichWorkflowSpec spec;
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -113,7 +113,7 @@ class _EventProductFrame extends StatelessWidget {
   final _RichWorkflowSpec spec;
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -203,7 +203,7 @@ class _FormProductFrame extends StatelessWidget {
   final _RichWorkflowSpec spec;
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -275,7 +275,7 @@ class _ReceiptProductFrame extends StatelessWidget {
   final _RichWorkflowSpec spec;
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -338,7 +338,7 @@ class _AdFreeProductFrame extends StatelessWidget {
   final _RichWorkflowSpec spec;
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -425,7 +425,7 @@ class _WizardProductFrame extends StatelessWidget {
   final _RichWorkflowSpec spec;
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -479,7 +479,7 @@ class _FeedProductFrame extends StatelessWidget {
   final _RichWorkflowSpec spec;
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -543,7 +543,7 @@ class _RosterProductFrame extends StatelessWidget {
   final _RichWorkflowSpec spec;
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -607,7 +607,7 @@ class _ScoreboardProductFrame extends StatelessWidget {
   final _RichWorkflowSpec spec;
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 
@@ -663,7 +663,7 @@ class _DefaultProductFrame extends StatelessWidget {
   final _RichWorkflowSpec spec;
   final LoomProductionWorkflowContract contract;
   final LoomWorkflowDefinition workflow;
-  final LoomPersonaWorkflowView view;
+  final LoomRoleWorkflowView view;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
 

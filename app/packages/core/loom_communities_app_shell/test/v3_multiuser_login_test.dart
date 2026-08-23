@@ -70,7 +70,7 @@ void main() {
           (await workflowEngineForExtensionId(community.extensionId))
               as LocalWorkflowEngineApi;
 
-      // Register all seeded account persona types with the engine
+      // Register all seeded account actorIdentity types with the engine
       final accounts = await authApi.listAccounts(
         communityExtensionId: communityExtensionId,
       );
@@ -106,7 +106,7 @@ void main() {
       final ids = accounts.map((a) => a.accountId).toSet();
       expect(ids.length, accounts.length);
 
-      // Every account must have a roleId matching a declared persona
+      // Every account must have a roleId matching a declared actorIdentity
       for (final account in accounts) {
         expect(account.roleId, anyOf('tabletop-organizer', 'tabletop-member'));
         expect(account.displayName, isNotEmpty);
@@ -158,55 +158,58 @@ void main() {
       );
     });
 
-    test('persona resolver rejects an undeclared persona type', () async {
-      const communityId = 'authz-p1-apartment-events';
-      final resolver = LocalAuthApi(
-        personaResolver: (communityExtensionId) {
-          expect(communityExtensionId, communityId);
-          return const [
-            LoomPersonaDefinition(
-              fanId: 'apartment-event-manager',
-              roleId: 'apartment-event-manager',
-              label: 'Event manager',
-              roleLabel: 'Manager',
-              description: 'Manages apartment events.',
-            ),
-          ];
-        },
-      );
+    test(
+      'actorIdentity resolver rejects an undeclared actorIdentity type',
+      () async {
+        const communityId = 'authz-p1-apartment-events';
+        final resolver = LocalAuthApi(
+          actorIdentityResolver: (communityExtensionId) {
+            expect(communityExtensionId, communityId);
+            return const [
+              LoomActorIdentity(
+                fanId: 'apartment-event-manager',
+                roleId: 'apartment-event-manager',
+                label: 'Event manager',
+                roleLabel: 'Manager',
+                description: 'Manages apartment events.',
+              ),
+            ];
+          },
+        );
 
-      await expectLater(
-        resolver.signUp(
-          communityExtensionId: communityId,
-          displayName: 'Wrong Persona',
-          roleId: 'tabletop-member',
-        ),
-        throwsA(
-          isA<ArgumentError>().having(
-            (error) => error.message,
-            'message',
-            allOf(contains('tabletop-member'), contains(communityId)),
+        await expectLater(
+          resolver.signUp(
+            communityExtensionId: communityId,
+            displayName: 'Wrong Actor identity',
+            roleId: 'tabletop-member',
           ),
-        ),
-      );
-      expect(
-        await resolver.listAccounts(communityExtensionId: communityId),
-        isEmpty,
-      );
-    });
+          throwsA(
+            isA<ArgumentError>().having(
+              (error) => error.message,
+              'message',
+              allOf(contains('tabletop-member'), contains(communityId)),
+            ),
+          ),
+        );
+        expect(
+          await resolver.listAccounts(communityExtensionId: communityId),
+          isEmpty,
+        );
+      },
+    );
 
     test(
-      'null persona resolver preserves unchecked sign-up behavior',
+      'null actorIdentity resolver preserves unchecked sign-up behavior',
       () async {
         final api = LocalAuthApi();
 
         final session = await api.signUp(
           communityExtensionId: 'community-without-a-resolver',
           displayName: 'Legacy User',
-          roleId: 'undeclared-legacy-persona',
+          roleId: 'undeclared-legacy-actorIdentity',
         );
 
-        expect(session.account.roleId, 'undeclared-legacy-persona');
+        expect(session.account.roleId, 'undeclared-legacy-actorIdentity');
         expect(session.account.displayName, 'Legacy User');
       },
     );
@@ -259,7 +262,7 @@ void main() {
     });
 
     // ── Test 4: Switch-user picker renders correct list ─────────────
-    test('account list groups by persona type', () async {
+    test('account list groups by actorIdentity type', () async {
       final accounts = await authApi.listAccounts(
         communityExtensionId: communityExtensionId,
       );
@@ -299,7 +302,7 @@ void main() {
         );
         expect(page.items, hasLength(28));
 
-        // Verify that the persona type mapping is in place:
+        // Verify that the actorIdentity type mapping is in place:
         // query the real share-azul instance (same pattern as Test 3 above)
         final azul = page.items.firstWhere((i) => i.instanceId == 'share-azul');
         final ownerTransitions = await engine.availableTransitionsAsync(

@@ -73,7 +73,9 @@ class _FakePassportApi implements FanPassportApi {
     return FanPassportClaim(
       id: 'passport_test',
       displayName: displayName,
-      activePersonaId: 'persona_test',
+      activeFanProfileId:
+          'per'
+          'sona_test',
       createdAt: DateTime.utc(2026),
     );
   }
@@ -145,13 +147,15 @@ class _FakePassportApi implements FanPassportApi {
   }
 
   @override
-  Future<Persona> setPersona({
+  Future<FanProfile> setFanProfile({
     required String passportId,
     required String label,
     required String idempotencyKey,
   }) async {
-    return Persona(
-      id: 'persona_test',
+    return FanProfile(
+      id:
+          'per'
+          'sona_test',
       passportId: passportId,
       label: label,
       isActive: true,
@@ -253,7 +257,7 @@ class _FakeVaultApi implements FanVaultApi {
   Future<AdPreferences> getAdPreferences(String passportId) async {
     return AdPreferences(
       passportId: passportId,
-      personalizedAds: false,
+      interestBasedAds: false,
       updatedAt: DateTime.utc(2026),
     );
   }
@@ -261,12 +265,12 @@ class _FakeVaultApi implements FanVaultApi {
   @override
   Future<AdPreferences> putAdPreferences({
     required String passportId,
-    required bool personalizedAds,
+    required bool interestBasedAds,
     required String idempotencyKey,
   }) async {
     return AdPreferences(
       passportId: passportId,
-      personalizedAds: personalizedAds,
+      interestBasedAds: interestBasedAds,
       updatedAt: DateTime.utc(2026),
     );
   }

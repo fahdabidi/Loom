@@ -118,41 +118,38 @@ void main() {
       db.close();
     });
 
-    test(
-      'completed lookup is persona-specific across workflow types',
-      () async {
-        final db = WorkflowDatabase.memory();
-        final api = LocalWorkflowEngineApi(db: db, communityId: 'tabletop');
-        api.registerDefinition(_duesMachine());
+    test('completed lookup is fan-specific across workflow types', () async {
+      final db = WorkflowDatabase.memory();
+      final api = LocalWorkflowEngineApi(db: db, communityId: 'tabletop');
+      api.registerDefinition(_duesMachine());
 
-        final paidDuesId = await api.createInstance(
-          workflowType: 'tabletop-club-dues-payment',
-          initialInstanceData: _duesData(),
-          fanId: _memberFanId,
-        );
-        await api.createInstance(
-          workflowType: 'tabletop-club-dues-payment',
-          initialInstanceData: _duesData(),
-          fanId: 'other-member',
-        );
-        await api.applyTransition(
-          workflowType: 'tabletop-club-dues-payment',
-          instanceId: paidDuesId,
-          transitionId: 'pay',
-          fanId: _memberFanId,
-        );
+      final paidDuesId = await api.createInstance(
+        workflowType: 'tabletop-club-dues-payment',
+        initialInstanceData: _duesData(),
+        fanId: _memberFanId,
+      );
+      await api.createInstance(
+        workflowType: 'tabletop-club-dues-payment',
+        initialInstanceData: _duesData(),
+        fanId: 'other-member',
+      );
+      await api.applyTransition(
+        workflowType: 'tabletop-club-dues-payment',
+        instanceId: paidDuesId,
+        transitionId: 'pay',
+        fanId: _memberFanId,
+      );
 
-        expect(
-          await api.completedWorkflowIdsForFan(_memberFanId),
-          contains('tabletop-membership-dues-current'),
-        );
-        expect(
-          await api.completedWorkflowIdsForFan('other-member'),
-          isNot(contains('tabletop-membership-dues-current')),
-        );
-        db.close();
-      },
-    );
+      expect(
+        await api.completedWorkflowIdsForFan(_memberFanId),
+        contains('tabletop-membership-dues-current'),
+      );
+      expect(
+        await api.completedWorkflowIdsForFan('other-member'),
+        isNot(contains('tabletop-membership-dues-current')),
+      );
+      db.close();
+    });
   });
 }
 

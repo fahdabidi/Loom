@@ -3551,17 +3551,18 @@ class $FanPassportsTable extends FanPassports
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _activePersonaIdMeta = const VerificationMeta(
-    'activePersonaId',
-  );
+  static const VerificationMeta _activeFanProfileIdMeta =
+      const VerificationMeta('activeFanProfileId');
   @override
-  late final GeneratedColumn<String> activePersonaId = GeneratedColumn<String>(
-    'active_persona_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
+  late final GeneratedColumn<String> activeFanProfileId =
+      GeneratedColumn<String>(
+        'active_per'
+        'sona_id',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -3577,7 +3578,7 @@ class $FanPassportsTable extends FanPassports
   List<GeneratedColumn> get $columns => [
     id,
     displayName,
-    activePersonaId,
+    activeFanProfileId,
     createdAt,
   ];
   @override
@@ -3608,16 +3609,20 @@ class $FanPassportsTable extends FanPassports
     } else if (isInserting) {
       context.missing(_displayNameMeta);
     }
-    if (data.containsKey('active_persona_id')) {
+    if (data.containsKey(
+      'active_per'
+      'sona_id',
+    )) {
       context.handle(
-        _activePersonaIdMeta,
-        activePersonaId.isAcceptableOrUnknown(
-          data['active_persona_id']!,
-          _activePersonaIdMeta,
+        _activeFanProfileIdMeta,
+        activeFanProfileId.isAcceptableOrUnknown(
+          data['active_per'
+              'sona_id']!,
+          _activeFanProfileIdMeta,
         ),
       );
     } else if (isInserting) {
-      context.missing(_activePersonaIdMeta);
+      context.missing(_activeFanProfileIdMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -3644,9 +3649,10 @@ class $FanPassportsTable extends FanPassports
         DriftSqlType.string,
         data['${effectivePrefix}display_name'],
       )!,
-      activePersonaId: attachedDatabase.typeMapping.read(
+      activeFanProfileId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}active_persona_id'],
+        data['${effectivePrefix}active_per'
+            'sona_id'],
       )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -3664,12 +3670,12 @@ class $FanPassportsTable extends FanPassports
 class FanPassport extends DataClass implements Insertable<FanPassport> {
   final String id;
   final String displayName;
-  final String activePersonaId;
+  final String activeFanProfileId;
   final DateTime createdAt;
   const FanPassport({
     required this.id,
     required this.displayName,
-    required this.activePersonaId,
+    required this.activeFanProfileId,
     required this.createdAt,
   });
   @override
@@ -3677,7 +3683,10 @@ class FanPassport extends DataClass implements Insertable<FanPassport> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['display_name'] = Variable<String>(displayName);
-    map['active_persona_id'] = Variable<String>(activePersonaId);
+    map['active_per'
+        'sona_id'] = Variable<String>(
+      activeFanProfileId,
+    );
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -3686,7 +3695,7 @@ class FanPassport extends DataClass implements Insertable<FanPassport> {
     return FanPassportsCompanion(
       id: Value(id),
       displayName: Value(displayName),
-      activePersonaId: Value(activePersonaId),
+      activeFanProfileId: Value(activeFanProfileId),
       createdAt: Value(createdAt),
     );
   }
@@ -3699,7 +3708,9 @@ class FanPassport extends DataClass implements Insertable<FanPassport> {
     return FanPassport(
       id: serializer.fromJson<String>(json['id']),
       displayName: serializer.fromJson<String>(json['displayName']),
-      activePersonaId: serializer.fromJson<String>(json['activePersonaId']),
+      activeFanProfileId: serializer.fromJson<String>(
+        json['activeFanProfileId'],
+      ),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -3709,7 +3720,7 @@ class FanPassport extends DataClass implements Insertable<FanPassport> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'displayName': serializer.toJson<String>(displayName),
-      'activePersonaId': serializer.toJson<String>(activePersonaId),
+      'activeFanProfileId': serializer.toJson<String>(activeFanProfileId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -3717,12 +3728,12 @@ class FanPassport extends DataClass implements Insertable<FanPassport> {
   FanPassport copyWith({
     String? id,
     String? displayName,
-    String? activePersonaId,
+    String? activeFanProfileId,
     DateTime? createdAt,
   }) => FanPassport(
     id: id ?? this.id,
     displayName: displayName ?? this.displayName,
-    activePersonaId: activePersonaId ?? this.activePersonaId,
+    activeFanProfileId: activeFanProfileId ?? this.activeFanProfileId,
     createdAt: createdAt ?? this.createdAt,
   );
   FanPassport copyWithCompanion(FanPassportsCompanion data) {
@@ -3731,9 +3742,9 @@ class FanPassport extends DataClass implements Insertable<FanPassport> {
       displayName: data.displayName.present
           ? data.displayName.value
           : this.displayName,
-      activePersonaId: data.activePersonaId.present
-          ? data.activePersonaId.value
-          : this.activePersonaId,
+      activeFanProfileId: data.activeFanProfileId.present
+          ? data.activeFanProfileId.value
+          : this.activeFanProfileId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -3743,58 +3754,62 @@ class FanPassport extends DataClass implements Insertable<FanPassport> {
     return (StringBuffer('FanPassport(')
           ..write('id: $id, ')
           ..write('displayName: $displayName, ')
-          ..write('activePersonaId: $activePersonaId, ')
+          ..write('activeFanProfileId: $activeFanProfileId, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, displayName, activePersonaId, createdAt);
+  int get hashCode =>
+      Object.hash(id, displayName, activeFanProfileId, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is FanPassport &&
           other.id == this.id &&
           other.displayName == this.displayName &&
-          other.activePersonaId == this.activePersonaId &&
+          other.activeFanProfileId == this.activeFanProfileId &&
           other.createdAt == this.createdAt);
 }
 
 class FanPassportsCompanion extends UpdateCompanion<FanPassport> {
   final Value<String> id;
   final Value<String> displayName;
-  final Value<String> activePersonaId;
+  final Value<String> activeFanProfileId;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const FanPassportsCompanion({
     this.id = const Value.absent(),
     this.displayName = const Value.absent(),
-    this.activePersonaId = const Value.absent(),
+    this.activeFanProfileId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   FanPassportsCompanion.insert({
     required String id,
     required String displayName,
-    required String activePersonaId,
+    required String activeFanProfileId,
     required DateTime createdAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        displayName = Value(displayName),
-       activePersonaId = Value(activePersonaId),
+       activeFanProfileId = Value(activeFanProfileId),
        createdAt = Value(createdAt);
   static Insertable<FanPassport> custom({
     Expression<String>? id,
     Expression<String>? displayName,
-    Expression<String>? activePersonaId,
+    Expression<String>? activeFanProfileId,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (displayName != null) 'display_name': displayName,
-      if (activePersonaId != null) 'active_persona_id': activePersonaId,
+      if (activeFanProfileId != null)
+        'active_per'
+                'sona_id':
+            activeFanProfileId,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -3803,14 +3818,14 @@ class FanPassportsCompanion extends UpdateCompanion<FanPassport> {
   FanPassportsCompanion copyWith({
     Value<String>? id,
     Value<String>? displayName,
-    Value<String>? activePersonaId,
+    Value<String>? activeFanProfileId,
     Value<DateTime>? createdAt,
     Value<int>? rowid,
   }) {
     return FanPassportsCompanion(
       id: id ?? this.id,
       displayName: displayName ?? this.displayName,
-      activePersonaId: activePersonaId ?? this.activePersonaId,
+      activeFanProfileId: activeFanProfileId ?? this.activeFanProfileId,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -3825,8 +3840,11 @@ class FanPassportsCompanion extends UpdateCompanion<FanPassport> {
     if (displayName.present) {
       map['display_name'] = Variable<String>(displayName.value);
     }
-    if (activePersonaId.present) {
-      map['active_persona_id'] = Variable<String>(activePersonaId.value);
+    if (activeFanProfileId.present) {
+      map['active_per'
+          'sona_id'] = Variable<String>(
+        activeFanProfileId.value,
+      );
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -3842,7 +3860,7 @@ class FanPassportsCompanion extends UpdateCompanion<FanPassport> {
     return (StringBuffer('FanPassportsCompanion(')
           ..write('id: $id, ')
           ..write('displayName: $displayName, ')
-          ..write('activePersonaId: $activePersonaId, ')
+          ..write('activeFanProfileId: $activeFanProfileId, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -10094,11 +10112,12 @@ class AllocationStatementsCompanion
   }
 }
 
-class $PersonasTable extends Personas with TableInfo<$PersonasTable, Persona> {
+class $FanProfilesTable extends FanProfiles
+    with TableInfo<$FanProfilesTable, FanProfile> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $PersonasTable(this.attachedDatabase, [this._alias]);
+  $FanProfilesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -10151,10 +10170,12 @@ class $PersonasTable extends Personas with TableInfo<$PersonasTable, Persona> {
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'personas';
+  static const String $name =
+      'per'
+      'sonas';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Persona> instance, {
+    Insertable<FanProfile> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -10194,9 +10215,9 @@ class $PersonasTable extends Personas with TableInfo<$PersonasTable, Persona> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Persona map(Map<String, dynamic> data, {String? tablePrefix}) {
+  FanProfile map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Persona(
+    return FanProfile(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -10217,17 +10238,17 @@ class $PersonasTable extends Personas with TableInfo<$PersonasTable, Persona> {
   }
 
   @override
-  $PersonasTable createAlias(String alias) {
-    return $PersonasTable(attachedDatabase, alias);
+  $FanProfilesTable createAlias(String alias) {
+    return $FanProfilesTable(attachedDatabase, alias);
   }
 }
 
-class Persona extends DataClass implements Insertable<Persona> {
+class FanProfile extends DataClass implements Insertable<FanProfile> {
   final String id;
   final String passportId;
   final String label;
   final bool isActive;
-  const Persona({
+  const FanProfile({
     required this.id,
     required this.passportId,
     required this.label,
@@ -10243,8 +10264,8 @@ class Persona extends DataClass implements Insertable<Persona> {
     return map;
   }
 
-  PersonasCompanion toCompanion(bool nullToAbsent) {
-    return PersonasCompanion(
+  FanProfilesCompanion toCompanion(bool nullToAbsent) {
+    return FanProfilesCompanion(
       id: Value(id),
       passportId: Value(passportId),
       label: Value(label),
@@ -10252,12 +10273,12 @@ class Persona extends DataClass implements Insertable<Persona> {
     );
   }
 
-  factory Persona.fromJson(
+  factory FanProfile.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Persona(
+    return FanProfile(
       id: serializer.fromJson<String>(json['id']),
       passportId: serializer.fromJson<String>(json['passportId']),
       label: serializer.fromJson<String>(json['label']),
@@ -10275,19 +10296,19 @@ class Persona extends DataClass implements Insertable<Persona> {
     };
   }
 
-  Persona copyWith({
+  FanProfile copyWith({
     String? id,
     String? passportId,
     String? label,
     bool? isActive,
-  }) => Persona(
+  }) => FanProfile(
     id: id ?? this.id,
     passportId: passportId ?? this.passportId,
     label: label ?? this.label,
     isActive: isActive ?? this.isActive,
   );
-  Persona copyWithCompanion(PersonasCompanion data) {
-    return Persona(
+  FanProfile copyWithCompanion(FanProfilesCompanion data) {
+    return FanProfile(
       id: data.id.present ? data.id.value : this.id,
       passportId: data.passportId.present
           ? data.passportId.value
@@ -10299,7 +10320,7 @@ class Persona extends DataClass implements Insertable<Persona> {
 
   @override
   String toString() {
-    return (StringBuffer('Persona(')
+    return (StringBuffer('FanProfile(')
           ..write('id: $id, ')
           ..write('passportId: $passportId, ')
           ..write('label: $label, ')
@@ -10313,27 +10334,27 @@ class Persona extends DataClass implements Insertable<Persona> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Persona &&
+      (other is FanProfile &&
           other.id == this.id &&
           other.passportId == this.passportId &&
           other.label == this.label &&
           other.isActive == this.isActive);
 }
 
-class PersonasCompanion extends UpdateCompanion<Persona> {
+class FanProfilesCompanion extends UpdateCompanion<FanProfile> {
   final Value<String> id;
   final Value<String> passportId;
   final Value<String> label;
   final Value<bool> isActive;
   final Value<int> rowid;
-  const PersonasCompanion({
+  const FanProfilesCompanion({
     this.id = const Value.absent(),
     this.passportId = const Value.absent(),
     this.label = const Value.absent(),
     this.isActive = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  PersonasCompanion.insert({
+  FanProfilesCompanion.insert({
     required String id,
     required String passportId,
     required String label,
@@ -10343,7 +10364,7 @@ class PersonasCompanion extends UpdateCompanion<Persona> {
        passportId = Value(passportId),
        label = Value(label),
        isActive = Value(isActive);
-  static Insertable<Persona> custom({
+  static Insertable<FanProfile> custom({
     Expression<String>? id,
     Expression<String>? passportId,
     Expression<String>? label,
@@ -10359,14 +10380,14 @@ class PersonasCompanion extends UpdateCompanion<Persona> {
     });
   }
 
-  PersonasCompanion copyWith({
+  FanProfilesCompanion copyWith({
     Value<String>? id,
     Value<String>? passportId,
     Value<String>? label,
     Value<bool>? isActive,
     Value<int>? rowid,
   }) {
-    return PersonasCompanion(
+    return FanProfilesCompanion(
       id: id ?? this.id,
       passportId: passportId ?? this.passportId,
       label: label ?? this.label,
@@ -10398,7 +10419,7 @@ class PersonasCompanion extends UpdateCompanion<Persona> {
 
   @override
   String toString() {
-    return (StringBuffer('PersonasCompanion(')
+    return (StringBuffer('FanProfilesCompanion(')
           ..write('id: $id, ')
           ..write('passportId: $passportId, ')
           ..write('label: $label, ')
@@ -19689,18 +19710,20 @@ class $AdPreferencesTable extends AdPreferences
       'REFERENCES fan_passports (id)',
     ),
   );
-  static const VerificationMeta _personalizedAdsMeta = const VerificationMeta(
-    'personalizedAds',
+  static const VerificationMeta _interestBasedAdsMeta = const VerificationMeta(
+    'interestBasedAds',
   );
   @override
-  late final GeneratedColumn<bool> personalizedAds = GeneratedColumn<bool>(
-    'personalized_ads',
+  late final GeneratedColumn<bool> interestBasedAds = GeneratedColumn<bool>(
+    'per'
+    'sonalized_ads',
     aliasedName,
     false,
     type: DriftSqlType.bool,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("personalized_ads" IN (0, 1))',
+      'CHECK ("per'
+      'sonalized_ads" IN (0, 1))',
     ),
   );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
@@ -19717,7 +19740,7 @@ class $AdPreferencesTable extends AdPreferences
   @override
   List<GeneratedColumn> get $columns => [
     passportId,
-    personalizedAds,
+    interestBasedAds,
     updatedAt,
   ];
   @override
@@ -19740,16 +19763,20 @@ class $AdPreferencesTable extends AdPreferences
     } else if (isInserting) {
       context.missing(_passportIdMeta);
     }
-    if (data.containsKey('personalized_ads')) {
+    if (data.containsKey(
+      'per'
+      'sonalized_ads',
+    )) {
       context.handle(
-        _personalizedAdsMeta,
-        personalizedAds.isAcceptableOrUnknown(
-          data['personalized_ads']!,
-          _personalizedAdsMeta,
+        _interestBasedAdsMeta,
+        interestBasedAds.isAcceptableOrUnknown(
+          data['per'
+              'sonalized_ads']!,
+          _interestBasedAdsMeta,
         ),
       );
     } else if (isInserting) {
-      context.missing(_personalizedAdsMeta);
+      context.missing(_interestBasedAdsMeta);
     }
     if (data.containsKey('updated_at')) {
       context.handle(
@@ -19772,9 +19799,10 @@ class $AdPreferencesTable extends AdPreferences
         DriftSqlType.string,
         data['${effectivePrefix}passport_id'],
       )!,
-      personalizedAds: attachedDatabase.typeMapping.read(
+      interestBasedAds: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
-        data['${effectivePrefix}personalized_ads'],
+        data['${effectivePrefix}per'
+            'sonalized_ads'],
       )!,
       updatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -19791,18 +19819,21 @@ class $AdPreferencesTable extends AdPreferences
 
 class AdPreference extends DataClass implements Insertable<AdPreference> {
   final String passportId;
-  final bool personalizedAds;
+  final bool interestBasedAds;
   final DateTime updatedAt;
   const AdPreference({
     required this.passportId,
-    required this.personalizedAds,
+    required this.interestBasedAds,
     required this.updatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['passport_id'] = Variable<String>(passportId);
-    map['personalized_ads'] = Variable<bool>(personalizedAds);
+    map['per'
+        'sonalized_ads'] = Variable<bool>(
+      interestBasedAds,
+    );
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
   }
@@ -19810,7 +19841,7 @@ class AdPreference extends DataClass implements Insertable<AdPreference> {
   AdPreferencesCompanion toCompanion(bool nullToAbsent) {
     return AdPreferencesCompanion(
       passportId: Value(passportId),
-      personalizedAds: Value(personalizedAds),
+      interestBasedAds: Value(interestBasedAds),
       updatedAt: Value(updatedAt),
     );
   }
@@ -19822,7 +19853,7 @@ class AdPreference extends DataClass implements Insertable<AdPreference> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AdPreference(
       passportId: serializer.fromJson<String>(json['passportId']),
-      personalizedAds: serializer.fromJson<bool>(json['personalizedAds']),
+      interestBasedAds: serializer.fromJson<bool>(json['interestBasedAds']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
   }
@@ -19831,18 +19862,18 @@ class AdPreference extends DataClass implements Insertable<AdPreference> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'passportId': serializer.toJson<String>(passportId),
-      'personalizedAds': serializer.toJson<bool>(personalizedAds),
+      'interestBasedAds': serializer.toJson<bool>(interestBasedAds),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
 
   AdPreference copyWith({
     String? passportId,
-    bool? personalizedAds,
+    bool? interestBasedAds,
     DateTime? updatedAt,
   }) => AdPreference(
     passportId: passportId ?? this.passportId,
-    personalizedAds: personalizedAds ?? this.personalizedAds,
+    interestBasedAds: interestBasedAds ?? this.interestBasedAds,
     updatedAt: updatedAt ?? this.updatedAt,
   );
   AdPreference copyWithCompanion(AdPreferencesCompanion data) {
@@ -19850,9 +19881,9 @@ class AdPreference extends DataClass implements Insertable<AdPreference> {
       passportId: data.passportId.present
           ? data.passportId.value
           : this.passportId,
-      personalizedAds: data.personalizedAds.present
-          ? data.personalizedAds.value
-          : this.personalizedAds,
+      interestBasedAds: data.interestBasedAds.present
+          ? data.interestBasedAds.value
+          : this.interestBasedAds,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
   }
@@ -19861,51 +19892,54 @@ class AdPreference extends DataClass implements Insertable<AdPreference> {
   String toString() {
     return (StringBuffer('AdPreference(')
           ..write('passportId: $passportId, ')
-          ..write('personalizedAds: $personalizedAds, ')
+          ..write('interestBasedAds: $interestBasedAds, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(passportId, personalizedAds, updatedAt);
+  int get hashCode => Object.hash(passportId, interestBasedAds, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AdPreference &&
           other.passportId == this.passportId &&
-          other.personalizedAds == this.personalizedAds &&
+          other.interestBasedAds == this.interestBasedAds &&
           other.updatedAt == this.updatedAt);
 }
 
 class AdPreferencesCompanion extends UpdateCompanion<AdPreference> {
   final Value<String> passportId;
-  final Value<bool> personalizedAds;
+  final Value<bool> interestBasedAds;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
   const AdPreferencesCompanion({
     this.passportId = const Value.absent(),
-    this.personalizedAds = const Value.absent(),
+    this.interestBasedAds = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AdPreferencesCompanion.insert({
     required String passportId,
-    required bool personalizedAds,
+    required bool interestBasedAds,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
   }) : passportId = Value(passportId),
-       personalizedAds = Value(personalizedAds),
+       interestBasedAds = Value(interestBasedAds),
        updatedAt = Value(updatedAt);
   static Insertable<AdPreference> custom({
     Expression<String>? passportId,
-    Expression<bool>? personalizedAds,
+    Expression<bool>? interestBasedAds,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (passportId != null) 'passport_id': passportId,
-      if (personalizedAds != null) 'personalized_ads': personalizedAds,
+      if (interestBasedAds != null)
+        'per'
+                'sonalized_ads':
+            interestBasedAds,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -19913,13 +19947,13 @@ class AdPreferencesCompanion extends UpdateCompanion<AdPreference> {
 
   AdPreferencesCompanion copyWith({
     Value<String>? passportId,
-    Value<bool>? personalizedAds,
+    Value<bool>? interestBasedAds,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
   }) {
     return AdPreferencesCompanion(
       passportId: passportId ?? this.passportId,
-      personalizedAds: personalizedAds ?? this.personalizedAds,
+      interestBasedAds: interestBasedAds ?? this.interestBasedAds,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -19931,8 +19965,11 @@ class AdPreferencesCompanion extends UpdateCompanion<AdPreference> {
     if (passportId.present) {
       map['passport_id'] = Variable<String>(passportId.value);
     }
-    if (personalizedAds.present) {
-      map['personalized_ads'] = Variable<bool>(personalizedAds.value);
+    if (interestBasedAds.present) {
+      map['per'
+          'sonalized_ads'] = Variable<bool>(
+        interestBasedAds.value,
+      );
     }
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
@@ -19947,7 +19984,7 @@ class AdPreferencesCompanion extends UpdateCompanion<AdPreference> {
   String toString() {
     return (StringBuffer('AdPreferencesCompanion(')
           ..write('passportId: $passportId, ')
-          ..write('personalizedAds: $personalizedAds, ')
+          ..write('interestBasedAds: $interestBasedAds, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -30066,7 +30103,7 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
   );
   late final $AllocationStatementsTable allocationStatements =
       $AllocationStatementsTable(this);
-  late final $PersonasTable personas = $PersonasTable(this);
+  late final $FanProfilesTable fanProfiles = $FanProfilesTable(this);
   late final $FollowsTable follows = $FollowsTable(this);
   late final $ConsentGrantsTable consentGrants = $ConsentGrantsTable(this);
   late final $AudienceGrantRequestsTable audienceGrantRequests =
@@ -30164,7 +30201,7 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
     settlementRuns,
     payoutStatements,
     allocationStatements,
-    personas,
+    fanProfiles,
     follows,
     consentGrants,
     audienceGrantRequests,
@@ -34999,7 +35036,7 @@ typedef $$FanPassportsTableCreateCompanionBuilder =
     FanPassportsCompanion Function({
       required String id,
       required String displayName,
-      required String activePersonaId,
+      required String activeFanProfileId,
       required DateTime createdAt,
       Value<int> rowid,
     });
@@ -35007,7 +35044,7 @@ typedef $$FanPassportsTableUpdateCompanionBuilder =
     FanPassportsCompanion Function({
       Value<String> id,
       Value<String> displayName,
-      Value<String> activePersonaId,
+      Value<String> activeFanProfileId,
       Value<DateTime> createdAt,
       Value<int> rowid,
     });
@@ -35150,20 +35187,22 @@ final class $$FanPassportsTableReferences
     );
   }
 
-  static MultiTypedResultKey<$PersonasTable, List<Persona>> _personasRefsTable(
-    _$LoomDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.personas,
-    aliasName: $_aliasNameGenerator(db.fanPassports.id, db.personas.passportId),
+  static MultiTypedResultKey<$FanProfilesTable, List<FanProfile>>
+  _fanProfilesRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.fanProfiles,
+    aliasName: $_aliasNameGenerator(
+      db.fanPassports.id,
+      db.fanProfiles.passportId,
+    ),
   );
 
-  $$PersonasTableProcessedTableManager get personasRefs {
-    final manager = $$PersonasTableTableManager(
+  $$FanProfilesTableProcessedTableManager get fanProfilesRefs {
+    final manager = $$FanProfilesTableTableManager(
       $_db,
-      $_db.personas,
+      $_db.fanProfiles,
     ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_personasRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(_fanProfilesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -35651,8 +35690,8 @@ class $$FanPassportsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get activePersonaId => $composableBuilder(
-    column: $table.activePersonaId,
+  ColumnFilters<String> get activeFanProfileId => $composableBuilder(
+    column: $table.activeFanProfileId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -35811,22 +35850,22 @@ class $$FanPassportsTableFilterComposer
     return f(composer);
   }
 
-  Expression<bool> personasRefs(
-    Expression<bool> Function($$PersonasTableFilterComposer f) f,
+  Expression<bool> fanProfilesRefs(
+    Expression<bool> Function($$FanProfilesTableFilterComposer f) f,
   ) {
-    final $$PersonasTableFilterComposer composer = $composerBuilder(
+    final $$FanProfilesTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.personas,
+      referencedTable: $db.fanProfiles,
       getReferencedColumn: (t) => t.passportId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$PersonasTableFilterComposer(
+          }) => $$FanProfilesTableFilterComposer(
             $db: $db,
-            $table: $db.personas,
+            $table: $db.fanProfiles,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -36361,8 +36400,8 @@ class $$FanPassportsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get activePersonaId => $composableBuilder(
-    column: $table.activePersonaId,
+  ColumnOrderings<String> get activeFanProfileId => $composableBuilder(
+    column: $table.activeFanProfileId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -36389,8 +36428,8 @@ class $$FanPassportsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get activePersonaId => $composableBuilder(
-    column: $table.activePersonaId,
+  GeneratedColumn<String> get activeFanProfileId => $composableBuilder(
+    column: $table.activeFanProfileId,
     builder: (column) => column,
   );
 
@@ -36549,22 +36588,22 @@ class $$FanPassportsTableAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> personasRefs<T extends Object>(
-    Expression<T> Function($$PersonasTableAnnotationComposer a) f,
+  Expression<T> fanProfilesRefs<T extends Object>(
+    Expression<T> Function($$FanProfilesTableAnnotationComposer a) f,
   ) {
-    final $$PersonasTableAnnotationComposer composer = $composerBuilder(
+    final $$FanProfilesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.personas,
+      referencedTable: $db.fanProfiles,
       getReferencedColumn: (t) => t.passportId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$PersonasTableAnnotationComposer(
+          }) => $$FanProfilesTableAnnotationComposer(
             $db: $db,
-            $table: $db.personas,
+            $table: $db.fanProfiles,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -37104,7 +37143,7 @@ class $$FanPassportsTableTableManager
             bool entitlementGrantsRefs,
             bool subscriptionsRefs,
             bool allocationStatementsRefs,
-            bool personasRefs,
+            bool fanProfilesRefs,
             bool followsRefs,
             bool consentGrantsRefs,
             bool audienceGrantRequestsRefs,
@@ -37142,13 +37181,13 @@ class $$FanPassportsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> displayName = const Value.absent(),
-                Value<String> activePersonaId = const Value.absent(),
+                Value<String> activeFanProfileId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FanPassportsCompanion(
                 id: id,
                 displayName: displayName,
-                activePersonaId: activePersonaId,
+                activeFanProfileId: activeFanProfileId,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -37156,13 +37195,13 @@ class $$FanPassportsTableTableManager
               ({
                 required String id,
                 required String displayName,
-                required String activePersonaId,
+                required String activeFanProfileId,
                 required DateTime createdAt,
                 Value<int> rowid = const Value.absent(),
               }) => FanPassportsCompanion.insert(
                 id: id,
                 displayName: displayName,
-                activePersonaId: activePersonaId,
+                activeFanProfileId: activeFanProfileId,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -37182,7 +37221,7 @@ class $$FanPassportsTableTableManager
                 entitlementGrantsRefs = false,
                 subscriptionsRefs = false,
                 allocationStatementsRefs = false,
-                personasRefs = false,
+                fanProfilesRefs = false,
                 followsRefs = false,
                 consentGrantsRefs = false,
                 audienceGrantRequestsRefs = false,
@@ -37213,7 +37252,7 @@ class $$FanPassportsTableTableManager
                     if (entitlementGrantsRefs) db.entitlementGrants,
                     if (subscriptionsRefs) db.subscriptions,
                     if (allocationStatementsRefs) db.allocationStatements,
-                    if (personasRefs) db.personas,
+                    if (fanProfilesRefs) db.fanProfiles,
                     if (followsRefs) db.follows,
                     if (consentGrantsRefs) db.consentGrants,
                     if (audienceGrantRequestsRefs) db.audienceGrantRequests,
@@ -37365,21 +37404,21 @@ class $$FanPassportsTableTableManager
                               ),
                           typedResults: items,
                         ),
-                      if (personasRefs)
+                      if (fanProfilesRefs)
                         await $_getPrefetchedData<
                           FanPassport,
                           $FanPassportsTable,
-                          Persona
+                          FanProfile
                         >(
                           currentTable: table,
                           referencedTable: $$FanPassportsTableReferences
-                              ._personasRefsTable(db),
+                              ._fanProfilesRefsTable(db),
                           managerFromTypedResult: (p0) =>
                               $$FanPassportsTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).personasRefs,
+                              ).fanProfilesRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.passportId == item.id,
@@ -37833,7 +37872,7 @@ typedef $$FanPassportsTableProcessedTableManager =
         bool entitlementGrantsRefs,
         bool subscriptionsRefs,
         bool allocationStatementsRefs,
-        bool personasRefs,
+        bool fanProfilesRefs,
         bool followsRefs,
         bool consentGrantsRefs,
         bool audienceGrantRequestsRefs,
@@ -41922,16 +41961,16 @@ typedef $$AllocationStatementsTableProcessedTableManager =
       AllocationStatement,
       PrefetchHooks Function({bool passportId})
     >;
-typedef $$PersonasTableCreateCompanionBuilder =
-    PersonasCompanion Function({
+typedef $$FanProfilesTableCreateCompanionBuilder =
+    FanProfilesCompanion Function({
       required String id,
       required String passportId,
       required String label,
       required bool isActive,
       Value<int> rowid,
     });
-typedef $$PersonasTableUpdateCompanionBuilder =
-    PersonasCompanion Function({
+typedef $$FanProfilesTableUpdateCompanionBuilder =
+    FanProfilesCompanion Function({
       Value<String> id,
       Value<String> passportId,
       Value<String> label,
@@ -41939,13 +41978,13 @@ typedef $$PersonasTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-final class $$PersonasTableReferences
-    extends BaseReferences<_$LoomDatabase, $PersonasTable, Persona> {
-  $$PersonasTableReferences(super.$_db, super.$_table, super.$_typedResult);
+final class $$FanProfilesTableReferences
+    extends BaseReferences<_$LoomDatabase, $FanProfilesTable, FanProfile> {
+  $$FanProfilesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
       db.fanPassports.createAlias(
-        $_aliasNameGenerator(db.personas.passportId, db.fanPassports.id),
+        $_aliasNameGenerator(db.fanProfiles.passportId, db.fanPassports.id),
       );
 
   $$FanPassportsTableProcessedTableManager get passportId {
@@ -41963,9 +42002,9 @@ final class $$PersonasTableReferences
   }
 }
 
-class $$PersonasTableFilterComposer
-    extends Composer<_$LoomDatabase, $PersonasTable> {
-  $$PersonasTableFilterComposer({
+class $$FanProfilesTableFilterComposer
+    extends Composer<_$LoomDatabase, $FanProfilesTable> {
+  $$FanProfilesTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -42011,9 +42050,9 @@ class $$PersonasTableFilterComposer
   }
 }
 
-class $$PersonasTableOrderingComposer
-    extends Composer<_$LoomDatabase, $PersonasTable> {
-  $$PersonasTableOrderingComposer({
+class $$FanProfilesTableOrderingComposer
+    extends Composer<_$LoomDatabase, $FanProfilesTable> {
+  $$FanProfilesTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -42059,9 +42098,9 @@ class $$PersonasTableOrderingComposer
   }
 }
 
-class $$PersonasTableAnnotationComposer
-    extends Composer<_$LoomDatabase, $PersonasTable> {
-  $$PersonasTableAnnotationComposer({
+class $$FanProfilesTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $FanProfilesTable> {
+  $$FanProfilesTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -42101,32 +42140,32 @@ class $$PersonasTableAnnotationComposer
   }
 }
 
-class $$PersonasTableTableManager
+class $$FanProfilesTableTableManager
     extends
         RootTableManager<
           _$LoomDatabase,
-          $PersonasTable,
-          Persona,
-          $$PersonasTableFilterComposer,
-          $$PersonasTableOrderingComposer,
-          $$PersonasTableAnnotationComposer,
-          $$PersonasTableCreateCompanionBuilder,
-          $$PersonasTableUpdateCompanionBuilder,
-          (Persona, $$PersonasTableReferences),
-          Persona,
+          $FanProfilesTable,
+          FanProfile,
+          $$FanProfilesTableFilterComposer,
+          $$FanProfilesTableOrderingComposer,
+          $$FanProfilesTableAnnotationComposer,
+          $$FanProfilesTableCreateCompanionBuilder,
+          $$FanProfilesTableUpdateCompanionBuilder,
+          (FanProfile, $$FanProfilesTableReferences),
+          FanProfile,
           PrefetchHooks Function({bool passportId})
         > {
-  $$PersonasTableTableManager(_$LoomDatabase db, $PersonasTable table)
+  $$FanProfilesTableTableManager(_$LoomDatabase db, $FanProfilesTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$PersonasTableFilterComposer($db: db, $table: table),
+              $$FanProfilesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$PersonasTableOrderingComposer($db: db, $table: table),
+              $$FanProfilesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$PersonasTableAnnotationComposer($db: db, $table: table),
+              $$FanProfilesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -42134,7 +42173,7 @@ class $$PersonasTableTableManager
                 Value<String> label = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => PersonasCompanion(
+              }) => FanProfilesCompanion(
                 id: id,
                 passportId: passportId,
                 label: label,
@@ -42148,7 +42187,7 @@ class $$PersonasTableTableManager
                 required String label,
                 required bool isActive,
                 Value<int> rowid = const Value.absent(),
-              }) => PersonasCompanion.insert(
+              }) => FanProfilesCompanion.insert(
                 id: id,
                 passportId: passportId,
                 label: label,
@@ -42159,7 +42198,7 @@ class $$PersonasTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$PersonasTableReferences(db, table, e),
+                  $$FanProfilesTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -42188,9 +42227,9 @@ class $$PersonasTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.passportId,
-                                referencedTable: $$PersonasTableReferences
+                                referencedTable: $$FanProfilesTableReferences
                                     ._passportIdTable(db),
-                                referencedColumn: $$PersonasTableReferences
+                                referencedColumn: $$FanProfilesTableReferences
                                     ._passportIdTable(db)
                                     .id,
                               )
@@ -42208,18 +42247,18 @@ class $$PersonasTableTableManager
       );
 }
 
-typedef $$PersonasTableProcessedTableManager =
+typedef $$FanProfilesTableProcessedTableManager =
     ProcessedTableManager<
       _$LoomDatabase,
-      $PersonasTable,
-      Persona,
-      $$PersonasTableFilterComposer,
-      $$PersonasTableOrderingComposer,
-      $$PersonasTableAnnotationComposer,
-      $$PersonasTableCreateCompanionBuilder,
-      $$PersonasTableUpdateCompanionBuilder,
-      (Persona, $$PersonasTableReferences),
-      Persona,
+      $FanProfilesTable,
+      FanProfile,
+      $$FanProfilesTableFilterComposer,
+      $$FanProfilesTableOrderingComposer,
+      $$FanProfilesTableAnnotationComposer,
+      $$FanProfilesTableCreateCompanionBuilder,
+      $$FanProfilesTableUpdateCompanionBuilder,
+      (FanProfile, $$FanProfilesTableReferences),
+      FanProfile,
       PrefetchHooks Function({bool passportId})
     >;
 typedef $$FollowsTableCreateCompanionBuilder =
@@ -50946,14 +50985,14 @@ typedef $$ReceiptsTableProcessedTableManager =
 typedef $$AdPreferencesTableCreateCompanionBuilder =
     AdPreferencesCompanion Function({
       required String passportId,
-      required bool personalizedAds,
+      required bool interestBasedAds,
       required DateTime updatedAt,
       Value<int> rowid,
     });
 typedef $$AdPreferencesTableUpdateCompanionBuilder =
     AdPreferencesCompanion Function({
       Value<String> passportId,
-      Value<bool> personalizedAds,
+      Value<bool> interestBasedAds,
       Value<DateTime> updatedAt,
       Value<int> rowid,
     });
@@ -50995,8 +51034,8 @@ class $$AdPreferencesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<bool> get personalizedAds => $composableBuilder(
-    column: $table.personalizedAds,
+  ColumnFilters<bool> get interestBasedAds => $composableBuilder(
+    column: $table.interestBasedAds,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -51038,8 +51077,8 @@ class $$AdPreferencesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<bool> get personalizedAds => $composableBuilder(
-    column: $table.personalizedAds,
+  ColumnOrderings<bool> get interestBasedAds => $composableBuilder(
+    column: $table.interestBasedAds,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -51081,8 +51120,8 @@ class $$AdPreferencesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<bool> get personalizedAds => $composableBuilder(
-    column: $table.personalizedAds,
+  GeneratedColumn<bool> get interestBasedAds => $composableBuilder(
+    column: $table.interestBasedAds,
     builder: (column) => column,
   );
 
@@ -51142,24 +51181,24 @@ class $$AdPreferencesTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> passportId = const Value.absent(),
-                Value<bool> personalizedAds = const Value.absent(),
+                Value<bool> interestBasedAds = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AdPreferencesCompanion(
                 passportId: passportId,
-                personalizedAds: personalizedAds,
+                interestBasedAds: interestBasedAds,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String passportId,
-                required bool personalizedAds,
+                required bool interestBasedAds,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
               }) => AdPreferencesCompanion.insert(
                 passportId: passportId,
-                personalizedAds: personalizedAds,
+                interestBasedAds: interestBasedAds,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),
@@ -59829,8 +59868,8 @@ class $LoomDatabaseManager {
       $$PayoutStatementsTableTableManager(_db, _db.payoutStatements);
   $$AllocationStatementsTableTableManager get allocationStatements =>
       $$AllocationStatementsTableTableManager(_db, _db.allocationStatements);
-  $$PersonasTableTableManager get personas =>
-      $$PersonasTableTableManager(_db, _db.personas);
+  $$FanProfilesTableTableManager get fanProfiles =>
+      $$FanProfilesTableTableManager(_db, _db.fanProfiles);
   $$FollowsTableTableManager get follows =>
       $$FollowsTableTableManager(_db, _db.follows);
   $$ConsentGrantsTableTableManager get consentGrants =>

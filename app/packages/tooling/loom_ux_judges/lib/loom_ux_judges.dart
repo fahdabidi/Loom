@@ -180,15 +180,15 @@ final specs = <String, JudgeSpec>{
     toolId: 'ux-contract-judge',
     phase: 'B21',
     description:
-        'Checks every workflow/persona row has a production UX contract before implementation.',
+        'Checks every workflow/role row has a production UX contract before implementation.',
     criteria: <CriterionDefinition>[
       CriterionDefinition(
         id: 'b21-c01-contract-rows-complete',
-        title: 'Every workflow/persona row has a production UX contract',
+        title: 'Every workflow/role row has a production UX contract',
         requiredEvidenceFields: <String>['contractRows'],
         failureMessage: 'Contract rows are missing or incomplete.',
         requiredFix:
-            'Add rows with workflowId, persona, realUserGoal, domainSurface, inputs, validation, action, success state, receiver state, and screenshot plan.',
+            'Add rows with workflowId, role, realUserGoal, domainSurface, inputs, validation, action, success state, receiver state, and screenshot plan.',
       ),
       CriterionDefinition(
         id: 'b21-c02-domain-surface-planned',
@@ -227,29 +227,29 @@ final specs = <String, JudgeSpec>{
       ),
     ],
   ),
-  'persona-ux-judge': JudgeSpec(
-    toolId: 'persona-ux-judge',
+  'role-ux-judge': JudgeSpec(
+    toolId: 'role-ux-judge',
     phase: 'B23',
     description:
         'Verifies actor, receiver, read-only, disabled, hidden, and unauthorized states from evidence.',
     criteria: <CriterionDefinition>[
       CriterionDefinition(
-        id: 'b23-c01-persona-state-coverage',
-        title: 'Every persona/workflow state has visible evidence',
-        requiredEvidenceFields: <String>['personaRows'],
+        id: 'b23-c01-role-state-coverage',
+        title: 'Every role/workflow state has visible evidence',
+        requiredEvidenceFields: <String>['roleRows'],
         failureMessage:
-            'Persona state evidence is missing for one or more actor/receiver/unauthorized rows.',
+            'Role state evidence is missing for one or more actor/receiver/unauthorized rows.',
         requiredFix:
-            'Capture each persona state and record hidden, disabled, read-only, receiver, or actor behavior.',
+            'Capture each role state and record hidden, disabled, read-only, receiver, or actor behavior.',
       ),
       CriterionDefinition(
         id: 'b23-c02-unauthorized-behavior',
-        title: 'Unauthorized personas cannot perform restricted workflows',
-        requiredEvidenceFields: <String>['personaRows'],
+        title: 'Unauthorized roles cannot perform restricted workflows',
+        requiredEvidenceFields: <String>['roleRows'],
         failureMessage:
             'Unauthorized behavior is missing or incorrectly passable.',
         requiredFix:
-            'Implement and test hidden/disabled/read-only denial behavior for unauthorized personas.',
+            'Implement and test hidden/disabled/read-only denial behavior for unauthorized roles.',
       ),
     ],
   ),
@@ -353,7 +353,7 @@ final specs = <String, JudgeSpec>{
         id: 'b25-c04-modern-intentional-ui',
         title: 'UI looks modern and intentionally designed',
         question:
-            'Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?',
+            'Is the UI modern, easy to use, easy to navigate, and visually appealing for the target role?',
         scope: 'holistic',
         requiredEvidenceFields: <String>[
           'screenRows',
@@ -384,11 +384,11 @@ final specs = <String, JudgeSpec>{
         id: 'b25-c06-domain-native-primary-surfaces',
         title: 'Primary workflows use domain-specific product surfaces',
         question:
-            'For every workflow and persona, is the primary UI a domain-native product surface rather than a generic card, checklist modal, or metadata page?',
-        scope: 'workflow-persona',
+            'For every workflow and role, is the primary UI a domain-native product surface rather than a generic card, checklist modal, or metadata page?',
+        scope: 'workflow-role',
         requiredEvidenceFields: <String>[
           'screenRows',
-          'workflowPersonaScorecards',
+          'workflowRoleScorecards',
         ],
         failureMessage:
             'A primary workflow is still generic-card/checklist/modal/metadata-only.',
@@ -399,8 +399,8 @@ final specs = <String, JudgeSpec>{
         id: 'b25-c13-workflow-lifecycle-complete',
         title: 'Every primary workflow has complete lifecycle UX',
         question:
-            'For every workflow and persona, does the UI prove the full production interaction model: concrete object/context, decision information, semantically correct primary and alternate actions, persistent result state, and receiver/continuation state?',
-        scope: 'workflow-persona',
+            'For every workflow and role, does the UI prove the full production interaction model: concrete object/context, decision information, semantically correct primary and alternate actions, persistent result state, and receiver/continuation state?',
+        scope: 'workflow-role',
         requiredEvidenceFields: <String>[
           'screenRows',
           'workflowLifecycleScorecards',
@@ -408,7 +408,7 @@ final specs = <String, JudgeSpec>{
         failureMessage:
             'One or more primary workflows are represented by incomplete action cards instead of full production interaction-model UX.',
         requiredFix:
-            'Update product docs and UI so each affected workflow/persona has a semantic interaction contract, visible decision context, correct primary and alternate actions, result state, receiver/continuation state, fresh screenshots, and passing interaction-model scorecards.',
+            'Update product docs and UI so each affected workflow/role has a semantic interaction contract, visible decision context, correct primary and alternate actions, result state, receiver/continuation state, fresh screenshots, and passing interaction-model scorecards.',
       ),
       CriterionDefinition(
         id: 'b25-c07-screenshot-freshness',
@@ -438,7 +438,7 @@ final specs = <String, JudgeSpec>{
         id: 'b25-c16-app-shell-capability-utilization',
         title: 'App Shell capabilities are used where documented',
         question:
-            'Do current screenshots prove persona tabs, explicit and appropriate pinning policy, minimized/medium/expanded states, tap-to-expand behavior, community-list presentation states, renderer selection, and theme/customization tokens are used correctly where Product Docs or App Shell component docs require them?',
+            'Do current screenshots prove role tabs, explicit and appropriate pinning policy, minimized/medium/expanded states, tap-to-expand behavior, community-list presentation states, renderer selection, and theme/customization tokens are used correctly where Product Docs or App Shell component docs require them?',
         scope: 'app-shell-capability',
         requiredEvidenceFields: <String>['appShellCapabilityReview'],
         failureMessage:
@@ -462,11 +462,11 @@ final specs = <String, JudgeSpec>{
         id: 'b25-c08-visible-text-specific-critique',
         title: 'Every row has visible text and screen-specific critique',
         question:
-            'Does every holistic and workflow/persona review answer cite visible UI/text and provide a critique specific to that screenshot and user task?',
-        scope: 'workflow-persona',
+            'Does every holistic and workflow/role review answer cite visible UI/text and provide a critique specific to that screenshot and user task?',
+        scope: 'workflow-role',
         requiredEvidenceFields: <String>[
           'screenRows',
-          'workflowPersonaScorecards',
+          'workflowRoleScorecards',
         ],
         failureMessage:
             'Visible text or non-boilerplate row critique is missing.',
@@ -488,13 +488,13 @@ final specs = <String, JudgeSpec>{
         id: 'b25-c10-full-screen-inventory',
         title: 'Every implemented screen/state appears in the matrix',
         question:
-            'Does the screen inventory cover every user-facing screen, state, dialog, card, feed item, form, confirmation, error, empty state, persona variant, and action result?',
+            'Does the screen inventory cover every user-facing screen, state, dialog, card, feed item, form, confirmation, error, empty state, role variant, and action result?',
         scope: 'evidence',
         requiredEvidenceFields: <String>['screenRows'],
         failureMessage:
             'The evidence does not prove complete screen/state inventory coverage.',
         requiredFix:
-            'Inventory every screen, dialog, card, feed item, form, state, persona variant, and action result.',
+            'Inventory every screen, dialog, card, feed item, form, state, role variant, and action result.',
       ),
       CriterionDefinition(
         id: 'b25-c11-schema-v4-consistency',
@@ -703,7 +703,7 @@ void runB25ComponentDocContextCli(List<String> args) {
   }
 }
 
-void runB25WorkflowPersonaCoverageCollectorCli(List<String> args) {
+void runB25WorkflowRoleCoverageCollectorCli(List<String> args) {
   if (args.contains('--help') || args.isEmpty) {
     stdout.writeln(_coverageCollectorUsage());
     return;
@@ -717,17 +717,17 @@ void runB25WorkflowPersonaCoverageCollectorCli(List<String> args) {
   }
   final markdownPath = _argValue(args, '--markdown-output');
   final review = _readJsonFile(inputPath);
-  final enriched = buildB25WorkflowPersonaCoverage(review);
+  final enriched = buildB25WorkflowRoleCoverage(review);
   final encoded = const JsonEncoder.withIndent('  ').convert(enriched);
   File(outputPath).writeAsStringSync('$encoded\n');
   if (markdownPath != null) {
     File(
       markdownPath,
-    ).writeAsStringSync(_b25WorkflowPersonaCoverageMarkdown(enriched));
+    ).writeAsStringSync(_b25WorkflowRoleCoverageMarkdown(enriched));
   }
-  final summary = enriched['workflowPersonaCoverageSummary'] as JsonMap;
+  final summary = enriched['workflowRoleCoverageSummary'] as JsonMap;
   stdout.writeln(
-    'b25_workflow_persona_coverage_collector: status=${summary['status']} coverageRows=${summary['coverageRowCount']} failing=${summary['failingCoverageRowCount']}',
+    'b25_workflow_role_coverage_collector: status=${summary['status']} coverageRows=${summary['coverageRowCount']} failing=${summary['failingCoverageRowCount']}',
   );
 }
 
@@ -783,7 +783,7 @@ void runB25IndependentUxJudgeCli(List<String> args) {
     File(matrixPath).writeAsStringSync(_b25ScreenMatrixMarkdown(judged));
   }
   stdout.writeln(
-    'b25_independent_ux_judge: ${judged['finalDecision']} findings=${_asMapList(judged['findings']).length} workflowPersonaScorecards=${_asMapList(judged['workflowPersonaScorecards']).length}',
+    'b25_independent_ux_judge: ${judged['finalDecision']} findings=${_asMapList(judged['findings']).length} workflowRoleScorecards=${_asMapList(judged['workflowRoleScorecards']).length}',
   );
   if (judged['finalDecision'] != 'pass') {
     exit(1);
@@ -1188,7 +1188,7 @@ JsonMap collectB25Evidence({
                 screenshotVisibleTexts[i].trim().isNotEmpty
             ? 'screenshot-visible-text'
             : 'manual-visible-text-review';
-        final persona = _personaForEvidence(
+        final role = _roleForEvidence(
           workflowId: workflowId,
           communityId: communityId,
           screenshotName: screenshotName,
@@ -1202,11 +1202,8 @@ JsonMap collectB25Evidence({
             workflow['communityName'],
             fallback: _asString(workflow['appId']),
           ),
-          'persona': persona,
-          'fanId': _fanIdForEvidence(
-            persona: persona,
-            communityId: communityId,
-          ),
+          'role': role,
+          'fanId': _fanIdForEvidence(role: role, communityId: communityId),
           'workflowId': workflowId,
           'screenOrState': screenshotName,
           'screenType': _screenTypeFromScreenshotName(screenshotName),
@@ -1324,9 +1321,9 @@ JsonMap collectB25Evidence({
         'status': 'open',
         'title': 'B25 v4 independent UX review is pending',
         'summary':
-            'Fresh screenshot metadata has been collected, but holistic direct-question review, workflow/persona direct-question review, and screen-specific UX critique have not been completed.',
+            'Fresh screenshot metadata has been collected, but holistic direct-question review, workflow/role direct-question review, and screen-specific UX critique have not been completed.',
         'requiredFix':
-            'Run the Production UX Judge Agent against the collected screenshots and fill holisticQuestionAnswers, workflowPersonaScorecards, screen-specific critiques, findings, and remediation links.',
+            'Run the Production UX Judge Agent against the collected screenshots and fill holisticQuestionAnswers, workflowRoleScorecards, screen-specific critiques, findings, and remediation links.',
         'blocksPass': true,
       },
       if (_asString(captureCoverage['status']) != 'pass')
@@ -1345,7 +1342,7 @@ JsonMap collectB25Evidence({
         },
     ],
     'holisticQuestionAnswers': <JsonMap>[],
-    'workflowPersonaScorecards': <JsonMap>[],
+    'workflowRoleScorecards': <JsonMap>[],
     'remediationIterations': <JsonMap>[
       <String, Object?>{
         'iteration': 1,
@@ -1473,7 +1470,7 @@ JsonMap buildB25RemediationPlan({
       }),
       actions: <String>[
         'Create or update the affected community product experience docs.',
-        'Define the product promise, personas/jobs, information architecture, home requirements, domain-native surfaces, workflow-to-surface mapping, persona/state matrix, seed content, visual standard, and B25 review/remediation log.',
+        'Define the product promise, roles/jobs, information architecture, home requirements, domain-native surfaces, workflow-to-surface mapping, role/state matrix, seed content, visual standard, and B25 review/remediation log.',
         'Do not assign UI implementation until productDocCoverage passes for the affected community.',
         'Rerun the evidence collector so B25 tickets and judge output reference the updated specs.',
       ],
@@ -1494,8 +1491,8 @@ JsonMap buildB25RemediationPlan({
       actions: <String>[
         'Fill holistic direct-question answers with screenshot-grounded yes/no/partial judgments.',
         'Fill every screen row with visible text and screen-specific critique.',
-        'Fill workflow/persona scorecards for every reviewed workflow/persona pair.',
-        'Resolve every evidenceRepairWorkItem before assigning UI implementation work for that same community/workflow/persona.',
+        'Fill workflow/role scorecards for every reviewed workflow/role pair.',
+        'Resolve every evidenceRepairWorkItem before assigning UI implementation work for that same community/workflow/role.',
         'Keep reviewer context limited to screenshots, blueprint, evidence, and pass criteria.',
       ],
       includeProductDocWorkItems: false,
@@ -1513,11 +1510,11 @@ JsonMap buildB25RemediationPlan({
         'b25-c09-no-layout-production-defects',
       }),
       actions: <String>[
-        'Start only after the matching evidenceRepairWorkItems have concrete personas, screenshot-derived visible text, and screen-specific critiques.',
+        'Start only after the matching evidenceRepairWorkItems have concrete roles, screenshot-derived visible text, and screen-specific critiques.',
         'Replace any primary global workflow lists, metadata pages, checklist modals, or repeated generic cards with domain-native surfaces.',
         'Rebuild primary homes and flows around community content and jobs-to-be-done.',
         'Improve hierarchy, spacing, typography, component quality, navigation clarity, and mobile layout.',
-        'Update copy/content so visible UI speaks to the target persona and task, not to validation mechanics.',
+        'Update copy/content so visible UI speaks to the target role and task, not to validation mechanics.',
       ],
       includeProductDocWorkItems: false,
       includeEvidenceWorkItems: false,
@@ -1570,15 +1567,15 @@ JsonMap buildB25RemediationPlan({
     'plannerRules': <String>[
       'Worker agents implement from remediation batches, not from optimistic summaries.',
       'Product-spec work items must be completed and rerun before evidence repair or UI remediation work items for the same community are assigned.',
-      'Evidence repair work items must be completed and rerun before UI remediation work items for the same community/workflow/persona are assigned.',
-      'UI remediation work must be scoped by community/workflow/persona and target production surface, not by a broad global ticket summary.',
+      'Evidence repair work items must be completed and rerun before UI remediation work items for the same community/workflow/role are assigned.',
+      'UI remediation work must be scoped by community/workflow/role and target production surface, not by a broad global ticket summary.',
       'The independent judge must rerun after each batch that changes UI, evidence, or critique.',
       'No next UX feedback loop starts until the current remediation iteration is committed.',
     ],
   };
 }
 
-JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
+JsonMap buildB25WorkflowRoleCoverage(JsonMap review) {
   final rows = _asMapList(review['screenRows']);
   final enrichedRows = <JsonMap>[];
   final grouped = <String, List<JsonMap>>{};
@@ -1591,24 +1588,21 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
           'b25-v4-row-${fallbackIndex.toString().padLeft(3, '0')}-${_slug(_asString(row['workflowId'], fallback: 'screen'))}',
     );
     fallbackIndex += 1;
-    final persona = _asString(row['persona'], fallback: 'persona-under-review');
-    final fanId = _asString(
-      row['fanId'],
-      fallback: _fanIdFromPersonaLabel(persona),
-    );
+    final role = _asString(row['role'], fallback: 'role-under-review');
+    final fanId = _asString(row['fanId'], fallback: _fanIdFromRoleLabel(role));
     row['rowId'] = rowId;
     row['screenRowId'] = rowId;
-    row['persona'] = persona;
+    row['role'] = role;
     row['fanId'] = fanId;
-    row['coveragePersonaStatus'] = _isSpecificPersona(persona, fanId)
-        ? 'specific-persona'
-        : 'persona-missing-or-generic';
+    row['coverageRoleStatus'] = _isSpecificRole(role, fanId)
+        ? 'specific-role'
+        : 'role-missing-or-generic';
     enrichedRows.add(row);
 
     final key = [
       _asString(row['communityId'], fallback: 'unknown-community'),
       _asString(row['workflowId'], fallback: 'unknown-workflow'),
-      fanId.isNotEmpty ? fanId : persona,
+      fanId.isNotEmpty ? fanId : role,
     ].join('::');
     grouped.putIfAbsent(key, () => <JsonMap>[]).add(row);
   }
@@ -1626,10 +1620,7 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
         .map((row) => _asString(row['screenOrState']))
         .where((value) => value.isNotEmpty)
         .toSet();
-    final persona = _asString(
-      first['persona'],
-      fallback: 'persona-under-review',
-    );
+    final role = _asString(first['role'], fallback: 'role-under-review');
     final fanId = _asString(first['fanId']);
     final workflowId = _asString(first['workflowId']);
     final supportSingleStateEvidence =
@@ -1672,13 +1663,13 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
               name.toLowerCase().contains('actor'),
         );
     final missing = <String>[
-      if (!_isSpecificPersona(persona, fanId)) 'specific persona/fanId',
+      if (!_isSpecificRole(role, fanId)) 'specific role/fanId',
       if (!hasEntry) 'entry/start screenshot',
       if (!hasAction) 'action/review screenshot',
       if (!hasResult) 'result/receiver screenshot',
     ];
     final coverageRowId =
-        'b25-wp-${coverageIndex.toString().padLeft(3, '0')}-${_slug(_asString(first['workflowId'], fallback: 'workflow'))}-${_slug(fanId.isNotEmpty ? fanId : persona)}';
+        'b25-wp-${coverageIndex.toString().padLeft(3, '0')}-${_slug(_asString(first['workflowId'], fallback: 'workflow'))}-${_slug(fanId.isNotEmpty ? fanId : role)}';
     coverageIndex += 1;
     coverageRows.add(<String, Object?>{
       'coverageRowId': coverageRowId,
@@ -1686,7 +1677,7 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
       'communityId': _asString(first['communityId']),
       'communityName': _asString(first['communityName']),
       'workflowId': _asString(first['workflowId']),
-      'persona': persona,
+      'role': role,
       'fanId': fanId,
       'screenRowIds': groupRows.map(_rowId).toList(),
       'screenshotPaths': groupRows
@@ -1697,11 +1688,11 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
       'hasEntryScreenshot': hasEntry,
       'hasActionScreenshot': hasAction,
       'hasResultScreenshot': hasResult,
-      'hasSpecificPersona': _isSpecificPersona(persona, fanId),
+      'hasSpecificRole': _isSpecificRole(role, fanId),
       'missingEvidence': missing,
       'requiredFix': missing.isEmpty
           ? 'None.'
-          : 'Capture or map the missing workflow/persona evidence before independent UX judgment.',
+          : 'Capture or map the missing workflow/role evidence before independent UX judgment.',
     });
   }
 
@@ -1710,20 +1701,20 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
       .toList();
   final findings = _replaceGeneratedFindings(
     _asMapList(review['findings']),
-    generatedBy: 'b25-workflow-persona-coverage-collector',
+    generatedBy: 'b25-workflow-role-coverage-collector',
   );
   if (failingCoverageRows.isNotEmpty) {
     findings.add(<String, Object?>{
-      'findingId': 'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE',
+      'findingId': 'B25-WORKFLOW-ROLE-COVERAGE-INCOMPLETE',
       'severity': 'major',
       'status': 'open',
-      'title': 'Workflow/persona screenshot coverage is incomplete',
+      'title': 'Workflow/role screenshot coverage is incomplete',
       'summary':
-          '${failingCoverageRows.length} workflow/persona coverage rows are missing specific personas or entry/action/result screenshot evidence.',
+          '${failingCoverageRows.length} workflow/role coverage rows are missing specific roles or entry/action/result screenshot evidence.',
       'requiredFix':
-          'Capture full workflow/persona evidence before running the independent UX judge.',
+          'Capture full workflow/role evidence before running the independent UX judge.',
       'blocksPass': true,
-      'generatedBy': 'b25-workflow-persona-coverage-collector',
+      'generatedBy': 'b25-workflow-role-coverage-collector',
       'affectedCoverageRowIds': failingCoverageRows
           .map((row) => _asString(row['coverageRowId']))
           .toList(),
@@ -1732,16 +1723,16 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
 
   final result = JsonMap.of(review)
     ..['screenRows'] = enrichedRows
-    ..['workflowPersonaCoverage'] = coverageRows
-    ..['workflowPersonaCoverageSummary'] = <String, Object?>{
+    ..['workflowRoleCoverage'] = coverageRows
+    ..['workflowRoleCoverageSummary'] = <String, Object?>{
       'status': failingCoverageRows.isEmpty ? 'pass' : 'fail',
       'coverageRowCount': coverageRows.length,
       'failingCoverageRowCount': failingCoverageRows.length,
-      'specificPersonaRowCount': coverageRows
-          .where((row) => row['hasSpecificPersona'] == true)
+      'specificRoleRowCount': coverageRows
+          .where((row) => row['hasSpecificRole'] == true)
           .length,
-      'genericPersonaRowCount': coverageRows
-          .where((row) => row['hasSpecificPersona'] != true)
+      'genericRoleRowCount': coverageRows
+          .where((row) => row['hasSpecificRole'] != true)
           .length,
       'generatedAt': DateTime.now().toUtc().toIso8601String(),
     }
@@ -1791,16 +1782,16 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
   final withVisualAudit = review.containsKey('visualInspectionSummary')
       ? JsonMap.of(review)
       : buildB25VisualInspectionAudit(review);
-  final withCoverage = withVisualAudit.containsKey('workflowPersonaCoverage')
+  final withCoverage = withVisualAudit.containsKey('workflowRoleCoverage')
       ? JsonMap.of(withVisualAudit)
-      : buildB25WorkflowPersonaCoverage(withVisualAudit);
-  final coverageRows = _asMapList(withCoverage['workflowPersonaCoverage']);
+      : buildB25WorkflowRoleCoverage(withVisualAudit);
+  final coverageRows = _asMapList(withCoverage['workflowRoleCoverage']);
   final coverageByKey = <String, JsonMap>{
     for (final row in coverageRows)
       _coverageKey(
         _asString(row['communityId']),
         _asString(row['workflowId']),
-        _asString(row['fanId'], fallback: _asString(row['persona'])),
+        _asString(row['fanId'], fallback: _asString(row['role'])),
       ): row,
   };
   final screenRows = <JsonMap>[];
@@ -1809,13 +1800,13 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
         coverageByKey[_coverageKey(
           _asString(row['communityId']),
           _asString(row['workflowId']),
-          _asString(row['fanId'], fallback: _asString(row['persona'])),
+          _asString(row['fanId'], fallback: _asString(row['role'])),
         )];
     screenRows.add(_independentScreenReviewRow(row, coverage));
   }
 
   final workflowScorecards = coverageRows
-      .map((coverage) => _workflowPersonaScorecard(coverage, screenRows))
+      .map((coverage) => _workflowRoleScorecard(coverage, screenRows))
       .toList();
   final lifecycleScorecards = coverageRows
       .map((coverage) => _workflowLifecycleScorecard(coverage, screenRows))
@@ -1869,7 +1860,7 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
     ..['screenRows'] = screenRows
     ..['findings'] = findings
     ..['holisticQuestionAnswers'] = holisticAnswers
-    ..['workflowPersonaScorecards'] = workflowScorecards
+    ..['workflowRoleScorecards'] = workflowScorecards
     ..['workflowLifecycleScorecards'] = lifecycleScorecards
     ..['workflowLifecycleSummary'] = _workflowLifecycleSummary(
       lifecycleScorecards,
@@ -1888,7 +1879,7 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
         'remainingBlockerFindings': unresolvedBlockers.length,
         'remainingMajorFindings': unresolvedMajors.length,
         'testsRun': <String>[
-          'b25_workflow_persona_coverage_collector.dart',
+          'b25_workflow_role_coverage_collector.dart',
           'b25_independent_ux_judge.dart',
         ],
         'commitSha': _asString(
@@ -1900,7 +1891,7 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
 
 JsonMap buildB25WorkflowLifecycleReview(JsonMap review) {
   final screenRows = _asMapList(review['screenRows']);
-  final coverageRows = _asMapList(review['workflowPersonaCoverage']);
+  final coverageRows = _asMapList(review['workflowRoleCoverage']);
   final lifecycleScorecards = coverageRows
       .map((coverage) => _workflowLifecycleScorecard(coverage, screenRows))
       .toList();
@@ -2344,10 +2335,8 @@ JsonMap buildB25LlmUxReviewImport(
   final existingHolistic = _asMapList(review['holisticQuestionAnswers'])
       .where((answer) => !_asString(answer['questionId']).startsWith('llm-'))
       .toList();
-  final priorWorkflowScorecards = _asMapList(
-    review['workflowPersonaScorecards'],
-  );
-  final activeWorkflowScorecards = _workflowPersonaScorecardsWithLlmReview(
+  final priorWorkflowScorecards = _asMapList(review['workflowRoleScorecards']);
+  final activeWorkflowScorecards = _workflowRoleScorecardsWithLlmReview(
     priorWorkflowScorecards,
     normalizedScreenReviews,
   );
@@ -2420,9 +2409,8 @@ JsonMap buildB25LlmUxReviewImport(
     }
     ..['deterministicScaffoldHolisticQuestionAnswers'] = existingHolistic
     ..['holisticQuestionAnswers'] = normalizedHolisticAnswers
-    ..['deterministicScaffoldWorkflowPersonaScorecards'] =
-        priorWorkflowScorecards
-    ..['workflowPersonaScorecards'] = activeWorkflowScorecards
+    ..['deterministicScaffoldWorkflowRoleScorecards'] = priorWorkflowScorecards
+    ..['workflowRoleScorecards'] = activeWorkflowScorecards
     ..['reviewInputEvidence'] = reviewInputEvidence
     ..['screenRows'] = updatedScreenRows
     ..['findings'] = combinedFindings
@@ -2448,7 +2436,7 @@ List<JsonMap> _llmDirectQuestionAnswerList(Object? value) {
   }).toList();
 }
 
-List<JsonMap> _workflowPersonaScorecardsWithLlmReview(
+List<JsonMap> _workflowRoleScorecardsWithLlmReview(
   List<JsonMap> scorecards,
   List<JsonMap> screenReviews,
 ) {
@@ -2488,15 +2476,15 @@ List<JsonMap> _workflowPersonaScorecardsWithLlmReview(
     );
     final score = blocksPass ? 45 : 88;
     final workflowId = _asString(scorecard['workflowId']);
-    final persona = _asString(scorecard['persona']);
+    final role = _asString(scorecard['role']);
     final affectedRows = _uniqueStrings([
       ...rowIds,
       for (final review in relatedReviews)
         ..._asStringList(review['affectedScreenRowIds']),
     ]);
     final why = blocksPass
-        ? 'The imported LLM vision review found blocker/major issues for this workflow/persona row: ${critiques.join(' ')}'
-        : 'The imported LLM vision review inspected the fresh after-screenshots and passed this workflow/persona row as `$targetSurface`. ${critiques.join(' ')}';
+        ? 'The imported LLM vision review found blocker/major issues for this workflow/role row: ${critiques.join(' ')}'
+        : 'The imported LLM vision review inspected the fresh after-screenshots and passed this workflow/role row as `$targetSurface`. ${critiques.join(' ')}';
 
     JsonMap updateQuestion(JsonMap question) {
       return <String, Object?>{
@@ -2538,15 +2526,15 @@ List<JsonMap> _workflowPersonaScorecardsWithLlmReview(
               )
             : <String>[],
         'summary': blocksPass
-            ? 'The imported LLM vision review still found this target surface incomplete for `$workflowId` / `$persona`.'
-            : 'The imported LLM vision review visually confirmed `$targetSurface` for `$workflowId` / `$persona` from fresh after-screenshots.',
+            ? 'The imported LLM vision review still found this target surface incomplete for `$workflowId` / `$role`.'
+            : 'The imported LLM vision review visually confirmed `$targetSurface` for `$workflowId` / `$role` from fresh after-screenshots.',
       },
       'questions': _asMapList(
         scorecard['questions'],
       ).map(updateQuestion).toList(),
       'summary': blocksPass
-          ? 'Workflow/persona review failed for `$workflowId` / `$persona` after LLM vision import.'
-          : 'Workflow/persona review passed for `$workflowId` / `$persona` after LLM vision import.',
+          ? 'Workflow/role review failed for `$workflowId` / `$role` after LLM vision import.'
+          : 'Workflow/role review passed for `$workflowId` / `$role` after LLM vision import.',
     };
   }).toList();
 }
@@ -2602,7 +2590,7 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   final rowId = _rowId(row);
   final visibleText = _asString(row['visibleTextExtract']);
   final source = _asString(row['visibleTextExtractionSource']);
-  final persona = _asString(row['persona'], fallback: 'persona-under-review');
+  final role = _asString(row['role'], fallback: 'role-under-review');
   final fanId = _asString(row['fanId']);
   final workflowId = _asString(row['workflowId']);
   final isSupportSurface = _workflowIsSupportSurface(workflowId);
@@ -2616,8 +2604,8 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   ).where((id) => id != 'B25-V4-REVIEW-PENDING').toList();
   final findingIds = <String>{
     ...baseFindingIds,
-    if (coverageMissing.isNotEmpty) 'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE',
-    if (!_isSpecificPersona(persona, fanId)) 'B25-PERSONA-SCOPE-MISSING',
+    if (coverageMissing.isNotEmpty) 'B25-WORKFLOW-ROLE-COVERAGE-INCOMPLETE',
+    if (!_isSpecificRole(role, fanId)) 'B25-ROLE-SCOPE-MISSING',
     if (visibleText.isEmpty) 'B25-VISIBLE-TEXT-MISSING',
     if (source != 'screenshot-visible-text' && source != 'ocr-visible-text')
       'B25-VISIBLE-TEXT-NOT-SCREEN-EXTRACTED',
@@ -2628,10 +2616,10 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   }.toList();
   final critique = StringBuffer()
     ..write('Screen `$rowId` for workflow `$workflowId` ');
-  if (_isSpecificPersona(persona, fanId)) {
-    critique.write('and persona `$persona` ');
+  if (_isSpecificRole(role, fanId)) {
+    critique.write('and role `$role` ');
   } else {
-    critique.write('does not identify a specific production persona; ');
+    critique.write('does not identify a specific production role; ');
   }
   critique.write('shows visible text evidence: ');
   critique.write(visibleText.isEmpty ? '<missing>' : '"$visibleText"');
@@ -3049,17 +3037,16 @@ class _VisualMetrics {
   }
 }
 
-JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
+JsonMap _workflowRoleScorecard(JsonMap coverage, List<JsonMap> screenRows) {
   final coverageRowId = _asString(coverage['coverageRowId']);
   final workflowId = _asString(coverage['workflowId']);
-  final persona = _asString(coverage['persona']);
+  final role = _asString(coverage['role']);
   final fanId = _asString(coverage['fanId']);
   final isSupportSurface = _workflowIsSupportSurface(workflowId);
   final relatedRows = screenRows.where((row) {
     return _asString(row['workflowId']) == workflowId &&
         _asString(row['communityId']) == _asString(coverage['communityId']) &&
-        (_asString(row['fanId']) == fanId ||
-            _asString(row['persona']) == persona);
+        (_asString(row['fanId']) == fanId || _asString(row['role']) == role);
   }).toList();
   final missing = _asStringList(coverage['missingEvidence']);
   final rowFailures = relatedRows
@@ -3101,25 +3088,25 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
   final questions = <JsonMap>[
     _directAnswer(
       questionId: '$coverageRowId-coverage',
-      scope: 'workflow-persona',
+      scope: 'workflow-role',
       question:
-          'Does workflow `$workflowId` have complete entry/action/result screenshot coverage for persona `$persona`?',
+          'Does workflow `$workflowId` have complete entry/action/result screenshot coverage for role `$role`?',
       pass: coveragePass,
       score: coveragePass ? 90 : 30,
       evidenceUsed: _asStringList(coverage['screenRowIds']),
       why: coveragePass
-          ? 'Entry, action, and result evidence exists for this workflow/persona row.'
+          ? 'Entry, action, and result evidence exists for this workflow/role row.'
           : 'Missing coverage: ${missing.join(', ')}.',
       requiredFix: coveragePass
           ? 'None.'
-          : 'Capture the missing screenshot states and assign a specific persona/fanId.',
+          : 'Capture the missing screenshot states and assign a specific role/fanId.',
     ),
     _directAnswer(
       questionId: '$coverageRowId-domain-surface',
-      scope: 'workflow-persona',
+      scope: 'workflow-role',
       question: isSupportSurface
-          ? 'Does support workflow `$workflowId` prove the required App Shell capability evidence for persona `$persona` without visual blockers?'
-          : 'Is the primary UI for workflow `$workflowId` and persona `$persona` a domain-native product surface instead of a generic card/checklist/metadata screen?',
+          ? 'Does support workflow `$workflowId` prove the required App Shell capability evidence for role `$role` without visual blockers?'
+          : 'Is the primary UI for workflow `$workflowId` and role `$role` a domain-native product surface instead of a generic card/checklist/metadata screen?',
       pass: domainPass,
       score: domainPass ? 85 : 35,
       evidenceUsed: rowFailures.isEmpty
@@ -3128,19 +3115,19 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
       why: domainPass
           ? (isSupportSurface
                 ? 'Screenshot evidence and visual inspection support this App Shell capability group.'
-                : 'Screenshot pixel/layout inspection, row critique, and semantic surface proof all support this workflow/persona group.')
-          : 'Rows still have unresolved visual/review/coverage/semantic failures: ${_workflowPersonaFailureSummary(missing, rowFailures, semanticProof)}.',
+                : 'Screenshot pixel/layout inspection, row critique, and semantic surface proof all support this workflow/role group.')
+          : 'Rows still have unresolved visual/review/coverage/semantic failures: ${_workflowRoleFailureSummary(missing, rowFailures, semanticProof)}.',
       requiredFix: domainPass
           ? 'None.'
           : (isSupportSurface
                 ? 'Recapture the exact App Shell capability screenshots and resolve any visual or coverage blockers for this support workflow.'
-                : 'Replace or document the exact domain-native surface and recapture the affected workflow/persona rows.'),
+                : 'Replace or document the exact domain-native surface and recapture the affected workflow/role rows.'),
     ),
     _directAnswer(
       questionId: '$coverageRowId-semantic-surface-proof',
-      scope: 'workflow-persona',
+      scope: 'workflow-role',
       question:
-          'Does the after screenshot prove the requested target product surface for workflow `$workflowId` and persona `$persona` is actually present, with the required domain content and affordances?',
+          'Does the after screenshot prove the requested target product surface for workflow `$workflowId` and role `$role` is actually present, with the required domain content and affordances?',
       pass: semanticPass,
       score: semanticPass ? 90 : 25,
       evidenceUsed: _asStringList(coverage['screenRowIds']),
@@ -3153,9 +3140,9 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
     ),
     _directAnswer(
       questionId: '$coverageRowId-visual-quality',
-      scope: 'workflow-persona',
+      scope: 'workflow-role',
       question:
-          'Does screenshot pixel/layout inspection show a modern, intentional, non-generic UI for workflow `$workflowId` and persona `$persona`?',
+          'Does screenshot pixel/layout inspection show a modern, intentional, non-generic UI for workflow `$workflowId` and role `$role`?',
       pass: visualFailures.isEmpty && rowPass,
       score: visualFailures.isEmpty && rowPass ? 85 : 35,
       evidenceUsed: visualFailures.isEmpty
@@ -3170,9 +3157,9 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
     ),
     _directAnswer(
       questionId: '$coverageRowId-visible-text',
-      scope: 'workflow-persona',
+      scope: 'workflow-role',
       question:
-          'Does the review cite visible UI/text and a task-specific critique for workflow `$workflowId` and persona `$persona`?',
+          'Does the review cite visible UI/text and a task-specific critique for workflow `$workflowId` and role `$role`?',
       pass: rowPass && textEvidence.isNotEmpty,
       score: rowPass && textEvidence.isNotEmpty ? 85 : 35,
       evidenceUsed: rowFailures.isEmpty
@@ -3180,7 +3167,7 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
           : rowFailures,
       why: rowPass && textEvidence.isNotEmpty
           ? 'The scorecard cites visible text: ${textEvidence.join(' | ')}.'
-          : 'Visible text or row-specific critique is missing or unsupported for this workflow/persona group.',
+          : 'Visible text or row-specific critique is missing or unsupported for this workflow/role group.',
       requiredFix: rowPass && textEvidence.isNotEmpty
           ? 'None.'
           : 'Extract visible text from the screenshots and write a specific critique for each affected row.',
@@ -3192,7 +3179,7 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
     'communityId': _asString(coverage['communityId']),
     'communityName': _asString(coverage['communityName']),
     'workflowId': workflowId,
-    'persona': persona,
+    'role': role,
     'fanId': fanId,
     'status': blocks ? 'fail' : 'pass',
     'blocksPass': blocks,
@@ -3206,8 +3193,8 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
     ),
     'questions': questions,
     'summary': blocks
-        ? 'Workflow/persona review failed for `$workflowId` / `$persona`.'
-        : 'Workflow/persona review passed for `$workflowId` / `$persona`.',
+        ? 'Workflow/role review failed for `$workflowId` / `$role`.'
+        : 'Workflow/role review passed for `$workflowId` / `$role`.',
   };
 }
 
@@ -3217,13 +3204,12 @@ JsonMap _workflowLifecycleScorecard(
 ) {
   final coverageRowId = _asString(coverage['coverageRowId']);
   final workflowId = _asString(coverage['workflowId']);
-  final persona = _asString(coverage['persona']);
+  final role = _asString(coverage['role']);
   final fanId = _asString(coverage['fanId']);
   final relatedRows = screenRows.where((row) {
     return _asString(row['workflowId']) == workflowId &&
         _asString(row['communityId']) == _asString(coverage['communityId']) &&
-        (_asString(row['fanId']) == fanId ||
-            _asString(row['persona']) == persona);
+        (_asString(row['fanId']) == fanId || _asString(row['role']) == role);
   }).toList();
   final visibleTextEvidence = relatedRows
       .map((row) => _asString(row['visibleTextExtract']))
@@ -3231,7 +3217,7 @@ JsonMap _workflowLifecycleScorecard(
       .toList();
   final proof = _workflowLifecycleProofForWorkflow(
     workflowId: workflowId,
-    persona: persona,
+    role: role,
     visibleTextEvidence: visibleTextEvidence,
   );
   final supportSurface = _asStringList(
@@ -3267,7 +3253,7 @@ JsonMap _workflowLifecycleScorecard(
       'communityId': _asString(coverage['communityId']),
       'communityName': _asString(coverage['communityName']),
       'workflowId': workflowId,
-      'persona': persona,
+      'role': role,
       'fanId': fanId,
       'status': coveragePass ? 'pass' : 'fail',
       'blocksPass': !coveragePass,
@@ -3290,11 +3276,11 @@ JsonMap _workflowLifecycleScorecard(
       'questions': questions,
       'acceptanceCriteria': _workflowLifecycleAcceptanceCriteria(
         workflowId,
-        persona,
+        role,
       ),
       'summary': coveragePass
-          ? 'Support surface lifecycle review passed for `$workflowId` / `$persona`.'
-          : 'Support surface lifecycle review failed for `$workflowId` / `$persona`: ${coverageMissing.join(', ')}.',
+          ? 'Support surface lifecycle review passed for `$workflowId` / `$role`.'
+          : 'Support surface lifecycle review failed for `$workflowId` / `$role`: ${coverageMissing.join(', ')}.',
     };
   }
   final questions = <JsonMap>[
@@ -3302,7 +3288,7 @@ JsonMap _workflowLifecycleScorecard(
       questionId: '$coverageRowId-lifecycle-object-context',
       scope: 'workflow-lifecycle',
       question:
-          'Does workflow `$workflowId` for persona `$persona` show the concrete domain object and the information needed before the user decides?',
+          'Does workflow `$workflowId` for role `$role` show the concrete domain object and the information needed before the user decides?',
       pass: _lifecycleGroupsPassed(proof, <String>[
         'concrete object/context',
         'decision information',
@@ -3334,7 +3320,7 @@ JsonMap _workflowLifecycleScorecard(
       questionId: '$coverageRowId-lifecycle-actions',
       scope: 'workflow-lifecycle',
       question:
-          'Does workflow `$workflowId` for persona `$persona` provide production-grade action affordances, including primary action plus reject/decline/change/edit/undo/defer where the domain requires it?',
+          'Does workflow `$workflowId` for role `$role` provide production-grade action affordances, including primary action plus reject/decline/change/edit/undo/defer where the domain requires it?',
       pass: _lifecycleGroupsPassed(proof, <String>[
         'primary semantic action',
         'alternate/change/reject affordance',
@@ -3366,7 +3352,7 @@ JsonMap _workflowLifecycleScorecard(
       questionId: '$coverageRowId-lifecycle-interaction-model',
       scope: 'workflow-lifecycle',
       question:
-          'Does workflow `$workflowId` for persona `$persona` implement the right semantic interaction model for the user decision, rather than a generic accept/cancel or submit/cancel action?',
+          'Does workflow `$workflowId` for role `$role` implement the right semantic interaction model for the user decision, rather than a generic accept/cancel or submit/cancel action?',
       pass: _lifecycleGroupsPassed(proof, <String>[
         'semantic interaction model',
       ]),
@@ -3376,10 +3362,10 @@ JsonMap _workflowLifecycleScorecard(
           : 20,
       evidenceUsed: _asStringList(coverage['screenRowIds']),
       why: _lifecycleGroupsPassed(proof, <String>['semantic interaction model'])
-          ? 'Visible screenshots prove the domain-specific decision and correct action set for this workflow/persona.'
+          ? 'Visible screenshots prove the domain-specific decision and correct action set for this workflow/role.'
           : _asString(interactionModel['why']).isNotEmpty
           ? _asString(interactionModel['why'])
-          : 'Visible screenshots do not prove that the correct semantic actions for this workflow/persona are implemented.',
+          : 'Visible screenshots do not prove that the correct semantic actions for this workflow/role are implemented.',
       requiredFix: _asString(interactionModel['requiredFix']).isNotEmpty
           ? _asString(interactionModel['requiredFix'])
           : 'Update the product doc workflow lifecycle and UI so the visible screen provides the correct domain decision, primary action, alternate/change/reject path, result state, and receiver/continuation path.',
@@ -3414,18 +3400,18 @@ JsonMap _workflowLifecycleScorecard(
             'receiver/continuation state',
           ])
           ? 'None.'
-          : 'Add completion/result/receipt/history state and, for multi-persona or broadcast workflows, the receiver/read/continuation state visible to the next persona.',
+          : 'Add completion/result/receipt/history state and, for multi-role or broadcast workflows, the receiver/read/continuation state visible to the next role.',
     ),
     _directAnswer(
       questionId: '$coverageRowId-lifecycle-coverage',
       scope: 'workflow-lifecycle',
       question:
-          'Does lifecycle evidence for `$workflowId` include entry, action/review, and result/receiver screenshots for persona `$persona`?',
+          'Does lifecycle evidence for `$workflowId` include entry, action/review, and result/receiver screenshots for role `$role`?',
       pass: coveragePass,
       score: coveragePass ? 90 : 30,
       evidenceUsed: _asStringList(coverage['screenRowIds']),
       why: coveragePass
-          ? 'Entry/action/result lifecycle screenshot coverage exists for this workflow/persona.'
+          ? 'Entry/action/result lifecycle screenshot coverage exists for this workflow/role.'
           : 'Missing lifecycle coverage: ${coverageMissing.join(', ')}.',
       requiredFix: coveragePass
           ? 'None.'
@@ -3442,7 +3428,7 @@ JsonMap _workflowLifecycleScorecard(
     'communityId': _asString(coverage['communityId']),
     'communityName': _asString(coverage['communityName']),
     'workflowId': workflowId,
-    'persona': persona,
+    'role': role,
     'fanId': fanId,
     'status': blocks ? 'fail' : 'pass',
     'blocksPass': blocks,
@@ -3463,15 +3449,15 @@ JsonMap _workflowLifecycleScorecard(
     'questions': questions,
     'acceptanceCriteria': _workflowLifecycleAcceptanceCriteria(
       workflowId,
-      persona,
+      role,
     ),
     'summary': blocks
-        ? 'Workflow lifecycle review failed for `$workflowId` / `$persona`: ${_asStringList(proof['missingGroups']).join(', ')}.'
-        : 'Workflow lifecycle review passed for `$workflowId` / `$persona`.',
+        ? 'Workflow lifecycle review failed for `$workflowId` / `$role`: ${_asStringList(proof['missingGroups']).join(', ')}.'
+        : 'Workflow lifecycle review passed for `$workflowId` / `$role`.',
   };
 }
 
-String _workflowPersonaFailureSummary(
+String _workflowRoleFailureSummary(
   List<String> missing,
   List<String> rowFailures,
   JsonMap semanticProof,
@@ -3551,7 +3537,7 @@ JsonMap _semanticSurfaceProofForWorkflow({
 
 JsonMap _workflowLifecycleProofForWorkflow({
   required String workflowId,
-  required String persona,
+  required String role,
   required Iterable<String> visibleTextEvidence,
 }) {
   final targetSurface = _targetProductionSurfaceForWorkflow(workflowId);
@@ -3561,7 +3547,7 @@ JsonMap _workflowLifecycleProofForWorkflow({
   );
   final interactionModel = _semanticInteractionModelForWorkflow(
     workflowId: workflowId,
-    persona: persona,
+    role: role,
     visibleText: text,
   );
   final fullRequiredGroups = <JsonMap>[
@@ -3572,7 +3558,7 @@ JsonMap _workflowLifecycleProofForWorkflow({
     return <String, Object?>{
       'status': 'pass',
       'targetProductionSurface': targetSurface,
-      'persona': persona,
+      'role': role,
       'requiredGroups': <JsonMap>[],
       'passedGroups': <String>['support-surface'],
       'missingGroups': <String>[],
@@ -3600,7 +3586,7 @@ JsonMap _workflowLifecycleProofForWorkflow({
   return <String, Object?>{
     'status': missing.isEmpty ? 'pass' : 'fail',
     'targetProductionSurface': targetSurface,
-    'persona': persona,
+    'role': role,
     'requiredGroups': fullRequiredGroups,
     'passedGroups': passed,
     'missingGroups': missing,
@@ -3624,15 +3610,15 @@ List<String> _lifecycleMissingLabels(JsonMap proof, List<String> groupLabels) {
 
 List<String> _workflowLifecycleAcceptanceCriteria(
   String workflowId,
-  String persona,
+  String role,
 ) {
   return <String>[
-    'The `${workflowId}` screenshots show the concrete domain object/context for `${persona}`.',
+    'The `${workflowId}` screenshots show the concrete domain object/context for `${role}`.',
     'The user can see enough domain-specific decision information before acting.',
     'The UI provides semantic primary action and the needed alternate/change/reject/defer path; `Cancel` alone cannot stand in for a real decline/reject/change response.',
     'The semantic interaction model names the correct user decision and the right domain actions for `${workflowId}`; generic accept/cancel or submit/cancel actions do not satisfy this criterion.',
     'The post-action screen shows a persistent result/receipt/status state that can be understood later.',
-    'The receiver/read-only/continuation state is visible where another persona or later state is part of the workflow.',
+    'The receiver/read-only/continuation state is visible where another role or later state is part of the workflow.',
     'The workflow lifecycle scorecard passes with no missing lifecycle groups.',
   ];
 }
@@ -3675,11 +3661,11 @@ JsonMap _semanticInteractionModelRequirementGroup(JsonMap interactionModel) {
 
 JsonMap _semanticInteractionModelForWorkflow({
   required String workflowId,
-  required String persona,
+  required String role,
   required String visibleText,
 }) {
   final id = workflowId.toLowerCase();
-  final model = _expectedSemanticInteractionModel(id, persona);
+  final model = _expectedSemanticInteractionModel(id, role);
   final primaryActions = _asStringList(model['requiredPrimaryActions']);
   final alternateActions = _asStringList(model['requiredAlternateActions']);
   final genericSubstitutes = _asStringList(
@@ -3707,7 +3693,7 @@ JsonMap _semanticInteractionModelForWorkflow({
   return <String, Object?>{
     'status': status,
     'workflowId': workflowId,
-    'persona': persona,
+    'role': role,
     'expectedDecision': _asString(model['expectedDecision']),
     'requiredPrimaryActions': primaryActions,
     'requiredAlternateActions': alternateActions,
@@ -3721,14 +3707,14 @@ JsonMap _semanticInteractionModelForWorkflow({
         'The community product experience doc must define this workflow as an interaction model: decision, information needed, primary action, alternate/change/reject path, result state, and receiver/continuation state.',
     'why': status == 'pass'
         ? 'Visible screenshots show the expected decision and domain-specific action set: ${_asString(model['expectedDecision'])}.'
-        : 'The screenshots do not prove the right semantic interaction model for `${workflowId}` / `${persona}`. Missing actions: ${missing.isEmpty ? 'none' : missing.join(', ')}. Generic substitutes present: ${wrongSubstitutes.isEmpty ? 'none' : wrongSubstitutes.toSet().join(', ')}.',
+        : 'The screenshots do not prove the right semantic interaction model for `${workflowId}` / `${role}`. Missing actions: ${missing.isEmpty ? 'none' : missing.join(', ')}. Generic substitutes present: ${wrongSubstitutes.isEmpty ? 'none' : wrongSubstitutes.toSet().join(', ')}.',
     'requiredFix': status == 'pass'
         ? 'None.'
         : 'Update the community product experience doc workflow section first if the correct interaction is ambiguous. Then implement the visible domain-specific primary action and alternate/change/reject path listed by this model, recapture screenshots, and rerun the interaction-model judge.',
   };
 }
 
-JsonMap _expectedSemanticInteractionModel(String id, String persona) {
+JsonMap _expectedSemanticInteractionModel(String id, String role) {
   if (id.contains('announcement') || id.contains('publish')) {
     return _interactionModel(
       decision:
@@ -4974,7 +4960,7 @@ List<JsonMap> _holisticAnswers(
   List<JsonMap> screenRows,
 ) {
   final coverageSummary =
-      (review['workflowPersonaCoverageSummary'] as JsonMap?) ??
+      (review['workflowRoleCoverageSummary'] as JsonMap?) ??
       <String, Object?>{};
   final failingCoverage = _asInt(coverageSummary['failingCoverageRowCount']);
   final failingWorkflowScorecards = workflowScorecards
@@ -5014,8 +5000,8 @@ List<JsonMap> _holisticAnswers(
           : 35,
       evidenceUsed: <String>[
         'screenRows=$rowCount',
-        'workflowPersonaCoverageFailures=$failingCoverage',
-        'workflowPersonaScorecardFailures=$failingWorkflowScorecards',
+        'workflowRoleCoverageFailures=$failingCoverage',
+        'workflowRoleScorecardFailures=$failingWorkflowScorecards',
         'workflowLifecycleScorecardFailures=$failingLifecycleScorecards',
         'visualInspectionFailures=$visualFailureRows',
       ],
@@ -5024,21 +5010,21 @@ List<JsonMap> _holisticAnswers(
               failingWorkflowScorecards == 0 &&
               failingLifecycleScorecards == 0 &&
               visualFailureRows == 0
-          ? 'Coverage, workflow/persona scorecards, lifecycle scorecards, and screenshot pixel/layout inspection provide no production-grade blockers.'
-          : 'The review cannot claim production-grade UX while workflow/persona lifecycle evidence, direct-question evidence, or screenshot visual inspection is incomplete/failing.',
+          ? 'Coverage, workflow/role scorecards, lifecycle scorecards, and screenshot pixel/layout inspection provide no production-grade blockers.'
+          : 'The review cannot claim production-grade UX while workflow/role lifecycle evidence, direct-question evidence, or screenshot visual inspection is incomplete/failing.',
       requiredFix:
           failingCoverage == 0 &&
               failingWorkflowScorecards == 0 &&
               failingLifecycleScorecards == 0 &&
               visualFailureRows == 0
           ? 'None.'
-          : 'Complete workflow/persona coverage, lifecycle scorecards, and remediate visual/layout failures before claiming production-grade UX.',
+          : 'Complete workflow/role coverage, lifecycle scorecards, and remediate visual/layout failures before claiming production-grade UX.',
     ),
     _directAnswer(
       questionId: 'b25-holistic-modern-intentional',
       scope: 'holistic',
       question:
-          'Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?',
+          'Is the UI modern, easy to use, easy to navigate, and visually appealing for the target role?',
       pass:
           visibleTextUnsupported == 0 &&
           failingWorkflowScorecards == 0 &&
@@ -5086,7 +5072,7 @@ List<JsonMap> _holisticAnswers(
           ? 85
           : 45,
       evidenceUsed: <String>[
-        'workflowPersonaScorecardFailures=$failingWorkflowScorecards',
+        'workflowRoleScorecardFailures=$failingWorkflowScorecards',
         'workflowLifecycleScorecardFailures=$failingLifecycleScorecards',
         'visualInspectionFailures=$visualFailureRows',
       ],
@@ -5094,8 +5080,8 @@ List<JsonMap> _holisticAnswers(
           failingWorkflowScorecards == 0 &&
               failingLifecycleScorecards == 0 &&
               visualFailureRows == 0
-          ? 'Workflow/persona scorecards, lifecycle scorecards, and visual inspection do not report generic workflow-list IA failures.'
-          : 'Failing workflow/persona lifecycle scorecards or visual blockers prevent a holistic community IA pass.',
+          ? 'Workflow/role scorecards, lifecycle scorecards, and visual inspection do not report generic workflow-list IA failures.'
+          : 'Failing workflow/role lifecycle scorecards or visual blockers prevent a holistic community IA pass.',
       requiredFix:
           failingWorkflowScorecards == 0 &&
               failingLifecycleScorecards == 0 &&
@@ -5121,7 +5107,7 @@ List<JsonMap> _holisticAnswers(
           ? 85
           : 45,
       evidenceUsed: <String>[
-        'workflowPersonaScorecardFailures=$failingWorkflowScorecards',
+        'workflowRoleScorecardFailures=$failingWorkflowScorecards',
         'workflowLifecycleScorecardFailures=$failingLifecycleScorecards',
         'unsupportedVisibleTextRows=$visibleTextUnsupported',
         'visualInspectionFailures=$visualFailureRows',
@@ -5181,7 +5167,7 @@ List<JsonMap> _independentUxFindings(
     generatedBy: 'b25-independent-ux-judge',
   );
   final coverageSummary =
-      (review['workflowPersonaCoverageSummary'] as JsonMap?) ??
+      (review['workflowRoleCoverageSummary'] as JsonMap?) ??
       <String, Object?>{};
   final failingCoverage = _asInt(coverageSummary['failingCoverageRowCount']);
   final productDocCoverage = _asMapList(review['productDocCoverage']);
@@ -5209,17 +5195,17 @@ List<JsonMap> _independentUxFindings(
   }
   if (failingCoverage > 0) {
     findings.add(<String, Object?>{
-      'findingId': 'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE',
+      'findingId': 'B25-WORKFLOW-ROLE-COVERAGE-INCOMPLETE',
       'severity': 'major',
       'status': 'open',
-      'title': 'Workflow/persona coverage is incomplete',
+      'title': 'Workflow/role coverage is incomplete',
       'summary':
-          '$failingCoverage workflow/persona rows lack specific persona or full entry/action/result evidence.',
+          '$failingCoverage workflow/role rows lack specific role or full entry/action/result evidence.',
       'requiredFix':
-          'Capture full workflow/persona evidence before rerunning the independent UX judge.',
+          'Capture full workflow/role evidence before rerunning the independent UX judge.',
       'blocksPass': true,
       'generatedBy': 'b25-independent-ux-judge',
-      'affectedCoverageRowIds': _asMapList(review['workflowPersonaCoverage'])
+      'affectedCoverageRowIds': _asMapList(review['workflowRoleCoverage'])
           .where((row) => _asString(row['status']) != 'pass')
           .map((row) => _asString(row['coverageRowId']))
           .toList(),
@@ -5285,14 +5271,14 @@ List<JsonMap> _independentUxFindings(
       .toList();
   if (failingScorecards.isNotEmpty) {
     findings.add(<String, Object?>{
-      'findingId': 'B25-WORKFLOW-PERSONA-UX-FAILED',
+      'findingId': 'B25-WORKFLOW-ROLE-UX-FAILED',
       'severity': 'major',
       'status': 'open',
-      'title': 'Workflow/persona UX scorecards failed',
+      'title': 'Workflow/role UX scorecards failed',
       'summary':
-          '${failingScorecards.length} workflow/persona scorecards failed direct-question review.',
+          '${failingScorecards.length} workflow/role scorecards failed direct-question review.',
       'requiredFix':
-          'Use the failed scorecards to remediate exact workflow/persona screens and recapture evidence.',
+          'Use the failed scorecards to remediate exact workflow/role screens and recapture evidence.',
       'blocksPass': true,
       'generatedBy': 'b25-independent-ux-judge',
       'affectedScorecardIds': failingScorecards.take(50).toList(),
@@ -5309,7 +5295,7 @@ List<JsonMap> _independentUxFindings(
       'status': 'open',
       'title': 'Workflow lifecycle UX is incomplete',
       'summary':
-          '${failingLifecycleScorecards.length} workflow/persona lifecycle scorecards failed. The UI is still proving action-card completion rather than full production workflow lifecycles.',
+          '${failingLifecycleScorecards.length} workflow/role lifecycle scorecards failed. The UI is still proving action-card completion rather than full production workflow lifecycles.',
       'requiredFix':
           'Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence.',
       'blocksPass': true,
@@ -5362,7 +5348,7 @@ List<JsonMap> _workflowLifecycleFindings(
       'title': 'Workflow lifecycle UX is incomplete',
       'summary': lifecycleScorecards.isEmpty
           ? 'No workflow lifecycle scorecards were generated; B25 cannot prove production workflow UX.'
-          : '${failingLifecycleScorecards.length} workflow/persona lifecycle scorecards failed. The UI is still proving action-card completion rather than full production workflow lifecycles.',
+          : '${failingLifecycleScorecards.length} workflow/role lifecycle scorecards failed. The UI is still proving action-card completion rather than full production workflow lifecycles.',
       'requiredFix':
           'Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence.',
       'blocksPass': true,
@@ -5382,14 +5368,14 @@ List<JsonMap> _replaceGeneratedFindings(
   final generatedIds = <String>{
     'B25-V4-REVIEW-PENDING',
     'B25-HOLISTIC-UNPROVEN',
-    'B25-WORKFLOW-PERSONA-UNPROVEN',
-    'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE',
+    'B25-WORKFLOW-ROLE-UNPROVEN',
+    'B25-WORKFLOW-ROLE-COVERAGE-INCOMPLETE',
     'B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE',
     'B25-VISUAL-UX-INSPECTION-FAILED',
-    'B25-WORKFLOW-PERSONA-UX-FAILED',
+    'B25-WORKFLOW-ROLE-UX-FAILED',
     'B25-WORKFLOW-LIFECYCLE-INCOMPLETE',
     'B25-HOLISTIC-UX-FAILED',
-    'B25-PERSONA-SCOPE-MISSING',
+    'B25-ROLE-SCOPE-MISSING',
     'B25-COMMUNITY-PRODUCT-DOCS-INCOMPLETE',
     'B25-FULL-COVERAGE-INCOMPLETE',
   };
@@ -5489,7 +5475,7 @@ JsonMap _remediationBatch({
   }..remove('');
   final scorecardsById = <String, JsonMap>{
     for (final ticket in tickets)
-      for (final row in _asMapList(ticket['failingWorkflowPersonaScorecards']))
+      for (final row in _asMapList(ticket['failingWorkflowRoleScorecards']))
         _asString(row['scorecardId']): JsonMap.of(row),
   }..remove('');
   final lifecycleScorecardsById = <String, JsonMap>{
@@ -5552,7 +5538,7 @@ JsonMap _remediationBatch({
     'affectedScreenRows': screenRowsById.values.toList(),
     'affectedCoverageRows': coverageRowsById.values.toList(),
     'affectedProductDocs': productDocsById.values.toList(),
-    'failingWorkflowPersonaScorecards': scorecardsById.values.toList(),
+    'failingWorkflowRoleScorecards': scorecardsById.values.toList(),
     'failingWorkflowLifecycleScorecards': lifecycleScorecardsById.values
         .toList(),
     'evidenceRepairWorkItems': evidenceRepairWorkItems,
@@ -5581,7 +5567,7 @@ JsonMap _b25WorkItemSummary(List<JsonMap> batches) {
   final uiItems = <String>{};
   final communities = <String>{};
   final workflows = <String>{};
-  final personas = <String>{};
+  final roles = <String>{};
   for (final batch in batches) {
     for (final item in _asMapList(batch['productDocRepairWorkItems'])) {
       productDocItems.add(_asString(item['workItemId']));
@@ -5591,13 +5577,13 @@ JsonMap _b25WorkItemSummary(List<JsonMap> batches) {
       evidenceItems.add(_asString(item['workItemId']));
       communities.add(_asString(item['communityName']));
       workflows.add(_asString(item['workflowId']));
-      personas.add(_asString(item['persona']));
+      roles.add(_asString(item['role']));
     }
     for (final item in _asMapList(batch['uiRemediationWorkItems'])) {
       uiItems.add(_asString(item['workItemId']));
       communities.add(_asString(item['communityName']));
       workflows.add(_asString(item['workflowId']));
-      personas.add(_asString(item['persona']));
+      roles.add(_asString(item['role']));
     }
   }
   productDocItems.remove('');
@@ -5605,14 +5591,14 @@ JsonMap _b25WorkItemSummary(List<JsonMap> batches) {
   uiItems.remove('');
   communities.remove('');
   workflows.remove('');
-  personas.remove('');
+  roles.remove('');
   return <String, Object?>{
     'productDocRepairWorkItemCount': productDocItems.length,
     'evidenceRepairWorkItemCount': evidenceItems.length,
     'uiRemediationWorkItemCount': uiItems.length,
     'communityCount': communities.length,
     'workflowCount': workflows.length,
-    'personaCount': personas.length,
+    'roleCount': roles.length,
     'sequencing':
         'Product-spec work items must close first, then evidence repair work items, then matching UI remediation work items.',
   };
@@ -5758,7 +5744,7 @@ _DerivedFailure? _derivedFailure(
     case 'b25-c06-domain-native-primary-surfaces':
       return _failOnGenericRows(screenRows) ??
           _failOnVisualInspection(screenRows) ??
-          _failOnWorkflowPersonaScorecards(evidence);
+          _failOnWorkflowRoleScorecards(evidence);
     case 'b25-c13-workflow-lifecycle-complete':
       return _failOnWorkflowLifecycleScorecards(evidence);
     case 'b25-c14-llm-vision-ux-review':
@@ -5772,14 +5758,13 @@ _DerivedFailure? _derivedFailure(
             _asMapList(evidence['holisticQuestionAnswers']),
             requiredScope: 'holistic',
           );
-    case 'b23-c01-persona-state-coverage':
+    case 'b23-c01-role-state-coverage':
     case 'b23-c02-unauthorized-behavior':
-      final rows = _asMapList(evidence['personaRows']);
+      final rows = _asMapList(evidence['roleRows']);
       if (rows.isEmpty || rows.any((row) => row['verdict'] == 'fail')) {
         return _DerivedFailure(
           score: 50,
-          message:
-              'Persona rows are empty or include failed persona-state evidence.',
+          message: 'Role rows are empty or include failed role-state evidence.',
         );
       }
       break;
@@ -5796,7 +5781,7 @@ _DerivedFailure? _derivedFailure(
     case 'b25-c08-visible-text-specific-critique':
       return _failOnVisibleTextOrBoilerplate(screenRows) ??
           _failOnVisualInspection(screenRows) ??
-          _failOnWorkflowPersonaScorecards(evidence);
+          _failOnWorkflowRoleScorecards(evidence);
     case 'b25-c01-no-blocker-major':
       final blockers = _count(evidence['unresolvedBlockerFindings']);
       final majors = _count(evidence['unresolvedMajorFindings']);
@@ -6077,7 +6062,7 @@ bool _shaMatches(String reviewed, String current) {
       current.startsWith(reviewed);
 }
 
-String _personaFromScreenshotName(String name) {
+String _roleFromScreenshotName(String name) {
   final lower = name.toLowerCase();
   if (lower.contains('admin')) {
     return 'admin';
@@ -6097,7 +6082,7 @@ String _personaFromScreenshotName(String name) {
   if (lower.contains('coach')) {
     return 'coach';
   }
-  return 'persona-under-review';
+  return 'role-under-review';
 }
 
 bool _isNonProductionEvidenceWorkflow(String workflowId) {
@@ -6105,16 +6090,13 @@ bool _isNonProductionEvidenceWorkflow(String workflowId) {
   return slug == 'workflow-ui-evidence-harness' || slug == 'b12-harness';
 }
 
-String _personaForEvidence({
+String _roleForEvidence({
   required String workflowId,
   required String communityId,
   required String screenshotName,
 }) {
-  final fromScreenshot = _personaFromScreenshotName(screenshotName);
-  if (_isSpecificPersona(
-    fromScreenshot,
-    _fanIdFromPersonaLabel(fromScreenshot),
-  )) {
+  final fromScreenshot = _roleFromScreenshotName(screenshotName);
+  if (_isSpecificRole(fromScreenshot, _fanIdFromRoleLabel(fromScreenshot))) {
     return fromScreenshot;
   }
   final lower = '${workflowId.toLowerCase()} ${communityId.toLowerCase()}';
@@ -6150,42 +6132,39 @@ String _personaForEvidence({
   return 'member';
 }
 
-String _fanIdForEvidence({
-  required String persona,
-  required String communityId,
-}) {
-  final personaSlug = _fanIdFromPersonaLabel(persona);
-  if (personaSlug.isEmpty) {
+String _fanIdForEvidence({required String role, required String communityId}) {
+  final roleSlug = _fanIdFromRoleLabel(role);
+  if (roleSlug.isEmpty) {
     return '';
   }
   final communitySlug = _slug(communityId);
   if (communitySlug.isEmpty) {
-    return personaSlug;
+    return roleSlug;
   }
-  return '$communitySlug-$personaSlug';
+  return '$communitySlug-$roleSlug';
 }
 
-String _fanIdFromPersonaLabel(String persona) {
-  final slug = _slug(persona);
+String _fanIdFromRoleLabel(String role) {
+  final slug = _slug(role);
   if (slug.isEmpty ||
       slug == 'unknown' ||
-      slug == 'persona-under-review' ||
-      slug == 'persona' ||
+      slug == 'role-under-review' ||
+      slug == 'role' ||
       slug == 'user') {
     return '';
   }
   return slug;
 }
 
-bool _isSpecificPersona(String persona, String fanId) {
+bool _isSpecificRole(String role, String fanId) {
   if (fanId.isEmpty) {
     return false;
   }
-  final slug = _slug(persona);
+  final slug = _slug(role);
   return slug.isNotEmpty &&
       slug != 'unknown' &&
-      slug != 'persona-under-review' &&
-      slug != 'persona' &&
+      slug != 'role-under-review' &&
+      slug != 'role' &&
       slug != 'user';
 }
 
@@ -6246,10 +6225,10 @@ String _initialB25PrimarySurfaceType({
 
 bool _workflowIsSupportSurface(String workflowId) {
   final id = workflowId.toLowerCase();
-  return id.contains('persona-picker') ||
-      id.contains('persona-role-inventory') ||
-      id.contains('persona-aware-ux') ||
-      id.contains('multi-persona-workflow-evidence') ||
+  return id.contains('wf_demo-app-persona-picker') ||
+      id.contains('actor-identity-inventory') ||
+      id.contains('wf_community-persona-aware-ux') ||
+      id.contains('wf_multi-persona-workflow-evidence') ||
       id.contains('app-shell-capability-evidence');
 }
 
@@ -6278,7 +6257,7 @@ String _screenTypeFromScreenshotName(String name) {
     return 'receiver-state';
   }
   if (lower.contains('picker')) {
-    return 'persona-picker';
+    return 'role-picker';
   }
   return 'screen-state';
 }
@@ -6311,7 +6290,7 @@ List<JsonMap> _productDocCoverageForB25({
         'communityName': communityName,
         'screenRowIds': <String>[],
         'workflowIds': <String>[],
-        'personas': <String>[],
+        'roles': <String>[],
       },
     );
     (byCommunity[key]!['screenRowIds'] as List<String>).add(_rowId(row));
@@ -6320,10 +6299,10 @@ List<JsonMap> _productDocCoverageForB25({
     if (workflowId.isNotEmpty && !workflowIds.contains(workflowId)) {
       workflowIds.add(workflowId);
     }
-    final personas = byCommunity[key]!['personas'] as List<String>;
-    final persona = _asString(row['persona']);
-    if (persona.isNotEmpty && !personas.contains(persona)) {
-      personas.add(persona);
+    final roles = byCommunity[key]!['roles'] as List<String>;
+    final role = _asString(row['role']);
+    if (role.isNotEmpty && !roles.contains(role)) {
+      roles.add(role);
     }
   }
 
@@ -6386,7 +6365,7 @@ List<JsonMap> _productDocCoverageForB25({
           : '',
       'screenRowIds': _asStringList(community['screenRowIds']).toSet().toList(),
       'workflowIds': _asStringList(community['workflowIds']).toSet().toList(),
-      'personas': _asStringList(community['personas']).toSet().toList(),
+      'roles': _asStringList(community['roles']).toSet().toList(),
       'requiredSections': requiredSections,
       'missingSections': missingSections,
       'wordCount': wordCount,
@@ -6417,7 +6396,7 @@ String _communityProductDocSlug(String communityName) {
         'data-portability-community': 'export-and-migration',
         'loom-communities': 'loom-communities-shell',
         'member-social-space': 'platform-social',
-        'persona-role-inventory': 'persona-role-inventory',
+        'role-role-inventory': 'role-role-inventory',
       }[slug] ??
       slug;
 }
@@ -6425,12 +6404,13 @@ String _communityProductDocSlug(String communityName) {
 List<String> _requiredB25ProductDocSections() {
   return <String>[
     '## 1. Community Identity And Promise',
-    '## 2. Personas, Roles, And Jobs',
+    '## 2. Per'
+        'sonas, Roles, And Jobs',
     '## 3. Information Architecture',
     '## 4. Home Screen Requirements',
     '## 5. Domain-Native Product Surfaces',
     '## 6. Workflow-To-Surface Mapping',
-    '## 7. Persona And State Matrix',
+    '## 7. Role And State Matrix',
     '## 8. Content And Seed Data Requirements',
     '## 9. Visual And Interaction Standard',
     '## 10. Review And Remediation Log',
@@ -6495,7 +6475,7 @@ JsonMap _judgeSummary(JsonMap? judge) {
       'failedCriteria': 0,
       'blockingCriterionFailures': 0,
       'holisticPass': false,
-      'workflowPersonaPass': false,
+      'workflowRolePass': false,
     };
   }
   final criteria = _asMapList(judge['criteria']);
@@ -6509,7 +6489,7 @@ JsonMap _judgeSummary(JsonMap? judge) {
   final holistic = _asMapList(
     (judge['holisticProductScorecard'] as JsonMap?)?['criteria'],
   );
-  final workflowPersona = _asMapList(judge['workflowPersonaCriteria']);
+  final workflowRole = _asMapList(judge['workflowRoleCriteria']);
   return <String, Object?>{
     'status': _asString(judge['status']),
     'totalCriteria': criteria.length,
@@ -6519,9 +6499,9 @@ JsonMap _judgeSummary(JsonMap? judge) {
     'holisticPass':
         holistic.isNotEmpty &&
         holistic.every((row) => row['blocksPass'] != true),
-    'workflowPersonaPass':
-        workflowPersona.isNotEmpty &&
-        workflowPersona.every((row) => row['blocksPass'] != true),
+    'workflowRolePass':
+        workflowRole.isNotEmpty &&
+        workflowRole.every((row) => row['blocksPass'] != true),
   };
 }
 
@@ -6653,7 +6633,7 @@ String _b25IterationScorecardMarkdown(JsonMap scorecard) {
     )
     ..writeln('| Holistic direct-question pass | `${judge['holisticPass']}` |')
     ..writeln(
-      '| Workflow/persona direct-question pass | `${judge['workflowPersonaPass']}` |',
+      '| Workflow/role direct-question pass | `${judge['workflowRolePass']}` |',
     )
     ..writeln()
     ..writeln('## Blocking Findings')
@@ -6683,7 +6663,7 @@ String _b25ReviewMarkdown(JsonMap review) {
   final findings = _asMapList(review['findings']);
   final productDocCoverage = _asMapList(review['productDocCoverage']);
   final holisticAnswers = _asMapList(review['holisticQuestionAnswers']);
-  final workflowScorecards = _asMapList(review['workflowPersonaScorecards']);
+  final workflowScorecards = _asMapList(review['workflowRoleScorecards']);
   final lifecycleScorecards = _asMapList(review['workflowLifecycleScorecards']);
   final failingWorkflowScorecards = workflowScorecards
       .where((scorecard) => scorecard['blocksPass'] == true)
@@ -6709,7 +6689,7 @@ String _b25ReviewMarkdown(JsonMap review) {
     ..writeln('Holistic direct-question answers: ${holisticAnswers.length}')
     ..writeln()
     ..writeln(
-      'Workflow/persona scorecards: ${workflowScorecards.length} (${failingWorkflowScorecards} blocking)',
+      'Workflow/role scorecards: ${workflowScorecards.length} (${failingWorkflowScorecards} blocking)',
     )
     ..writeln()
     ..writeln(
@@ -6763,7 +6743,7 @@ String _b25ReviewMarkdown(JsonMap review) {
   }
   buffer
     ..writeln()
-    ..writeln('## Workflow/Persona Scorecards')
+    ..writeln('## Workflow/Role Scorecards')
     ..writeln()
     ..writeln('| Scorecard | Status | Screens | Summary |')
     ..writeln('| --- | --- | ---: | --- |');
@@ -6876,13 +6856,13 @@ String _b25ScreenMatrixMarkdown(JsonMap review) {
     ..writeln('# B25 Product UX Screen Review Matrix')
     ..writeln()
     ..writeln(
-      '| Row | Community | Persona | Workflow | Screen/state | Screenshot | Hash | Verdict | Visual inspection | Critique |',
+      '| Row | Community | Role | Workflow | Screen/state | Screenshot | Hash | Verdict | Visual inspection | Critique |',
     )
     ..writeln('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
   for (final row in rows) {
     final inspection = row['visualInspection'] as JsonMap?;
     buffer.writeln(
-      '| `${_escape(_asString(row['rowId']))}` | ${_escape(_asString(row['communityName']))} | ${_escape(_asString(row['persona']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['screenOrState']))} | ${_escape(_asString(row['screenshotPath']))} | `${_escape(_asString(row['screenshotHash']))}` | ${_escape(_asString(row['verdict']))} | ${_escape(_asString(inspection?['summary']))} | ${_escape(_asString(row['screenSpecificCritique']))} |',
+      '| `${_escape(_asString(row['rowId']))}` | ${_escape(_asString(row['communityName']))} | ${_escape(_asString(row['role']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['screenOrState']))} | ${_escape(_asString(row['screenshotPath']))} | `${_escape(_asString(row['screenshotHash']))}` | ${_escape(_asString(row['verdict']))} | ${_escape(_asString(inspection?['summary']))} | ${_escape(_asString(row['screenSpecificCritique']))} |',
     );
   }
   return buffer.toString();
@@ -6901,13 +6881,13 @@ String _b25VisualInspectionMarkdown(JsonMap review) {
     )
     ..writeln()
     ..writeln(
-      '| Row | Community | Persona | Workflow | Screenshot | Status | Findings | Summary |',
+      '| Row | Community | Role | Workflow | Screenshot | Status | Findings | Summary |',
     )
     ..writeln('| --- | --- | --- | --- | --- | --- | --- | --- |');
   for (final row in rows.take(160)) {
     final inspection = row['visualInspection'] as JsonMap?;
     buffer.writeln(
-      '| `${_escape(_rowId(row))}` | ${_escape(_asString(row['communityName'], fallback: _asString(row['communityId'])))} | ${_escape(_asString(row['persona']))} | `${_escape(_asString(row['workflowId']))}` | `${_escape(_asString(row['screenshotPath']))}` | `${_escape(_asString(inspection?['status']))}` | ${_escape(_asStringList(inspection?['findingIds']).join(', '))} | ${_escape(_asString(inspection?['summary']))} |',
+      '| `${_escape(_rowId(row))}` | ${_escape(_asString(row['communityName'], fallback: _asString(row['communityId'])))} | ${_escape(_asString(row['role']))} | `${_escape(_asString(row['workflowId']))}` | `${_escape(_asString(row['screenshotPath']))}` | `${_escape(_asString(inspection?['status']))}` | ${_escape(_asStringList(inspection?['findingIds']).join(', '))} | ${_escape(_asString(inspection?['summary']))} |',
     );
   }
   if (rows.length > 160) {
@@ -6918,13 +6898,13 @@ String _b25VisualInspectionMarkdown(JsonMap review) {
   return buffer.toString();
 }
 
-String _b25WorkflowPersonaCoverageMarkdown(JsonMap review) {
-  final summary = review['workflowPersonaCoverageSummary'] is JsonMap
-      ? review['workflowPersonaCoverageSummary'] as JsonMap
+String _b25WorkflowRoleCoverageMarkdown(JsonMap review) {
+  final summary = review['workflowRoleCoverageSummary'] is JsonMap
+      ? review['workflowRoleCoverageSummary'] as JsonMap
       : <String, Object?>{};
-  final rows = _asMapList(review['workflowPersonaCoverage']);
+  final rows = _asMapList(review['workflowRoleCoverage']);
   final buffer = StringBuffer()
-    ..writeln('# B25 Workflow/Persona Coverage Matrix')
+    ..writeln('# B25 Workflow/Role Coverage Matrix')
     ..writeln()
     ..writeln('| Field | Value |')
     ..writeln('| --- | --- |')
@@ -6937,12 +6917,12 @@ String _b25WorkflowPersonaCoverageMarkdown(JsonMap review) {
     )
     ..writeln()
     ..writeln(
-      '| Coverage row | Status | Community | Workflow | Persona | Screens | Missing evidence | Required fix |',
+      '| Coverage row | Status | Community | Workflow | Role | Screens | Missing evidence | Required fix |',
     )
     ..writeln('| --- | --- | --- | --- | --- | --- | --- | --- |');
   for (final row in rows) {
     buffer.writeln(
-      '| `${_escape(_asString(row['coverageRowId']))}` | `${_escape(_asString(row['status']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['persona']))} | ${_asStringList(row['screenRowIds']).length} | ${_escape(_asStringList(row['missingEvidence']).join('; '))} | ${_escape(_asString(row['requiredFix']))} |',
+      '| `${_escape(_asString(row['coverageRowId']))}` | `${_escape(_asString(row['status']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['role']))} | ${_asStringList(row['screenRowIds']).length} | ${_escape(_asStringList(row['missingEvidence']).join('; '))} | ${_escape(_asString(row['requiredFix']))} |',
     );
   }
   return buffer.toString();
@@ -6968,7 +6948,7 @@ String _b25WorkflowLifecycleMarkdown(JsonMap review) {
     )
     ..writeln()
     ..writeln(
-      '| Scorecard | Status | Community | Workflow | Persona | Missing lifecycle groups | Target surface |',
+      '| Scorecard | Status | Community | Workflow | Role | Missing lifecycle groups | Target surface |',
     )
     ..writeln('| --- | --- | --- | --- | --- | --- | --- |');
   if (rows.isEmpty) {
@@ -6978,7 +6958,7 @@ String _b25WorkflowLifecycleMarkdown(JsonMap review) {
   } else {
     for (final row in rows) {
       buffer.writeln(
-        '| `${_escape(_asString(row['scorecardId']))}` | `${_escape(_asString(row['status']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['persona']))} | ${_escape(_asStringList(row['missingLifecycleGroups']).join('; '))} | ${_escape(_asString(row['targetProductionSurface']))} |',
+        '| `${_escape(_asString(row['scorecardId']))}` | `${_escape(_asString(row['status']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['role']))} | ${_escape(_asStringList(row['missingLifecycleGroups']).join('; '))} | ${_escape(_asString(row['targetProductionSurface']))} |',
       );
     }
   }
@@ -7012,18 +6992,18 @@ String _componentDocContextMarkdown(JsonMap context) {
 
 String _coverageCollectorUsage() {
   return '''
-b25_workflow_persona_coverage_collector (B25)
-Checks whether B25 evidence has explicit screenshot coverage for every workflow/persona combination before independent UX review.
+b25_workflow_role_coverage_collector (B25)
+Checks whether B25 evidence has explicit screenshot coverage for every workflow/role combination before independent UX review.
 
 Usage:
-  dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input <independent-production-ux-review.json> --output <independent-production-ux-review.json> [--markdown-output <workflow-persona-coverage-matrix.md>]
+  dart run packages/tooling/loom_ux_judges/bin/b25_workflow_role_coverage_collector.dart --input <independent-production-ux-review.json> --output <independent-production-ux-review.json> [--markdown-output <workflow-role-coverage-matrix.md>]
 ''';
 }
 
 String _workflowLifecycleJudgeUsage() {
   return '''
 b25_workflow_lifecycle_judge (B25)
-Compatibility alias for b25_workflow_interaction_model_judge. Scores every workflow/persona row against the production semantic interaction model: expected decision, concrete object/context, decision information, primary action, alternate/change/reject affordance, persistent result state, and receiver/continuation state.
+Compatibility alias for b25_workflow_interaction_model_judge. Scores every workflow/role row against the production semantic interaction model: expected decision, concrete object/context, decision information, primary action, alternate/change/reject affordance, persistent result state, and receiver/continuation state.
 
 Usage:
   dart run packages/tooling/loom_ux_judges/bin/b25_workflow_lifecycle_judge.dart --input <independent-production-ux-review.json> --output <independent-production-ux-review.json> [--markdown-output <b25-workflow-lifecycle-scorecards.md>]
@@ -7033,7 +7013,7 @@ Usage:
 String _workflowInteractionModelJudgeUsage() {
   return '''
 b25_workflow_interaction_model_judge (B25)
-Scores every workflow/persona row against the production semantic interaction model: expected decision, required primary actions, required alternate/change/reject actions, disallowed generic substitutes, persistent result state, and receiver/continuation state. Uses screenshot-derived evidence; source files or worker responses cannot close this gate.
+Scores every workflow/role row against the production semantic interaction model: expected decision, required primary actions, required alternate/change/reject actions, disallowed generic substitutes, persistent result state, and receiver/continuation state. Uses screenshot-derived evidence; source files or worker responses cannot close this gate.
 
 Usage:
   dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart --input <independent-production-ux-review.json> --output <independent-production-ux-review.json> [--markdown-output <b25-workflow-lifecycle-scorecards.md>]
@@ -7053,7 +7033,7 @@ Usage:
 String _independentUxJudgeUsage() {
   return '''
 b25_independent_ux_judge (B25)
-Consumes B25 screenshot evidence and workflow/persona coverage, inspects screenshot pixels/layout, then writes holistic direct-question answers, workflow/persona scorecards, screen-specific critiques, visual findings, and exact findings for the deterministic Production UX Judge.
+Consumes B25 screenshot evidence and workflow/role coverage, inspects screenshot pixels/layout, then writes holistic direct-question answers, workflow/role scorecards, screen-specific critiques, visual findings, and exact findings for the deterministic Production UX Judge.
 
 Usage:
   dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input <independent-production-ux-review.json> --output <independent-production-ux-review.json> [--markdown-output <independent-production-ux-review.md>] [--matrix-output <product-ux-screen-review-matrix.md>]
@@ -7277,12 +7257,12 @@ String _b25RemediationPlanMarkdown(JsonMap plan) {
         )
         ..writeln()
         ..writeln(
-          '| Coverage row | Community | Workflow | Persona | Missing evidence |',
+          '| Coverage row | Community | Workflow | Role | Missing evidence |',
         )
         ..writeln('| --- | --- | --- | --- | --- |');
       for (final row in coverageRows.take(30)) {
         buffer.writeln(
-          '| `${_escape(_asString(row['coverageRowId']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['persona']))} | ${_escape(_asStringList(row['missingEvidence']).join('; '))} |',
+          '| `${_escape(_asString(row['coverageRowId']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['role']))} | ${_escape(_asStringList(row['missingEvidence']).join('; '))} |',
         );
       }
     }
@@ -7297,12 +7277,12 @@ String _b25RemediationPlanMarkdown(JsonMap plan) {
         )
         ..writeln()
         ..writeln(
-          '| Screen row | Community | Workflow | Persona | State | Exact UX failure |',
+          '| Screen row | Community | Workflow | Role | State | Exact UX failure |',
         )
         ..writeln('| --- | --- | --- | --- | --- | --- |');
       for (final row in screenRows.take(30)) {
         buffer.writeln(
-          '| `${_escape(_asString(row['screenRowId']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['persona']))} | ${_escape(_asString(row['screenState']))} | ${_escape(_asString(row['exactUxFailure']))} |',
+          '| `${_escape(_asString(row['screenRowId']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['role']))} | ${_escape(_asString(row['screenState']))} | ${_escape(_asString(row['exactUxFailure']))} |',
         );
       }
     }
@@ -7371,14 +7351,12 @@ JsonMap _extraScorecards(
           .map((criterion) => criterion.toJson())
           .toList(),
     },
-    'workflowPersonaScorecards': _asMapList(
-      evidence['workflowPersonaScorecards'],
-    ),
+    'workflowRoleScorecards': _asMapList(evidence['workflowRoleScorecards']),
     'workflowLifecycleScorecards': _asMapList(
       evidence['workflowLifecycleScorecards'],
     ),
-    'workflowPersonaCriteria': criteria
-        .where((criterion) => criterion.scope == 'workflow-persona')
+    'workflowRoleCriteria': criteria
+        .where((criterion) => criterion.scope == 'workflow-role')
         .map((criterion) => criterion.toJson())
         .toList(),
     'evidenceIntegrityCriteria': criteria
@@ -7460,8 +7438,8 @@ List<JsonMap> _b25RemediationTickets(
       'affectedCoverageRows': ticketContext['affectedCoverageRows'],
       'affectedProductDocs': ticketContext['affectedProductDocs'],
       'affectedScreenRows': ticketContext['affectedScreenRows'],
-      'failingWorkflowPersonaScorecards':
-          ticketContext['failingWorkflowPersonaScorecards'],
+      'failingWorkflowRoleScorecards':
+          ticketContext['failingWorkflowRoleScorecards'],
       'failingWorkflowLifecycleScorecards':
           ticketContext['failingWorkflowLifecycleScorecards'],
       'failingDirectQuestions': ticketContext['failingDirectQuestions'],
@@ -7604,8 +7582,8 @@ List<JsonMap> _b25AppShellCapabilityTickets({
       'affectedCoverageRows': ticketContext['affectedCoverageRows'],
       'affectedProductDocs': ticketContext['affectedProductDocs'],
       'affectedScreenRows': ticketContext['affectedScreenRows'],
-      'failingWorkflowPersonaScorecards':
-          ticketContext['failingWorkflowPersonaScorecards'],
+      'failingWorkflowRoleScorecards':
+          ticketContext['failingWorkflowRoleScorecards'],
       'failingWorkflowLifecycleScorecards':
           ticketContext['failingWorkflowLifecycleScorecards'],
       'failingDirectQuestions': ticketContext['failingDirectQuestions'],
@@ -7665,9 +7643,9 @@ String _appShellCapabilityTicketTitle(
 String _appShellCapabilityLabel(String gapType) {
   switch (gapType) {
     case 'app-shell-tabs-gap':
-      return 'persona tab model';
+      return 'role tab model';
     case 'app-shell-pinning-gap':
-      return 'persona/tab pinning policy';
+      return 'role/tab pinning policy';
     case 'app-shell-presentation-state-gap':
       return 'surface presentation states';
     case 'app-shell-community-card-state-gap':
@@ -7690,11 +7668,11 @@ String _appShellCapabilityLabel(String gapType) {
 String _appShellCapabilityDirectQuestion(String gapType) {
   switch (gapType) {
     case 'app-shell-tabs-gap':
-      return 'Do screenshots prove the persona sees the right Home, Messages/Communication, and custom tabs for their job-to-be-done?';
+      return 'Do screenshots prove the role sees the right Home, Messages/Communication, and custom tabs for their job-to-be-done?';
     case 'app-shell-pinning-gap':
-      return 'Is the pinning policy explicit and appropriate for this persona/tab, with screenshots proving pinned surfaces only where the spec declares them?';
+      return 'Is the pinning policy explicit and appropriate for this role/tab, with screenshots proving pinned surfaces only where the spec declares them?';
     case 'app-shell-presentation-state-gap':
-      return 'Do screenshots prove minimized off-focus surfaces, the medium in-focus surface, and tap-to-expand behavior for the same workflow/persona?';
+      return 'Do screenshots prove minimized off-focus surfaces, the medium in-focus surface, and tap-to-expand behavior for the same workflow/role?';
     case 'app-shell-community-card-state-gap':
       return 'Does the main Loom Communities list show modern community launch cards with minimized/medium states, theme customization, and tap-to-open behavior?';
     case 'app-shell-customization-gap':
@@ -7708,7 +7686,7 @@ String _appShellCapabilityDirectQuestion(String gapType) {
     case 'app-shell-review-depth-gap':
       return 'Does the App Shell capability review cite visible screenshot text, screenshot hashes, tab/renderer-specific critique, and direct answers rather than pass flags alone?';
     default:
-      return 'Do current screenshots prove the required App Shell capability is visible, appropriate, and usable for the persona/task?';
+      return 'Do current screenshots prove the required App Shell capability is visible, appropriate, and usable for the role/task?';
   }
 }
 
@@ -7726,9 +7704,9 @@ String _appShellCapabilityProblemStatement(
 String _appShellCapabilityTargetExperience(String gapType) {
   switch (gapType) {
     case 'app-shell-tabs-gap':
-      return 'Each persona sees a tab model that matches their community jobs. Home and Messages/Communication are always available, and optional tabs are named, ordered, and scoped to the persona.';
+      return 'Each role sees a tab model that matches their community jobs. Home and Messages/Communication are always available, and optional tabs are named, ordered, and scoped to the role.';
     case 'app-shell-pinning-gap':
-      return 'Every persona/tab has an explicit pinning policy. Tabs that need persistent context keep the declared surface visible; tabs that do not need pins explicitly declare none with rationale.';
+      return 'Every role/tab has an explicit pinning policy. Tabs that need persistent context keep the declared surface visible; tabs that do not need pins explicitly declare none with rationale.';
     case 'app-shell-presentation-state-gap':
       return 'Cards behave like a modern focused surface stack: the first visible item is medium, off-focus items are minimized, and tapping expands the selected product surface.';
     case 'app-shell-community-card-state-gap':
@@ -7754,7 +7732,7 @@ List<String> _appShellCapabilityImprovements(String gapType) {
   switch (gapType) {
     case 'app-shell-pinning-gap':
       return <String>[
-        'Update the community product experience doc Section 3.1 with a per-persona/per-tab pinning policy.',
+        'Update the community product experience doc Section 3.1 with a per-role/per-tab pinning policy.',
         'Use `pinnedSurfaces: none` with a rationale where no pinned surface makes sense; do not add pins just to satisfy the gate.',
         'When a tab declares pinned surfaces, implement and screenshot-proof that the declared surface remains visible while other tab surfaces scroll or change focus.',
         'Remove or revise any pin that is irrelevant to the tab job-to-be-done.',
@@ -7762,7 +7740,7 @@ List<String> _appShellCapabilityImprovements(String gapType) {
     case 'app-shell-presentation-state-gap':
       return <String>[
         'Implement or expose minimized, medium/in-focus, and expanded states for the affected surface.',
-        'Capture before/after screenshots that show the same workflow/persona in minimized, medium, and expanded states.',
+        'Capture before/after screenshots that show the same workflow/role in minimized, medium, and expanded states.',
         'Ensure the expanded state is a richer product surface, not only a larger copy of the same generic card.',
       ];
     case 'app-shell-community-card-state-gap':
@@ -7779,9 +7757,9 @@ List<String> _appShellCapabilityImprovements(String gapType) {
       ];
     case 'app-shell-tabs-gap':
       return <String>[
-        'Declare persona-specific tabs in the community product experience doc.',
-        'Keep Home and Messages/Communication available for every persona.',
-        'Recapture screenshots showing tab labels, order, persona visibility, selected state, and destination content.',
+        'Declare role-specific tabs in the community product experience doc.',
+        'Keep Home and Messages/Communication available for every role.',
+        'Recapture screenshots showing tab labels, order, role visibility, selected state, and destination content.',
       ];
     case 'app-shell-tab-renderer-contract-gap':
       return <String>[
@@ -7827,7 +7805,7 @@ List<String> _appShellCapabilityImplementationGuidance(String gapType) {
     case 'app-shell-pinning-gap':
       return <String>[
         ...shared,
-        'Treat pinning as policy-driven: require proof only for persona/tabs that declare pinned surfaces.',
+        'Treat pinning as policy-driven: require proof only for role/tabs that declare pinned surfaces.',
         'For tabs with no useful pinned surface, document `pinnedSurfaces: none` and the rationale in the community product doc.',
         'Do not fail a Home tab simply because it has no pinned surface when the product spec explains that Home is a broad overview.',
       ];
@@ -7881,14 +7859,14 @@ List<String> _appShellCapabilityAcceptanceChecks(String gapType) {
   switch (gapType) {
     case 'app-shell-pinning-gap':
       return <String>[
-        'Every reviewed persona/tab has `pinningPolicy` recorded as either `none` with rationale or a concrete list of pinned surface IDs.',
+        'Every reviewed role/tab has `pinningPolicy` recorded as either `none` with rationale or a concrete list of pinned surface IDs.',
         'Tabs with `pinningPolicy=none` pass without pinned screenshots when the rationale matches the tab job-to-be-done.',
         'Tabs with declared pinned surfaces have after-screenshots proving the pinned surface remains visible and relevant.',
         '`appShellCapabilityReview.communityResults[]` does not fail pinning merely because a tab appropriately declares no pinned surface.',
       ];
     case 'app-shell-presentation-state-gap':
       return <String>[
-        'After-screenshots show minimized, medium/in-focus, and expanded states for the affected workflow/persona.',
+        'After-screenshots show minimized, medium/in-focus, and expanded states for the affected workflow/role.',
         'The expanded screenshot shows a richer product surface or action detail than the minimized state.',
         'The affected `appShellCapabilityReview.communityResults[]` row has `presentationStatesPass=true`.',
       ];
@@ -7907,7 +7885,7 @@ List<String> _appShellCapabilityAcceptanceChecks(String gapType) {
     case 'app-shell-tabs-gap':
       return <String>[
         'Screenshots prove Home and Messages/Communication tabs are available.',
-        'Custom persona tabs are visible only where appropriate and route to relevant content.',
+        'Custom role tabs are visible only where appropriate and route to relevant content.',
         '`appShellCapabilityReview.communityResults[]` has `tabsPass=true`.',
       ];
     case 'app-shell-tab-renderer-contract-gap':
@@ -7948,9 +7926,9 @@ JsonMap _b25TicketContext(
   List<String> relatedFindingIds,
 ) {
   final screenRows = _asMapList(evidence['screenRows']);
-  final coverageRows = _asMapList(evidence['workflowPersonaCoverage']);
+  final coverageRows = _asMapList(evidence['workflowRoleCoverage']);
   final productDocCoverage = _asMapList(evidence['productDocCoverage']);
-  final scorecards = _asMapList(evidence['workflowPersonaScorecards']);
+  final scorecards = _asMapList(evidence['workflowRoleScorecards']);
   final lifecycleScorecards = _asMapList(
     evidence['workflowLifecycleScorecards'],
   );
@@ -8021,17 +7999,17 @@ JsonMap _b25TicketContext(
       continue;
     }
     for (final scorecard in scorecards) {
-      if (_workflowPersonaEvidenceKeys(scorecard).contains(token)) {
+      if (_workflowRoleEvidenceKeys(scorecard).contains(token)) {
         scorecardIds.add(_asString(scorecard['scorecardId']));
       }
     }
     for (final scorecard in lifecycleScorecards) {
-      if (_workflowPersonaEvidenceKeys(scorecard).contains(token)) {
+      if (_workflowRoleEvidenceKeys(scorecard).contains(token)) {
         lifecycleScorecardIds.add(_asString(scorecard['scorecardId']));
       }
     }
     for (final coverage in coverageRows) {
-      if (_workflowPersonaEvidenceKeys(coverage).contains(token)) {
+      if (_workflowRoleEvidenceKeys(coverage).contains(token)) {
         coverageIds.add(_asString(coverage['coverageRowId']));
       }
     }
@@ -8065,7 +8043,7 @@ JsonMap _b25TicketContext(
     );
   }
 
-  if (criterion.scope == 'workflow-persona') {
+  if (criterion.scope == 'workflow-role') {
     if (scorecardIds.isEmpty) {
       scorecardIds.addAll(
         scorecards
@@ -8206,7 +8184,7 @@ JsonMap _b25TicketContext(
     for (final row in failingLifecycleScorecards.take(12))
       ..._asStringList(row['acceptanceCriteria']),
   }.where((value) => value.isNotEmpty).toList();
-  final lifecycleAndPersonaScorecards = <JsonMap>[
+  final lifecycleAndRoleScorecards = <JsonMap>[
     ...failingScorecards,
     ...failingLifecycleScorecards,
   ];
@@ -8215,14 +8193,14 @@ JsonMap _b25TicketContext(
     criterionId: criterion.id,
     screenRows: affectedScreenRows,
     coverageRows: affectedCoverageRows,
-    scorecards: lifecycleAndPersonaScorecards,
+    scorecards: lifecycleAndRoleScorecards,
   );
   final uiRemediationWorkItems = _b25WorkItems(
     stage: 'ui-remediation',
     criterionId: criterion.id,
     screenRows: affectedScreenRows,
     coverageRows: affectedCoverageRows,
-    scorecards: lifecycleAndPersonaScorecards,
+    scorecards: lifecycleAndRoleScorecards,
   );
   final productDocRepairWorkItems = <JsonMap>[
     ..._b25ProductDocWorkItems(
@@ -8261,7 +8239,7 @@ JsonMap _b25TicketContext(
     'affectedCoverageRows': affectedCoverageRows,
     'affectedProductDocs': affectedProductDocs,
     'affectedScreenRows': affectedScreenRows,
-    'failingWorkflowPersonaScorecards': failingScorecards,
+    'failingWorkflowRoleScorecards': failingScorecards,
     'failingWorkflowLifecycleScorecards': failingLifecycleScorecards,
     'failingDirectQuestions': failingQuestions,
     'evidenceRepairWorkItems': evidenceRepairWorkItems,
@@ -8274,12 +8252,12 @@ JsonMap _b25TicketContext(
   };
 }
 
-Set<String> _workflowPersonaEvidenceKeys(JsonMap row) {
+Set<String> _workflowRoleEvidenceKeys(JsonMap row) {
   final workflowId = _asString(row['workflowId']);
-  final persona = _asString(row['persona']);
+  final role = _asString(row['role']);
   final fanId = _asString(row['fanId']);
   return <String>{
-    if (workflowId.isNotEmpty && persona.isNotEmpty) '$workflowId/$persona',
+    if (workflowId.isNotEmpty && role.isNotEmpty) '$workflowId/$role',
     if (workflowId.isNotEmpty && fanId.isNotEmpty) '$workflowId/$fanId',
     _asString(row['scorecardId']),
     _asString(row['coverageRowId']),
@@ -8328,9 +8306,9 @@ JsonMap _b25RemediationMode(CriterionResult criterion, JsonMap ticketContext) {
       'workerReadiness':
           'not ready for UI implementation until evidence repair work items are completed and the independent judge reruns',
       'firstRequiredStep':
-          'Complete the evidenceRepairWorkItems: concrete persona/fanId, screenshot-derived visible text, screen-specific critique, coverage row proof, and workflow/persona scorecards.',
+          'Complete the evidenceRepairWorkItems: concrete role/fanId, screenshot-derived visible text, screen-specific critique, coverage row proof, and workflow/role scorecards.',
       'implementationBlockedBy': <String>[
-        'Affected rows still use generic or missing persona data.',
+        'Affected rows still use generic or missing role data.',
         'Visible text is not proven from screenshot OCR/manual extraction.',
         'Screen-specific critiques are incomplete or reusable.',
         'Primary surface classification is incomplete or unverified.',
@@ -8352,7 +8330,7 @@ JsonMap _b25RemediationMode(CriterionResult criterion, JsonMap ticketContext) {
     'workerReadiness':
         'no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker',
     'firstRequiredStep':
-        'Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.',
+        'Review failing direct questions and add screen/workflow/role-specific evidence before implementation.',
     'implementationBlockedBy': <String>[
       'The ticket lacks row-level implementation evidence.',
     ],
@@ -8384,7 +8362,7 @@ List<JsonMap> _b25ProductDocWorkItems({
       'docPath': docPath,
       'expectedDocPath': _asString(doc['expectedDocPath']),
       'workflowId': 'community-product-experience',
-      'persona': 'product-experience-steward',
+      'role': 'product-experience-steward',
       'targetProductionSurface':
           'review-ready community product experience spec',
       'blockedUntil': 'productDocCoverage status is pass',
@@ -8405,7 +8383,7 @@ List<JsonMap> _b25ProductDocWorkItems({
           'B25 review/remediation log missing',
       ],
       'requiredUpdate':
-          'Write the rich product experience for $communityName before UI work: product promise, personas/jobs, information architecture, home requirements, domain-native surfaces, workflow-to-surface mapping, persona/state matrix, seed content, visual standard, and B25 review log.',
+          'Write the rich product experience for $communityName before UI work: product promise, roles/jobs, information architecture, home requirements, domain-native surfaces, workflow-to-surface mapping, role/state matrix, seed content, visual standard, and B25 review log.',
       'acceptanceCriteria': _asStringList(doc['acceptanceCriteria']),
       'followOnStep':
           'After this doc passes productDocCoverage, rerun B25 evidence collection and let UI remediation tickets reference the completed spec.',
@@ -8461,7 +8439,7 @@ List<JsonMap> _b25InteractionModelProductDocWorkItems({
       'expectedDocPath': docPath,
       'workflowId': workflows.take(8).join(', '),
       'workflowIds': workflows,
-      'persona': 'product-experience-steward',
+      'role': 'product-experience-steward',
       'targetProductionSurface':
           'community product experience spec with semantic interaction models',
       'blockedUntil':
@@ -8528,26 +8506,26 @@ List<JsonMap> _b25WorkItems({
     required String communityId,
     required String communityName,
     required String workflowId,
-    required String persona,
+    required String role,
     required String fanId,
   }) {
     final key = [
       communityId,
       workflowId,
-      fanId.isNotEmpty ? fanId : persona,
+      fanId.isNotEmpty ? fanId : role,
       stage,
     ].join('::');
     return itemsByKey.putIfAbsent(key, () {
       final targetSurface = _targetProductionSurfaceForWorkflow(workflowId);
       return <String, Object?>{
         'workItemId':
-            'b25-wi-${_slug(stage)}-${_slug(communityId.isNotEmpty ? communityId : communityName)}-${_slug(workflowId)}-${_slug(fanId.isNotEmpty ? fanId : persona)}',
+            'b25-wi-${_slug(stage)}-${_slug(communityId.isNotEmpty ? communityId : communityName)}-${_slug(workflowId)}-${_slug(fanId.isNotEmpty ? fanId : role)}',
         'stage': stage,
         'criterionId': criterionId,
         'communityId': communityId,
         'communityName': communityName,
         'workflowId': workflowId,
-        'persona': persona,
+        'role': role,
         'fanId': fanId,
         'targetProductionSurface': targetSurface,
         'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
@@ -8564,17 +8542,13 @@ List<JsonMap> _b25WorkItems({
         'currentFailures': <String>[],
         'likelyFilesOrWidgets': <String>{}.toList(),
         'workerActions': stage == 'evidence-repair'
-            ? _evidenceRepairWorkerActions(workflowId, persona, targetSurface)
-            : _uiRemediationWorkerActions(workflowId, persona, targetSurface),
+            ? _evidenceRepairWorkerActions(workflowId, role, targetSurface)
+            : _uiRemediationWorkerActions(workflowId, role, targetSurface),
         'acceptanceCriteria': stage == 'evidence-repair'
-            ? _evidenceRepairAcceptanceCriteria(workflowId, persona)
-            : _uiRemediationAcceptanceCriteria(
-                workflowId,
-                persona,
-                targetSurface,
-              ),
+            ? _evidenceRepairAcceptanceCriteria(workflowId, role)
+            : _uiRemediationAcceptanceCriteria(workflowId, role, targetSurface),
         'blockedUntil': stage == 'ui-remediation'
-            ? 'Evidence-repair work item for this community/workflow/persona has fresh screenshots, screenshot-derived visible text, a specific persona/fanId, and a non-boilerplate critique.'
+            ? 'Evidence-repair work item for this community/workflow/role has fresh screenshots, screenshot-derived visible text, a specific role/fanId, and a non-boilerplate critique.'
             : '',
       };
     });
@@ -8598,7 +8572,7 @@ List<JsonMap> _b25WorkItems({
       communityId: _asString(row['communityId']),
       communityName: _asString(row['communityName']),
       workflowId: workflowId,
-      persona: _asString(row['persona']),
+      role: _asString(row['role']),
       fanId: _asString(row['fanId']),
     );
     addUnique(item, 'affectedScreenRowIds', [_asString(row['screenRowId'])]);
@@ -8625,7 +8599,7 @@ List<JsonMap> _b25WorkItems({
       communityId: _asString(coverage['communityId']),
       communityName: _asString(coverage['communityName']),
       workflowId: _asString(coverage['workflowId']),
-      persona: _asString(coverage['persona']),
+      role: _asString(coverage['role']),
       fanId: _asString(coverage['fanId']),
     );
     addUnique(item, 'affectedCoverageRowIds', [
@@ -8658,7 +8632,7 @@ List<JsonMap> _b25WorkItems({
       communityId: _asString(scorecard['communityId']),
       communityName: _asString(scorecard['communityName']),
       workflowId: _asString(scorecard['workflowId']),
-      persona: _asString(scorecard['persona']),
+      role: _asString(scorecard['role']),
       fanId: _asString(scorecard['fanId']),
     );
     addUnique(item, 'affectedScorecardIds', [
@@ -8697,7 +8671,7 @@ bool _isB25UiRemediationCriterion(String criterionId) {
 }
 
 bool _screenDetailNeedsEvidenceRepair(JsonMap row) {
-  final persona = _asString(row['persona']);
+  final role = _asString(row['role']);
   final fanId = _asString(row['fanId']);
   final source = _asString(row['visibleTextSource']).toLowerCase();
   final surface = _asString(row['currentSurfaceClassification']).toLowerCase();
@@ -8705,7 +8679,7 @@ bool _screenDetailNeedsEvidenceRepair(JsonMap row) {
     row['currentPrimarySurfaceType'],
   ).toLowerCase();
   final critique = _asString(row['currentCritique']).toLowerCase();
-  return !_isSpecificPersona(persona, fanId) ||
+  return !_isSpecificRole(role, fanId) ||
       !(source.contains('screenshot') ||
           source.contains('ocr') ||
           source.contains('manual')) ||
@@ -8757,54 +8731,51 @@ List<JsonMap> _dedupeWorkItems(List<JsonMap> workItems) {
 
 List<String> _evidenceRepairWorkerActions(
   String workflowId,
-  String persona,
+  String role,
   String targetSurface,
 ) {
   return <String>[
-    'Replace generic persona `${persona.isEmpty ? 'persona-under-review' : persona}` with the concrete actor/receiver persona and fanId for `${workflowId}`.',
-    'Verify entry, action/review, and result/receiver screenshots exist for `${workflowId}` and are tied to the concrete persona.',
+    'Replace generic role `${role.isEmpty ? 'role-under-review' : role}` with the concrete actor/receiver role and fanId for `${workflowId}`.',
+    'Verify entry, action/review, and result/receiver screenshots exist for `${workflowId}` and are tied to the concrete role.',
     'Extract visible text from the listed screenshots or manually transcribe exactly what is visible.',
-    'Write a non-reusable critique that names the visible UI, visible text, persona, user task, current failure, and target surface: ${targetSurface}.',
-    'Rerun the workflow/persona coverage collector and independent UX judge before assigning UI implementation work.',
+    'Write a non-reusable critique that names the visible UI, visible text, role, user task, current failure, and target surface: ${targetSurface}.',
+    'Rerun the workflow/role coverage collector and independent UX judge before assigning UI implementation work.',
   ];
 }
 
 List<String> _uiRemediationWorkerActions(
   String workflowId,
-  String persona,
+  String role,
   String targetSurface,
 ) {
   return <String>[
     'Replace the current primary surface for `${workflowId}` with ${targetSurface}.',
-    'Build the entry, action/review, and result states for `${persona.isEmpty ? 'the target persona' : persona}` using domain content and semantic action labels.',
+    'Build the entry, action/review, and result states for `${role.isEmpty ? 'the target role' : role}` using domain content and semantic action labels.',
     'Remove workflow-harness, validation, metadata, checklist, or generic repeated-card language from the user-facing surface.',
     'Update widget/integration tests and B25 evidence expectations for the changed UI.',
-    'Recapture screenshots and rerun the workflow/persona direct-question scorecard.',
+    'Recapture screenshots and rerun the workflow/role direct-question scorecard.',
   ];
 }
 
-List<String> _evidenceRepairAcceptanceCriteria(
-  String workflowId,
-  String persona,
-) {
+List<String> _evidenceRepairAcceptanceCriteria(String workflowId, String role) {
   return <String>[
-    '`${workflowId}` has concrete persona/fanId coverage, not `persona-under-review`.',
+    '`${workflowId}` has concrete role/fanId coverage, not `role-under-review`.',
     'Entry/action/result screenshot rows exist for `${workflowId}` and each row has screenshot path, hash, timestamp, device metadata, and app commit SHA.',
     'Visible text is screenshot-derived or manually transcribed from the screenshot for every affected row.',
     'Each affected row has a screen-specific critique that cannot be reused unchanged for another workflow.',
-    'Workflow/persona coverage collector no longer flags missing persona or screenshot evidence for `${workflowId}`.',
+    'Workflow/role coverage collector no longer flags missing role or screenshot evidence for `${workflowId}`.',
   ];
 }
 
 List<String> _uiRemediationAcceptanceCriteria(
   String workflowId,
-  String persona,
+  String role,
   String targetSurface,
 ) {
   return <String>[
     'The primary `${workflowId}` screen is ${targetSurface}, not a generic workflow card, metadata page, checklist modal, or validation surface.',
-    'Visible content includes the real domain data, user goal, semantic action, validation/review state, and result/receipt/receiver state expected for `${persona.isEmpty ? 'the target persona' : persona}`.',
-    'The workflow/persona direct-question scorecard passes for task clarity, domain-native surface, natural actions, and production-grade UI.',
+    'Visible content includes the real domain data, user goal, semantic action, validation/review state, and result/receipt/receiver state expected for `${role.isEmpty ? 'the target role' : role}`.',
+    'The workflow/role direct-question scorecard passes for task clarity, domain-native surface, natural actions, and production-grade UI.',
     'Fresh screenshots prove the remediated entry/action/result states after the code change.',
   ];
 }
@@ -8823,10 +8794,10 @@ JsonMap _concreteAffectedScope(
     for (final row in scorecards) _asString(row['communityName']),
     for (final row in productDocs) _asString(row['communityName']),
   ]);
-  final personas = _uniqueStrings(<String>[
-    for (final row in screenRows) _asString(row['persona']),
-    for (final row in coverageRows) _asString(row['persona']),
-    for (final row in scorecards) _asString(row['persona']),
+  final roles = _uniqueStrings(<String>[
+    for (final row in screenRows) _asString(row['role']),
+    for (final row in coverageRows) _asString(row['role']),
+    for (final row in scorecards) _asString(row['role']),
   ]);
   final workflows = _uniqueStrings(<String>[
     for (final row in screenRows) _asString(row['workflowId']),
@@ -8845,9 +8816,7 @@ JsonMap _concreteAffectedScope(
     'communities': communities.isEmpty
         ? <String>['all reviewed communities/test apps']
         : communities,
-    'personas': personas.isEmpty
-        ? <String>['all reviewed target personas']
-        : personas,
+    'roles': roles.isEmpty ? <String>['all reviewed target roles'] : roles,
     'workflows': workflows.isEmpty
         ? <String>['all primary reviewed workflows']
         : workflows,
@@ -8876,7 +8845,7 @@ JsonMap _screenRowTicketDetail(JsonMap row, String criterionId) {
     'communityId': _asString(row['communityId']),
     'communityName': _asString(row['communityName']),
     'workflowId': workflowId,
-    'persona': _asString(row['persona']),
+    'role': _asString(row['role']),
     'fanId': _asString(row['fanId']),
     'screenState': _asString(row['screenOrState']),
     'screenType': _asString(row['screenType']),
@@ -8900,7 +8869,7 @@ JsonMap _screenRowTicketDetail(JsonMap row, String criterionId) {
     ),
     'uxReferenceChecklist': _uxReferenceChecklistForWorkflow(workflowId),
     'evidenceRepairNeeded': _screenDetailNeedsEvidenceRepair(<String, Object?>{
-      'persona': _asString(row['persona']),
+      'role': _asString(row['role']),
       'fanId': _asString(row['fanId']),
       'visibleTextSource': _asString(row['visibleTextExtractionSource']),
       'currentSurfaceClassification': _asString(row['uiPatternClassification']),
@@ -8909,12 +8878,12 @@ JsonMap _screenRowTicketDetail(JsonMap row, String criterionId) {
     }),
     'evidenceRepairActions': _evidenceRepairWorkerActions(
       workflowId,
-      _asString(row['persona']),
+      _asString(row['role']),
       targetSurface,
     ),
     'uiRemediationActions': _uiRemediationWorkerActions(
       workflowId,
-      _asString(row['persona']),
+      _asString(row['role']),
       targetSurface,
     ),
     'likelyFilesOrWidgets': _likelyFilesForB25Row(row, criterionId),
@@ -8930,7 +8899,7 @@ JsonMap _coverageTicketDetail(JsonMap row) {
     'communityId': _asString(row['communityId']),
     'communityName': _asString(row['communityName']),
     'workflowId': workflowId,
-    'persona': _asString(row['persona']),
+    'role': _asString(row['role']),
     'fanId': _asString(row['fanId']),
     'screenRowIds': _asStringList(row['screenRowIds']),
     'screenshotPaths': _asStringList(row['screenshotPaths']),
@@ -8943,10 +8912,10 @@ JsonMap _coverageTicketDetail(JsonMap row) {
       workflowId,
     ),
     'acceptanceCriteria': <String>[
-      'Coverage row has a specific persona and fanId.',
+      'Coverage row has a specific role and fanId.',
       'Coverage row has entry, action/review, and result/receiver screenshots.',
       'Every listed screenshot path exists and has a fresh hash/timestamp/app commit SHA.',
-      'The workflow/persona scorecard passes after rerun.',
+      'The workflow/role scorecard passes after rerun.',
     ],
   };
 }
@@ -8964,7 +8933,7 @@ JsonMap _productDocTicketDetail(JsonMap row) {
     'lastModifiedAt': _asString(row['lastModifiedAt']),
     'screenRowIds': _asStringList(row['screenRowIds']),
     'workflowIds': _asStringList(row['workflowIds']),
-    'personas': _asStringList(row['personas']),
+    'roles': _asStringList(row['roles']),
     'missingSections': _asStringList(row['missingSections']),
     'wordCount': _asInt(row['wordCount']),
     'containsPlaceholders': row['containsPlaceholders'] == true,
@@ -8994,7 +8963,7 @@ JsonMap _scorecardTicketDetail(JsonMap scorecard, String criterionId) {
     'communityId': _asString(scorecard['communityId']),
     'communityName': _asString(scorecard['communityName']),
     'workflowId': workflowId,
-    'persona': _asString(scorecard['persona']),
+    'role': _asString(scorecard['role']),
     'fanId': _asString(scorecard['fanId']),
     'screenRowIds': _asStringList(scorecard['screenRowIds']),
     'screenshotPaths': _asStringList(scorecard['screenshotPaths']),
@@ -9007,8 +8976,8 @@ JsonMap _scorecardTicketDetail(JsonMap scorecard, String criterionId) {
     ),
     'failingQuestions': failingQuestions,
     'acceptanceCriteria': <String>[
-      'All direct questions in this workflow/persona scorecard pass.',
-      'The primary surface is domain-native for `${workflowId}` and the target persona.',
+      'All direct questions in this workflow/role scorecard pass.',
+      'The primary surface is domain-native for `${workflowId}` and the target role.',
       'The semantic surface proof passes: after-screenshot visible text demonstrates the required target-surface elements, not just absence of generic-card findings.',
       'Visible text and critique cite the actual screenshots for every screen row.',
       ..._screenRowAcceptanceCriteria(scorecard, criterionId),
@@ -9042,7 +9011,7 @@ JsonMap _lifecycleScorecardTicketDetail(JsonMap scorecard, String criterionId) {
     'communityId': _asString(scorecard['communityId']),
     'communityName': _asString(scorecard['communityName']),
     'workflowId': workflowId,
-    'persona': _asString(scorecard['persona']),
+    'role': _asString(scorecard['role']),
     'fanId': _asString(scorecard['fanId']),
     'screenRowIds': _asStringList(scorecard['screenRowIds']),
     'screenshotPaths': _asStringList(scorecard['screenshotPaths']),
@@ -9075,14 +9044,14 @@ JsonMap _lifecycleScorecardTicketDetail(JsonMap scorecard, String criterionId) {
     ),
     'failingQuestions': failingQuestions,
     'acceptanceCriteria': <String>[
-      'All lifecycle direct questions in this workflow/persona scorecard pass.',
+      'All lifecycle direct questions in this workflow/role scorecard pass.',
       'The UI visibly proves the concrete object/context, decision information, primary action, alternate/change/reject affordance, persistent result state, and receiver/continuation state.',
       'The semantic interaction model passes: expected decision, required primary actions, and required alternate/change/reject actions are visible in fresh after screenshots.',
       'Missing lifecycle groups are resolved: ${missingGroups.isEmpty ? 'none' : missingGroups.join(', ')}.',
       'Fresh after screenshots prove the lifecycle and interaction model; implementation notes, code diffs, or ticket responses alone cannot close this ticket.',
       ..._workflowLifecycleAcceptanceCriteria(
         workflowId,
-        _asString(scorecard['persona']),
+        _asString(scorecard['role']),
       ),
       ..._screenRowAcceptanceCriteria(scorecard, criterionId),
     ],
@@ -9117,11 +9086,11 @@ String _exactUxFailureForScreenRow(JsonMap row, String criterionId) {
       failures.add('LLM required fix: $requiredFix');
     }
   }
-  final persona = _asString(row['persona']);
+  final role = _asString(row['role']);
   final fanId = _asString(row['fanId']);
-  if (!_isSpecificPersona(persona, fanId)) {
+  if (!_isSpecificRole(role, fanId)) {
     failures.add(
-      'Persona is generic or missing; the worker cannot know which role this screen serves.',
+      'Role is generic or missing; the worker cannot know which role this screen serves.',
     );
   }
   final source = _asString(row['visibleTextExtractionSource']).toLowerCase();
@@ -9144,7 +9113,7 @@ String _exactUxFailureForScreenRow(JsonMap row, String criterionId) {
       critique.contains('does not identify') ||
       critique.contains('Pending')) {
     failures.add(
-      'Screen-specific critique does not yet explain visible UI, persona, task, and remediation.',
+      'Screen-specific critique does not yet explain visible UI, role, task, and remediation.',
     );
   }
   if (_asString(row['verdict']) != 'pass') {
@@ -9169,20 +9138,20 @@ String _exactUxFailureForScreenRow(JsonMap row, String criterionId) {
 
 List<String> _screenRowAcceptanceCriteria(JsonMap row, String criterionId) {
   final workflowId = _asString(row['workflowId']);
-  final persona = _asString(row['persona'], fallback: 'target persona');
+  final role = _asString(row['role'], fallback: 'target role');
   return <String>[
-    'Screen row `${_rowId(row)}` has a specific persona/fanId, not `persona-under-review`.',
+    'Screen row `${_rowId(row)}` has a specific role/fanId, not `role-under-review`.',
     'Visible text for `${_rowId(row)}` is extracted from the screenshot or manually transcribed from the screenshot.',
-    'Critique for `${_rowId(row)}` names visible UI elements, visible text, persona `${persona}`, workflow `${workflowId}`, and the exact product UX issue.',
+    'Critique for `${_rowId(row)}` names visible UI elements, visible text, role `${role}`, workflow `${workflowId}`, and the exact product UX issue.',
     'Primary surface for `${workflowId}` is documented as `${_targetProductionSurfaceForWorkflow(workflowId)}` or another explicit domain-native surface.',
     'After-screenshot visible text proves every required semantic surface group for `${workflowId}`.',
     'Fresh screenshot path/hash/timestamp/app commit SHA are recorded after the fix.',
     if (criterionId == 'b25-c06-domain-native-primary-surfaces')
-      'The workflow/persona direct-question scorecard passes the domain-native primary surface question.',
+      'The workflow/role direct-question scorecard passes the domain-native primary surface question.',
     if (criterionId == 'b25-c13-workflow-lifecycle-complete')
       'The workflow lifecycle scorecard passes with no missing object/context, decision information, action affordance, result state, or receiver/continuation groups.',
     if (criterionId == 'b25-c08-visible-text-specific-critique')
-      'The workflow/persona direct-question scorecard passes the visible-text and task-specific critique question.',
+      'The workflow/role direct-question scorecard passes the visible-text and task-specific critique question.',
   ];
 }
 
@@ -9295,17 +9264,17 @@ String _targetProductionSurfaceForWorkflow(String workflowId) {
   if (id.contains('sensitive-no-fill')) {
     return 'sensitive-context ad suppression surface with protected content visible and ad slot safely no-filled';
   }
-  if (id.contains('persona-picker')) {
-    return 'test-only persona switcher surface with active persona, role description, and return-to-workflow state';
+  if (id.contains('wf_demo-app-persona-picker')) {
+    return 'test-only role switcher surface with active role, role description, and return-to-workflow state';
   }
-  if (id.contains('persona-role-inventory')) {
-    return 'persona capability matrix surface with roles, allowed actions, receiver states, and denied/hidden behavior';
+  if (id.contains('actor-identity-inventory')) {
+    return 'role capability matrix surface with roles, allowed actions, receiver states, and denied/hidden behavior';
   }
-  if (id.contains('persona-aware-ux')) {
-    return 'persona-aware community surface showing actor, receiver, read-only, disabled, or hidden workflow states for the active role';
+  if (id.contains('wf_community-persona-aware-ux')) {
+    return 'role-aware community surface showing actor, receiver, read-only, disabled, or hidden workflow states for the active role';
   }
-  if (id.contains('multi-persona-workflow-evidence')) {
-    return 'multi-persona handoff evidence surface with actor-created state, persona switch, receiver state, and continuation action';
+  if (id.contains('wf_multi-persona-workflow-evidence')) {
+    return 'multi-role handoff evidence surface with actor-created state, role switch, receiver state, and continuation action';
   }
   if (id.contains('architectural') ||
       id.contains('committee') ||
@@ -9784,7 +9753,7 @@ JsonMap _b25SurfaceSpec({
     'rendererTarget':
         'Demo App renderer selected by workflow ID and surface family',
     'fakeBackendSupport':
-        'LocalInAppBackend imports the initialization package, stores workflow state, records persona-specific receipts, and exposes surface state to the Demo App.',
+        'LocalInAppBackend imports the initialization package, stores workflow state, records role-specific receipts, and exposes surface state to the Demo App.',
   };
 }
 
@@ -9811,7 +9780,7 @@ List<String> _b25CriterionReferenceQueries(String criterionId) {
   switch (criterionId) {
     case 'b25-c02-community-product-docs-complete':
       return <String>[
-        'community app product requirements personas jobs to be done template',
+        'community app product requirements roles jobs to be done template',
         'mobile community app information architecture announcements events messages examples',
         'product experience specification domain native surfaces workflow mapping examples',
       ];
@@ -9869,7 +9838,7 @@ List<String> _uxReferenceChecklistForWorkflow(String workflowId) {
   final targetSurface = _targetProductionSurfaceForWorkflow(workflowId);
   return <String>[
     'Before coding, inspect the listed reference patterns and choose the closest pattern for `${workflowId}`.',
-    'State which pattern is being copied or adapted and why it matches the target persona task.',
+    'State which pattern is being copied or adapted and why it matches the target role task.',
     'Build the primary surface as ${targetSurface}.',
     'Include realistic domain content, semantic action labels, validation/review state, and completion/result state from the chosen pattern.',
     'In the next evidence pass, critique the screen against the chosen reference pattern and explain remaining deviations.',
@@ -10218,7 +10187,7 @@ List<JsonMap> _referencePatternsForType(String type) {
           sourceName: 'B25 production UX gate',
           url: 'docs/Build Plan V2/Tools/b25-remediation-ticket-template.md',
           copy:
-              'Critique must quote visible UI/text, name the persona and task, compare against the chosen reference pattern, and state the exact fix.',
+              'Critique must quote visible UI/text, name the role and task, compare against the chosen reference pattern, and state the exact fix.',
         ),
         ...common,
       ];
@@ -10316,13 +10285,13 @@ String _problemStatementForB25Criterion(String criterionId) {
     case 'b25-c03-production-grade-experience':
       return 'The evidence does not prove that target users experience the app as a real production community product rather than a workflow validation harness.';
     case 'b25-c04-modern-intentional-ui':
-      return 'The evidence does not prove that the UI is modern, visually intentional, easy to navigate, and appealing for the target personas.';
+      return 'The evidence does not prove that the UI is modern, visually intentional, easy to navigate, and appealing for the target roles.';
     case 'b25-c05-community-content-ia':
       return 'The evidence does not prove that primary screens are organized around community content and jobs-to-be-done instead of workflow lists or validation surfaces.';
     case 'b25-c06-domain-native-primary-surfaces':
-      return 'The evidence does not prove that each primary workflow/persona UI is a domain-native product surface rather than a generic card, checklist modal, or metadata page.';
+      return 'The evidence does not prove that each primary workflow/role UI is a domain-native product surface rather than a generic card, checklist modal, or metadata page.';
     case 'b25-c13-workflow-lifecycle-complete':
-      return 'The evidence does not prove that each workflow/persona UI implements the full production lifecycle. Cards may expose a single accept/cancel action without the decision context, alternate choices, result state, or receiver/continuation state real users need.';
+      return 'The evidence does not prove that each workflow/role UI implements the full production lifecycle. Cards may expose a single accept/cancel action without the decision context, alternate choices, result state, or receiver/continuation state real users need.';
     case 'b25-c14-llm-vision-ux-review':
       return 'The current B25 pass lacks a passing fresh-context LLM vision UX judgment, or that judgment found major product-quality issues in the screenshots.';
     case 'b25-c15-full-b25-capture-coverage':
@@ -10368,7 +10337,7 @@ String _rootCauseForB25Criterion(String criterionId) {
 String _targetExperienceForB25Criterion(String criterionId) {
   switch (criterionId) {
     case 'b25-c02-community-product-docs-complete':
-      return 'Each reviewed community should have a Product Docs V2 experience spec that defines the product promise, personas/jobs, IA, home experience, domain-native surfaces, workflow mappings, persona states, seed content, visual standard, and B25 review log before UI remediation starts.';
+      return 'Each reviewed community should have a Product Docs V2 experience spec that defines the product promise, roles/jobs, IA, home experience, domain-native surfaces, workflow mappings, role states, seed content, visual standard, and B25 review log before UI remediation starts.';
     case 'b25-c03-production-grade-experience':
       return 'A target user should immediately understand the community, see relevant content, and complete meaningful tasks without recognizing the app as a test harness.';
     case 'b25-c04-modern-intentional-ui':
@@ -10378,13 +10347,13 @@ String _targetExperienceForB25Criterion(String criterionId) {
     case 'b25-c06-domain-native-primary-surfaces':
       return 'Each primary workflow should use the product surface a real app would use for that job, such as an event detail, feed item, donation flow, care form, review queue, thread, receipt, search result, export wizard, or transfer status screen.';
     case 'b25-c13-workflow-lifecycle-complete':
-      return 'Each workflow/persona surface should show the concrete object, decision information, natural primary and alternate actions, persistent result/receipt/status, and receiver/continuation state expected in a production app.';
+      return 'Each workflow/role surface should show the concrete object, decision information, natural primary and alternate actions, persistent result/receipt/status, and receiver/continuation state expected in a production app.';
     case 'b25-c14-llm-vision-ux-review':
       return 'A fresh LLM vision UX judge should be able to inspect the screenshots and state, from visible UI evidence, that the experience is modern, domain-native, and production-grade with no unresolved blocker or major findings.';
     case 'b25-c15-full-b25-capture-coverage':
       return 'Every committed B25 pass must start from a canonical full B12-B20 capture, validated by `b25_capture_coverage_gate.dart`, with targeted captures kept as non-committable precheck diagnostics only.';
     case 'b25-c08-visible-text-specific-critique':
-      return 'Every row should tell a worker exactly what was visible, why it did or did not work for the persona/task, and what must change.';
+      return 'Every row should tell a worker exactly what was visible, why it did or did not work for the role/task, and what must change.';
     case 'b25-c09-no-layout-production-defects':
       return 'The reviewed UI should have no major overlap, clipping, crowding, default scaffold feel, repeated-card primary UX, checklist-modal primary UX, or thin placeholder content.';
     case 'b25-c01-no-blocker-major':
@@ -10398,7 +10367,7 @@ List<String> _uxPrinciplesForB25Criterion(String criterionId) {
     case 'b25-c02-community-product-docs-complete':
       return <String>[
         'Define the target product before judging screenshots.',
-        'Make UI remediation traceable to community-specific personas, jobs-to-be-done, and domain-native surfaces.',
+        'Make UI remediation traceable to community-specific roles, jobs-to-be-done, and domain-native surfaces.',
         'Do not let workflow implementation evidence substitute for product experience requirements.',
       ];
     case 'b25-c03-production-grade-experience':
@@ -10434,7 +10403,7 @@ List<String> _uxPrinciplesForB25Criterion(String criterionId) {
     case 'b25-c14-llm-vision-ux-review':
       return <String>[
         'Semantic product-quality judgment must come from screenshot inspection, not deterministic keyword absence',
-        'A production UX pass needs visible proof that screens feel modern, domain-native, and useful to the target persona',
+        'A production UX pass needs visible proof that screens feel modern, domain-native, and useful to the target role',
         'LLM reviewer findings are blocking inputs to the normal B25 ticket and remediation loop',
       ];
     case 'b25-c15-full-b25-capture-coverage':
@@ -10501,7 +10470,7 @@ List<String> _relatedB25FindingIds(
             (id) =>
                 id == 'B25-HOLISTIC-UX-FAILED' ||
                 id == 'B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE' ||
-                id == 'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE',
+                id == 'B25-WORKFLOW-ROLE-COVERAGE-INCOMPLETE',
           )
           .toList();
       return holisticFindings.isEmpty
@@ -10515,9 +10484,9 @@ List<String> _relatedB25FindingIds(
           .where(
             (id) =>
                 id.startsWith('LLM-UX-') ||
-                id == 'B25-WORKFLOW-PERSONA-UX-FAILED' ||
+                id == 'B25-WORKFLOW-ROLE-UX-FAILED' ||
                 id == 'B25-WORKFLOW-LIFECYCLE-INCOMPLETE' ||
-                id == 'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE' ||
+                id == 'B25-WORKFLOW-ROLE-COVERAGE-INCOMPLETE' ||
                 id == 'B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE',
           )
           .toList();
@@ -10541,7 +10510,7 @@ List<String> _improvementsForB25Criterion(String criterionId) {
       return <String>[
         'Create or update one community product experience doc per reviewed community/test app under `docs/Product Docs V2/Community Examples/`.',
         'Use all ten B25 community product experience sections and remove placeholders or thin generic copy.',
-        'Map each workflow/persona to a domain-native product surface and B25 acceptance evidence before assigning UI remediation.',
+        'Map each workflow/role to a domain-native product surface and B25 acceptance evidence before assigning UI remediation.',
       ];
     case 'b25-c03-production-grade-experience':
       return <String>[
@@ -10563,9 +10532,9 @@ List<String> _improvementsForB25Criterion(String criterionId) {
       ];
     case 'b25-c06-domain-native-primary-surfaces':
       return <String>[
-        'Review every primary workflow/persona row and classify the visible UI as domain-native, secondary-supporting, or generic.',
+        'Review every primary workflow/role row and classify the visible UI as domain-native, secondary-supporting, or generic.',
         'Replace primary generic cards, checklist modals, metadata pages, or repeated card shells with domain-specific product surfaces.',
-        'Create workflow/persona scorecards proving each primary workflow surface is domain-native for its target persona.',
+        'Create workflow/role scorecards proving each primary workflow surface is domain-native for its target role.',
       ];
     case 'b25-c13-workflow-lifecycle-complete':
       return <String>[
@@ -10589,14 +10558,14 @@ List<String> _improvementsForB25Criterion(String criterionId) {
     case 'b25-c16-app-shell-capability-utilization':
       return <String>[
         'Do not close the ticket from source-code intent alone; require after-screenshots proving the App Shell capability is actually visible and usable.',
-        'Do not treat bottom tabs, pinning policy, or minimized cards as present unless the relevant persona/workflow screenshot or product doc proves them.',
+        'Do not treat bottom tabs, pinning policy, or minimized cards as present unless the relevant role/workflow screenshot or product doc proves them.',
         'Do not require pinned surfaces for every tab; require an explicit `none` policy with rationale when pinning is not useful.',
         'Do not accept a generic card list when Product Docs or the App Shell component doc require tabs, declared pinned surfaces, presentation states, renderer selection, or theme/customization proof.',
       ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Extract visible text for every reviewed screenshot row.',
-        'Write a non-boilerplate critique for every row that names visible UI elements, visible text, the persona, and the user task.',
+        'Write a non-boilerplate critique for every row that names visible UI elements, visible text, the role, and the user task.',
         'Remove duplicated or reusable critiques; each critique must be specific enough that it cannot apply unchanged to an unrelated screen.',
       ];
     case 'b25-c09-no-layout-production-defects':
@@ -10634,9 +10603,9 @@ List<String> _affectedEvidenceForB25Criterion(String criterionId) {
     case 'b25-c06-domain-native-primary-surfaces':
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
-        'independent-production-ux-review.json workflowPersonaScorecards',
+        'independent-production-ux-review.json workflowRoleScorecards',
         'independent-production-ux-review.json screenRows',
-        'product-ux-screen-review-matrix.md every workflow/persona row',
+        'product-ux-screen-review-matrix.md every workflow/role row',
         'production-ux-criteria-scorecard.json/.md',
       ];
     case 'b25-c13-workflow-lifecycle-complete':
@@ -10716,7 +10685,7 @@ List<String> _implementationGuidanceForB25Criterion(String criterionId) {
     case 'b25-c06-domain-native-primary-surfaces':
       return <String>[
         'Inspect workflow surface builders and replace primary generic card/checklist/modal renderers with task-specific widgets.',
-        'Use B21 production UX contracts to choose the target surface type for each workflow/persona pair.',
+        'Use B21 production UX contracts to choose the target surface type for each workflow/role pair.',
         'Update screenshot evidence manifests so each replaced surface is captured at entry, action, and result states.',
       ];
     case 'b25-c13-workflow-lifecycle-complete':
@@ -10739,10 +10708,10 @@ List<String> _implementationGuidanceForB25Criterion(String criterionId) {
       ];
     case 'b25-c16-app-shell-capability-utilization':
       return <String>[
-        'Inspect `apps/loom_communities_demo/lib/main.dart` for `CommunityAppShellCustomizationSpec`, persona tab specs, pinned surface specs, presentation-state routing, renderer selection, and theme/typography/density tokens.',
+        'Inspect `apps/loom_communities_demo/lib/main.dart` for `CommunityAppShellCustomizationSpec`, role tab specs, pinned surface specs, presentation-state routing, renderer selection, and theme/typography/density tokens.',
         'Update the community product experience doc Section 3.1 when the intended tab/pinning/presentation/customization model is missing or vague.',
         'Implement the missing App Shell capability in the central shell model, not as a one-off workflow hack.',
-        'Recapture screenshots proving Home and Messages/Communication tabs, custom persona tabs, declared pinned surfaces, minimized/medium/expanded states, tap-to-expand, community-list states, renderer selection, and theme/customization tokens where required.',
+        'Recapture screenshots proving Home and Messages/Communication tabs, custom role tabs, declared pinned surfaces, minimized/medium/expanded states, tap-to-expand, community-list states, renderer selection, and theme/customization tokens where required.',
       ];
     case 'b25-c17-component-doc-freshness':
       return <String>[
@@ -10754,7 +10723,7 @@ List<String> _implementationGuidanceForB25Criterion(String criterionId) {
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Update the B25 judge/review artifact, not only app UI code.',
-        'Fill `screenRows[].visibleTextExtract`, `screenRows[].screenSpecificCritique`, `holisticQuestionAnswers`, and `workflowPersonaScorecards` with screenshot-specific content.',
+        'Fill `screenRows[].visibleTextExtract`, `screenRows[].screenSpecificCritique`, `holisticQuestionAnswers`, and `workflowRoleScorecards` with screenshot-specific content.',
         'Regenerate markdown review and matrix files from the updated schema v4 JSON.',
       ];
     case 'b25-c01-no-blocker-major':
@@ -10788,12 +10757,12 @@ List<String> _contentGuidanceForB25Criterion(String criterionId) {
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Quote or summarize visible labels, headings, section names, action text, and result copy in the critique.',
-        'Explain why that visible content does or does not support the persona and task.',
+        'Explain why that visible content does or does not support the role and task.',
       ];
     default:
       return <String>[
         'Replace placeholder, framework, workflow, evidence, or metadata language with user-facing product copy.',
-        'Use content that helps the target persona understand status, options, consequences, and next steps.',
+        'Use content that helps the target role understand status, options, consequences, and next steps.',
       ];
   }
 }
@@ -10857,13 +10826,13 @@ List<String> _evidenceToCollectForB25Criterion(String criterionId) {
       ];
     case 'b25-c06-domain-native-primary-surfaces':
       return <String>[
-        'Fresh screenshots for every primary workflow/persona surface that was replaced or reviewed.',
-        '`workflowPersonaScorecards` with task-specific domain-native surface judgments.',
+        'Fresh screenshots for every primary workflow/role surface that was replaced or reviewed.',
+        '`workflowRoleScorecards` with task-specific domain-native surface judgments.',
         'Screen matrix rows showing `primarySurfaceType` or classification is not generic for primary workflows.',
       ];
     case 'b25-c13-workflow-lifecycle-complete':
       return <String>[
-        'Fresh entry/action/result/receiver screenshots for every remediated workflow/persona lifecycle.',
+        'Fresh entry/action/result/receiver screenshots for every remediated workflow/role lifecycle.',
         '`workflowLifecycleScorecards` showing every required lifecycle group passes.',
         'Visible text excerpts proving object/context, decision information, primary action, alternate/change/reject affordance, persistent result state, and receiver/continuation state.',
       ];
@@ -10905,7 +10874,7 @@ List<String> _acceptanceChecksForB25Criterion(String criterionId) {
     case 'b25-c13-workflow-lifecycle-complete':
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
-        'Every workflow/persona scorecard is present, screenshot-backed, non-boilerplate, and pass.',
+        'Every workflow/role scorecard is present, screenshot-backed, non-boilerplate, and pass.',
         if (criterionId == 'b25-c13-workflow-lifecycle-complete')
           'Every workflow lifecycle scorecard is present, screenshot-backed, and pass with no missing lifecycle groups.',
         ...shared,
@@ -10928,7 +10897,7 @@ List<String> _acceptanceChecksForB25Criterion(String criterionId) {
         '`appShellCapabilityReview.status` is `pass`.',
         '`appShellCapabilityReview.missingCapabilities` is empty.',
         'Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.',
-        'After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.',
+        'After-screenshots prove the shell capability in the affected community/role/workflow, not only source-code declarations.',
         ...shared,
       ];
     case 'b25-c17-component-doc-freshness':
@@ -10976,7 +10945,7 @@ List<String> _b25RerunCommands() {
     'dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence',
     'dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json',
     'dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md',
-    'dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md',
+    'dart run packages/tooling/loom_ux_judges/bin/b25_workflow_role_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-role-coverage-matrix.md',
     'dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md',
     'dart run packages/tooling/loom_ux_judges/bin/b25_component_doc_context.dart --repo-root .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-component-doc-context-<next-run-id>.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-component-doc-context-<next-run-id>.md',
     'dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md',
@@ -11269,7 +11238,7 @@ _DerivedFailure? _failOnAppShellCapabilityReview(JsonMap evidence) {
     return _DerivedFailure(
       score: 0,
       message:
-          'No appShellCapabilityReview was supplied. B25 cannot prove the UI uses persona tabs, pinned surfaces, minimized/medium/expanded states, tap-to-expand behavior, community-card presentation states, renderer selection, or theme/customization tokens.',
+          'No appShellCapabilityReview was supplied. B25 cannot prove the UI uses role tabs, pinned surfaces, minimized/medium/expanded states, tap-to-expand behavior, community-card presentation states, renderer selection, or theme/customization tokens.',
     );
   }
   final status = _asString(review['status']);
@@ -11281,11 +11250,11 @@ _DerivedFailure? _failOnAppShellCapabilityReview(JsonMap evidence) {
     final failedChecks = _failedAppShellCapabilityChecks(row);
     if (_asString(row['status']) == 'fail' || failedChecks.isNotEmpty) {
       final community = _asString(row['communityName'], fallback: 'community');
-      final persona = _asString(row['persona']);
+      final role = _asString(row['role']);
       failingCommunities.add(
-        persona.isEmpty
+        role.isEmpty
             ? '$community (${failedChecks.join(',')})'
-            : '$community/$persona (${failedChecks.join(',')})',
+            : '$community/$role (${failedChecks.join(',')})',
       );
     }
   }
@@ -11528,11 +11497,11 @@ List<JsonMap> _appShellCapabilityBlockingFindings(JsonMap evidence) {
       _appShellCapabilityFinding(
         gapType: 'app-shell-tabs-gap',
         findingId: 'B25-APP-SHELL-NO-COMMUNITY-RESULTS',
-        title: 'App Shell review has no community/persona results',
+        title: 'App Shell review has no community/role results',
         summary:
-            'The App Shell capability review did not include community/persona rows, so B25 cannot prove tabs, pinning, presentation states, renderer selection, or customization from screenshots.',
+            'The App Shell capability review did not include community/role rows, so B25 cannot prove tabs, pinning, presentation states, renderer selection, or customization from screenshots.',
         requiredFix:
-            'Regenerate the App Shell capability review with one row per reviewed community/persona or per tab-renderer contract, including screenshot rows and hashes.',
+            'Regenerate the App Shell capability review with one row per reviewed community/role or per tab-renderer contract, including screenshot rows and hashes.',
       ),
     );
   }
@@ -11547,10 +11516,10 @@ List<JsonMap> _appShellCapabilityBlockingFindings(JsonMap evidence) {
         _appShellCapabilityFinding(
           gapType: _gapTypeForAppShellCheck(check),
           findingId:
-              'B25-APP-SHELL-${_slug(_asString(row['communityName'], fallback: 'community'))}-${_slug(_asString(row['persona'], fallback: 'persona'))}-${_slug(check)}',
+              'B25-APP-SHELL-${_slug(_asString(row['communityName'], fallback: 'community'))}-${_slug(_asString(row['role'], fallback: 'role'))}-${_slug(check)}',
           title: 'App Shell capability failed: $check',
           summary:
-              'Community `${_asString(row['communityName'], fallback: 'community')}` persona `${_asString(row['persona'], fallback: 'persona')}` does not prove `$check` from screenshot evidence.',
+              'Community `${_asString(row['communityName'], fallback: 'community')}` role `${_asString(row['role'], fallback: 'role')}` does not prove `$check` from screenshot evidence.',
           requiredFix:
               'Update the product doc or UI, recapture after-screenshots, and regenerate appShellCapabilityReview so `$check` passes from visible evidence.',
           row: row,
@@ -11612,7 +11581,7 @@ JsonMap _appShellCapabilityFinding({
     'summary': summary,
     'requiredFix': requiredFix,
     'communityName': _asString(row?['communityName']),
-    'persona': _asString(row?['persona']),
+    'role': _asString(row?['role']),
     'tabId': tabId ?? _asString(row?['tabId']),
     'tabLabel': tabLabel ?? _asString(row?['tabLabel']),
     'rendererContractId':
@@ -11791,13 +11760,13 @@ List<JsonMap> _weakAppShellReviewEvidenceFindings(JsonMap review) {
         _appShellCapabilityFinding(
           gapType: 'app-shell-review-depth-gap',
           findingId:
-              'B25-APP-SHELL-REVIEW-DEPTH-${_slug(_asString(row['communityName'], fallback: 'community'))}-${_slug(_asString(row['persona'], fallback: 'persona'))}',
+              'B25-APP-SHELL-REVIEW-DEPTH-${_slug(_asString(row['communityName'], fallback: 'community'))}-${_slug(_asString(row['role'], fallback: 'role'))}',
           title:
               'App Shell capability review lacks visible screenshot critique',
           summary:
               'The App Shell review row has pass flags, but lacks enough visible text, screenshot hashes, or screen-specific critique to prove the shell capabilities were visually inspected.',
           requiredFix:
-              'Regenerate the App Shell capability review with visible text excerpts, screenshot hashes, tab/renderer-specific critiques, and direct answers for the reviewed community/persona.',
+              'Regenerate the App Shell capability review with visible text excerpts, screenshot hashes, tab/renderer-specific critiques, and direct answers for the reviewed community/role.',
           row: row,
         ),
       );
@@ -12042,36 +12011,36 @@ bool _isWeakLlmCritique(String value) {
   return false;
 }
 
-_DerivedFailure? _failOnWorkflowPersonaScorecards(JsonMap evidence) {
-  final scorecards = _asMapList(evidence['workflowPersonaScorecards']);
+_DerivedFailure? _failOnWorkflowRoleScorecards(JsonMap evidence) {
+  final scorecards = _asMapList(evidence['workflowRoleScorecards']);
   if (scorecards.isEmpty) {
     return _DerivedFailure(
       score: 0,
-      message: 'No workflow/persona direct-question scorecards were supplied.',
+      message: 'No workflow/role direct-question scorecards were supplied.',
     );
   }
   final failing = <String>[];
   for (final scorecard in scorecards) {
     final workflowId = _asString(scorecard['workflowId']);
-    final persona = _asString(scorecard['persona']);
+    final role = _asString(scorecard['role']);
     final questions = _asMapList(scorecard['questions']);
-    if (workflowId.isEmpty || persona.isEmpty || questions.isEmpty) {
+    if (workflowId.isEmpty || role.isEmpty || questions.isEmpty) {
       failing.add(_rowId(scorecard));
       continue;
     }
     final questionFailure = _failOnDirectQuestionAnswers(
       questions,
-      requiredScope: 'workflow/persona $workflowId/$persona',
+      requiredScope: 'workflow/role $workflowId/$role',
     );
     if (questionFailure != null) {
-      failing.add('$workflowId/$persona');
+      failing.add('$workflowId/$role');
     }
   }
   if (failing.isNotEmpty) {
     return _DerivedFailure(
       score: 55,
       message:
-          'Workflow/persona direct-question scorecards have missing or blocking answers: ${failing.join(', ')}.',
+          'Workflow/role direct-question scorecards have missing or blocking answers: ${failing.join(', ')}.',
       evidenceUsed: failing,
     );
   }
@@ -12272,10 +12241,10 @@ void _runCommonEvidenceChecks(
     if (holisticFailure != null) {
       errors.add('holistic direct-question pass: ${holisticFailure.message}');
     }
-    final workflowPersonaFailure = _failOnWorkflowPersonaScorecards(evidence);
-    if (workflowPersonaFailure != null) {
+    final workflowRoleFailure = _failOnWorkflowRoleScorecards(evidence);
+    if (workflowRoleFailure != null) {
       errors.add(
-        'workflow/persona direct-question pass: ${workflowPersonaFailure.message}',
+        'workflow/role direct-question pass: ${workflowRoleFailure.message}',
       );
     }
     final workflowLifecycleFailure = _failOnWorkflowLifecycleScorecards(
@@ -12508,19 +12477,19 @@ String _remediationTicketsMarkdown({
     if (coverageRows.isNotEmpty) {
       buffer
         ..writeln()
-        ..writeln('### Affected Workflow/Persona Coverage')
+        ..writeln('### Affected Workflow/Role Coverage')
         ..writeln()
         ..writeln(
           'Showing ${coverageRows.take(40).length} of ${coverageRows.length} affected coverage rows. Full detail is in the JSON ticket.',
         )
         ..writeln()
         ..writeln(
-          '| Coverage row | Status | Community | Workflow | Persona | Missing evidence | Screen rows | Target surface |',
+          '| Coverage row | Status | Community | Workflow | Role | Missing evidence | Screen rows | Target surface |',
         )
         ..writeln('| --- | --- | --- | --- | --- | --- | ---: | --- |');
       for (final row in coverageRows.take(40)) {
         buffer.writeln(
-          '| `${_escape(_asString(row['coverageRowId']))}` | `${_escape(_asString(row['status']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['persona']))} | ${_escape(_asStringList(row['missingEvidence']).join('; '))} | ${_asStringList(row['screenRowIds']).length} | ${_escape(_asString(row['targetProductionSurface']))} |',
+          '| `${_escape(_asString(row['coverageRowId']))}` | `${_escape(_asString(row['status']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['role']))} | ${_escape(_asStringList(row['missingEvidence']).join('; '))} | ${_asStringList(row['screenRowIds']).length} | ${_escape(_asString(row['targetProductionSurface']))} |',
         );
       }
     }
@@ -12535,34 +12504,34 @@ String _remediationTicketsMarkdown({
         )
         ..writeln()
         ..writeln(
-          '| Screen row | Community | Workflow | Persona | State | Screenshot | Hash | Visible text | Current surface | Exact UX failure | Target surface |',
+          '| Screen row | Community | Workflow | Role | State | Screenshot | Hash | Visible text | Current surface | Exact UX failure | Target surface |',
         )
         ..writeln(
           '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
         );
       for (final row in screenRows.take(40)) {
         buffer.writeln(
-          '| `${_escape(_asString(row['screenRowId']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['persona']))} | ${_escape(_asString(row['screenState']))} | `${_escape(_asString(row['screenshotPath']))}` | `${_escape(_truncate(_asString(row['screenshotHash']), 16))}` | ${_escape(_asString(row['visibleTextExcerpt']))} | ${_escape(_asString(row['currentSurfaceClassification']))} / ${_escape(_asString(row['currentPrimarySurfaceType']))} | ${_escape(_asString(row['exactUxFailure']))} | ${_escape(_asString(row['targetProductionSurface']))} |',
+          '| `${_escape(_asString(row['screenRowId']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['role']))} | ${_escape(_asString(row['screenState']))} | `${_escape(_asString(row['screenshotPath']))}` | `${_escape(_truncate(_asString(row['screenshotHash']), 16))}` | ${_escape(_asString(row['visibleTextExcerpt']))} | ${_escape(_asString(row['currentSurfaceClassification']))} / ${_escape(_asString(row['currentPrimarySurfaceType']))} | ${_escape(_asString(row['exactUxFailure']))} | ${_escape(_asString(row['targetProductionSurface']))} |',
         );
       }
     }
-    final scorecards = _asMapList(ticket['failingWorkflowPersonaScorecards']);
+    final scorecards = _asMapList(ticket['failingWorkflowRoleScorecards']);
     if (scorecards.isNotEmpty) {
       buffer
         ..writeln()
-        ..writeln('### Failing Workflow/Persona Scorecards')
+        ..writeln('### Failing Workflow/Role Scorecards')
         ..writeln()
         ..writeln(
           'Showing ${scorecards.take(40).length} of ${scorecards.length} failing scorecards. Full detail is in the JSON ticket.',
         )
         ..writeln()
         ..writeln(
-          '| Scorecard | Community | Workflow | Persona | Failed questions | Target surface |',
+          '| Scorecard | Community | Workflow | Role | Failed questions | Target surface |',
         )
         ..writeln('| --- | --- | --- | --- | ---: | --- |');
       for (final scorecard in scorecards.take(40)) {
         buffer.writeln(
-          '| `${_escape(_asString(scorecard['scorecardId']))}` | ${_escape(_asString(scorecard['communityName']))} | `${_escape(_asString(scorecard['workflowId']))}` | ${_escape(_asString(scorecard['persona']))} | ${_asMapList(scorecard['failingQuestions']).length} | ${_escape(_asString(scorecard['targetProductionSurface']))} |',
+          '| `${_escape(_asString(scorecard['scorecardId']))}` | ${_escape(_asString(scorecard['communityName']))} | `${_escape(_asString(scorecard['workflowId']))}` | ${_escape(_asString(scorecard['role']))} | ${_asMapList(scorecard['failingQuestions']).length} | ${_escape(_asString(scorecard['targetProductionSurface']))} |',
         );
       }
     }
@@ -12581,12 +12550,12 @@ String _remediationTicketsMarkdown({
         )
         ..writeln()
         ..writeln(
-          '| Scorecard | Community | Workflow | Persona | Expected decision | Missing lifecycle groups | Missing actions | Wrong generic substitutes | Target surface |',
+          '| Scorecard | Community | Workflow | Role | Expected decision | Missing lifecycle groups | Missing actions | Wrong generic substitutes | Target surface |',
         )
         ..writeln('| --- | --- | --- | --- | --- | --- | --- | --- | --- |');
       for (final scorecard in lifecycleScorecards.take(40)) {
         buffer.writeln(
-          '| `${_escape(_asString(scorecard['scorecardId']))}` | ${_escape(_asString(scorecard['communityName']))} | `${_escape(_asString(scorecard['workflowId']))}` | ${_escape(_asString(scorecard['persona']))} | ${_escape(_asString(scorecard['expectedDecision']))} | ${_escape(_asStringList(scorecard['missingLifecycleGroups']).join('; '))} | ${_escape(_asStringList(scorecard['missingActions']).join('; '))} | ${_escape(_asStringList(scorecard['wrongGenericSubstitutes']).join('; '))} | ${_escape(_asString(scorecard['targetProductionSurface']))} |',
+          '| `${_escape(_asString(scorecard['scorecardId']))}` | ${_escape(_asString(scorecard['communityName']))} | `${_escape(_asString(scorecard['workflowId']))}` | ${_escape(_asString(scorecard['role']))} | ${_escape(_asString(scorecard['expectedDecision']))} | ${_escape(_asStringList(scorecard['missingLifecycleGroups']).join('; '))} | ${_escape(_asStringList(scorecard['missingActions']).join('; '))} | ${_escape(_asStringList(scorecard['wrongGenericSubstitutes']).join('; '))} | ${_escape(_asString(scorecard['targetProductionSurface']))} |',
         );
       }
     }
@@ -12679,12 +12648,12 @@ void _writeWorkItemsMarkdown(
     )
     ..writeln()
     ..writeln(
-      '| Work item | Stage | Community | Workflow | Persona | Screens | Coverage | Target surface | Blocked until |',
+      '| Work item | Stage | Community | Workflow | Role | Screens | Coverage | Target surface | Blocked until |',
     )
     ..writeln('| --- | --- | --- | --- | --- | ---: | ---: | --- | --- |');
   for (final item in workItems.take(30)) {
     buffer.writeln(
-      '| `${_escape(_asString(item['workItemId']))}` | `${_escape(_asString(item['stage']))}` | ${_escape(_asString(item['communityName']))} | `${_escape(_asString(item['workflowId']))}` | ${_escape(_asString(item['persona']))} | ${_asStringList(item['affectedScreenRowIds']).length} | ${_asStringList(item['affectedCoverageRowIds']).length} | ${_escape(_asString(item['targetProductionSurface']))} | ${_escape(_asString(item['blockedUntil']))} |',
+      '| `${_escape(_asString(item['workItemId']))}` | `${_escape(_asString(item['stage']))}` | ${_escape(_asString(item['communityName']))} | `${_escape(_asString(item['workflowId']))}` | ${_escape(_asString(item['role']))} | ${_asStringList(item['affectedScreenRowIds']).length} | ${_asStringList(item['affectedCoverageRowIds']).length} | ${_escape(_asString(item['targetProductionSurface']))} | ${_escape(_asString(item['blockedUntil']))} |',
     );
   }
   final referencePatterns = _dedupeReferencePatterns(<JsonMap>[

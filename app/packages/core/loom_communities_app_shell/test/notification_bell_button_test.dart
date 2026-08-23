@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
-const _personaA = 'persona-a';
-const _personaB = 'persona-b';
+const _fanA = 'fan-a';
+const _fanB = 'fan-b';
 
 Map<String, dynamic> _notificationDefinition() => {
   'initialState': 'unread',
@@ -119,7 +119,7 @@ Future<void> _pumpUntilRead(
   for (var attempt = 0; attempt < 40; attempt += 1) {
     final page = await engine.queryInstances(
       tabId: 'notification-inbox',
-      fanId: _personaA,
+      fanId: _fanA,
       limit: 1000,
     );
     final item = page.items.singleWhere(
@@ -133,36 +133,34 @@ Future<void> _pumpUntilRead(
 
 void main() {
   testWidgets(
-    'bell badge and sheet are scoped to the active persona and mark rows read',
+    'bell badge and sheet are scoped to the active actorIdentity and mark rows read',
     (tester) async {
       const extensionId = 'notification-bell-button-test';
       final engine = await _installEngine(extensionId, [
         _notificationSeed(
           instanceId: 'a-unread-1',
-          recipientFanId: _personaA,
+          recipientFanId: _fanA,
           title: 'A unread one',
         ),
         _notificationSeed(
           instanceId: 'a-unread-2',
-          recipientFanId: _personaA,
+          recipientFanId: _fanA,
           title: 'A unread two',
         ),
         _notificationSeed(
           instanceId: 'a-read',
-          recipientFanId: _personaA,
+          recipientFanId: _fanA,
           title: 'A already read',
           currentState: 'read',
         ),
         _notificationSeed(
           instanceId: 'b-unread',
-          recipientFanId: _personaB,
+          recipientFanId: _fanB,
           title: 'B private notification',
         ),
       ]);
 
-      await tester.pumpWidget(
-        _host(extensionId: extensionId, fanId: _personaA),
-      );
+      await tester.pumpWidget(_host(extensionId: extensionId, fanId: _fanA));
       await _pumpUntil(tester, _badgeLabel('2'));
 
       await tester.tap(find.byKey(const ValueKey('notification-bell-button')));
@@ -198,7 +196,7 @@ void main() {
       await _pumpUntilRead(tester, engine, 'a-unread-1');
       final persisted = await engine.queryInstances(
         tabId: 'notification-inbox',
-        fanId: _personaA,
+        fanId: _fanA,
         limit: 1000,
       );
       expect(
@@ -220,7 +218,7 @@ void main() {
     const extensionId = 'notification-bell-button-empty-test';
     await _installEngine(extensionId, const []);
 
-    await tester.pumpWidget(_host(extensionId: extensionId, fanId: _personaA));
+    await tester.pumpWidget(_host(extensionId: extensionId, fanId: _fanA));
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(

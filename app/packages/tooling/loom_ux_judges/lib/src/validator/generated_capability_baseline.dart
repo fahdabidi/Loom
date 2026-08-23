@@ -81,4 +81,3 @@ const Set<String> communityCapabilityBaseline = <String>{
   'guard.relatedListMembership',
   'guard.requiresWorkflowsComplete',
 };
-

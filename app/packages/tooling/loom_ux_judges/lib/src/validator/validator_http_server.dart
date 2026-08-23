@@ -273,9 +273,7 @@ Future<void> handleValidatorRequest(
         return;
       }
 
-      response.headers.contentType = ContentType.parse(
-        'application/zip',
-      );
+      response.headers.contentType = ContentType.parse('application/zip');
       response.headers.set(
         'Content-Disposition',
         'attachment; filename="${built.downloadFilename}"',
@@ -342,10 +340,7 @@ Future<void> handleValidatorRequest(
         return;
       }
 
-      final downloadId = _storeDownload(
-        built.zipBytes,
-        built.downloadFilename,
-      );
+      final downloadId = _storeDownload(built.zipBytes, built.downloadFilename);
       // String-built rather than a Uri(host: ...) constructor: the Host
       // header can already contain "host:port" (e.g. local testing against
       // "localhost:8787"), which Uri's `host` parameter rejects as a bare

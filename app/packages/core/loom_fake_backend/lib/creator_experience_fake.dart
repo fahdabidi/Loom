@@ -45,7 +45,7 @@ CreatorExperienceConfig _mapConfig(CreatorExperienceConfigRecord record) {
     theme: _mapTheme(record.theme),
     bannerRef: record.bannerRef,
     surfaceModules: record.surfaceModules.map(_mapModule).toList(),
-    aiPersona: record.aiPersona,
+    aiGuideProfile: record.aiGuideProfile,
     adPosture: record.adPosture,
     installedExtensions: record.installedExtensions
         .map(_mapInstalledRef)
@@ -61,7 +61,7 @@ CreatorExperienceConfigRecord _toConfigRecord(CreatorExperienceConfig config) {
     theme: _toThemeRecord(config.theme),
     bannerRef: config.bannerRef,
     surfaceModules: config.surfaceModules.map(_toModuleRecord).toList(),
-    aiPersona: config.aiPersona,
+    aiGuideProfile: config.aiGuideProfile,
     adPosture: config.adPosture,
     installedExtensions: config.installedExtensions
         .map(_toInstalledRefRecord)

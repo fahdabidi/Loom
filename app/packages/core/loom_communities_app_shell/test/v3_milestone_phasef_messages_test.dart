@@ -101,8 +101,8 @@ Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder to disappear');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectTestTabletopPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectTestTabletopActorIdentity(tester, fanId);
 }
 
 Future<void> _selectMessages(WidgetTester tester) async {
@@ -192,7 +192,7 @@ void main() {
             ),
           ),
         );
-        await _selectPersona(tester, 'tabletop-member');
+        await _selectActorIdentity(tester, 'tabletop-member');
         await _selectMessages(tester);
 
         // F.2: both real frozen instances resolve through the messages binding

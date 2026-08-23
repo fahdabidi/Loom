@@ -57,7 +57,7 @@ Future<int> runCommunityRemoteMigration(
     if (plan.findings.isNotEmpty) {
       err.writeln(
         'ERROR: --execute refused because ${plan.findings.length} '
-        'persona-to-role finding(s) require a human decision.',
+        'role-to-role finding(s) require a human decision.',
       );
       return 2;
     }
@@ -234,5 +234,5 @@ LOOM_WORKFLOW_SERVICE_BASE_URL, LOOM_KEYCLOAK_TOKEN_URL,
 LOOM_APP_ACCESS_CLIENT_ID, LOOM_APP_ACCESS_CLIENT_SECRET,
 LOOM_WORKFLOW_BEARER_TOKEN, and LOOM_APP_ID. The workflow token must contain
 the fanId claim required by workflow-service's existing JWT identity extractor.
-Execution is refused while any persona-to-role finding remains unresolved.
+Execution is refused while any role-to-role finding remains unresolved.
 ''';

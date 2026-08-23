@@ -1,8 +1,8 @@
 import '../models/data_rights/data_rights_models.dart';
 import '../models/fan_passport/consent_grant.dart';
 import '../models/fan_passport/fan_passport_claim.dart';
+import '../models/fan_passport/fan_profile.dart';
 import '../models/fan_passport/follow_view.dart';
-import '../models/fan_passport/persona.dart';
 
 abstract class FanPassportApi {
   Future<FanPassportClaim> createPassport({
@@ -12,7 +12,7 @@ abstract class FanPassportApi {
 
   Future<FanPassportClaim?> getPassport(String passportId);
 
-  Future<Persona> setPersona({
+  Future<FanProfile> setFanProfile({
     required String passportId,
     required String label,
     required String idempotencyKey,

@@ -107,10 +107,13 @@ Future<void> _settleBounded(WidgetTester tester) async {
   }
 }
 
-Future<void> _selectPersona(WidgetTester tester, String roleId) async {
-  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
-  await _pumpUntil(tester, find.byKey(ValueKey('persona-option-$roleId')));
-  await tester.tap(find.byKey(ValueKey('persona-option-$roleId')));
+Future<void> _selectActorIdentity(WidgetTester tester, String roleId) async {
+  await tester.tap(find.byKey(const ValueKey('actor-identity-picker-button')));
+  await _pumpUntil(
+    tester,
+    find.byKey(ValueKey('actor-identity-option-$roleId')),
+  );
+  await tester.tap(find.byKey(ValueKey('actor-identity-option-$roleId')));
   await _settleBounded(tester);
 }
 
@@ -157,7 +160,7 @@ void main() {
           find.byKey(const ValueKey('notification-bell-button')),
         );
 
-        await _selectPersona(tester, _memberRoleId);
+        await _selectActorIdentity(tester, _memberRoleId);
         await _pumpUntil(tester, _badgeLabel('2'));
 
         expect(

@@ -46,17 +46,20 @@ void main() {
       expect(
         _artifact().readAsStringSync(),
         equals('${encoder.convert(generator.buildVocabulary())}\n'),
-        reason: 'The checked-in artifact has drifted from ArchetypeResolver. '
+        reason:
+            'The checked-in artifact has drifted from ArchetypeResolver. '
             'Regenerate it with '
             '`dart run bin/generate_permissions_vocabulary.dart`.',
       );
     });
 
     test('covers every family the resolver knows, and only those', () {
-      final bespoke =
-          (artifact['bespokeArchetypes'] as Map<String, Object?>).keys.toSet();
-      final generic =
-          (artifact['genericArchetypes'] as Map<String, Object?>).keys.toSet();
+      final bespoke = (artifact['bespokeArchetypes'] as Map<String, Object?>)
+          .keys
+          .toSet();
+      final generic = (artifact['genericArchetypes'] as Map<String, Object?>)
+          .keys
+          .toSet();
 
       expect(bespoke, equals(ArchetypeResolver.bespokeFamilies));
       expect(generic, equals(ArchetypeResolver.genericFamilies));
@@ -67,38 +70,43 @@ void main() {
       );
     });
 
-    test('every permission id is prefix.action, and unique across the catalog', () {
-      final all = <String>[];
-      for (final section in ['bespokeArchetypes', 'genericArchetypes']) {
-        final families = artifact[section] as Map<String, Object?>;
-        for (final entry in families.entries) {
-          final family = entry.value as Map<String, Object?>;
-          final prefix = family['permissionPrefix'] as String;
-          final actions = (family['actions'] as List).cast<String>();
-          final permissions = (family['permissions'] as List).cast<String>();
+    test(
+      'every permission id is prefix.action, and unique across the catalog',
+      () {
+        final all = <String>[];
+        for (final section in ['bespokeArchetypes', 'genericArchetypes']) {
+          final families = artifact[section] as Map<String, Object?>;
+          for (final entry in families.entries) {
+            final family = entry.value as Map<String, Object?>;
+            final prefix = family['permissionPrefix'] as String;
+            final actions = (family['actions'] as List).cast<String>();
+            final permissions = (family['permissions'] as List).cast<String>();
 
-          expect(
-            permissions,
-            equals([for (final a in actions) '$prefix.$a']),
-            reason: '${entry.key} permission ids do not match its actions.',
-          );
-          all.addAll(permissions);
+            expect(
+              permissions,
+              equals([for (final a in actions) '$prefix.$a']),
+              reason: '${entry.key} permission ids do not match its actions.',
+            );
+            all.addAll(permissions);
+          }
         }
-      }
-      expect(
-        all.length,
-        equals(all.toSet().length),
-        reason: 'Duplicate permission id across families — two archetypes would '
-            'share one grant, so granting for one silently grants the other.',
-      );
-      expect(all, isNotEmpty);
-    });
+        expect(
+          all.length,
+          equals(all.toSet().length),
+          reason:
+              'Duplicate permission id across families — two archetypes would '
+              'share one grant, so granting for one silently grants the other.',
+        );
+        expect(all, isNotEmpty);
+      },
+    );
 
     test('declares the single spec version it was generated for', () {
       expect(
         artifact['specVersion'],
         equals(4),
-        reason: 'One number versions the whole package. The installer refuses '
+        reason:
+            'One number versions the whole package. The installer refuses '
             'packages whose version it does not implement, so this must track '
             'the real one.',
       );
@@ -115,43 +123,48 @@ void main() {
           ...ArchetypeResolver.bespokeFamilies,
           ...ArchetypeResolver.genericFamilies,
         }),
-        reason: 'An archetype with no contract has no defined bookkeeping or '
+        reason:
+            'An archetype with no contract has no defined bookkeeping or '
             'visibility model, so the workflow service would have nothing to '
             'enforce for it.',
       );
     });
 
-    test('every contract names a visibility model and an enforcement boundary', () {
-      const visibilityModels = {
-        'roles',
-        'owner',
-        'owner_and_shared',
-        'participants',
-        'parties',
-        'recipient',
-      };
-      final contracts = Map<String, Object?>.from(
-        artifact['archetypeContracts'] as Map<String, Object?>,
-      )..removeWhere((key, _) => key.startsWith('_'));
+    test(
+      'every contract names a visibility model and an enforcement boundary',
+      () {
+        const visibilityModels = {
+          'roles',
+          'owner',
+          'owner_and_shared',
+          'participants',
+          'parties',
+          'recipient',
+        };
+        final contracts = Map<String, Object?>.from(
+          artifact['archetypeContracts'] as Map<String, Object?>,
+        )..removeWhere((key, _) => key.startsWith('_'));
 
-      for (final entry in contracts.entries) {
-        final contract = entry.value as Map<String, Object?>;
-        expect(
-          visibilityModels,
-          contains(contract['visibility']),
-          reason: '${entry.key} declares an unknown visibility model.',
-        );
-        expect(
-          const ['client_engine', 'server'],
-          contains(contract['enforcement']),
-          reason: '${entry.key} must state where its rules are enforced. '
-              'Everything is client_engine today, because no workflow service '
-              'exists — that is a fact worth being explicit about rather than '
-              'implied.',
-        );
-        expect(contract['allowsCustomActions'], isTrue);
-      }
-    });
+        for (final entry in contracts.entries) {
+          final contract = entry.value as Map<String, Object?>;
+          expect(
+            visibilityModels,
+            contains(contract['visibility']),
+            reason: '${entry.key} declares an unknown visibility model.',
+          );
+          expect(
+            const ['client_engine', 'server'],
+            contains(contract['enforcement']),
+            reason:
+                '${entry.key} must state where its rules are enforced. '
+                'Everything is client_engine today, because no workflow service '
+                'exists — that is a fact worth being explicit about rather than '
+                'implied.',
+          );
+          expect(contract['allowsCustomActions'], isTrue);
+        }
+      },
+    );
 
     test('only equipment-loan claims special placement', () {
       // Six ids in one archetype, matched by name in part36 purely to position

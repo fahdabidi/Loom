@@ -174,7 +174,7 @@ class _BodyForStep extends StatelessWidget {
                   'Loom keeps relationship choices explicit. You can change this visibility later from your profile.',
             ),
             const SizedBox(height: LoomSpacing.md),
-            PersonaSelector(
+            VisibilitySelector(
               options: const ['Private', 'Public'],
               selectedIndex: selectedIndex,
               onChanged: (index) => controller.setVisibility(

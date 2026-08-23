@@ -18,8 +18,9 @@ class SourceQuery {
   /// the grammar.
   static SourceQuery? tryParse(String? raw) {
     if (raw == null) return null;
-    final match = RegExp(r'^query\((\w[\w-]*) where (\w+) == (\w+)\)$')
-        .firstMatch(raw.trim());
+    final match = RegExp(
+      r'^query\((\w[\w-]*) where (\w+) == (\w+)\)$',
+    ).firstMatch(raw.trim());
     if (match == null) return null;
     return SourceQuery(
       workflowType: match.group(1)!,

@@ -64,7 +64,7 @@ void main() {
           // V4 has no pushed legacy action surface. Its engine transition lives
           // on the card and must inherit the same modern theme before and after
           // the persisted mutation.
-          await selectPersona(tester, 'tabletop-member');
+          await selectActorIdentity(tester, 'tabletop-member');
           final reserveButton = find.byKey(
             const ValueKey('generic-instance-$instanceId-action-reserve-seat'),
           );
@@ -131,7 +131,7 @@ void main() {
           actionText: '',
           resultText: '',
         );
-        await selectPersona(tester, 'garden-coordinator');
+        await selectActorIdentity(tester, 'garden-coordinator');
         await scrollToWorkflowCard(tester, workflow);
         final tile = tester.widget<DecoratedBox>(
           find.byKey(const ValueKey('workflow-garden-export-custom-schemas')),
@@ -191,7 +191,7 @@ Future<void> _installAndOpen(
     find.byKey(const ValueKey('community-card-community_verify_tabletop_club')),
   );
   await tester.pumpAndSettle();
-  await selectPersona(tester, 'tabletop-organizer');
+  await selectActorIdentity(tester, 'tabletop-organizer');
   await waitForEngineNativeWidget(
     tester,
     find.byKey(const ValueKey('engine-native-list-root-home')),

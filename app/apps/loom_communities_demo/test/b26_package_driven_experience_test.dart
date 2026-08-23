@@ -61,7 +61,7 @@ void main() {
       );
     });
 
-    test('wf_package-driven-personas-and-role-guards', () {
+    test('wf_package-driven-actorIdentities-and-role-guards', () {
       final fixture = _writeTabletopClubPackagePair();
       final backend = LocalInAppBackend();
       final community = backend
@@ -78,12 +78,12 @@ void main() {
         experienceConfiguration: community.experienceConfiguration,
       );
 
-      final personas = personasForExtensionId(
+      final actorIdentities = actorIdentitiesForExtensionId(
         community.extensionId,
         experience: experience,
       );
       expect(
-        personas.map((persona) => persona.roleId),
+        actorIdentities.map((actorIdentity) => actorIdentity.roleId),
         containsAll(<String>['tabletop-organizer', 'tabletop-member']),
       );
 
@@ -121,7 +121,7 @@ void main() {
         experienceConfiguration: community.experienceConfiguration,
       );
 
-      // Member persona: the package's Admin declaration excludes this role.
+      // Member actorIdentity: the package's Admin declaration excludes this role.
       final memberTabs = appShellTabsFor(
         experience: experience,
         roleId: 'tabletop-member',
@@ -140,7 +140,7 @@ void main() {
       );
       expect(memberTabIds, isNot(contains('admin')));
 
-      // Organizer persona is explicitly admitted to the package's Admin tab.
+      // Organizer actorIdentity is explicitly admitted to the package's Admin tab.
       final organizerTabs = appShellTabsFor(
         experience: experience,
         roleId: 'tabletop-organizer',

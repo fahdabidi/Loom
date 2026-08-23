@@ -173,8 +173,8 @@ Future<void> _pumpUntilGone(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder to disappear');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectTestTabletopPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectTestTabletopActorIdentity(tester, fanId);
 }
 
 Widget _app(_InstalledTabletop installed) => MaterialApp(
@@ -463,7 +463,7 @@ void main() {
     ))!;
     try {
       await tester.pumpWidget(_app(installed));
-      await _selectPersona(tester, 'tabletop-member');
+      await _selectActorIdentity(tester, 'tabletop-member');
       await _selectMarketplace(tester);
 
       final giveaway = find.byKey(
@@ -509,7 +509,7 @@ void main() {
       ))!;
       try {
         await tester.pumpWidget(_app(installed));
-        await _selectPersona(tester, 'tabletop-organizer');
+        await _selectActorIdentity(tester, 'tabletop-organizer');
         await _selectMarketplace(tester);
         expect(tester.takeException(), isNull);
 
@@ -753,7 +753,7 @@ void main() {
       ))!;
       try {
         await tester.pumpWidget(_app(installed));
-        await _selectPersona(tester, 'tabletop-member');
+        await _selectActorIdentity(tester, 'tabletop-member');
         final borrowIsAvailable = await tester.runAsync(() async {
           await installed.engine.applyTransition(
             workflowType: 'tabletop-club-dues-payment',
@@ -803,14 +803,20 @@ void main() {
           findsOneWidget,
         );
 
-        await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+        await tester.tap(
+          find.byKey(const ValueKey('actor-identity-picker-button')),
+        );
         await tester.pump();
         await _pumpUntil(
           tester,
-          find.byKey(const ValueKey('persona-option-tabletop-organizer')),
+          find.byKey(
+            const ValueKey('actor-identity-option-tabletop-organizer'),
+          ),
         );
         await tester.tap(
-          find.byKey(const ValueKey('persona-option-tabletop-organizer')),
+          find.byKey(
+            const ValueKey('actor-identity-option-tabletop-organizer'),
+          ),
         );
         await tester.pump();
         await _selectMarketplace(tester);
@@ -834,7 +840,7 @@ void main() {
     ))!;
     try {
       await tester.pumpWidget(_app(installed));
-      await _selectPersona(tester, 'tabletop-member');
+      await _selectActorIdentity(tester, 'tabletop-member');
       await _selectMarketplace(tester);
       await _pumpUntil(
         tester,
@@ -863,10 +869,13 @@ void main() {
         specVersion: installed.community.specVersion,
         experienceConfiguration: installed.community.experienceConfiguration,
       );
-      final organizer = personasForExtensionId(
-        experience.extensionId,
-        experience: experience,
-      ).singleWhere((persona) => persona.roleId == 'tabletop-organizer');
+      final organizer =
+          actorIdentitiesForExtensionId(
+            experience.extensionId,
+            experience: experience,
+          ).singleWhere(
+            (actorIdentity) => actorIdentity.roleId == 'tabletop-organizer',
+          );
       final engine = _MarketplaceCountingEngine(installed.engine);
       try {
         await tester.pumpWidget(
@@ -883,7 +892,7 @@ void main() {
                 body: SingleChildScrollView(
                   child: EngineNativeMarketplaceSurface(
                     experience: experience,
-                    persona: organizer,
+                    actorIdentity: organizer,
                     accent: Colors.indigo,
                     engine: engine,
                   ),

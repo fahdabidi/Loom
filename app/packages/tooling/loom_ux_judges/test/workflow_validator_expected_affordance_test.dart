@@ -1164,7 +1164,7 @@ void main() {
       }
     });
 
-    test('allows custom tabId when declared in appShell/ personaTabs', () {
+    test('allows custom tabId when declared in appShell/ roleTabs', () {
       final report = _validateWithDeclaredTabIds(
         {'event': _machineWithTabAndFamily(tabId: 'community-home')},
         declaredTabIds: {'community-home'},

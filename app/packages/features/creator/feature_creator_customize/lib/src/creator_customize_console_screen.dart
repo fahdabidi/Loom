@@ -379,7 +379,7 @@ class _Preview extends StatelessWidget {
       handle: home.handle,
       themeName: config.theme.name,
       bannerRef: config.bannerRef,
-      aiPersona: config.aiPersona,
+      aiGuideProfile: config.aiGuideProfile,
       adPosture: config.adPosture,
       primaryHex: config.theme.primaryHex,
       accentHex: config.theme.accentHex,

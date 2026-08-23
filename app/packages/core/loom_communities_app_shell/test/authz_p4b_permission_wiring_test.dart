@@ -116,15 +116,15 @@ LoomExperienceDefinition _experience(
     tagline: 'Permission test fixture',
     accentColor: 0xff246b62,
     workflows: const [],
-    personas: const [
-      LoomPersonaDefinition(
+    actorIdentities: const [
+      LoomActorIdentity(
         fanId: 'member',
         roleId: 'member',
         label: 'Member',
         roleLabel: 'Member',
         description: 'Member',
       ),
-      LoomPersonaDefinition(
+      LoomActorIdentity(
         fanId: 'outsider',
         roleId: 'outsider',
         label: 'Outsider',
@@ -409,7 +409,7 @@ void main() {
               from: const ['open'],
               to: 'published',
               guard: const WorkflowGuard(
-                allowedRoleIds: ['transition-persona'],
+                allowedRoleIds: ['transition-actorIdentity'],
                 actorEqualsField: ActorEqualsFieldGuard(key: 'ownerFanId'),
               ),
             ),
@@ -418,13 +418,15 @@ void main() {
         'edit-workflow': _machine(
           workflowType: 'edit-workflow',
           tabId: 'admin',
-          editGuard: const WorkflowGuard(allowedRoleIds: ['edit-persona']),
+          editGuard: const WorkflowGuard(
+            allowedRoleIds: ['edit-actorIdentity'],
+          ),
         ),
         'creation-workflow': _machine(
           workflowType: 'creation-workflow',
           tabId: 'admin',
           creationGuard: const WorkflowGuard(
-            allowedRoleIds: ['creation-persona'],
+            allowedRoleIds: ['creation-actorIdentity'],
           ),
         ),
         'create-action-workflow': _machine(
@@ -433,26 +435,34 @@ void main() {
           actions: const [
             WorkflowAction(
               kind: 'create',
-              byRoleIds: ['create-action-persona'],
+              byRoleIds: ['create-action-actorIdentity'],
             ),
           ],
         ),
       });
 
       expect(
-        roleHasPermission(experience, 'transition-persona', tabId: 'admin'),
+        roleHasPermission(
+          experience,
+          'transition-actorIdentity',
+          tabId: 'admin',
+        ),
         isTrue,
       );
       expect(
-        roleHasPermission(experience, 'edit-persona', tabId: 'admin'),
+        roleHasPermission(experience, 'edit-actorIdentity', tabId: 'admin'),
         isFalse,
       );
       expect(
-        roleHasPermission(experience, 'creation-persona', tabId: 'admin'),
+        roleHasPermission(experience, 'creation-actorIdentity', tabId: 'admin'),
         isFalse,
       );
       expect(
-        roleHasPermission(experience, 'create-action-persona', tabId: 'admin'),
+        roleHasPermission(
+          experience,
+          'create-action-actorIdentity',
+          tabId: 'admin',
+        ),
         isTrue,
       );
       expect(

@@ -11,7 +11,7 @@ class EngineNativeMarketplaceSurface extends StatefulWidget {
   const EngineNativeMarketplaceSurface({
     super.key,
     required this.experience,
-    required this.persona,
+    required this.actorIdentity,
     this.tabId = 'marketplace',
     required this.accent,
     this.modernTheme,
@@ -19,7 +19,7 @@ class EngineNativeMarketplaceSurface extends StatefulWidget {
   });
 
   final LoomExperienceDefinition experience;
-  final LoomPersonaDefinition persona;
+  final LoomActorIdentity actorIdentity;
   final String tabId;
   final Color accent;
   final LoomCardTheme? modernTheme;
@@ -49,8 +49,8 @@ class _EngineNativeMarketplaceSurfaceState
     super.didUpdateWidget(oldWidget);
     if (oldWidget.experience.extensionId != widget.experience.extensionId ||
         oldWidget.engine != widget.engine ||
-        oldWidget.persona.roleId != widget.persona.roleId ||
-        oldWidget.persona.accountId != widget.persona.accountId ||
+        oldWidget.actorIdentity.roleId != widget.actorIdentity.roleId ||
+        oldWidget.actorIdentity.accountId != widget.actorIdentity.accountId ||
         oldWidget.tabId != widget.tabId) {
       _selectedCategory = null;
       _searchQuery = '';
@@ -79,7 +79,7 @@ class _EngineNativeMarketplaceSurfaceState
       machine,
       instance,
       viewerFanId: viewerFanId,
-      viewerRoleId: widget.persona.roleId,
+      viewerRoleId: widget.actorIdentity.roleId,
     );
   }
 
@@ -113,7 +113,7 @@ class _EngineNativeMarketplaceSurfaceState
         final engine = snapshot.data!;
         final fanId = ActiveIdentityScope.of(
           context,
-        ).resolveEngineFanId(widget.persona.fanId);
+        ).resolveEngineFanId(widget.actorIdentity.fanId);
         return EngineNativeBindingDispatcher(
           engine: engine,
           definitions: definitions,
@@ -125,7 +125,7 @@ class _EngineNativeMarketplaceSurfaceState
                 bindings: bindings,
                 engine: engine,
                 fanId: fanId,
-                roleId: widget.persona.roleId,
+                roleId: widget.actorIdentity.roleId,
                 communityExtensionId: widget.experience.extensionId,
                 accent: widget.accent,
                 modernTheme: widget.modernTheme,
@@ -381,7 +381,7 @@ class _EngineNativeMarketplaceContent extends StatelessWidget {
 /// domain action grouping: the declared borrow action is contextual, queue
 /// membership is a single toggle, and giveaways expose claim. Every button
 /// still comes from [availableTransitionsAsync], so cross-workflow and
-/// persona guards are authoritative.
+/// role guards are authoritative.
 class EquipmentLoanArchetypeCard extends StatefulWidget {
   const EquipmentLoanArchetypeCard({
     super.key,
@@ -728,7 +728,7 @@ class _EquipmentLoanArchetypeCardState
 /// Bespoke rendering for the document-library card family.
 ///
 /// Like existing marketplace archetypes, this card renders the transitions
-/// authorized by the workflow engine for the current instance and persona.
+/// authorized by the workflow engine for the current instance and actor identity.
 class DocumentLibraryArchetypeCard extends StatefulWidget {
   const DocumentLibraryArchetypeCard({
     super.key,

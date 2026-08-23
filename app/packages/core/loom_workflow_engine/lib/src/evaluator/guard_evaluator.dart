@@ -1,11 +1,11 @@
 import '../models/workflow_models.dart';
 import 'formula_evaluator.dart';
 
-/// Evaluates a [WorkflowGuard] against the given persona and instance data.
+/// Evaluates a [WorkflowGuard] against the given fan and instance data.
 /// All conditions must pass (AND semantics). Empty/null guards always pass.
 ///
 /// [fanId] is the individual account id (e.g. `"tabletop-member-05"`).
-/// [roleId], when provided, is the declared persona type
+/// [roleId], when provided, is the declared role
 /// (e.g. `"tabletop-member"`) and is used **only** to evaluate
 /// [allowedRoleIds] guards. A role-gated check fails closed when it is
 /// omitted; an individual fan id is never treated as a role id.
@@ -40,8 +40,8 @@ bool evaluateGuard(
     }
   }
 
-  // actorEqualsField — this guard names one specific persona, so it must use
-  // the individual account id rather than the persona type/role id.
+  // actorEqualsField — this guard names one specific fan, so it must use
+  // the individual account id rather than the role ID.
   if (guard.actorEqualsField != null) {
     if (fanId != instanceData[guard.actorEqualsField!.key]) return false;
   }

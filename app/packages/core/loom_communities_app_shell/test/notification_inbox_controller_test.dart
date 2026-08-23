@@ -2,8 +2,8 @@ import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:test/test.dart';
 
-const _personaA = 'persona-a';
-const _personaB = 'persona-b';
+const _fanA = 'fan-a';
+const _fanB = 'fan-b';
 
 LoomWorkflowStateMachine _notificationMachine() =>
     LoomWorkflowStateMachine.fromJson({
@@ -77,7 +77,7 @@ Future<WorkflowInstance> _find(
   String instanceId,
 ) async => (await engine.queryInstances(
   tabId: 'notification-inbox',
-  fanId: _personaA,
+  fanId: _fanA,
   limit: 1000,
 )).items.singleWhere((item) => item.instanceId == instanceId);
 
@@ -88,26 +88,26 @@ void main() {
       final engine = _engine();
       final controllerA = NotificationInboxController(
         engine: engine,
-        fanId: _personaA,
+        fanId: _fanA,
       );
       final controllerB = NotificationInboxController(
         engine: engine,
-        fanId: _personaB,
+        fanId: _fanB,
       );
 
       final aUnreadId = await _createNotification(
         engine,
-        recipientFanId: _personaA,
+        recipientFanId: _fanA,
         title: 'A unread',
       );
       final aReadId = await _createNotification(
         engine,
-        recipientFanId: _personaA,
+        recipientFanId: _fanA,
         title: 'A read',
       );
       final bUnreadId = await _createNotification(
         engine,
-        recipientFanId: _personaB,
+        recipientFanId: _fanB,
         title: 'B unread',
       );
 
@@ -118,7 +118,7 @@ void main() {
       final source = controllerA.live(tabId: 'notification-inbox-test');
       expect(source.engine, same(engine));
       expect(source.workflowType, NotificationInboxController.workflowType);
-      expect(source.fanId, _personaA);
+      expect(source.fanId, _fanA);
       expect(source.tabId, 'notification-inbox-test');
 
       final rawPage = await source.engine.queryInstances(

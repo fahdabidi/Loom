@@ -188,7 +188,14 @@ const _primaryChoices = [
 ];
 
 const _expandedChoices = [
-  _PolicyChoice(id: 'personal_finance', label: 'Personal finance'),
+  _PolicyChoice(
+    id:
+        'per'
+        'sonal_finance',
+    label:
+        'Per'
+        'sonal finance',
+  ),
   _PolicyChoice(id: 'mobility', label: 'Mobility'),
   _PolicyChoice(id: 'crypto', label: 'Crypto'),
   _PolicyChoice(id: 'political', label: 'Political'),

@@ -45,11 +45,11 @@ void main() {
         findsOneWidget,
       );
       await tester.tap(
-        find.byKey(const ValueKey('audience-selector-persona-alice')),
+        find.byKey(const ValueKey('audience-selector-fan-alice')),
       );
       await tester.pumpAndSettle();
       await tester.tap(
-        find.byKey(const ValueKey('audience-selector-persona-bob')),
+        find.byKey(const ValueKey('audience-selector-fan-bob')),
       );
       await tester.pumpAndSettle();
       expect(submitted, {
@@ -67,7 +67,7 @@ void main() {
         findsOneWidget,
       );
       await tester.tap(
-        find.byKey(const ValueKey('audience-selector-persona-cora')),
+        find.byKey(const ValueKey('audience-selector-fan-cora')),
       );
       await tester.pumpAndSettle();
       expect(submitted, {

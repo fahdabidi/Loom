@@ -90,7 +90,7 @@ class EngineNativeCalendarSurface extends StatefulWidget {
   const EngineNativeCalendarSurface({
     super.key,
     required this.experience,
-    required this.persona,
+    required this.actorIdentity,
     this.tabId = 'calendar',
     required this.accent,
     required this.modernTheme,
@@ -101,7 +101,7 @@ class EngineNativeCalendarSurface extends StatefulWidget {
   });
 
   final LoomExperienceDefinition experience;
-  final LoomPersonaDefinition persona;
+  final LoomActorIdentity actorIdentity;
   final String tabId;
   final Color accent;
   final LoomCardTheme? modernTheme;
@@ -138,7 +138,7 @@ class _EngineNativeCalendarSurfaceState
     super.didUpdateWidget(oldWidget);
     if (oldWidget.experience.extensionId != widget.experience.extensionId ||
         oldWidget.engine != widget.engine ||
-        oldWidget.persona.roleId != widget.persona.roleId ||
+        oldWidget.actorIdentity.roleId != widget.actorIdentity.roleId ||
         oldWidget.tabId != widget.tabId) {
       final hadSelection = _presentation.selectedInstance != null;
       _presentation.reset();
@@ -191,7 +191,7 @@ class _EngineNativeCalendarSurfaceState
           );
         }
         final identity = ActiveIdentityScope.of(context);
-        final fanId = identity.resolveEngineFanId(widget.persona.fanId);
+        final fanId = identity.resolveEngineFanId(widget.actorIdentity.fanId);
         return EngineNativeBindingDispatcher(
           engine: snapshot.data!,
           definitions: definitions,
@@ -204,17 +204,17 @@ class _EngineNativeCalendarSurfaceState
               machine,
               instance,
               viewerFanId: viewerFanId,
-              viewerRoleId: widget.persona.roleId,
+              viewerRoleId: widget.actorIdentity.roleId,
             );
           },
           builder: (context, bindings, changed) => _EngineNativeCalendarContent(
             key: ValueKey(
-              'engine-native-calendar-content-${widget.experience.extensionId}-${widget.persona.roleId}',
+              'engine-native-calendar-content-${widget.experience.extensionId}-${widget.actorIdentity.roleId}',
             ),
             bindings: bindings,
             engine: snapshot.data!,
             communityExtensionId: widget.experience.extensionId,
-            roleId: widget.persona.roleId,
+            roleId: widget.actorIdentity.roleId,
             fanId: fanId,
             tabId: widget.tabId,
             accent: widget.accent,
@@ -278,7 +278,7 @@ bool _isCalendarDetailField(InstanceDataField field) {
       (contexts == null || contexts.isEmpty) &&
       (field.labelTemplate != null || field.displayIcon != null);
   if (!explicitDetail && !declarativeFact) return false;
-  // Lists are persistence structures, notably actor/persona collections.
+  // Lists are persistence structures, notably actor/fan collections.
   // Formula booleans are state guards rather than facts. Both remain
   // available to the engine, but are intentionally absent from Calendar UI.
   if (field.type.endsWith('[]') ||

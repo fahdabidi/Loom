@@ -519,19 +519,16 @@ void main() {
       expect(await _read(api, 'member-account'), isEmpty);
     });
 
-    test(
-      'role party denies a viewer absent from the persona type map',
-      () async {
-        final api = await _partiesApi(
-          parties: [
-            {'role': 'finance-admin'},
-            {'role': 'auditor'},
-          ],
-        );
+    test('role party denies a viewer absent from the role map', () async {
+      final api = await _partiesApi(
+        parties: [
+          {'role': 'finance-admin'},
+          {'role': 'auditor'},
+        ],
+      );
 
-        expect(await _read(api, 'unregistered-account'), isEmpty);
-      },
-    );
+      expect(await _read(api, 'unregistered-account'), isEmpty);
+    });
 
     test('role party denies an empty viewer id', () async {
       final api = await _partiesApi(
@@ -764,42 +761,39 @@ void main() {
     },
   );
 
-  test(
-    'omitted and public visibility remain readable by every persona',
-    () async {
-      final api = _api(
-        activeMembershipLookup: (_) =>
-            fail('public rows must not look up membership'),
+  test('omitted and public visibility remain readable by every fan', () async {
+    final api = _api(
+      activeMembershipLookup: (_) =>
+          fail('public rows must not look up membership'),
+    );
+    api
+      ..registerDefinition(
+        LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+          'initialState': 'open',
+          'states': <String, dynamic>{
+            'open': <String, dynamic>{'label': 'Open'},
+          },
+          'transitions': const <Map<String, dynamic>>[],
+        }, 'omitted-public'),
+      )
+      ..registerDefinition(
+        _machine('explicit-public', defaultVisibility: 'public'),
       );
-      api
-        ..registerDefinition(
-          LoomWorkflowStateMachine.fromJson(<String, dynamic>{
-            'initialState': 'open',
-            'states': <String, dynamic>{
-              'open': <String, dynamic>{'label': 'Open'},
-            },
-            'transitions': const <Map<String, dynamic>>[],
-          }, 'omitted-public'),
-        )
-        ..registerDefinition(
-          _machine('explicit-public', defaultVisibility: 'public'),
-        );
-      await _create(
-        api,
-        workflowType: 'omitted-public',
-        creator: 'author',
-        title: 'omitted',
-      );
-      await _create(
-        api,
-        workflowType: 'explicit-public',
-        creator: 'author',
-        title: 'explicit',
-      );
+    await _create(
+      api,
+      workflowType: 'omitted-public',
+      creator: 'author',
+      title: 'omitted',
+    );
+    await _create(
+      api,
+      workflowType: 'explicit-public',
+      creator: 'author',
+      title: 'explicit',
+    );
 
-      expect(await _read(api, 'unrelated-person'), hasLength(2));
-    },
-  );
+    expect(await _read(api, 'unrelated-person'), hasLength(2));
+  });
 
   test('readGuard formulas evaluate against computed instance data', () async {
     final api = _api();

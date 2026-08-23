@@ -1,5 +1,5 @@
-class Persona {
-  const Persona({
+class FanProfile {
+  const FanProfile({
     required this.id,
     required this.passportId,
     required this.label,

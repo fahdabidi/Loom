@@ -31,7 +31,7 @@ const _fixturesByExtension = {
       'docs/references/communities/Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc',
 };
 
-const _personasByExtension = {
+const _actorIdentitiesByExtension = {
   'ext_camera_club': ['camera-club-organizer', 'camera-club-member'],
   'ext_book_club': ['book-organizer', 'book-member'],
   'ext_garden_club': ['garden-coordinator', 'garden-member'],
@@ -60,10 +60,10 @@ Set<String> _declaredTabIdsFromShell(Object? value) {
   }
   final ids = <String>{};
   final appTabs = _readStringValuesFromList(value['tabs']);
-  final personaTabs = value['roleTabs'];
+  final roleTabs = value['roleTabs'];
   ids.addAll(appTabs);
-  if (personaTabs is Map<String, Object?>) {
-    for (final tabList in personaTabs.values) {
+  if (roleTabs is Map<String, Object?>) {
+    for (final tabList in roleTabs.values) {
       ids.addAll(_readStringValuesFromList(tabList));
     }
   }
@@ -197,7 +197,7 @@ void main() {
     () async {
       for (final extensionId in _fixturesByExtension.keys) {
         final fixture = await _installFixture(extensionId);
-        final roleIds = _personasByExtension[extensionId]!;
+        final roleIds = _actorIdentitiesByExtension[extensionId]!;
         final allowedTabIds = {
           ..._engineNativeTabIds,
           ...fixture.declaredTabIds,

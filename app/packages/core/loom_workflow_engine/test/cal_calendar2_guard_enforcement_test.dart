@@ -46,72 +46,66 @@ void main() {
       expect(unguarded.creationGuard, isNull);
     });
 
-    test(
-      'refuses an update when editGuard rejects the acting persona',
-      () async {
-        final api = _api()
-          ..registerDefinition(
-            _machine(
-              'event',
-              _editableDefinition(
-                editGuard: {
-                  'allowedRoleIds': ['organizer'],
-                },
-              ),
+    test('refuses an update when editGuard rejects the acting fan', () async {
+      final api = _api()
+        ..registerDefinition(
+          _machine(
+            'event',
+            _editableDefinition(
+              editGuard: {
+                'allowedRoleIds': ['organizer'],
+              },
             ),
-          );
-        final instanceId = await api.createInstance(
-          workflowType: 'event',
-          initialInstanceData: {'title': 'Game night'},
-          fanId: 'organizer-01',
-        );
-
-        await expectLater(
-          api.updateInstanceFields(
-            workflowType: 'event',
-            instanceId: instanceId,
-            fieldUpdates: {'title': 'Updated game night'},
-            fanId: 'member-01',
           ),
-          throwsA(isA<WorkflowAuthorizationError>()),
         );
-      },
-    );
+      final instanceId = await api.createInstance(
+        workflowType: 'event',
+        initialInstanceData: {'title': 'Game night'},
+        fanId: 'organizer-01',
+      );
 
-    test(
-      'allows an update when editGuard accepts the acting persona',
-      () async {
-        final api = _api()
-          ..registerDefinition(
-            _machine(
-              'event',
-              _editableDefinition(
-                editGuard: {
-                  'allowedRoleIds': ['organizer'],
-                },
-              ),
-            ),
-          );
-        final instanceId = await api.createInstance(
-          workflowType: 'event',
-          initialInstanceData: {'title': 'Game night'},
-          fanId: 'organizer-01',
-        );
-
-        await api.updateInstanceFields(
+      await expectLater(
+        api.updateInstanceFields(
           workflowType: 'event',
           instanceId: instanceId,
           fieldUpdates: {'title': 'Updated game night'},
-          fanId: 'organizer-01',
-        );
+          fanId: 'member-01',
+        ),
+        throwsA(isA<WorkflowAuthorizationError>()),
+      );
+    });
 
-        final rows = await api.queryInstances(
-          tabId: 'calendar',
-          fanId: 'organizer-01',
+    test('allows an update when editGuard accepts the acting fan', () async {
+      final api = _api()
+        ..registerDefinition(
+          _machine(
+            'event',
+            _editableDefinition(
+              editGuard: {
+                'allowedRoleIds': ['organizer'],
+              },
+            ),
+          ),
         );
-        expect(rows.items.single.instanceData['title'], 'Updated game night');
-      },
-    );
+      final instanceId = await api.createInstance(
+        workflowType: 'event',
+        initialInstanceData: {'title': 'Game night'},
+        fanId: 'organizer-01',
+      );
+
+      await api.updateInstanceFields(
+        workflowType: 'event',
+        instanceId: instanceId,
+        fieldUpdates: {'title': 'Updated game night'},
+        fanId: 'organizer-01',
+      );
+
+      final rows = await api.queryInstances(
+        tabId: 'calendar',
+        fanId: 'organizer-01',
+      );
+      expect(rows.items.single.instanceData['title'], 'Updated game night');
+    });
 
     test('creation remains open when creationGuard is absent', () async {
       final api = _api()
@@ -126,37 +120,34 @@ void main() {
       expect(instanceId, isNotEmpty);
     });
 
-    test(
-      'creationGuard accepts an allowed persona and rejects another',
-      () async {
-        final api = _api()
-          ..registerDefinition(
-            _machine(
-              'event',
-              _editableDefinition(
-                creationGuard: {
-                  'allowedRoleIds': ['organizer'],
-                },
-              ),
+    test('creationGuard accepts an allowed fan and rejects another', () async {
+      final api = _api()
+        ..registerDefinition(
+          _machine(
+            'event',
+            _editableDefinition(
+              creationGuard: {
+                'allowedRoleIds': ['organizer'],
+              },
             ),
-          );
-
-        final instanceId = await api.createInstance(
-          workflowType: 'event',
-          initialInstanceData: {'title': 'Organizer event'},
-          fanId: 'organizer-01',
-        );
-        expect(instanceId, isNotEmpty);
-
-        await expectLater(
-          api.createInstance(
-            workflowType: 'event',
-            initialInstanceData: {'title': 'Member event'},
-            fanId: 'member-01',
           ),
-          throwsA(isA<StateError>()),
         );
-      },
-    );
+
+      final instanceId = await api.createInstance(
+        workflowType: 'event',
+        initialInstanceData: {'title': 'Organizer event'},
+        fanId: 'organizer-01',
+      );
+      expect(instanceId, isNotEmpty);
+
+      await expectLater(
+        api.createInstance(
+          workflowType: 'event',
+          initialInstanceData: {'title': 'Member event'},
+          fanId: 'member-01',
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
   });
 }

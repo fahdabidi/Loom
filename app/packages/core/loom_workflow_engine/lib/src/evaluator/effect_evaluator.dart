@@ -34,7 +34,7 @@ Map<String, dynamic> applyEffects(
   return result;
 }
 
-/// Resolves `$actor` to the acting persona ID, `{id}` to the instance ID,
+/// Resolves `$actor` to the acting fan ID, `{id}` to the instance ID,
 /// passes other values through.
 dynamic resolveEffectValue(
   dynamic value,

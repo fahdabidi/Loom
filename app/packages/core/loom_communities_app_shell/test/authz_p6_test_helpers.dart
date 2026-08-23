@@ -13,10 +13,12 @@ class TestActiveAuthApi implements LoomAuthApi {
     required String communityExtensionId,
     required LoomAccount activeAccount,
     required List<LoomAccount> accounts,
-    List<LoomPersonaDefinition> personas = const [],
+    List<LoomActorIdentity> actorIdentities = const [],
     LoomExperienceDefinition? experience,
   }) : _delegate = LocalAuthApi(
-         personaResolver: personas.isEmpty ? null : (_) => personas,
+         actorIdentityResolver: actorIdentities.isEmpty
+             ? null
+             : (_) => actorIdentities,
          experienceResolver: experience == null ? null : (_) => experience,
        ),
        _session = LoomSession(account: activeAccount) {
@@ -142,20 +144,21 @@ TestActiveAuthApi activeAuthForCommunity({
   String? accountId,
   List<LoomAccount>? accounts,
 }) {
-  final personas = experience.personas ?? const <LoomPersonaDefinition>[];
-  final usesTabletopAccounts = personas.any(
-    (persona) => persona.roleId == 'tabletop-member',
+  final actorIdentities =
+      experience.actorIdentities ?? const <LoomActorIdentity>[];
+  final usesTabletopAccounts = actorIdentities.any(
+    (actorIdentity) => actorIdentity.roleId == 'tabletop-member',
   );
   final resolvedAccounts =
       accounts ??
       (usesTabletopAccounts
           ? _tabletopAccounts
           : [
-              for (final persona in personas)
+              for (final actorIdentity in actorIdentities)
                 LoomAccount(
-                  accountId: persona.roleId,
-                  displayName: 'Test ${persona.label}',
-                  roleId: persona.roleId,
+                  accountId: actorIdentity.roleId,
+                  displayName: 'Test ${actorIdentity.label}',
+                  roleId: actorIdentity.roleId,
                 ),
             ]);
   final activeAccount = resolvedAccounts.firstWhere(
@@ -168,7 +171,7 @@ TestActiveAuthApi activeAuthForCommunity({
     communityExtensionId: community.extensionId,
     activeAccount: activeAccount,
     accounts: resolvedAccounts,
-    personas: personas,
+    actorIdentities: actorIdentities,
     experience: experience,
   );
 }
@@ -194,7 +197,7 @@ TestActiveAuthApi activeAuthForInstalledCommunity({
   );
 }
 
-Future<void> selectTestTabletopPersona(
+Future<void> selectTestTabletopActorIdentity(
   WidgetTester tester,
   String roleId,
 ) async {
@@ -203,7 +206,7 @@ Future<void> selectTestTabletopPersona(
     'tabletop-member' => 'Jordan W.',
     _ => throw ArgumentError('No test account for $roleId'),
   };
-  final picker = find.byKey(const ValueKey('persona-picker-button'));
+  final picker = find.byKey(const ValueKey('actor-identity-picker-button'));
   for (var attempt = 0; attempt < 40; attempt++) {
     if (picker.evaluate().isNotEmpty) break;
     await tester.runAsync(
@@ -214,7 +217,7 @@ Future<void> selectTestTabletopPersona(
   await tester.tap(picker);
   await tester.pump();
   final specificPerson = find.byKey(
-    const ValueKey('persona-sign-in-specific-person'),
+    const ValueKey('actor-identity-sign-in-specific-person'),
   );
   for (var attempt = 0; attempt < 40; attempt++) {
     if (specificPerson.evaluate().isNotEmpty) break;

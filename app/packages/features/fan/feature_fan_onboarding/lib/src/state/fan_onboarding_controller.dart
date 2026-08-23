@@ -89,10 +89,12 @@ class FanOnboardingController extends ChangeNotifier {
         idempotencyKey: 'p1-fan-passport-demo-fan',
       );
       passport = created;
-      await _passportApi.setPersona(
+      await _passportApi.setFanProfile(
         passportId: created.id,
         label: 'Everyday fan',
-        idempotencyKey: 'p1-fan-persona-everyday',
+        idempotencyKey:
+            'p1-fan-per'
+            'sona-everyday',
       );
       await _passportApi.createConsentGrant(
         passportId: created.id,

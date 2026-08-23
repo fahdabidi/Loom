@@ -453,7 +453,7 @@ LoomWorkflowCardSurfaceRegistryEntry _registryEntry({
     alternateActions: alternateActions,
     rendererTarget: '',
     fakeBackendSupport:
-        'LocalInAppBackend imports the initialization package, stores workflow state, records persona-specific receipts, and exposes the state used by this surface in the Demo App.',
+        'LocalInAppBackend imports the initialization package, stores workflow state, records role-specific receipts, and exposes the state used by this surface in the Demo App.',
   );
 }
 
@@ -621,11 +621,11 @@ List<String> productionUxGenericCopyViolations() {
     'local route',
     'workflow route',
   ];
-  LoomPersonaWorkflowView viewFor(
-    LoomPersonaWorkflowState state, {
+  LoomRoleWorkflowView viewFor(
+    LoomRoleWorkflowState state, {
     bool waiting = false,
   }) {
-    return LoomPersonaWorkflowView(
+    return LoomRoleWorkflowView(
       state: state,
       completed: false,
       received: false,
@@ -633,7 +633,7 @@ List<String> productionUxGenericCopyViolations() {
       entryText: '',
       actionText: '',
       resultText: '',
-      personaRationale: '',
+      roleRationale: '',
       waitingText: '',
     );
   }
@@ -651,27 +651,27 @@ List<String> productionUxGenericCopyViolations() {
           _domainSummaryFor(
             _workflowCategoryFor(workflow),
             workflow,
-            viewFor(LoomPersonaWorkflowState.actor),
+            viewFor(LoomRoleWorkflowState.actor),
           ),
           _domainSummaryFor(
             _workflowCategoryFor(workflow),
             workflow,
-            viewFor(LoomPersonaWorkflowState.receiver),
+            viewFor(LoomRoleWorkflowState.receiver),
           ),
           _domainSummaryFor(
             _workflowCategoryFor(workflow),
             workflow,
-            viewFor(LoomPersonaWorkflowState.readOnly),
+            viewFor(LoomRoleWorkflowState.readOnly),
           ),
           _domainSummaryFor(
             _workflowCategoryFor(workflow),
             workflow,
-            viewFor(LoomPersonaWorkflowState.disabled),
+            viewFor(LoomRoleWorkflowState.disabled),
           ),
           _domainSummaryFor(
             _workflowCategoryFor(workflow),
             workflow,
-            viewFor(LoomPersonaWorkflowState.actor, waiting: true),
+            viewFor(LoomRoleWorkflowState.actor, waiting: true),
           ),
           ..._domainMetadataFor(_workflowCategoryFor(workflow), workflow),
           _reviewDetailFor(_workflowCategoryFor(workflow)),
@@ -733,27 +733,27 @@ List<String> productionUxGenericCopyViolations() {
         ],
       ],
     _rationaleForState(
-      LoomPersonaWorkflowState.actor,
-      const LoomWorkflowPersonaPolicy(actorRoleIds: ['actor']),
+      LoomRoleWorkflowState.actor,
+      const LoomWorkflowRolePolicy(actorRoleIds: ['actor']),
     ),
     _rationaleForState(
-      LoomPersonaWorkflowState.receiver,
-      const LoomWorkflowPersonaPolicy(actorRoleIds: ['actor']),
+      LoomRoleWorkflowState.receiver,
+      const LoomWorkflowRolePolicy(actorRoleIds: ['actor']),
     ),
     _rationaleForState(
-      LoomPersonaWorkflowState.readOnly,
-      const LoomWorkflowPersonaPolicy(actorRoleIds: ['actor']),
+      LoomRoleWorkflowState.readOnly,
+      const LoomWorkflowRolePolicy(actorRoleIds: ['actor']),
     ),
     _entryTextForState(
-      state: LoomPersonaWorkflowState.readOnly,
+      state: LoomRoleWorkflowState.readOnly,
       workflow: experienceForExtensionId('unknown').workflows.first,
-      policy: const LoomWorkflowPersonaPolicy(actorRoleIds: ['actor']),
+      policy: const LoomWorkflowRolePolicy(actorRoleIds: ['actor']),
       waiting: false,
     ),
     _entryTextForState(
-      state: LoomPersonaWorkflowState.actor,
+      state: LoomRoleWorkflowState.actor,
       workflow: experienceForExtensionId('unknown').workflows.first,
-      policy: const LoomWorkflowPersonaPolicy(actorRoleIds: ['actor']),
+      policy: const LoomWorkflowRolePolicy(actorRoleIds: ['actor']),
       waiting: true,
     ),
   ];

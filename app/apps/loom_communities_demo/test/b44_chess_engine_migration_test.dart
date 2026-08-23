@@ -14,7 +14,7 @@ void main() {
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await installShippedEvidenceTarget(tester, target);
       await openEvidenceTarget(tester, target);
-      await _selectPersona(tester, 'chess-member');
+      await _selectActorIdentity(tester, 'chess-member');
 
       expect(
         find.byKey(const ValueKey('community-tab-calendar')),
@@ -128,7 +128,7 @@ void main() {
       );
       expect(find.text('Preparing against the Sicilian'), findsWidgets);
 
-      await _selectPersona(tester, 'chess-organizer');
+      await _selectActorIdentity(tester, 'chess-organizer');
       await _selectTab(tester, 'admin');
       await _waitForFinder(
         tester,
@@ -208,8 +208,8 @@ Future<void> _tapEngineAction(
   await _pumpForUi(tester);
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectActorIdentity(tester, fanId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

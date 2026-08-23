@@ -29,9 +29,9 @@ class LoomCommunityInvite {
 
 /// An account represents either a seeded demo individual or a newly
 /// signed-up user.  [accountId] is the stable per-individual id (e.g.
-/// `"tabletop-member-05"`); [roleId] is the *declared persona type*
+/// `"tabletop-member-05"`); [roleId] is the *declared role*
 /// this account plays (e.g. `"tabletop-member"` — the same string that
-/// appears in `LoomPersonaDefinition.roleId`).
+/// appears in `LoomActorIdentity.roleId`).
 class LoomAccount {
   final String accountId;
   final String displayName;
@@ -96,14 +96,14 @@ enum LoomAuthErrorCode {
   accountPendingApproval,
   accountNotActive,
   accountNotPendingApproval,
-  personaRequiresInvite,
-  personaNotFound,
-  personaDoesNotAcceptInvites,
+  roleRequiresInvite,
+  roleNotFound,
+  roleDoesNotAcceptInvites,
   invalidDisplayName,
   inviteNotFound,
   inviteAlreadyClaimed,
   inviteRevoked,
-  invitePersonaInvalid,
+  inviteRoleInvalid,
   membershipManagementUnauthorized,
 }
 
@@ -130,9 +130,9 @@ abstract class LoomAuthApi {
   /// Signs in as an existing account, returning the new session.
   Future<LoomSession> signIn({required String accountId});
 
-  /// Signs up a new individual account for the given persona type.
+  /// Signs up a new individual account for the given role.
   ///
-  /// Open personas return [LoomActiveSignUpResult], approval-gated personas
+  /// Open actorIdentities return [LoomActiveSignUpResult], approval-gated actorIdentities
   /// return [LoomPendingApprovalSignUpResult], and rejected attempts throw a
   /// [LoomAuthException].
   Future<LoomSignUpResult> signUp({
@@ -142,7 +142,7 @@ abstract class LoomAuthApi {
   });
 
   /// Redeems a pending invite and starts an active session for the new
-  /// account. The invite determines both the community and persona type.
+  /// account. The invite determines both the community and role.
   Future<LoomSession> redeemInvite({
     required String code,
     required String displayName,

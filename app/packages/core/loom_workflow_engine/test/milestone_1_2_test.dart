@@ -304,7 +304,7 @@ void main() {
 
           final results = await Future.wait(futures);
 
-          // Exactly one succeeds — the guard sees the persona already in queue
+          // Exactly one succeeds — the guard sees the fan already in queue
           // after the first caller's effects commit.
           final successCount = results.where((r) => r == true).length;
           expect(
@@ -313,7 +313,7 @@ void main() {
             reason: 'exactly one concurrent join-queue must succeed',
           );
 
-          // Read back — exactly one entry (the persona once).
+          // Read back — exactly one entry (the fan once).
           final page = await api.queryInstances(
             tabId: 'marketplace',
             fanId: 'member-owner',

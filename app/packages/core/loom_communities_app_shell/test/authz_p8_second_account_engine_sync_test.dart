@@ -112,13 +112,13 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
 }
 
 Future<void> _openSpecificPersonSignIn(WidgetTester tester) async {
-  await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+  await tester.tap(find.byKey(const ValueKey('actor-identity-picker-button')));
   await _pumpUntil(
     tester,
-    find.byKey(const ValueKey('persona-sign-in-specific-person')),
+    find.byKey(const ValueKey('actor-identity-sign-in-specific-person')),
   );
   final specificPerson = find.byKey(
-    const ValueKey('persona-sign-in-specific-person'),
+    const ValueKey('actor-identity-sign-in-specific-person'),
   );
   await tester.ensureVisible(specificPerson);
   await tester.tap(specificPerson);
@@ -136,7 +136,10 @@ Future<void> _signInFromEntryGate(
   await _pumpUntil(tester, accountRow);
   await tester.ensureVisible(accountRow.first);
   await tester.tap(accountRow.first);
-  await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('actor-identity-picker-button')),
+  );
 }
 
 Future<void> _selectAccountFromSpecificPersonDialog(
@@ -144,9 +147,9 @@ Future<void> _selectAccountFromSpecificPersonDialog(
   String displayName,
 ) async {
   // The "Sign in as a specific person…" route pushes the same LoomAuthScreen
-  // used by the entry gate (not the persona-picker popup itself), so this
+  // used by the entry gate (not the actor-identity-picker popup itself), so this
   // matches _signInFromEntryGate's plain ListTile lookup rather than
-  // constraining to a "persona-picker-dialog" ancestor that doesn't exist
+  // constraining to a "actor-identity-picker-dialog" ancestor that doesn't exist
   // on this route.
   final row = find.ancestor(
     of: find.text(displayName),
@@ -157,17 +160,18 @@ Future<void> _selectAccountFromSpecificPersonDialog(
   await tester.pumpAndSettle();
   await tester.tap(row.first, warnIfMissed: false);
   await tester.pumpAndSettle();
-  await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('actor-identity-picker-button')),
+  );
 }
 
-Future<void> _setSignupPersona(WidgetTester tester, String fanId) async {
-  final personaDropdown = find.byKey(
-    const ValueKey('open-signup-persona-dropdown'),
-  );
-  await tester.ensureVisible(personaDropdown);
-  await tester.tap(personaDropdown);
+Future<void> _setSignupRole(WidgetTester tester, String fanId) async {
+  final roleDropdown = find.byKey(const ValueKey('open-signup-role-dropdown'));
+  await tester.ensureVisible(roleDropdown);
+  await tester.tap(roleDropdown);
   await tester.pumpAndSettle();
-  final target = find.byKey(ValueKey('open-signup-persona-$fanId'));
+  final target = find.byKey(ValueKey('open-signup-role-$fanId'));
   await _pumpUntil(tester, target);
   // DropdownMenuItem entries render inside a modal route overlay; the
   // strict hit-test check can flag a false negative here even though the
@@ -181,14 +185,17 @@ Future<String> _createBoardAccountFromPushedAuth(
   WidgetTester tester,
   LocalAuthApi authApi,
 ) async {
-  await _setSignupPersona(tester, _boardRoleId);
+  await _setSignupRole(tester, _boardRoleId);
   final displayNameField = find.byKey(
     const ValueKey('open-signup-display-name'),
   );
   await tester.ensureVisible(displayNameField);
   await tester.enterText(displayNameField, _freshBoardAccountDisplayName);
   await tester.tap(find.byKey(const ValueKey('open-signup-submit')));
-  await _pumpUntil(tester, find.byKey(const ValueKey('persona-picker-button')));
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('actor-identity-picker-button')),
+  );
   final accountId = authApi.currentSession?.account.accountId;
   expect(accountId, isNotNull);
   return accountId!;
@@ -226,7 +233,7 @@ void _assertAdminQuerySuccess(WidgetTester tester, String accountId) {
 
 void main() {
   testWidgets(
-    'sign-in as specific person refreshes persona-type sync before release '
+    'sign-in as specific person refreshes actorIdentity-type sync before release '
     'for created and pre-existing board accounts',
     (tester) async {
       final authApi = LocalAuthApi();

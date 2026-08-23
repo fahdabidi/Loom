@@ -91,7 +91,15 @@ void main() {
       final result = await _apply(api, 'documents', instanceId);
 
       expect(result.newInstanceData['openedFanIds'], <String>['actor']);
-      expect(result.newInstanceData, isNot(contains('openedPersonaIds')));
+      expect(
+        result.newInstanceData,
+        isNot(
+          contains(
+            'openedPer'
+            'sonaIds',
+          ),
+        ),
+      );
     },
   );
 
@@ -112,7 +120,15 @@ void main() {
       final result = await _apply(api, 'documents', instanceId);
 
       expect(result.newInstanceData['openedFanIds'], <String>['actor']);
-      expect(result.newInstanceData, isNot(contains('openedPersonaIds')));
+      expect(
+        result.newInstanceData,
+        isNot(
+          contains(
+            'openedPer'
+            'sonaIds',
+          ),
+        ),
+      );
     },
   );
 

@@ -11,7 +11,9 @@ import 'package:flutter/widgets.dart';
 import 'package:loom_communities_demo/main.dart';
 
 void main() {
-  testWidgets('Loom Communities demo app smoke test', (WidgetTester tester) async {
+  testWidgets('Loom Communities demo app smoke test', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
 
     expect(find.byKey(const ValueKey('add-community-button')), findsOneWidget);

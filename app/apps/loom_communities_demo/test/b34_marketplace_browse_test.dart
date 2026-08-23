@@ -47,7 +47,7 @@ void main() {
       expect(actions.single.id, 'buy');
       expect(actions.single.removesFromList, isTrue);
 
-      // Persona gating: non-member sees nothing
+      // Actor identity gating: non-member sees nothing
       expect(
         machine.availableActions(
           'available',
@@ -388,7 +388,7 @@ void main() {
       );
     });
 
-    // ── (e) detail anatomy (organizer, persona-agnostic content) ──
+    // ── (e) detail anatomy (organizer, role-agnostic content) ──
 
     testWidgets('wf_marketplace-detail-anatomy', (tester) async {
       final fixture = _writeFixture(includeListings: true);
@@ -399,7 +399,7 @@ void main() {
 
       await _openListingDetail(tester, 'listing-wingspan');
 
-      // (e) detail anatomy — content visible regardless of persona
+      // (e) detail anatomy — content visible regardless of actorIdentity
       final detail = find.byKey(
         const ValueKey('marketplace-detail-dialog-listing-wingspan'),
       );
@@ -425,7 +425,7 @@ void main() {
       );
     });
 
-    // ── (f) persona-gated actions: organizer sees only shared ─────
+    // ── (f) role-gated actions: organizer sees only shared ─────
 
     testWidgets('wf_marketplace-actions-organizer', (tester) async {
       final fixture = _writeFixture(includeListings: true);
@@ -433,7 +433,7 @@ void main() {
       await _installAndOpen(tester, fixture);
       await tester.pumpAndSettle(const Duration(seconds: 3));
 
-      // Default persona = organizer (listed first in fixture).
+      // Default actorIdentity = organizer (listed first in fixture).
       await _tapTab(tester, 'marketplace');
 
       // Organizer opens Wingspan (onLoan) — sees return but NOT borrow/join-queue
@@ -452,7 +452,7 @@ void main() {
       );
     });
 
-    // ── (f) persona-gated actions: member sees own transitions ─────
+    // ── (f) role-gated actions: member sees own transitions ─────
 
     testWidgets('wf_marketplace-actions-member', (tester) async {
       final fixture = _writeFixture(includeListings: true);
@@ -835,7 +835,7 @@ Future<void> _installAndOpen(
     find.byKey(ValueKey('community-card-${fixture.communityId}')),
   );
   await tester.pumpAndSettle();
-  await selectPersona(tester, fanId);
+  await selectActorIdentity(tester, fanId);
 }
 
 Future<void> _openListingDetail(WidgetTester tester, String listingId) async {

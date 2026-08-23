@@ -105,7 +105,7 @@ class StudioPreviewPanel extends StatelessWidget {
     required this.handle,
     required this.themeName,
     required this.bannerRef,
-    required this.aiPersona,
+    required this.aiGuideProfile,
     required this.adPosture,
     required this.modules,
     required this.primaryHex,
@@ -117,7 +117,7 @@ class StudioPreviewPanel extends StatelessWidget {
   final String handle;
   final String themeName;
   final String bannerRef;
-  final String aiPersona;
+  final String aiGuideProfile;
   final String adPosture;
   final List<StudioPreviewModule> modules;
   final String primaryHex;
@@ -191,7 +191,7 @@ class StudioPreviewPanel extends StatelessWidget {
           ),
           _PreviewFact(
             icon: Icons.auto_awesome_rounded,
-            title: aiPersona,
+            title: aiGuideProfile,
             subtitle: adPosture,
             color: primary,
           ),

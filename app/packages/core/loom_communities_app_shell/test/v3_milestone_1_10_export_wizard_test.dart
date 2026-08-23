@@ -15,8 +15,8 @@ const _chessFixtureRelative =
 const _cedarFixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc';
 
-const _chessPersona = 'chess-organizer';
-const _cedarPersona = 'hoa-board';
+const _chessFanId = 'chess-organizer';
+const _cedarFanId = 'hoa-board';
 const _adminTab = 'admin';
 
 class _InstalledFixture {
@@ -345,7 +345,7 @@ void main() {
         () => _queryInstance(
           engine: installed.engine,
           instanceId: instanceId,
-          fanId: _chessPersona,
+          fanId: _chessFanId,
           tabId: _adminTab,
         ),
       ))!;
@@ -353,7 +353,7 @@ void main() {
         initial.instanceData['exportScope'] as List,
       );
 
-      await tester.pumpWidget(_host(installed, _chessPersona));
+      await tester.pumpWidget(_host(installed, _chessFanId));
       await _openTab(tester, _adminTab);
       final action = find.byKey(
         ValueKey('export-wizard-$instanceId-action-change-export-scope'),
@@ -381,7 +381,7 @@ void main() {
         () => _queryInstance(
           engine: installed.engine,
           instanceId: instanceId,
-          fanId: _chessPersona,
+          fanId: _chessFanId,
           tabId: _adminTab,
         ),
       ))!;
@@ -401,7 +401,7 @@ void main() {
         () => _queryInstance(
           engine: installed.engine,
           instanceId: instanceId,
-          fanId: _chessPersona,
+          fanId: _chessFanId,
           tabId: _adminTab,
         ),
       ))!;
@@ -435,7 +435,7 @@ void main() {
         () => _queryInstance(
           engine: installed.engine,
           instanceId: chessInstanceId,
-          fanId: _chessPersona,
+          fanId: _chessFanId,
           tabId: _adminTab,
         ),
       ))!;
@@ -451,7 +451,7 @@ void main() {
         instance: instance,
       );
 
-      await tester.pumpWidget(_host(installed, _chessPersona));
+      await tester.pumpWidget(_host(installed, _chessFanId));
       await _openTab(tester, _adminTab);
       final badgeFinder = find.byKey(
         ValueKey('export-wizard-state-badge-$chessInstanceId-tile'),
@@ -486,7 +486,7 @@ void main() {
         () => _queryTransitions(
           engine: installed.engine,
           instance: instance,
-          fanId: _chessPersona,
+          fanId: _chessFanId,
         ),
       ))!;
       expect(actions, isNotEmpty);
@@ -540,7 +540,7 @@ void main() {
         () => _queryInstance(
           engine: installed.engine,
           instanceId: chessInstanceId,
-          fanId: _chessPersona,
+          fanId: _chessFanId,
           tabId: _adminTab,
         ),
       ))!;
@@ -581,7 +581,7 @@ void main() {
         () => _queryInstance(
           engine: installed.engine,
           instanceId: cedarInstanceId,
-          fanId: _cedarPersona,
+          fanId: _cedarFanId,
           tabId: _adminTab,
         ),
       ))!;
@@ -597,7 +597,7 @@ void main() {
         instance: instance,
       );
 
-      await tester.pumpWidget(_host(installed, _cedarPersona));
+      await tester.pumpWidget(_host(installed, _cedarFanId));
       await _openTab(tester, _adminTab);
       final badgeFinder = find.byKey(
         ValueKey('export-wizard-state-badge-$cedarInstanceId-tile'),
@@ -634,7 +634,7 @@ void main() {
         () => _queryTransitions(
           engine: installed.engine,
           instance: instance,
-          fanId: _cedarPersona,
+          fanId: _cedarFanId,
         ),
       ))!;
       final beginTransfer = readyActions.firstWhere(
@@ -653,7 +653,7 @@ void main() {
         () => _queryInstance(
           engine: installed.engine,
           instanceId: cedarInstanceId,
-          fanId: _cedarPersona,
+          fanId: _cedarFanId,
           tabId: _adminTab,
         ),
       ))!;
@@ -661,7 +661,7 @@ void main() {
         () => _queryTransitions(
           engine: installed.engine,
           instance: instance,
-          fanId: _cedarPersona,
+          fanId: _cedarFanId,
         ),
       ))!;
       final recordTransfer = transferringActions.firstWhere(
@@ -680,7 +680,7 @@ void main() {
         () => _queryInstance(
           engine: installed.engine,
           instanceId: cedarInstanceId,
-          fanId: _cedarPersona,
+          fanId: _cedarFanId,
           tabId: _adminTab,
         ),
       ))!;
@@ -688,7 +688,7 @@ void main() {
         () => _queryTransitions(
           engine: installed.engine,
           instance: instance,
-          fanId: _cedarPersona,
+          fanId: _cedarFanId,
         ),
       ))!;
       final rollback = transferredActions.firstWhere(

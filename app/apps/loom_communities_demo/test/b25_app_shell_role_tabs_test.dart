@@ -113,39 +113,42 @@ void main() {
     );
   });
 
-  test('persona tab resolver keeps shell defaults and filters admin tabs', () {
-    final experience = experienceForExtensionId('ext_mosque');
+  test(
+    'actorIdentity tab resolver keeps shell defaults and filters admin tabs',
+    () {
+      final experience = experienceForExtensionId('ext_mosque');
 
-    final adminTabs = appShellTabsFor(
-      experience: experience,
-      roleId: 'masjid-admin',
-      appShellConfiguration: _mosqueAppShellConfiguration,
-    );
-    final memberTabs = appShellTabsFor(
-      experience: experience,
-      roleId: 'community-member',
-      appShellConfiguration: _mosqueAppShellConfiguration,
-    );
+      final adminTabs = appShellTabsFor(
+        experience: experience,
+        roleId: 'masjid-admin',
+        appShellConfiguration: _mosqueAppShellConfiguration,
+      );
+      final memberTabs = appShellTabsFor(
+        experience: experience,
+        roleId: 'community-member',
+        appShellConfiguration: _mosqueAppShellConfiguration,
+      );
 
-    expect(adminTabs.map((tab) => tab.tabId), containsAll(['home', 'admin']));
-    expect(adminTabs.last.tabId, 'messages');
-    expect(memberTabs.map((tab) => tab.tabId), isNot(contains('admin')));
-    expect(
-      memberTabs.map((tab) => tab.tabId),
-      containsAll(['home', 'messages']),
-    );
+      expect(adminTabs.map((tab) => tab.tabId), containsAll(['home', 'admin']));
+      expect(adminTabs.last.tabId, 'messages');
+      expect(memberTabs.map((tab) => tab.tabId), isNot(contains('admin')));
+      expect(
+        memberTabs.map((tab) => tab.tabId),
+        containsAll(['home', 'messages']),
+      );
 
-    for (final tab in [...adminTabs, ...memberTabs]) {
-      expect(tab.hasExplicitPinningPolicy, isTrue, reason: tab.tabId);
-      if (tab.pinningPolicy.startsWith('none')) {
-        expect(tab.pinningPolicy, startsWith('none'), reason: tab.tabId);
-      } else {
-        expect(tab.pinningPolicy, startsWith('pin-'), reason: tab.tabId);
+      for (final tab in [...adminTabs, ...memberTabs]) {
+        expect(tab.hasExplicitPinningPolicy, isTrue, reason: tab.tabId);
+        if (tab.pinningPolicy.startsWith('none')) {
+          expect(tab.pinningPolicy, startsWith('none'), reason: tab.tabId);
+        } else {
+          expect(tab.pinningPolicy, startsWith('pin-'), reason: tab.tabId);
+        }
       }
-    }
-  });
+    },
+  );
 
-  test('package app shell configuration can define custom persona tabs', () {
+  test('package app shell configuration can define custom actorIdentity tabs', () {
     final experience = experienceForExtensionId('ext_camera_club');
     final tabs = appShellTabsFor(
       experience: experience,
@@ -177,7 +180,7 @@ void main() {
                 'Gear listings are sorted by availability instead of pinned.',
           },
         ],
-        'personaTabs': {
+        'roleTabs': {
           'camera-club-member': [
             {
               'tabId': 'messages',
@@ -204,7 +207,7 @@ void main() {
     expect(marketplace.pinningPolicy, 'none');
   });
 
-  testWidgets('wf_app-shell-persona-tabs-customization', (tester) async {
+  testWidgets('wf_app-shell-role-tabs-customization', (tester) async {
     final target = loomEvidenceTargets.firstWhere(
       (target) => target.extensionId == 'ext_mosque',
     );
@@ -213,7 +216,7 @@ void main() {
     await installShippedEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
 
-    await selectPersona(tester, 'masjid-admin');
+    await selectActorIdentity(tester, 'masjid-admin');
 
     expect(find.byKey(const ValueKey('community-bottom-tabs')), findsOneWidget);
     expect(find.byKey(const ValueKey('community-tab-home')), findsOneWidget);
@@ -232,7 +235,7 @@ void main() {
     );
     expect(find.text('Iftar logistics and food contributions'), findsWidgets);
 
-    await selectPersona(tester, 'community-member');
+    await selectActorIdentity(tester, 'community-member');
 
     expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
     expect(find.byKey(const ValueKey('community-tab-home')), findsOneWidget);
@@ -252,7 +255,7 @@ void main() {
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
     await installShippedEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
-    await selectPersona(tester, 'camera-club-member');
+    await selectActorIdentity(tester, 'camera-club-member');
 
     await _tapTab(tester, 'calendar');
     expect(

@@ -174,7 +174,7 @@ void main() {
         expect(find.text('Mint condition'), findsOneWidget);
         expect(find.text('Holder: Alice'), findsOneWidget);
         expect(
-          find.byKey(const ValueKey('workflow-fact-persona-holderFanId')),
+          find.byKey(const ValueKey('workflow-fact-fan-holderFanId')),
           findsOneWidget,
         );
         expect(find.byIcon(Icons.groups_outlined), findsNothing);

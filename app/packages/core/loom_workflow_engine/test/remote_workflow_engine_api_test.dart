@@ -42,7 +42,7 @@ void main() {
 
         final page = await api.queryInstances(
           tabId: 'ignored-tab',
-          fanId: 'ignored-persona',
+          fanId: 'ignored-fan',
           workflowType: 'event',
           query: const SurfaceQuery(
             sort: SortSpec(key: 'startsAt', direction: SortDirection.desc),
@@ -110,7 +110,7 @@ void main() {
           instanceId: 'instance / 1',
           currentState: 'stale-client-state',
           instanceData: const {'stale': true},
-          fanId: 'ignored-persona',
+          fanId: 'ignored-fan',
         );
 
         expect(sent.method, 'GET');
@@ -153,7 +153,7 @@ void main() {
         workflowType: 'event',
         instanceId: 'instance-1',
         transitionId: 'publish',
-        fanId: 'ignored-persona',
+        fanId: 'ignored-fan',
         inputs: const {'note': 'Ready'},
       );
 
@@ -273,7 +273,7 @@ void main() {
           workflowType: 'ignored-by-server',
           instanceId: 'instance-1',
           fieldUpdates: const {'title': 'Updated'},
-          fanId: 'ignored-persona',
+          fanId: 'ignored-fan',
         );
 
         expect(sent.method, 'PATCH');
@@ -310,7 +310,7 @@ void main() {
           op: 'sum',
           filter: const {'paid': true},
           groupBy: 'category',
-          fanId: 'ignored-persona',
+          fanId: 'ignored-fan',
         );
 
         expect(sent.method, 'POST');

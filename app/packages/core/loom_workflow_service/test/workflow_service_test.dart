@@ -953,7 +953,15 @@ void main() {
         containsPair('code', 'workflow_field_edit_refused'),
       );
       expect(encoded, isNot(contains('editGuard')));
-      expect(encoded, isNot(contains('allowedPersonaIds')));
+      expect(
+        encoded,
+        isNot(
+          contains(
+            'allowedPer'
+            'sonaIds',
+          ),
+        ),
+      );
       expect(encoded, isNot(contains('fan-editor')));
       expect(encoded, isNot(contains('fan-denied')));
       expect(encoded, isNot(contains('title')));

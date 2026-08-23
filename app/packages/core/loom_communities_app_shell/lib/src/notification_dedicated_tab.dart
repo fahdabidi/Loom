@@ -9,13 +9,13 @@ part of '../loom_communities_app_shell.dart';
 class _NotificationDedicatedTabSurface extends StatefulWidget {
   const _NotificationDedicatedTabSurface({
     required this.experience,
-    required this.persona,
+    required this.actorIdentity,
     required this.accent,
     this.modernTheme,
   });
 
   final LoomExperienceDefinition experience;
-  final LoomPersonaDefinition persona;
+  final LoomActorIdentity actorIdentity;
   final Color accent;
   final LoomCardTheme? modernTheme;
 
@@ -49,7 +49,7 @@ class _NotificationDedicatedTabSurfaceState
   void didUpdateWidget(_NotificationDedicatedTabSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.experience.extensionId == widget.experience.extensionId &&
-        oldWidget.persona.roleId == widget.persona.roleId) {
+        oldWidget.actorIdentity.roleId == widget.actorIdentity.roleId) {
       return;
     }
     _controller = null;
@@ -69,7 +69,7 @@ class _NotificationDedicatedTabSurfaceState
       if (!mounted || generation != _initializationGeneration) return;
       _controller = NotificationInboxController(
         engine: engine,
-        fanId: widget.persona.fanId,
+        fanId: widget.actorIdentity.fanId,
       );
       await _refresh();
     } catch (error) {

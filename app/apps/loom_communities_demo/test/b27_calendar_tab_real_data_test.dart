@@ -157,7 +157,7 @@ void main() {
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await installShippedEvidenceTarget(tester, target);
       await openEvidenceTarget(tester, target);
-      await selectPersona(tester, 'camera-club-member');
+      await selectActorIdentity(tester, 'camera-club-member');
       await tapCommunityTab(tester, 'calendar');
       await _waitForCalendar(tester, 'walk-golden-gate-sunrise');
 
@@ -199,7 +199,7 @@ Future<void> _installAndOpen(
     find.byKey(ValueKey('community-card-${fixture.communityId}')),
   );
   await tester.pumpAndSettle();
-  await selectPersona(tester, 'tabletop-member');
+  await selectActorIdentity(tester, 'tabletop-member');
 }
 
 Future<void> _waitForCalendar(

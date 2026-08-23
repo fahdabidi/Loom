@@ -15,15 +15,18 @@ void main() {
     await openEvidenceTarget(tester, target);
 
     expect(
-      find.byKey(const ValueKey('active-persona-mosque-admin')),
+      find.byKey(const ValueKey('active-actor-identity-mosque-admin')),
       findsOneWidget,
     );
-    expect(find.byKey(const ValueKey('persona-picker-button')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('actor-identity-picker-button')),
+      findsOneWidget,
+    );
 
-    await selectPersona(tester, 'mosque-member');
+    await selectActorIdentity(tester, 'mosque-member');
 
     expect(
-      find.byKey(const ValueKey('active-persona-mosque-member')),
+      find.byKey(const ValueKey('active-actor-identity-mosque-member')),
       findsOneWidget,
     );
     expect(

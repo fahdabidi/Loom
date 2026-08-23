@@ -214,55 +214,58 @@ void main() {
     },
   );
 
-  testWidgets('real dynamic receiver audience receives only invited persona', (
-    tester,
-  ) async {
-    final local = LocalWorkflowEngineApi(
-      db: WorkflowDatabase.memory(),
-      communityId: 'a7-audience',
-    );
-    final machine = _machine('invite', [
-      _binding(
-        'calendar',
-        role: 'receiver',
-        audienceMemberField: 'invitedFanIds',
-      ),
-    ]);
-    local.registerDefinition(machine);
-    await local.createInstance(
-      workflowType: 'invite',
-      fanId: 'owner',
-      initialInstanceData: {
-        'title': 'invite',
-        'audienceScope': 'selected',
-        'invitedFanIds': ['invited'],
-      },
-    );
-    Future<List<EngineNativeResolvedBinding>> load(String persona) async {
-      late List<EngineNativeResolvedBinding> output;
-      await tester.pumpWidget(
-        _host(
-          EngineNativeBindingDispatcher(
-            engine: local,
-            definitions: {'invite': machine},
-            tabId: 'calendar',
-            fanId: persona,
-            builder: (_, bindings, __) {
-              output = bindings;
-              return const SizedBox();
-            },
-          ),
-        ),
+  testWidgets(
+    'real dynamic receiver audience receives only invited actorIdentity',
+    (tester) async {
+      final local = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'a7-audience',
       );
-      await tester.pumpAndSettle();
-      return output;
-    }
+      final machine = _machine('invite', [
+        _binding(
+          'calendar',
+          role: 'receiver',
+          audienceMemberField: 'invitedFanIds',
+        ),
+      ]);
+      local.registerDefinition(machine);
+      await local.createInstance(
+        workflowType: 'invite',
+        fanId: 'owner',
+        initialInstanceData: {
+          'title': 'invite',
+          'audienceScope': 'selected',
+          'invitedFanIds': ['invited'],
+        },
+      );
+      Future<List<EngineNativeResolvedBinding>> load(
+        String actorIdentity,
+      ) async {
+        late List<EngineNativeResolvedBinding> output;
+        await tester.pumpWidget(
+          _host(
+            EngineNativeBindingDispatcher(
+              engine: local,
+              definitions: {'invite': machine},
+              tabId: 'calendar',
+              fanId: actorIdentity,
+              builder: (_, bindings, __) {
+                output = bindings;
+                return const SizedBox();
+              },
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        return output;
+      }
 
-    expect((await load('invited')).map((b) => b.instance.workflowType), [
-      'invite',
-    ]);
-    expect(await load('uninvited'), isEmpty);
-  });
+      expect((await load('invited')).map((b) => b.instance.workflowType), [
+        'invite',
+      ]);
+      expect(await load('uninvited'), isEmpty);
+    },
+  );
 
   testWidgets(
     'every arbitrary tab queries engine and publishes keyed empty builder when no bindings exist',
@@ -463,15 +466,15 @@ void main() {
       Widget widget(
         WorkflowEngineApi engine,
         String tab,
-        String persona,
+        String actorIdentity,
       ) => _host(
         EngineNativeBindingDispatcher(
           engine: engine,
           definitions: {'stale': machine},
           tabId: tab,
-          fanId: persona,
+          fanId: actorIdentity,
           builder: (_, bindings, __) => Text(
-            'published-$persona-${bindings.map((b) => b.instance.instanceId).join(",")}',
+            'published-$actorIdentity-${bindings.map((b) => b.instance.instanceId).join(",")}',
           ),
         ),
       );
@@ -613,7 +616,7 @@ void main() {
       );
       final customTab = tabs.singleWhere((tab) => tab.tabId == tabId);
       expect(customTab.rendererContractId, 'engine-native-generic-list');
-      final persona = const LoomPersonaDefinition(
+      final actorIdentity = const LoomActorIdentity(
         fanId: 'local-member',
         roleId: 'local-member',
         label: 'Member',
@@ -636,12 +639,12 @@ void main() {
             identity: ActiveIdentityContext(
               accountId: null,
               authApi: LocalAuthApi(),
-              roleId: persona.roleId,
+              roleId: actorIdentity.roleId,
             ),
             child: Scaffold(
               body: EngineNativeListSurface(
                 experience: experience,
-                persona: persona,
+                actorIdentity: actorIdentity,
                 tabId: customTab.tabId,
                 accent: Colors.teal,
                 modernTheme: null,
@@ -693,12 +696,12 @@ void main() {
       final engine = _DelegatingEngine(local);
       ValueChanged<WorkflowInstance>? callback;
       var publications = 0;
-      Widget build(String persona) => _host(
+      Widget build(String actorIdentity) => _host(
         EngineNativeBindingDispatcher(
           engine: engine,
           definitions: {'transition': machine},
           tabId: 'calendar',
-          fanId: persona,
+          fanId: actorIdentity,
           builder: (_, bindings, changed) {
             publications++;
             callback = changed;
@@ -721,7 +724,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(engine.queries, 2);
       expect(find.text('count-0'), findsOneWidget);
-      await tester.pumpWidget(build('new-persona'));
+      await tester.pumpWidget(build('new-actorIdentity'));
       await tester.pumpAndSettle();
       final before = engine.queries;
       oldCallback(updated);
@@ -887,7 +890,7 @@ void main() {
           ],
         },
       );
-      const persona = LoomPersonaDefinition(
+      const actorIdentity = LoomActorIdentity(
         fanId: 'local-member',
         roleId: 'local-member',
         label: 'Member',
@@ -901,12 +904,12 @@ void main() {
             identity: ActiveIdentityContext(
               accountId: null,
               authApi: LocalAuthApi(),
-              roleId: persona.roleId,
+              roleId: actorIdentity.roleId,
             ),
             child: Scaffold(
               body: EngineNativeListSurface(
                 experience: experience,
-                persona: persona,
+                actorIdentity: actorIdentity,
                 tabId: tabId,
                 accent: Colors.teal,
                 modernTheme: null,
@@ -1044,7 +1047,7 @@ void main() {
           },
         },
       );
-      const persona = LoomPersonaDefinition(
+      const actorIdentity = LoomActorIdentity(
         fanId: 'local-member',
         roleId: 'local-member',
         label: 'Member',
@@ -1058,12 +1061,12 @@ void main() {
             identity: ActiveIdentityContext(
               accountId: null,
               authApi: LocalAuthApi(),
-              roleId: persona.roleId,
+              roleId: actorIdentity.roleId,
             ),
             child: Scaffold(
               body: EngineNativeListSurface(
                 experience: experience,
-                persona: persona,
+                actorIdentity: actorIdentity,
                 tabId: tabId,
                 accent: Colors.teal,
                 modernTheme: null,

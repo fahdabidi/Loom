@@ -49,7 +49,7 @@ class LocalInstalledCommunity {
   final int? specVersion;
   final Map<String, Object?> appShellConfiguration;
 
-  /// Package-declared workflows/personas/persona-policies (from the
+  /// Package-declared workflows, actor identities, and role policies (from the
   /// `experience` block in `loom.initialization.json` or
   /// `loom.extension.json`). Empty when the package did not declare one, in
   /// which case the App Shell falls back to its hardcoded demo catalog.
@@ -275,7 +275,8 @@ class LocalInAppBackend {
     Map<String, Object?> experienceConfiguration = const {},
   }) {
     final existing = _communities[package.communityId];
-    final shouldHydratePreloadedShell = existing != null &&
+    final shouldHydratePreloadedShell =
+        existing != null &&
         existing.experienceConfiguration.isEmpty &&
         experienceConfiguration.isNotEmpty;
     if (existing != null && !shouldHydratePreloadedShell) {

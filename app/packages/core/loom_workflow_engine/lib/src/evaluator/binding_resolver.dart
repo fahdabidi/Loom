@@ -1,16 +1,16 @@
 import '../models/workflow_models.dart';
 
 /// Returns all [RenderBinding]s that match the given [currentState] and at
-/// least one of the provided [personaRoles].
+/// least one of the provided [roleIds].
 ///
-/// A persona may hold multiple roles on the same instance (§2a). This function
+/// An actor may hold multiple roles on the same instance (§2a). This function
 /// returns every matching binding — all of them — so the rendering layer can
 /// render each one independently. `role: "any"` always matches regardless of
-/// persona roles.
+/// actor roles.
 List<RenderBinding> resolveBindings(
   LoomWorkflowStateMachine machine,
   String currentState,
-  Iterable<String> personaRoles, {
+  Iterable<String> roleIds, {
   Map<String, dynamic> instanceData = const {},
   String? fanId,
 }) {
@@ -31,8 +31,8 @@ List<RenderBinding> resolveBindings(
       );
     }
 
-    // At least one of the persona's roles must match.
-    return personaRoles.any((r) => r == binding.role);
+    // At least one of the actor's roles must match.
+    return roleIds.any((r) => r == binding.role);
   }).toList();
 }
 

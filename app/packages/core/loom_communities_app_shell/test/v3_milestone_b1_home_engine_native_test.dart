@@ -102,8 +102,8 @@ Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
   throw TestFailure('Timed out waiting for $finder');
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectTestTabletopPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectTestTabletopActorIdentity(tester, fanId);
 }
 
 void main() {
@@ -150,7 +150,7 @@ void main() {
             ),
           ),
         );
-        await _selectPersona(tester, 'tabletop-organizer');
+        await _selectActorIdentity(tester, 'tabletop-organizer');
         await _pumpUntil(
           tester,
           find.byKey(const ValueKey('engine-native-list-root-home')),
@@ -188,7 +188,7 @@ void main() {
             ),
           ),
         );
-        await _selectPersona(tester, 'tabletop-organizer');
+        await _selectActorIdentity(tester, 'tabletop-organizer');
 
         // Home is the default tab -- no tap needed to select it.
         await _pumpUntil(
@@ -247,11 +247,11 @@ void main() {
         // Home either.
         expect(find.textContaining('Board Games'), findsNothing);
 
-        // Switch to the member persona and confirm role:"actor" gating is
+        // Switch to the member actorIdentity and confirm role:"actor" gating is
         // enforced by the real engine-native path too, not just role:"any"
         // items: both of tabletop-member's own game-purchase-proposal
         // instances (creator == viewer) must appear.
-        await _selectPersona(tester, 'tabletop-member');
+        await _selectActorIdentity(tester, 'tabletop-member');
         await _pumpUntil(
           tester,
           find.byKey(const ValueKey('engine-native-list-root-home')),
@@ -283,7 +283,7 @@ void main() {
             ),
           ),
         );
-        await _selectPersona(tester, 'tabletop-organizer');
+        await _selectActorIdentity(tester, 'tabletop-organizer');
         await _pumpUntil(
           tester,
           find.byKey(const ValueKey('engine-native-list-root-home')),
@@ -310,7 +310,7 @@ void main() {
           );
         });
 
-        await _selectPersona(tester, 'tabletop-member');
+        await _selectActorIdentity(tester, 'tabletop-member');
         await _pumpUntil(tester, find.text(title));
         expect(find.text(title), findsOneWidget);
         final published = (await tester.runAsync(() async {

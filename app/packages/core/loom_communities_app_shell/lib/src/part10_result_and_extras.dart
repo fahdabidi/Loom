@@ -179,17 +179,17 @@ class _WorkflowResultPanel extends StatelessWidget {
   }
 }
 
-class _PersonaStatusStrip extends StatelessWidget {
-  const _PersonaStatusStrip({
-    required this.persona,
-    required this.personaCount,
+class _ActorIdentityStatusStrip extends StatelessWidget {
+  const _ActorIdentityStatusStrip({
+    required this.actorIdentity,
+    required this.actorIdentityCount,
     required this.foreground,
     this.activeAccountDisplayName,
     this.modernTheme,
   });
 
-  final LoomPersonaDefinition persona;
-  final int personaCount;
+  final LoomActorIdentity actorIdentity;
+  final int actorIdentityCount;
   final Color foreground;
   final String? activeAccountDisplayName;
 
@@ -211,7 +211,7 @@ class _PersonaStatusStrip extends StatelessWidget {
         ? accent.withValues(alpha: 0.12)
         : foreground.withValues(alpha: 0.12);
     return DecoratedBox(
-      key: const ValueKey('active-persona-card'),
+      key: const ValueKey('active-actor-identity-card'),
       decoration: BoxDecoration(
         color: fill,
         borderRadius: BorderRadius.circular(10),
@@ -237,15 +237,17 @@ class _PersonaStatusStrip extends StatelessWidget {
                       ),
                     ),
                   Text(
-                    persona.label,
-                    key: ValueKey('active-persona-${persona.roleId}'),
+                    actorIdentity.label,
+                    key: ValueKey(
+                      'active-actor-identity-${actorIdentity.roleId}',
+                    ),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: foreground,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   Text(
-                    '${persona.roleLabel} - ${persona.description}',
+                    '${actorIdentity.roleLabel} - ${actorIdentity.description}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: foreground.withValues(alpha: 0.86),
                     ),
@@ -255,7 +257,7 @@ class _PersonaStatusStrip extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             DecoratedBox(
-              key: const ValueKey('active-persona-count'),
+              key: const ValueKey('active-actor-identity-count'),
               decoration: BoxDecoration(
                 color: countFill,
                 borderRadius: BorderRadius.circular(8),
@@ -266,7 +268,7 @@ class _PersonaStatusStrip extends StatelessWidget {
                   vertical: 8,
                 ),
                 child: Text(
-                  '$personaCount roles',
+                  '$actorIdentityCount roles',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: foreground,
                     fontWeight: FontWeight.w700,

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../tokens/colors.dart';
 import '../tokens/spacing.dart';
 
-class PersonaSelector extends StatelessWidget {
-  const PersonaSelector({
+class VisibilitySelector extends StatelessWidget {
+  const VisibilitySelector({
     required this.options,
     required this.selectedIndex,
     required this.onChanged,
@@ -22,7 +22,7 @@ class PersonaSelector extends StatelessWidget {
         for (var index = 0; index < options.length; index++)
           Padding(
             padding: const EdgeInsets.only(bottom: LoomSpacing.sm),
-            child: _PersonaOption(
+            child: _VisibilityOption(
               label: options[index],
               description: _descriptionFor(options[index]),
               icon: index == 0
@@ -37,8 +37,8 @@ class PersonaSelector extends StatelessWidget {
   }
 }
 
-class _PersonaOption extends StatelessWidget {
-  const _PersonaOption({
+class _VisibilityOption extends StatelessWidget {
+  const _VisibilityOption({
     required this.label,
     required this.description,
     required this.icon,

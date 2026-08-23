@@ -16,7 +16,7 @@ void main() {
     await installShippedEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
 
-    await _selectPersona(tester, 'camera-club-member');
+    await _selectActorIdentity(tester, 'camera-club-member');
 
     expect(
       find.byKey(const ValueKey('community-tab-calendar')),
@@ -149,7 +149,7 @@ void main() {
       findsNothing,
     );
 
-    await _selectPersona(tester, 'camera-club-organizer');
+    await _selectActorIdentity(tester, 'camera-club-organizer');
     expect(find.byKey(const ValueKey('community-tab-admin')), findsOneWidget);
     await _selectTab(tester, 'admin');
     await _waitForFinder(
@@ -214,8 +214,8 @@ Future<void> _tapEngineAction(
   await _pumpForUi(tester);
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectActorIdentity(tester, fanId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

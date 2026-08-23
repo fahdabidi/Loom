@@ -3,7 +3,7 @@ part of '../loom_communities_app_shell.dart';
 /// In-memory demo implementation of [LoomAuthApi].
 ///
 /// Seeds accounts from the frozen Tabletop Club JSON's own individual
-/// persona ids (and equivalent individual ids for other
+/// actor-identity IDs (and equivalent individual ids for other
 /// engine-native communities) so signing in as a specific individual
 /// immediately surfaces already-seeded per-individual behaviour
 /// (owner-only approvals, per-individual queues, etc.).
@@ -11,12 +11,12 @@ class LocalAuthApi implements LoomAuthApi {
   final Map<String, List<LoomAccount>> _accountsByCommunity = {};
   final Map<String, List<LoomCommunityInvite>> _invitesByCommunity = {};
   LoomSession? _currentSession;
-  final List<LoomPersonaDefinition> Function(String communityExtensionId)?
-  personaResolver;
+  final List<LoomActorIdentity> Function(String communityExtensionId)?
+  actorIdentityResolver;
   final LoomExperienceDefinition Function(String communityExtensionId)?
   experienceResolver;
 
-  LocalAuthApi({this.personaResolver, this.experienceResolver}) {
+  LocalAuthApi({this.actorIdentityResolver, this.experienceResolver}) {
     _seedTabletopAccounts();
   }
 
@@ -141,15 +141,16 @@ class LocalAuthApi implements LoomAuthApi {
     required String displayName,
     required String roleId,
   }) async {
-    final persona = personaResolver == null
+    final actorIdentity = actorIdentityResolver == null
         ? null
-        : _resolvePersona(communityExtensionId, roleId);
-    final accessMode = persona?.accessMode ?? LoomPersonaAccessMode.open;
-    if (accessMode == LoomPersonaAccessMode.requiresInvite) {
+        : _resolveActorIdentity(communityExtensionId, roleId);
+    final accessMode =
+        actorIdentity?.accessMode ?? LoomActorIdentityAccessMode.open;
+    if (accessMode == LoomActorIdentityAccessMode.requiresInvite) {
       throw const LoomAuthException(
-        code: LoomAuthErrorCode.personaRequiresInvite,
+        code: LoomAuthErrorCode.roleRequiresInvite,
         message:
-            'Direct sign-up is not available for this persona. Redeem a community invite instead.',
+            'Direct sign-up is not available for this actor identity. Redeem a community invite instead.',
       );
     }
     final counter = _nextSignUpCounter++;
@@ -159,7 +160,7 @@ class LocalAuthApi implements LoomAuthApi {
       // performs presentation-level validation before calling this method.
       displayName: displayName,
       roleId: roleId,
-      status: accessMode == LoomPersonaAccessMode.requiresApproval
+      status: accessMode == LoomActorIdentityAccessMode.requiresApproval
           ? MembershipStatus.pendingApproval
           : MembershipStatus.active,
     );
@@ -209,15 +210,16 @@ class LocalAuthApi implements LoomAuthApi {
         );
     }
 
-    final persona = _personaForInvite(
+    final actorIdentity = _actorIdentityForInvite(
       location.communityExtensionId,
       location.invite.roleId,
     );
-    if (persona == null ||
-        persona.accessMode != LoomPersonaAccessMode.requiresInvite) {
+    if (actorIdentity == null ||
+        actorIdentity.accessMode !=
+            LoomActorIdentityAccessMode.requiresInvite) {
       throw const LoomAuthException(
-        code: LoomAuthErrorCode.invitePersonaInvalid,
-        message: 'This invite is no longer valid for its community persona.',
+        code: LoomAuthErrorCode.inviteRoleInvalid,
+        message: 'This invite is no longer valid for its community role.',
       );
     }
 
@@ -252,14 +254,15 @@ class LocalAuthApi implements LoomAuthApi {
     required String issuedByAccountId,
   }) async {
     final issuer = _requireAdminAccount(issuedByAccountId);
-    final persona = _personaForMembershipAction(
+    final actorIdentity = _actorIdentityForMembershipAction(
       issuer.communityExtensionId,
       roleId,
     );
-    if (persona.accessMode != LoomPersonaAccessMode.requiresInvite) {
+    if (actorIdentity.accessMode !=
+        LoomActorIdentityAccessMode.requiresInvite) {
       throw const LoomAuthException(
-        code: LoomAuthErrorCode.personaDoesNotAcceptInvites,
-        message: 'Invites can only be issued for invite-only personas.',
+        code: LoomAuthErrorCode.roleDoesNotAcceptInvites,
+        message: 'Invites can only be issued for invite-only roles.',
       );
     }
 
@@ -361,56 +364,58 @@ class LocalAuthApi implements LoomAuthApi {
     return null;
   }
 
-  LoomPersonaDefinition? _resolvePersona(
+  LoomActorIdentity? _resolveActorIdentity(
     String communityExtensionId,
     String roleId,
   ) {
-    final personas = personaResolver!(communityExtensionId);
-    for (final persona in personas) {
-      if (persona.roleId == roleId) return persona;
+    final actorIdentities = actorIdentityResolver!(communityExtensionId);
+    for (final actorIdentity in actorIdentities) {
+      if (actorIdentity.roleId == roleId) return actorIdentity;
     }
     throw ArgumentError(
-      'Persona type "$roleId" is not declared by community '
+      'Role "$roleId" is not declared by community '
       '"$communityExtensionId".',
     );
   }
 
-  LoomPersonaDefinition? _personaForInvite(
+  LoomActorIdentity? _actorIdentityForInvite(
     String communityExtensionId,
     String roleId,
   ) {
-    final resolver = personaResolver;
+    final resolver = actorIdentityResolver;
     if (resolver != null) {
-      final personas = resolver(communityExtensionId);
-      for (final persona in personas) {
-        if (persona.roleId == roleId) return persona;
+      final actorIdentities = resolver(communityExtensionId);
+      for (final actorIdentity in actorIdentities) {
+        if (actorIdentity.roleId == roleId) return actorIdentity;
       }
       return null;
     }
-    final personas = _experienceForCommunity(communityExtensionId).personas;
-    if (personas == null) return null;
-    for (final persona in personas) {
-      if (persona.roleId == roleId) return persona;
+    final actorIdentities = _experienceForCommunity(
+      communityExtensionId,
+    ).actorIdentities;
+    if (actorIdentities == null) return null;
+    for (final actorIdentity in actorIdentities) {
+      if (actorIdentity.roleId == roleId) return actorIdentity;
     }
     return null;
   }
 
-  LoomPersonaDefinition _personaForMembershipAction(
+  LoomActorIdentity _actorIdentityForMembershipAction(
     String communityExtensionId,
     String roleId,
   ) {
-    final resolver = personaResolver;
+    final resolver = actorIdentityResolver;
     if (resolver != null) {
-      return _resolvePersona(communityExtensionId, roleId)!;
+      return _resolveActorIdentity(communityExtensionId, roleId)!;
     }
-    final persona = _personaForInvite(communityExtensionId, roleId);
-    if (persona == null) {
+    final actorIdentity = _actorIdentityForInvite(communityExtensionId, roleId);
+    if (actorIdentity == null) {
       throw ArgumentError(
-        'Persona type "$roleId" is not declared by community '
+        'Role "$roleId" is not declared by community '
         '"$communityExtensionId".',
       );
     }
-    return persona;
+    return actorIdentity;
   }
 
   LoomExperienceDefinition _experienceForCommunity(String communityId) {
@@ -424,7 +429,7 @@ class LocalAuthApi implements LoomAuthApi {
     final location = _accountLocation(accountId);
     if (location == null ||
         location.account.status != MembershipStatus.active ||
-        !_personaCanAdministerAnyWorkflow(
+        !_roleCanAdministerAnyWorkflow(
           _experienceForCommunity(location.communityExtensionId),
           location.account.roleId,
         )) {

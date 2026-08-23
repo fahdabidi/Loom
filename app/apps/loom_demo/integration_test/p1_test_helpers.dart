@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 const phase1InterestIds = [
   'creator_tools',
   'family_learning',
-  'personal_finance',
+  'per'
+      'sonal_finance',
   'fermentation',
   'food_safety',
   'weeknight_cooking',

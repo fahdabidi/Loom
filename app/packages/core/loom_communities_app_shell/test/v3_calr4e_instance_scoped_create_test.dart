@@ -174,7 +174,9 @@ void main() {
         expect(ballotEventIds, contains(eventId));
 
         await tester.pumpWidget(_app(installed));
-        await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
+        await tester.tap(
+          find.byKey(const ValueKey('actor-identity-picker-button')),
+        );
         await tester.pumpAndSettle();
         await tester.tap(find.text('Member').last);
         await tester.pumpAndSettle();

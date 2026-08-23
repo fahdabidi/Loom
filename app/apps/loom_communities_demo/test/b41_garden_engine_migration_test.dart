@@ -16,7 +16,7 @@ void main() {
     await installShippedEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
 
-    await _selectPersona(tester, 'garden-member');
+    await _selectActorIdentity(tester, 'garden-member');
 
     expect(
       find.byKey(const ValueKey('community-tab-calendar')),
@@ -152,7 +152,7 @@ void main() {
     );
     expect(_engineAction('mulch-delivery-shift', 'sign-up'), findsOneWidget);
 
-    await _selectPersona(tester, 'garden-coordinator');
+    await _selectActorIdentity(tester, 'garden-coordinator');
     expect(
       find.byKey(const ValueKey('community-tab-documents')),
       findsOneWidget,
@@ -222,8 +222,8 @@ Future<void> _tapEngineAction(
   await _pumpForUi(tester);
 }
 
-Future<void> _selectPersona(WidgetTester tester, String fanId) async {
-  await selectPersona(tester, fanId);
+Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
+  await selectActorIdentity(tester, fanId);
 }
 
 Future<void> _pumpForUi(WidgetTester tester) async {

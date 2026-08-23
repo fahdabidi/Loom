@@ -226,7 +226,7 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
         experienceConfiguration: community.experienceConfiguration,
       );
       return LocalAuthApi(
-        personaResolver: (_) => personasForExtensionId(
+        actorIdentityResolver: (_) => actorIdentitiesForExtensionId(
           community.extensionId,
           experience: experience,
         ),

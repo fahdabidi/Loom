@@ -71,12 +71,12 @@ void main() {
         workflowType: 'test-workflow',
         currentState: 'open',
         createdByFanId: 'different-creator',
-        instanceData: <String, dynamic>{'payerFanId': 'payer-persona'},
+        instanceData: <String, dynamic>{'payerFanId': 'payer-fan'},
       );
       final roles = deriveInstanceRoles(
         machine,
         instance,
-        viewerFanId: 'payer-persona',
+        viewerFanId: 'payer-fan',
         viewerRoleId: 'payer-type',
       );
       expect(roles, {'actor'});
