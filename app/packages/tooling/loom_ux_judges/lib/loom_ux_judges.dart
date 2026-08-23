@@ -1275,6 +1275,10 @@ JsonMap collectB25Evidence({
     repoRootPath: repoRootPath,
   );
   final cardSurfaceRegistry = _b25CardSurfaceRegistryForRows(screenRows);
+  final b25EvidenceCoverage = _b25EvidenceCoverageForManifests(
+    evidenceRoot: evidenceRoot,
+    manifests: manifests,
+  );
   return <String, Object?>{
     'schemaVersion': 4,
     'reviewStandardVersion': 'b25-production-ux-v4',
@@ -1301,7 +1305,11 @@ JsonMap collectB25Evidence({
       'expectedPhases': _asStringList(captureCoverage['expectedPhases']),
       'capturedPhases': _asStringList(captureCoverage['capturedPhases']),
       'missingPhases': _asStringList(captureCoverage['missingPhases']),
+      'neverRunPhases': _asStringList(
+        b25EvidenceCoverage['neverRunPhases'],
+      ),
     },
+    'b25EvidenceCoverage': b25EvidenceCoverage,
     'blueprintPath':
         'docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md',
     'screenMatrixPath':
@@ -5619,26 +5627,106 @@ List<String> _workflowManifestPaths(
   final aggregate = File(
     '${evidenceRoot.path}/B20/all-workflow-ui-evidence.json',
   );
-  if (aggregate.existsSync()) {
-    final manifest = _readJsonFile(aggregate.path);
-    return _asStringList(
-      manifest['workflowEvidenceManifestPaths'],
-    ).map(_hostPath).where((path) => File(path).existsSync()).toList();
-  }
-  final paths = <String>[];
-  for (final entity in evidenceRoot.listSync(recursive: true)) {
-    if (entity is File && entity.path.endsWith('workflow-ui-evidence.json')) {
-      paths.add(entity.path);
+
+  // Disk manifests are the source of truth for what has actually been captured.
+  // Each phase writes its own `*/workflow-ui-evidence.json`, so evidence must
+  // accumulate across partial runs instead of being defined by whichever
+  // aggregate a later `flutter drive` invocation happened to overwrite.
+  final pathSet = <String>{};
+  if (evidenceRoot.existsSync()) {
+    for (final entity in evidenceRoot.listSync(recursive: true)) {
+      if (entity is File &&
+          entity.uri.pathSegments.last == 'workflow-ui-evidence.json') {
+        pathSet.add(entity.absolute.path);
+      }
     }
   }
-  if (paths.isNotEmpty) {
-    paths.sort();
-    return paths;
+
+  // Union the on-disk manifests with a canonical aggregate's manifest list so
+  // an authoritative full sweep never loses a phase that was banked earlier.
+  if (aggregate.existsSync()) {
+    final manifest = _readJsonFile(aggregate.path);
+    for (final path in _asStringList(
+      manifest['workflowEvidenceManifestPaths'],
+    )) {
+      pathSet.add(_hostPath(path));
+    }
   }
-  return _asStringList(
+
+  // Carry forward any manifest paths recorded by a prior review that are still
+  // present on disk but were not rediscovered above.
+  for (final path in _asStringList(
     (priorReview?['reviewInputEvidence']
         as JsonMap?)?['workflowEvidenceManifestPaths'],
-  ).map(_hostPath).where((path) => File(path).existsSync()).toList();
+  )) {
+    pathSet.add(_hostPath(path));
+  }
+
+  final paths = pathSet
+      .where((path) => File(path).existsSync())
+      .toList(growable: false)
+    ..sort();
+  return paths;
+}
+
+JsonMap _b25EvidenceCoverageForManifests({
+  required Directory evidenceRoot,
+  required List<String> manifests,
+}) {
+  final phaseByManifest = <String, Set<String>>{
+    for (final phase in fullB25EvidencePhases) phase: <String>{},
+  };
+  final perPhase = <String, JsonMap>{};
+  var totalWorkflows = 0;
+  var totalScreenshots = 0;
+  for (final manifestPath in manifests) {
+    final manifest = _readJsonFile(manifestPath);
+    final phase = _asString(manifest['phase']);
+    if (phase.isEmpty) {
+      continue;
+    }
+    final workflows = _asMapList(manifest['workflows']);
+    var screenshots = 0;
+    for (final workflow in workflows) {
+      screenshots += _asStringList(workflow['screenshotPaths']).length;
+    }
+    totalWorkflows += workflows.length;
+    totalScreenshots += screenshots;
+    phaseByManifest[phase]?.add(manifestPath);
+    final previous = perPhase[phase] ?? <String, Object?>{
+      'workflowCount': 0,
+      'screenshotCount': 0,
+      'manifestCount': 0,
+    };
+    perPhase[phase] = <String, Object?>{
+      'workflowCount': _asInt(previous['workflowCount']) + workflows.length,
+      'screenshotCount': _asInt(previous['screenshotCount']) + screenshots,
+      'manifestCount': _asInt(previous['manifestCount']) + 1,
+    };
+  }
+  final capturedPhases = phaseByManifest.entries
+      .where((entry) => entry.value.isNotEmpty)
+      .map((entry) => entry.key)
+      .toList(growable: false);
+  final neverRunPhases = fullB25EvidencePhases
+      .where((phase) => phaseByManifest[phase]!.isEmpty)
+      .toList(growable: false);
+  return <String, Object?>{
+    'evidenceRoot': evidenceRoot.path,
+    'capturedPhases': capturedPhases,
+    'neverRunPhases': neverRunPhases,
+    'workflowCount': totalWorkflows,
+    'screenshotCount': totalScreenshots,
+    'manifestCount': manifests.length,
+    'perPhase': <String, JsonMap>{
+      for (final phase in fullB25EvidencePhases)
+        phase: perPhase[phase] ?? <String, Object?>{
+          'workflowCount': 0,
+          'screenshotCount': 0,
+          'manifestCount': 0,
+        },
+    },
+  };
 }
 
 String _hostPath(String path) {
