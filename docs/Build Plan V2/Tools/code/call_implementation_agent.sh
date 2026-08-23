@@ -156,29 +156,33 @@ set -euo pipefail
 PROMPT_FILE="${1:?usage: call_implementation_agent.sh <prompt-file> [--fresh]}"
 MODE="${2:-}"
 SANDBOX_MODE="${CODEX_IMPLEMENTATION_SANDBOX:-workspace-write}"
-PROFILE="${CODEX_IMPLEMENTATION_PROFILE-gpt5_3_spark_xhigh}"
+PROFILE="${CODEX_IMPLEMENTATION_PROFILE-deepseek_v4_pro_medium}"
 PROFILE_ARGS=()
 if [ -n "$PROFILE" ]; then
   PROFILE_ARGS=(-p "$PROFILE")
 fi
 
 GATEWAY_KEY_FILE="$HOME/.deepseek_gateway_key"
-GATEWAY_HEALTH_URL="${CODEX_GATEWAY_HEALTH_URL:-http://172.31.16.1:8787/health}"
+GATEWAY_HEALTH_URL="${CODEX_GATEWAY_HEALTH_URL:-http://127.0.0.1:8791/health}"
 if [[ "$PROFILE" == deepseek_* ]]; then
-  if [ ! -f "$GATEWAY_KEY_FILE" ]; then
-    echo "ERROR: profile '$PROFILE' selected but $GATEWAY_KEY_FILE is missing." >&2
-    echo "       (the shared guest<->gateway bridge token; not the DeepSeek API key itself)" >&2
-    exit 1
+  # The gateway now runs ON THIS VM, bound to loopback (~/deepseek-gateway).
+  # src/config.mjs only requires GATEWAY_API_KEY when the bind host is NOT
+  # loopback, so a bridge token is optional here. The WSL-era arrangement
+  # needed the token, a Windows firewall rule for 8787, AND a host LAN IP that
+  # went stale whenever DHCP moved -- it broke on all three. If a token file
+  # does exist we still send it, so a remote gateway keeps working unchanged.
+  CURL_AUTH=()
+  if [ -f "$GATEWAY_KEY_FILE" ]; then
+    DEEPSEEK_GATEWAY_KEY="$(cat "$GATEWAY_KEY_FILE")"
+    export DEEPSEEK_GATEWAY_KEY
+    CURL_AUTH=(-H "Authorization: Bearer $DEEPSEEK_GATEWAY_KEY")
   fi
-  DEEPSEEK_GATEWAY_KEY="$(cat "$GATEWAY_KEY_FILE")"
-  export DEEPSEEK_GATEWAY_KEY
   HEALTH_STATUS="$(curl -s -m 5 -o /dev/null -w '%{http_code}' \
-    -H "Authorization: Bearer $DEEPSEEK_GATEWAY_KEY" "$GATEWAY_HEALTH_URL" || true)"
+    "${CURL_AUTH[@]}" "$GATEWAY_HEALTH_URL" || true)"
   if [ "$HEALTH_STATUS" != "200" ]; then
     echo "ERROR: DeepSeek gateway not reachable/healthy at $GATEWAY_HEALTH_URL (HTTP $HEALTH_STATUS)." >&2
-    echo "       Check: gateway running on Windows (Start-Gateway.ps1), bound to 0.0.0.0," >&2
-    echo "       firewall rule for 8787 still present, and CODEX_GATEWAY_HEALTH_URL points at" >&2
-    echo "       the host's current LAN IP (this default is a stale WSL-era address)." >&2
+    echo "       Start it:  nohup ~/deepseek-gateway/start.sh > /tmp/ds_gateway.log 2>&1 &" >&2
+    echo "       It requires ~/.deepseek_api_key (chmod 600) to exist." >&2
     echo "       To bypass and use Codex's default model instead: CODEX_IMPLEMENTATION_PROFILE=\"\"" >&2
     exit 1
   fi
@@ -200,7 +204,25 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # differs and omits the Android SDK.
 . "$HOME/.loom-env.sh"
 
-PROMPT="$(cat "$PROMPT_FILE")"
+# --- Prompt assembly: stable prefix first, ticket last ------------------
+# DeepSeek caches on the PREFIX of a request -- there is no session id to
+# reuse the way OpenAI models do. A request whose leading tokens match an
+# earlier request bills those tokens at a fraction of the input rate, and the
+# gateway logs the hit as `cached_tokens` in /tmp/ds_gateway.log.
+#
+# So the invariant standing rules lead every dispatch, byte-identical, and the
+# ticket -- the part that differs every time -- trails. Before this, PROMPT was
+# the ticket alone, so consecutive dispatches shared no prefix at all and the
+# cache could never hit. Do NOT interpolate anything variable (dates, paths,
+# ticket names) into the preamble: one changed byte near the front discards the
+# cache for everything after it.
+DISPATCH_PREAMBLE_FILE="${CODEX_DISPATCH_PREAMBLE:-$REPO_ROOT/data/dispatch_preamble.md}"
+if [ -f "$DISPATCH_PREAMBLE_FILE" ]; then
+  PROMPT="$(cat "$DISPATCH_PREAMBLE_FILE")
+$(cat "$PROMPT_FILE")"
+else
+  PROMPT="$(cat "$PROMPT_FILE")"
+fi
 
 # --- Git integrity guard -----------------------------------------------
 # Snapshot the tracked-file count and HEAD now, and hard-fail loudly after

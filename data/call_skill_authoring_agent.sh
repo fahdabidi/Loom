@@ -98,10 +98,25 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
 LABEL="${2:-$(basename "$TARGET_DOC" | sed 's/\.[^.]*$//')-$(date +%Y%m%d-%H%M%S)}"
-PROFILE="${CODEX_SKILL_AUTHORING_PROFILE-gpt5_6_sol_xhigh}"
+PROFILE="${CODEX_SKILL_AUTHORING_PROFILE-deepseek_v4_pro_medium}"
 PROFILE_ARGS=()
 if [ -n "$PROFILE" ]; then
   PROFILE_ARGS=(-p "$PROFILE")
+fi
+
+# --- DeepSeek gateway preflight ----------------------------------------
+# The gateway runs on this VM bound to loopback (~/deepseek-gateway). Fail
+# fast and legibly here rather than letting `codex exec` die with an opaque
+# connection error several seconds later.
+GATEWAY_HEALTH_URL="${CODEX_GATEWAY_HEALTH_URL:-http://127.0.0.1:8791/health}"
+if [[ "$PROFILE" == deepseek_* ]]; then
+  HEALTH_STATUS="$(curl -s -m 5 -o /dev/null -w '%{http_code}' "$GATEWAY_HEALTH_URL" || true)"
+  if [ "$HEALTH_STATUS" != "200" ]; then
+    echo "ERROR: DeepSeek gateway not healthy at $GATEWAY_HEALTH_URL (HTTP $HEALTH_STATUS)." >&2
+    echo "       Start it:  nohup ~/deepseek-gateway/start.sh > /tmp/ds_gateway.log 2>&1 &" >&2
+    echo "       It requires ~/.deepseek_api_key (chmod 600) to exist." >&2
+    exit 1
+  fi
 fi
 
 INSTRUCTIONS_FILE="$REPO_ROOT/.agents/skills/loom-calendar-experience-authoring/codex-dispatch/INSTRUCTIONS.md"

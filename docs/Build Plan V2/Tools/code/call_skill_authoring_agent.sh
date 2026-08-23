@@ -98,10 +98,25 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
 LABEL="${2:-$(basename "$TARGET_DOC" | sed 's/\.[^.]*$//')-$(date +%Y%m%d-%H%M%S)}"
-PROFILE="${CODEX_SKILL_AUTHORING_PROFILE-gpt5_6_sol_xhigh}"
+PROFILE="${CODEX_SKILL_AUTHORING_PROFILE-deepseek_v4_pro_medium}"
 PROFILE_ARGS=()
 if [ -n "$PROFILE" ]; then
   PROFILE_ARGS=(-p "$PROFILE")
+fi
+
+# --- DeepSeek gateway preflight ----------------------------------------
+# The gateway runs on this VM bound to loopback (~/deepseek-gateway). Fail
+# fast and legibly here rather than letting `codex exec` die with an opaque
+# connection error several seconds later.
+GATEWAY_HEALTH_URL="${CODEX_GATEWAY_HEALTH_URL:-http://127.0.0.1:8791/health}"
+if [[ "$PROFILE" == deepseek_* ]]; then
+  HEALTH_STATUS="$(curl -s -m 5 -o /dev/null -w '%{http_code}' "$GATEWAY_HEALTH_URL" || true)"
+  if [ "$HEALTH_STATUS" != "200" ]; then
+    echo "ERROR: DeepSeek gateway not healthy at $GATEWAY_HEALTH_URL (HTTP $HEALTH_STATUS)." >&2
+    echo "       Start it:  nohup ~/deepseek-gateway/start.sh > /tmp/ds_gateway.log 2>&1 &" >&2
+    echo "       It requires ~/.deepseek_api_key (chmod 600) to exist." >&2
+    exit 1
+  fi
 fi
 
 INSTRUCTIONS_FILE="$REPO_ROOT/.agents/skills/loom-calendar-experience-authoring/codex-dispatch/INSTRUCTIONS.md"
@@ -185,10 +200,39 @@ fi
 # resolve the toolchain PATH explicitly. Never substitute `bash -l`.
 . "$HOME/.loom-env.sh"
 
+# --- Validator preflight -------------------------------------------------
+# The dispatched agent validates its own draft over HTTP and iterates until it
+# comes back clean (codex-dispatch/INSTRUCTIONS.md, "On validation"). That only
+# works if the server is actually up, and a silently-absent validator sends the
+# agent back to guessing without ever saying so. Start one if needed, and fail
+# loudly rather than dispatch a run that cannot check its own output.
+VALIDATOR_URL="${LOOM_VALIDATOR_URL:-http://127.0.0.1:8787}"
+if ! curl -fsS -m 5 "$VALIDATOR_URL/health" >/dev/null 2>&1; then
+  echo "Validator not responding at $VALIDATOR_URL -- starting one..."
+  (
+    cd "$REPO_ROOT/app/packages/tooling/loom_ux_judges" \
+      && setsid nohup dart run bin/validator_server.dart --port 8787 \
+           > /tmp/loom_validator_server.log 2>&1 &
+    disown
+  ) || true
+  for _ in 1 2 3 4 5 6 7 8 9 10 11 12; do
+    sleep 5
+    curl -fsS -m 5 "$VALIDATOR_URL/health" >/dev/null 2>&1 && break
+  done
+fi
+if ! curl -fsS -m 5 "$VALIDATOR_URL/health" >/dev/null 2>&1; then
+  echo "FATAL: validator still unreachable at $VALIDATOR_URL after 60s." >&2
+  echo "       See /tmp/loom_validator_server.log. Refusing to dispatch a run" >&2
+  echo "       that cannot validate its own output." >&2
+  exit 69
+fi
+echo "Validator healthy at $VALIDATOR_URL"
+
 set +e
 npx --yes @openai/codex exec \
   "${PROFILE_ARGS[@]}" \
   --sandbox workspace-write \
+  -c sandbox_workspace_write.network_access=true \
   -C "$SCRATCH_DIR" \
   --skip-git-repo-check \
   --ephemeral \
