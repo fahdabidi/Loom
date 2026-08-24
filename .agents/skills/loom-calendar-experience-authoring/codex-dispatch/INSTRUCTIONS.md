@@ -453,6 +453,34 @@ real enum (fetched at step 7) instead.
     it, here is what would be needed" is a far better result than a package that quietly
     delivers less than the doc promises.
 
+14b. **The B25 table is a machine-parsed contract. Change its rows, never its shape.**
+
+    A product doc's `### B25 Semantic Interaction Models` table is not prose. The UX judge
+    parses it to decide what each workflow must prove, and it requires this exact six-column
+    header, matched literally:
+
+        | Workflow | Persona | Expected decision | Required primary actions | Required alternate/change/reject actions | Result and receiver state |
+
+    Rename a column, drop one, add one, or reword the heading, and the parser matches nothing:
+    every row for that community silently disappears and the workflow can no longer be judged
+    at all. This has happened -- a convergence pass rewrote the header to five columns and the
+    catalog reported "No B25 semantic interaction-model rows found" for the whole community.
+
+    So:
+
+    - You MAY rewrite the content of any cell, and you SHOULD when convergence shows the row
+      is vague or wrong. Enriching a row is the point.
+    - You MUST NOT change the header, the column order, or the column count.
+    - Every row must have all six cells, none empty.
+
+    **The two action columns are user-visible vocabulary, not identifiers.** A comma-separated
+    cell is a *synonym set*: the judge looks for any one of those terms in the affordances a
+    person can actually see on screen. `pay, donate, give, checkout` works because a button
+    somewhere says one of them. A transition id like `record-payment-confirmed` does not work,
+    because no button says that -- it names the mechanism, not the affordance. Write what the
+    interface shows a person, and put the transition ids in the traceability table instead,
+    which is where mechanism belongs.
+
 ## Two valid RSVP shapes — pick deliberately
 
 - The plain `goingPersonaIds[]`/`maybePersonaIds[]`/`waitlistPersonaIds[]` list pattern (P1 in
