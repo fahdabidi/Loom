@@ -323,6 +323,7 @@ void main() {
                   tester: tester,
                   target: target,
                   package: shippedPackage,
+                  bodyWatch: bodyWatch,
                   selector: _shippedWorkflowSelector(
                     target: target,
                     package: shippedPackage,
@@ -336,6 +337,7 @@ void main() {
                   tester: tester,
                   target: target,
                   package: shippedPackage,
+                  bodyWatch: bodyWatch,
                   b25Model: productDocRow,
                   capture: capture,
                 );
@@ -1313,12 +1315,39 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
   required WidgetTester tester,
   required LoomEvidenceTarget target,
   required ShippedEvidencePackage package,
+  required WalkthroughBodyWatch bodyWatch,
   required _ShippedWorkflowSelector selector,
   required B25ProductDocInteractionModel b25Model,
   required Future<void> Function(String name) capture,
 }) async {
+  void beatSubstep(
+    WalkthroughSubstep substep, {
+    String? account,
+    String? role,
+    String? tabId,
+  }) {
+    final progress = buildWalkthroughSubstepProgress(
+      substep,
+      account: account,
+      role: role,
+      tabId: tabId,
+      workflow: selector.machine.workflowType,
+      phase: target.phase,
+      community: target.communityName,
+    );
+    bodyWatch.beat(
+      attemptedStep: progress.attemptedStep,
+      waitingFor: progress.waitingFor,
+    );
+  }
+
   if (selector.accountId case final accountId?) {
     final displayName = 'Shipped $accountId';
+    beatSubstep(
+      WalkthroughSubstep.seedingEvidenceAccounts,
+      account: accountId,
+      role: selector.roleId,
+    );
     await seedEvidenceAccounts(tester, target, [
       LoomAccount(
         accountId: accountId,
@@ -1326,10 +1355,19 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         roleId: selector.roleId,
       ),
     ]);
+    beatSubstep(
+      WalkthroughSubstep.signingInEvidenceAccount,
+      account: displayName,
+    );
     await signInEvidenceAccount(tester, displayName);
   } else {
+    beatSubstep(
+      WalkthroughSubstep.selectingActorIdentity,
+      role: selector.roleId,
+    );
     await selectActorIdentity(tester, selector.roleId);
   }
+  beatSubstep(WalkthroughSubstep.verifyingExperienceTagline);
   expect(find.text(package.experience.tagline), findsOneWidget);
 
   final resolvedTabs = appShellTabsFor(
@@ -1346,9 +1384,17 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         'but that same package did not expose the tab for '
         '${selector.roleId}.',
   );
+  beatSubstep(
+    WalkthroughSubstep.selectingCommunityTab,
+    tabId: selector.binding.tabId,
+  );
   await _selectCommunityTab(tester, selector.binding.tabId);
 
   final instance = _engineInstanceFinder(selector.instance.instanceId);
+  beatSubstep(
+    WalkthroughSubstep.waitingForEngineNativeWidget,
+    tabId: selector.binding.tabId,
+  );
   await waitForEngineNativeWidget(
     tester,
     instance,
@@ -1752,11 +1798,32 @@ Future<_B25WalkthroughResult> _captureMissingB25PackageWorkflow({
   required WidgetTester tester,
   required LoomEvidenceTarget target,
   required ShippedEvidencePackage package,
+  required WalkthroughBodyWatch bodyWatch,
   required B25ProductDocInteractionModel b25Model,
   required Future<void> Function(String name) capture,
 }) async {
+  void beatSubstep(
+    WalkthroughSubstep substep, {
+    String? role,
+    String? tabId,
+  }) {
+    final progress = buildWalkthroughSubstepProgress(
+      substep,
+      role: role,
+      tabId: tabId,
+      workflow: b25Model.workflowId,
+      phase: target.phase,
+      community: target.communityName,
+    );
+    bodyWatch.beat(
+      attemptedStep: progress.attemptedStep,
+      waitingFor: progress.waitingFor,
+    );
+  }
+
   final roleId = _roleIdsForB25Role(package, b25Model.role).firstOrNull;
   if (roleId != null) {
+    beatSubstep(WalkthroughSubstep.selectingActorIdentity, role: roleId);
     await selectActorIdentity(tester, roleId);
     final preferredTab = _tabForMissingB25Workflow(b25Model.workflowId);
     final tabs = appShellTabsFor(
@@ -1765,6 +1832,7 @@ Future<_B25WalkthroughResult> _captureMissingB25PackageWorkflow({
       appShellConfiguration: package.appShellConfiguration,
     );
     if (tabs.any((tab) => tab.tabId == preferredTab)) {
+      beatSubstep(WalkthroughSubstep.selectingCommunityTab, tabId: preferredTab);
       await _selectCommunityTab(tester, preferredTab);
     }
   }

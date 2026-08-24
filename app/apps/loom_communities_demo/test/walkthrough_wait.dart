@@ -230,3 +230,106 @@ Future<T> watchWalkthroughBodyWith<T>(
     watch.cancel();
   }
 }
+
+/// The distinct awaited sub-steps inside a single shipped-workflow walkthrough
+/// (and the comparable steps in the missing-package path). A body-level
+/// [WalkthroughBodyWatch] beats with one of these BEFORE each await, so that a
+/// hang anywhere between "workflow-start" and the first screenshot names the
+/// exact sub-step it died in rather than the whole coarse span.
+enum WalkthroughSubstep {
+  seedingEvidenceAccounts,
+  signingInEvidenceAccount,
+  selectingActorIdentity,
+  verifyingExperienceTagline,
+  selectingCommunityTab,
+  waitingForEngineNativeWidget,
+}
+
+/// The progress labels a [WalkthroughBodyWatch] should carry for one
+/// [WalkthroughSubstep]. [attemptedStep] says what the walkthrough is doing;
+/// [waitingFor] says what it has not yet observed. Both are what the watchdog
+/// prints when a body stalls with this sub-step as its most recent beat.
+class WalkthroughSubstepProgress {
+  const WalkthroughSubstepProgress({
+    required this.attemptedStep,
+    required this.waitingFor,
+  });
+
+  final String attemptedStep;
+  final String waitingFor;
+}
+
+/// Builds human, reproducible progress labels for a single [substep].
+///
+/// Identifiers ([account], [role], [tabId], [workflow], [phase],
+/// [community]) are inlined into the labels so the next stall names the value
+/// a reader needs to reproduce it. A label like "step 4" would be useless;
+/// these name the account, role, tab, and workflow instead.
+WalkthroughSubstepProgress buildWalkthroughSubstepProgress(
+  WalkthroughSubstep substep, {
+  String? account,
+  String? role,
+  String? tabId,
+  String? workflow,
+  String? phase,
+  String? community,
+}) {
+  String context({String workflowLabel = 'workflow'}) {
+    final parts = <String>[
+      if (phase != null) 'phase $phase',
+      if (community != null) 'community $community',
+      if (workflow != null) '$workflowLabel $workflow',
+    ];
+    return parts.isEmpty ? '' : ' (${parts.join(', ')})';
+  }
+
+  switch (substep) {
+    case WalkthroughSubstep.seedingEvidenceAccounts:
+      return WalkthroughSubstepProgress(
+        attemptedStep:
+            'seeding evidence accounts${context()}',
+        waitingFor:
+            'the evidence account list to be reseeded for '
+            '${account ?? role ?? '(unknown account)'}',
+      );
+    case WalkthroughSubstep.signingInEvidenceAccount:
+      return WalkthroughSubstepProgress(
+        attemptedStep:
+            'signing in as ${account ?? '(unknown account)'}${context()}',
+        waitingFor:
+            'community content to load after signing in as '
+            '${account ?? '(unknown account)'}',
+      );
+    case WalkthroughSubstep.selectingActorIdentity:
+      return WalkthroughSubstepProgress(
+        attemptedStep:
+            'selecting actor identity ${role ?? '(unknown role)'}${context()}',
+        waitingFor:
+            'the actor identity picker to resolve '
+            '${role ?? '(unknown role)'}',
+      );
+    case WalkthroughSubstep.verifyingExperienceTagline:
+      return WalkthroughSubstepProgress(
+        attemptedStep:
+            'verifying the experience tagline is visible${context()}',
+        waitingFor:
+            'the experience tagline to be rendered on screen',
+      );
+    case WalkthroughSubstep.selectingCommunityTab:
+      return WalkthroughSubstepProgress(
+        attemptedStep:
+            'selecting tab ${tabId ?? '(unknown tab)'}${context()}',
+        waitingFor:
+            'community tab ${tabId ?? '(unknown tab)'} to become tappable',
+      );
+    case WalkthroughSubstep.waitingForEngineNativeWidget:
+      return WalkthroughSubstepProgress(
+        attemptedStep:
+            'waiting for the engine-native widget on '
+            '${tabId ?? '(unknown tab)'}${context()}',
+        waitingFor:
+            'the engine-native widget to appear on '
+            '${tabId ?? '(unknown tab)'}',
+      );
+  }
+}

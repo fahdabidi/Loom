@@ -175,4 +175,97 @@ void main() {
       expect(message, isNot(contains('0m 0s')));
     });
   });
+
+  group('walkthrough sub-step beats', () {
+    // Identifiers fixed across these cases so every assertion is concrete:
+    // the watchdog must name the account, role, tab, workflow, phase and
+    // community a reader would need to reproduce the stall.
+    const workflow = 'garden-event-rsvp';
+    const phase = 'B13';
+    const community = 'Garden Club';
+    const account = 'Shipped member';
+    const role = 'member';
+    const tabId = 'calendar';
+
+    WalkthroughSubstepProgress progressFor(WalkthroughSubstep substep) {
+      return buildWalkthroughSubstepProgress(
+        substep,
+        account: account,
+        role: role,
+        tabId: tabId,
+        workflow: workflow,
+        phase: phase,
+        community: community,
+      );
+    }
+
+    Matcher namesSubstepAndIdentifiers(WalkthroughSubstep substep) {
+      final progress = progressFor(substep);
+      final identifierMatchers = <Matcher>[
+        contains(workflow),
+        contains(phase),
+        contains(community),
+        ...switch (substep) {
+          WalkthroughSubstep.seedingEvidenceAccounts => [
+            contains(account),
+          ],
+          WalkthroughSubstep.signingInEvidenceAccount => [
+            contains(account),
+          ],
+          WalkthroughSubstep.selectingActorIdentity => [
+            contains(role),
+          ],
+          WalkthroughSubstep.verifyingExperienceTagline => const <Matcher>[],
+          WalkthroughSubstep.selectingCommunityTab => [
+            contains(tabId),
+          ],
+          WalkthroughSubstep.waitingForEngineNativeWidget => [
+            contains(tabId),
+          ],
+        },
+      ];
+      return allOf(<Matcher>[
+        // The diagnostic's 'Waiting for:' must name the precise sub-step.
+        contains(progress.waitingFor),
+        // And its 'Attempted step:' must name the action being taken.
+        contains(progress.attemptedStep),
+        ...identifierMatchers,
+      ]);
+    }
+
+    for (final substep in WalkthroughSubstep.values) {
+      test(
+        'a stall at ${substep.name} names that sub-step and its identifiers',
+        () {
+          fakeAsync((async) {
+            final progress = progressFor(substep);
+            final watch = WalkthroughBodyWatch(
+              timeout: const Duration(seconds: 5),
+              lastCompletedStep: 'setup phase, no step completed yet',
+              attemptedStep: progress.attemptedStep,
+              waitingFor: progress.waitingFor,
+            );
+
+            final neverCompletes = Completer<void>();
+            final result = watchWalkthroughBodyWith<void>(
+              neverCompletes.future,
+              watch,
+            );
+
+            Object? capturedError;
+            result.catchError((Object error) {
+              capturedError = error;
+            });
+
+            async.elapse(const Duration(seconds: 5));
+
+            expect(capturedError, isA<WalkthroughStallFailure>());
+            final message = (capturedError as WalkthroughStallFailure).message;
+            expect(message, contains('Walkthrough stalled'));
+            expect(message, namesSubstepAndIdentifiers(substep));
+          });
+        },
+      );
+    }
+  });
 }
