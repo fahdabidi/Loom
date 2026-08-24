@@ -21,6 +21,15 @@ Rebooting a dev VM whose emulator is wedged is routine maintenance. Do not wait 
 
 ## The Android emulator belongs on Windows, not in the VM
 
+**The VM has no AVD any more.** `loom_demo` was deleted 2026-08-24 (1.7 GB reclaimed) and the
+VM is now a pure dispatch/build host. Do not recreate an emulator there: it wedged the whole VM
+twice in one day, and costs ~70% CPU even idle, which roughly quadruples Flutter suite times.
+Captures run on Windows.
+
+After a VM reboot `/tmp` is cleared and the **validator service on :8787 does not restart
+itself**. Bring it back with
+`cd ~/Loom/app && dart run packages/tooling/loom_ux_judges/bin/validator_server.dart`.
+
 Windows has **WHPX** hardware acceleration (`emulator -accel-check` reports "WHPX is installed
 and usable"), because the host hypervisor is enabled. That same hypervisor is why the VM cannot
 have KVM. Measured 2026-08-24: **72 seconds to boot on Windows** versus 10–20 minutes in the VM,
