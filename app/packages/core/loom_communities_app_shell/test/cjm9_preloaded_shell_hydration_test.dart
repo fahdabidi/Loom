@@ -37,18 +37,28 @@ class _PreloadedShellInstallation {
 
 Future<_PreloadedShellInstallation> _installOverPreloadedShell({
   required String fixtureRelative,
+  String? extensionId,
 }) async {
   final source = _readFixture(fixtureRelative);
-  final extensionId = _stringValue(source, 'extensionId');
+  final resolvedExtensionId =
+      extensionId ?? _stringValue(source, 'extensionId');
+  source['extensionId'] = resolvedExtensionId;
   final communityId = _stringValue(source, 'communityId');
-  final extensionManifest = _extensionManifestFromSource(source, extensionId);
+  final extensionManifest = _extensionManifestFromSource(
+    source,
+    resolvedExtensionId,
+  );
   final incomingExperience = _experienceFromSource(source);
 
   final temp = await Directory.systemTemp.createTemp(
-    'loom-cjm9-preloaded-$extensionId-',
+    'loom-cjm9-preloaded-$resolvedExtensionId-',
   );
-  final extensionFile = File('${temp.path}/${extensionId}.loom-extension.zip');
-  final initializationFile = File('${temp.path}/${extensionId}.loom-init.zip');
+  final extensionFile = File(
+    '${temp.path}/${resolvedExtensionId}.loom-extension.zip',
+  );
+  final initializationFile = File(
+    '${temp.path}/${resolvedExtensionId}.loom-init.zip',
+  );
   await extensionFile.writeAsString(jsonEncode(extensionManifest));
   await initializationFile.writeAsString(jsonEncode(source));
 
@@ -294,6 +304,94 @@ void main() {
           findsOneWidget,
         );
         expect(find.text('Exchange is coming to Garden Club'), findsNothing);
+      } finally {
+        await tester.runAsync(installation.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'phone-viewport calendar grid reaches the seeded March event by scrolling',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.625;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final installation = (await tester.runAsync(
+        () => _installOverPreloadedShell(
+          fixtureRelative: _gardenFixtureRelative,
+          extensionId: 'ext_garden_club_phone_scroll',
+        ),
+      ))!;
+      try {
+        await tester.pumpWidget(
+          _communityScreen(
+            community: installation.report.community,
+            seedDataFiles: installation.report.importedSeedFiles,
+            accountId: 'garden-member',
+          ),
+        );
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('community-tab-calendar')),
+        );
+        await _selectTab(tester, 'calendar');
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('engine-native-calendar-root')),
+        );
+
+        final dayCell = find.byKey(
+          const ValueKey('engine-native-calendar-date-2027-03-13'),
+        );
+        final eventTile = find.byKey(
+          const ValueKey('engine-native-calendar-entry-spring-workshop-0'),
+        );
+
+        // The tile is built (so a widget-existence assertion would pass), but
+        // on a phone viewport it starts below the fold. Reachability is the
+        // property under test, not tree membership.
+        expect(dayCell, findsOneWidget);
+        expect(eventTile, findsOneWidget);
+        final initialRect = tester.getRect(eventTile);
+        final viewportHeight =
+            tester.view.physicalSize.height / tester.view.devicePixelRatio;
+        expect(initialRect.top, greaterThanOrEqualTo(viewportHeight));
+        expect(initialRect.bottom, greaterThan(viewportHeight));
+
+        // Drive the page scroll itself (equivalent to an `adb input swipe`)
+        // until the tile is actually on-screen, without calling
+        // ensureVisible, which would mask a broken scroll gesture.
+        var attempts = 0;
+        while ((tester.getRect(eventTile).bottom > viewportHeight ||
+                tester.getRect(eventTile).top < 0) &&
+            attempts < 40) {
+          await tester.timedDrag(
+            find.byType(Scaffold).first,
+            const Offset(0, -200),
+            const Duration(milliseconds: 120),
+          );
+          await tester.pump(const Duration(milliseconds: 40));
+          attempts++;
+        }
+
+        final visibleRect = tester.getRect(eventTile);
+        expect(visibleRect.top, greaterThanOrEqualTo(-0.5));
+        expect(visibleRect.bottom, lessThanOrEqualTo(viewportHeight + 0.5));
+
+        // A real tap hits the now-reachable tile and opens its detail. This
+        // is the hit-test proof (tester.tap warns when nothing is hit).
+        await tester.tap(eventTile, warnIfMissed: false);
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey(
+              'engine-native-calendar-selected-detail-spring-workshop-0',
+            ),
+          ),
+          findsOneWidget,
+        );
       } finally {
         await tester.runAsync(installation.dispose);
       }

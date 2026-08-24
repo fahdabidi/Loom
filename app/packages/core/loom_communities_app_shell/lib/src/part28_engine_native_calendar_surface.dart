@@ -1028,25 +1028,29 @@ class _EngineNativeCalendarContentState
       key: const ValueKey('engine-native-calendar-root'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            for (final scope in const <(String, String)>[
-              ('day', 'Day'),
-              ('week', 'Week'),
-              ('month', 'Month'),
-              ('pending', 'Pending'),
-            ])
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  key: ValueKey('calendar-scope-${scope.$1}'),
-                  label: Text(scope.$2),
-                  selected: widget.presentation.scope == scope.$1,
-                  onSelected: (_) =>
-                      setState(() => widget.presentation.scope = scope.$1),
+        SingleChildScrollView(
+          key: const ValueKey('engine-native-calendar-scope-strip'),
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final scope in const <(String, String)>[
+                ('day', 'Day'),
+                ('week', 'Week'),
+                ('month', 'Month'),
+                ('pending', 'Pending'),
+              ])
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    key: ValueKey('calendar-scope-${scope.$1}'),
+                    label: Text(scope.$2),
+                    selected: widget.presentation.scope == scope.$1,
+                    onSelected: (_) =>
+                        setState(() => widget.presentation.scope = scope.$1),
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
         if (widget.presentation.scope == 'month') ...[
           Row(
