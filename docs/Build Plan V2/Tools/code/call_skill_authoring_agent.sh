@@ -98,7 +98,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
 LABEL="${2:-$(basename "$TARGET_DOC" | sed 's/\.[^.]*$//')-$(date +%Y%m%d-%H%M%S)}"
-PROFILE="${CODEX_SKILL_AUTHORING_PROFILE-deepseek_v4_pro_medium}"
+PROFILE="${CODEX_SKILL_AUTHORING_PROFILE-gpt5_6_sol_medium}"
 PROFILE_ARGS=()
 if [ -n "$PROFILE" ]; then
   PROFILE_ARGS=(-p "$PROFILE")

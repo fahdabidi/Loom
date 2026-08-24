@@ -156,7 +156,7 @@ set -euo pipefail
 PROMPT_FILE="${1:?usage: call_implementation_agent.sh <prompt-file> [--fresh]}"
 MODE="${2:-}"
 SANDBOX_MODE="${CODEX_IMPLEMENTATION_SANDBOX:-workspace-write}"
-PROFILE="${CODEX_IMPLEMENTATION_PROFILE-deepseek_v4_pro_medium}"
+PROFILE="${CODEX_IMPLEMENTATION_PROFILE-gpt5_6_sol_medium}"
 PROFILE_ARGS=()
 if [ -n "$PROFILE" ]; then
   PROFILE_ARGS=(-p "$PROFILE")

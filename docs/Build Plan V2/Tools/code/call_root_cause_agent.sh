@@ -54,7 +54,7 @@ set -euo pipefail
 PROMPT_FILE="${1:?usage: call_root_cause_agent.sh <brief-file> [--fresh]}"
 MODE="${2:-}"
 SANDBOX_MODE="${CODEX_ROOT_CAUSE_SANDBOX:-workspace-write}"
-PROFILE="${CODEX_ROOT_CAUSE_PROFILE-deepseek_v4_pro_medium}"
+PROFILE="${CODEX_ROOT_CAUSE_PROFILE-gpt5_6_sol_medium}"
 PROFILE_ARGS=()
 if [ -n "$PROFILE" ]; then
   PROFILE_ARGS=(-p "$PROFILE")
