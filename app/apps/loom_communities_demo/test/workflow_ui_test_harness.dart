@@ -2250,3 +2250,198 @@ List<LoomWorkflowTransition> _roleEligibleTransitions(
         allowedRoleIds.contains(roleId);
   }).toList();
 }
+
+/// Normalises an action label, id, or term for B25 synonym matching: lower-
+/// case, split kebab/snake on separators, collapse whitespace.
+String b25NormalizeActionText(String value) => value
+    .toLowerCase()
+    .replaceAll('_', ' ')
+    .replaceAll('-', ' ')
+    .replaceAll(RegExp(r'\s+'), ' ')
+    .trim();
+
+/// The primary/alternate verdict for one workflow transition against a B25
+/// row's two synonym sets.
+class B25TransitionMatch {
+  const B25TransitionMatch({required this.primary, required this.alternate});
+
+  /// True when [primaryTerms] holds for any of the transition's searchable
+  /// texts (label, id, action).
+  final bool primary;
+
+  /// True when [alternateTerms] holds for any of the transition's searchable
+  /// texts.
+  final bool alternate;
+}
+
+/// Classifies [transition] against a B25 row's primary and alternate synonym
+/// sets using word-boundary matching.
+///
+/// Alternate terms are matched first and their spans are excluded from primary
+/// matching within the same searchable text. A negation such as "Not
+/// attending" therefore satisfies "not attending"/"decline" but never the
+/// primary "attend"; likewise "Cancel RSVP" satisfies "cancel rsvp" but never
+/// the primary "rsvp". This mirrors the judge's word-boundary semantics in
+/// `loom_ux_judges` without reaching into its private implementation.
+B25TransitionMatch matchB25TransitionAgainstTerms(
+  LoomWorkflowTransition transition, {
+  required List<String> primaryTerms,
+  required List<String> alternateTerms,
+}) {
+  final texts = _b25TransitionSearchTexts(transition);
+
+  var isPrimary = false;
+  var isAlternate = false;
+  for (final text in texts) {
+    final alternateMatches = _b25TermMatches(text, alternateTerms);
+    if (alternateMatches.isNotEmpty) isAlternate = true;
+    final primaryMatches = _b25TermMatches(
+      text,
+      primaryTerms,
+      excludedSpans: alternateMatches.map((match) => match.span).toList(),
+    );
+    if (primaryMatches.isNotEmpty) isPrimary = true;
+  }
+  return B25TransitionMatch(primary: isPrimary, alternate: isAlternate);
+}
+
+/// Selects the primary and alternate transitions to exercise for a B25 row
+/// from an ordered [candidates] list.
+///
+/// The primary is the first candidate that satisfies [primaryTerms]; the
+/// alternate is the first *distinct* candidate that satisfies
+/// [alternateTerms]. This is device-free: callers hand over the already
+/// role/state-filtered transition list and receive the two transition ids the
+/// walkthrough should drive.
+({LoomWorkflowTransition? primary, LoomWorkflowTransition? alternate})
+selectB25WalkthroughActions({
+  required List<LoomWorkflowTransition> candidates,
+  required List<String> primaryTerms,
+  required List<String> alternateTerms,
+}) {
+  LoomWorkflowTransition? primary;
+  for (final candidate in candidates) {
+    final match = matchB25TransitionAgainstTerms(
+      candidate,
+      primaryTerms: primaryTerms,
+      alternateTerms: alternateTerms,
+    );
+    if (match.primary) {
+      primary = candidate;
+      break;
+    }
+  }
+  LoomWorkflowTransition? alternate;
+  for (final candidate in candidates) {
+    if (identical(candidate, primary)) continue;
+    final match = matchB25TransitionAgainstTerms(
+      candidate,
+      primaryTerms: primaryTerms,
+      alternateTerms: alternateTerms,
+    );
+    if (match.alternate) {
+      alternate = candidate;
+      break;
+    }
+  }
+  return (primary: primary, alternate: alternate);
+}
+
+/// Reports which [primaryTerms] and [alternateTerms] an exercised
+/// [transition] satisfies, using the same word-boundary + alternates-excluded-
+/// from-primary semantics as [matchB25TransitionAgainstTerms]. Used when the
+/// walkthrough writes its own `visiblePrimaryActions`/`visibleAlternateActions`
+/// manifest rather than trusting the judge's OCR pass.
+({List<String> primary, List<String> alternate}) b25MatchedTermNames(
+  LoomWorkflowTransition transition, {
+  required List<String> primaryTerms,
+  required List<String> alternateTerms,
+}) {
+  final texts = _b25TransitionSearchTexts(transition);
+
+  final primary = <String>{};
+  final alternate = <String>{};
+  for (final text in texts) {
+    final alternateMatches = _b25TermMatches(text, alternateTerms);
+    alternate.addAll(alternateMatches.map((match) => match.term));
+    final primaryMatches = _b25TermMatches(
+      text,
+      primaryTerms,
+      excludedSpans: alternateMatches.map((match) => match.span).toList(),
+    );
+    primary.addAll(primaryMatches.map((match) => match.term));
+  }
+  return (
+    primary: primary.toList()..sort(),
+    alternate: alternate.toList()..sort(),
+  );
+}
+
+List<String> _b25TransitionSearchTexts(LoomWorkflowTransition transition) {
+  return <String>{
+    b25NormalizeActionText(transition.label),
+    b25NormalizeActionText(transition.id),
+    if (transition.action case final action?) b25NormalizeActionText(action),
+  }.where((text) => text.isNotEmpty).toList(growable: false);
+}
+
+class _B25TextSpan {
+  const _B25TextSpan(this.start, this.end);
+
+  final int start;
+  final int end;
+
+  bool contains(_B25TextSpan other) => start <= other.start && other.end <= end;
+}
+
+class _B25TermMatch {
+  const _B25TermMatch({required this.term, required this.span});
+
+  final String term;
+  final _B25TextSpan span;
+}
+
+bool _b25IsWordCharacter(int codeUnit) {
+  return (codeUnit >= 0x30 && codeUnit <= 0x39) ||
+      (codeUnit >= 0x41 && codeUnit <= 0x5a) ||
+      (codeUnit >= 0x61 && codeUnit <= 0x7a);
+}
+
+bool _b25IsWordBoundaryStart(String text, int index) {
+  if (index == 0) return true;
+  return !_b25IsWordCharacter(text.codeUnitAt(index - 1));
+}
+
+bool _b25IsWordBoundaryEnd(String text, int end) {
+  if (end >= text.length) return true;
+  return !_b25IsWordCharacter(text.codeUnitAt(end));
+}
+
+List<_B25TermMatch> _b25TermMatches(
+  String text,
+  List<String> terms, {
+  List<_B25TextSpan> excludedSpans = const [],
+}) {
+  final lower = text.toLowerCase();
+  final matches = <_B25TermMatch>[];
+  for (final term in terms) {
+    final needle = b25NormalizeActionText(term);
+    if (needle.isEmpty) continue;
+    var searchFrom = 0;
+    while (searchFrom <= lower.length) {
+      final index = lower.indexOf(needle, searchFrom);
+      if (index < 0) break;
+      final start = index;
+      final end = index + needle.length;
+      final boundaryOk = _b25IsWordBoundaryStart(lower, start) &&
+          _b25IsWordBoundaryEnd(lower, end);
+      final span = _B25TextSpan(start, end);
+      if (boundaryOk &&
+          !excludedSpans.any((excluded) => excluded.contains(span))) {
+        matches.add(_B25TermMatch(term: term, span: span));
+      }
+      searchFrom = end;
+    }
+  }
+  return matches;
+}

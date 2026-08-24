@@ -1421,14 +1421,63 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       '${target.phase}_${target.extensionId}_'
       '${b25Model.workflowId}_${b25Model.role}_STALL_DIAGNOSTIC';
 
+  final primaryCandidates = selector.transitions
+      .where(
+        (candidate) =>
+            matchB25TransitionAgainstTerms(
+              candidate.transition,
+              primaryTerms: b25Model.requiredPrimaryActions,
+              alternateTerms: b25Model.requiredAlternateActions,
+            ).primary,
+      )
+      .toList(growable: false);
+  if (primaryCandidates.isEmpty) {
+    final primaryUnavailable = _b25ScreenshotName(
+      target,
+      b25Model,
+      'primary_action_unavailable',
+    );
+    final resultUnavailable = _b25ScreenshotName(
+      target,
+      b25Model,
+      'result_receiver_unavailable',
+    );
+    await capture(primaryUnavailable);
+    await capture(resultUnavailable);
+    return _b25WalkthroughResult(
+      model: b25Model,
+      selector: selector,
+      screenshotNames: [start, primaryUnavailable, resultUnavailable],
+    );
+  }
   final visibleAction = await _waitForShippedWorkflowAction(
     tester: tester,
     selector: selector,
+    candidates: primaryCandidates,
     lastCompletedStep: lastCompletedStep,
     attemptedStep: attemptedStep,
     diagnosticFrameName: stallDiagnosticName,
     captureDiagnostic: capture,
   );
+  if (visibleAction == null) {
+    final primaryUnavailable = _b25ScreenshotName(
+      target,
+      b25Model,
+      'primary_action_unavailable',
+    );
+    final resultUnavailable = _b25ScreenshotName(
+      target,
+      b25Model,
+      'result_receiver_unavailable',
+    );
+    await capture(primaryUnavailable);
+    await capture(resultUnavailable);
+    return _b25WalkthroughResult(
+      model: b25Model,
+      selector: selector,
+      screenshotNames: [start, primaryUnavailable, resultUnavailable],
+    );
+  }
   final sourceInstance = identical(selector.actionMachine, selector.machine)
       ? await _readShippedInstance(
           tester: tester,
@@ -1440,29 +1489,6 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
   await tester.ensureVisible(visibleAction.finder.first);
   await _pumpB25Frames(tester);
   await capture(action);
-
-  if (!b25Model.requiredPrimaryActions.any(
-    (term) =>
-        _transitionMatchesB25Term(visibleAction.candidate.transition, term),
-  )) {
-    final alternateUnavailable = _b25ScreenshotName(
-      target,
-      b25Model,
-      'alternate_action_unavailable',
-    );
-    final complete = _b25ScreenshotName(
-      target,
-      b25Model,
-      'result_receiver_unavailable',
-    );
-    await capture(alternateUnavailable);
-    await capture(complete);
-    return _b25WalkthroughResult(
-      model: b25Model,
-      selector: selector,
-      screenshotNames: [start, action, alternateUnavailable, complete],
-    );
-  }
 
   await tester.tap(visibleAction.finder.first, warnIfMissed: false);
   await tester.pump();
@@ -1617,7 +1643,8 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
   final alternate = await _waitForB25AlternateAction(
     tester: tester,
     selector: selector,
-    terms: model.requiredAlternateActions,
+    primaryTerms: model.requiredPrimaryActions,
+    alternateTerms: model.requiredAlternateActions,
     excludedTransitionId: executedPrimary.id,
   );
   if (alternate == null) {
@@ -1709,15 +1736,20 @@ Future<({LoomWorkflowTransition transition, Finder finder})?>
 _waitForB25AlternateAction({
   required WidgetTester tester,
   required _ShippedWorkflowSelector selector,
-  required List<String> terms,
+  required List<String> primaryTerms,
+  required List<String> alternateTerms,
   required String excludedTransitionId,
 }) async {
-  if (terms.isEmpty) return null;
+  if (alternateTerms.isEmpty) return null;
   final candidates = selector.actionMachine.transitions
       .where(
         (transition) =>
             transition.id != excludedTransitionId &&
-            terms.any((term) => _transitionMatchesB25Term(transition, term)),
+            matchB25TransitionAgainstTerms(
+              transition,
+              primaryTerms: primaryTerms,
+              alternateTerms: alternateTerms,
+            ).alternate,
       )
       .toList(growable: false);
   for (var attempt = 0; attempt < 80; attempt += 1) {
@@ -1769,17 +1801,33 @@ _B25WalkthroughResult _b25WalkthroughResult({
   LoomWorkflowTransition? executedAlternate,
   required List<String> screenshotNames,
 }) {
-  final visiblePrimary = _matchingB25TransitionTerms(<LoomWorkflowTransition>[
-    if (executedPrimary != null) executedPrimary,
-  ], model.requiredPrimaryActions);
-  final visibleAlternate = _matchingB25TransitionTerms(<LoomWorkflowTransition>[
-    if (executedAlternate != null) executedAlternate,
-  ], model.requiredAlternateActions);
+  final primaryTermMatch = executedPrimary == null
+      ? const (primary: <String>[], alternate: <String>[])
+      : b25MatchedTermNames(
+          executedPrimary,
+          primaryTerms: model.requiredPrimaryActions,
+          alternateTerms: model.requiredAlternateActions,
+        );
+  final alternateTermMatch = executedAlternate == null
+      ? const (primary: <String>[], alternate: <String>[])
+      : b25MatchedTermNames(
+          executedAlternate,
+          primaryTerms: model.requiredPrimaryActions,
+          alternateTerms: model.requiredAlternateActions,
+        );
+  final visiblePrimary = primaryTermMatch.primary;
+  final visibleAlternate = alternateTermMatch.alternate;
+  final offeredActions = selector.transitions
+      .map((candidate) => candidate.transition.id)
+      .toSet()
+      .toList()
+    ..sort();
   final findings = <String>[
     if (visiblePrimary.isEmpty)
       '${model.communityName} / ${model.workflowId} / ${model.role}: '
           '${executedPrimary == null ? 'no documented primary package action was exercised' : 'the exercised package action `${executedPrimary.label}` does not match any documented primary action'} '
-          '${model.requiredPrimaryActions}.',
+          '${model.requiredPrimaryActions}; the package offers '
+          '[${offeredActions.join(', ')}] to this role.',
     if (visibleAlternate.isEmpty)
       '${model.communityName} / ${model.workflowId} / ${model.role}: '
           'the walkthrough exercised no documented '
@@ -1870,42 +1918,6 @@ String _tabForMissingB25Workflow(String workflowId) {
   }
   return 'home';
 }
-
-List<String> _matchingB25TransitionTerms(
-  Iterable<LoomWorkflowTransition> transitions,
-  List<String> terms,
-) {
-  return terms
-      .where(
-        (term) => transitions.any(
-          (transition) => _transitionMatchesB25Term(transition, term),
-        ),
-      )
-      .toSet()
-      .toList()
-    ..sort();
-}
-
-bool _transitionMatchesB25Term(LoomWorkflowTransition transition, String term) {
-  final expected = _normalizeB25ActionText(term);
-  return <String>{
-        transition.label,
-        transition.id,
-        if (transition.action case final action?) action,
-      }
-      .map(_normalizeB25ActionText)
-      .any(
-        (candidate) =>
-            candidate.contains(expected) || expected.contains(candidate),
-      );
-}
-
-String _normalizeB25ActionText(String value) => value
-    .toLowerCase()
-    .replaceAll('_', ' ')
-    .replaceAll('-', ' ')
-    .replaceAll(RegExp(r'\s+'), ' ')
-    .trim();
 
 Future<WorkflowInstance?> _readShippedInstance({
   required WidgetTester tester,
@@ -2208,9 +2220,11 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
         );
         if (b25Model != null &&
             !accountTransitions.any(
-              (candidate) => b25Model.requiredPrimaryActions.any(
-                (term) => _transitionMatchesB25Term(candidate.transition, term),
-              ),
+              (candidate) => matchB25TransitionAgainstTerms(
+                candidate.transition,
+                primaryTerms: b25Model.requiredPrimaryActions,
+                alternateTerms: b25Model.requiredAlternateActions,
+              ).primary,
             )) {
           b25FallbackSelector ??= selector;
           continue;
@@ -2228,9 +2242,9 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
 }
 
 List<String> _roleIdsForB25Role(ShippedEvidencePackage package, String role) {
-  final normalizedRole = _normalizeB25ActionText(role);
+  final normalizedRole = b25NormalizeActionText(role);
   bool identityMatches(LoomActorIdentity identity) {
-    final identityText = _normalizeB25ActionText(
+    final identityText = b25NormalizeActionText(
       '${identity.roleId} ${identity.label} ${identity.roleLabel}',
     );
     if (identityText.contains(normalizedRole)) return true;
@@ -2272,14 +2286,15 @@ int _compareB25TransitionCandidates(
   B25ProductDocInteractionModel model,
 ) {
   int semanticPriority(LoomWorkflowTransition transition) {
-    if (model.requiredPrimaryActions.any(
-      (term) => _transitionMatchesB25Term(transition, term),
-    )) {
+    final match = matchB25TransitionAgainstTerms(
+      transition,
+      primaryTerms: model.requiredPrimaryActions,
+      alternateTerms: model.requiredAlternateActions,
+    );
+    if (match.primary) {
       return 0;
     }
-    if (model.requiredAlternateActions.any(
-      (term) => _transitionMatchesB25Term(transition, term),
-    )) {
+    if (match.alternate) {
       return 1;
     }
     return 2;
@@ -2688,17 +2703,18 @@ String _shippedTransitionInputValue(String key, String type, String roleId) {
   return 'Evidence $key';
 }
 
-Future<({_ShippedTransitionCandidate candidate, Finder finder})>
+Future<({_ShippedTransitionCandidate candidate, Finder finder})?>
 _waitForShippedWorkflowAction({
   required WidgetTester tester,
   required _ShippedWorkflowSelector selector,
+  required List<_ShippedTransitionCandidate> candidates,
   required String lastCompletedStep,
   required String attemptedStep,
   required String diagnosticFrameName,
   required Future<void> Function(String name) captureDiagnostic,
 }) async {
   final budget = WalkthroughWaitBudget();
-  final actionDescriptions = selector.transitions
+  final actionDescriptions = candidates
       .map(
         (candidate) =>
             '${candidate.transition.id} (${candidate.transition.label})',
@@ -2706,7 +2722,7 @@ _waitForShippedWorkflowAction({
       .join(', ');
   var attemptedExpansion = false;
   while (!budget.expired) {
-    for (final candidate in selector.transitions) {
+    for (final candidate in candidates) {
       final finder = _engineActionFinder(
         selector.instance.instanceId,
         candidate.transition.id,
@@ -2728,6 +2744,24 @@ _waitForShippedWorkflowAction({
       () => Future<void>.delayed(const Duration(milliseconds: 5)),
     );
     await tester.pump(const Duration(milliseconds: 50));
+  }
+  final anyOtherTappable = selector.transitions.any((candidate) {
+    if (candidates.any(
+      (primaryCandidate) =>
+          primaryCandidate.transition.id == candidate.transition.id,
+    )) {
+      return false;
+    }
+    return _engineActionFinder(
+      selector.instance.instanceId,
+      candidate.transition.id,
+    ).evaluate().isNotEmpty;
+  });
+  if (anyOtherTappable) {
+    // The instance is live and offers other actions, but none of the
+    // required primary actions is offered to this role in this state. That
+    // is a product finding, not a stall.
+    return null;
   }
   await captureDiagnostic(diagnosticFrameName);
   throw WalkthroughStallFailure(
