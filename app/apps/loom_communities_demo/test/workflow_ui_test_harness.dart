@@ -7,7 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
 import 'package:loom_ux_judges/src/validator/jsonc.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
-    show currentCommunitySpecVersion;
+    show
+        currentCommunitySpecVersion,
+        LoomWorkflowStateMachine,
+        LoomWorkflowTransition;
 
 import 'walkthrough_wait.dart';
 
@@ -2172,4 +2175,78 @@ Future<void> tapCommunityTab(WidgetTester tester, String tabId) async {
   await tester.ensureVisible(tabFinder);
   await tester.tap(tabFinder, warnIfMissed: false);
   await tester.pumpAndSettle();
+}
+
+/// Resolves the transition ids a [roleId] can take for an `event-rsvp` bound
+/// workflow, honoring both legal RSVP shapes.
+///
+/// - **Self shape**: member actions live directly on the bound workflow, so
+///   the role's actions come from that workflow's transitions out of the
+///   instance's current state.
+/// - **Paired shape**: a binding declares `responseTable.workflowType` and the
+///   member responses live in that separate workflow. The responding role's
+///   actions come from the response workflow's declared `initialState`. The
+///   workflow name is read from the binding and is never derived by appending
+///   `-response`.
+///
+/// Both sets are unioned because the real card renders the bound workflow's
+/// own eligible transitions alongside response-table actions. That also keeps
+/// the organizer working in the paired shape (the event workflow's
+/// `make-recurring`/`cancel-event` are organizer-only) while member actions
+/// resolve through `responseTable` instead.
+Set<String> resolvedRsvpActionIdsForRole({
+  required LoomWorkflowStateMachine machine,
+  required Map<String, LoomWorkflowStateMachine> definitions,
+  required LoomWorkflowSeedInstance instance,
+  required String roleId,
+}) {
+  final resolved = <String>{};
+
+  for (final transition in _roleEligibleTransitions(
+    machine,
+    instance.currentState,
+    roleId,
+  )) {
+    resolved.add(transition.id);
+  }
+
+  for (final binding in machine.renderBindings) {
+    if (!binding.states.contains(instance.currentState)) {
+      continue;
+    }
+    final responseWorkflowType = binding.responseTable?.workflowType;
+    if (responseWorkflowType == null) {
+      continue;
+    }
+    final responseMachine = definitions[responseWorkflowType];
+    if (responseMachine == null) {
+      throw StateError(
+        'Bound workflow ${machine.workflowType} names response workflow '
+        '$responseWorkflowType via responseTable, but that workflow is not '
+        'declared.',
+      );
+    }
+    for (final transition in _roleEligibleTransitions(
+      responseMachine,
+      responseMachine.initialState,
+      roleId,
+    )) {
+      resolved.add(transition.id);
+    }
+  }
+
+  return resolved;
+}
+
+List<LoomWorkflowTransition> _roleEligibleTransitions(
+  LoomWorkflowStateMachine machine,
+  String state,
+  String roleId,
+) {
+  return machine.transitionsFrom(state).where((transition) {
+    final allowedRoleIds = transition.guard.allowedRoleIds;
+    return allowedRoleIds == null ||
+        allowedRoleIds.isEmpty ||
+        allowedRoleIds.contains(roleId);
+  }).toList();
 }
