@@ -599,11 +599,16 @@ Future<_StreamingProcessResult> _runProcessStreaming({
   required Map<String, String> environment,
   required void Function(Map<String, Object?> event) onProgress,
 }) async {
+  // lutter and dart are .bat shims on Windows, which Process.start
+  // cannot resolve from the bare name -- it fails with "The system cannot find
+  // the file specified". Running through the shell lets Windows apply PATHEXT.
+  // Left off elsewhere so POSIX hosts keep exec semantics and argument quoting.
   final process = await Process.start(
     executable,
     arguments,
     workingDirectory: workingDirectory,
     environment: environment,
+    runInShell: Platform.isWindows,
   );
   final stdoutBuffer = StringBuffer();
   final stderrBuffer = StringBuffer();

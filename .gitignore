@@ -7,3 +7,8 @@
 *.png
 **.log
 .tmp/
+# Android launcher icons are SOURCE, not evidence. The blanket `*.png` rule above
+# is for B25 evidence screenshots; it also swallowed these, so a clean clone could
+# not build the demo app at all -- Gradle failed with
+# "resource mipmap/ic_launcher not found".
+!app/apps/loom_communities_demo/android/app/src/main/res/mipmap-*/*.png
