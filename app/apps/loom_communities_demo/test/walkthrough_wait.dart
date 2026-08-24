@@ -1,3 +1,5 @@
+import 'dart:async';
+
 /// Wall-clock budget for a single "wait for this thing" step during a UI
 /// walkthrough.
 ///
@@ -95,4 +97,134 @@ class WalkthroughStallFailure implements Exception {
 
   @override
   String toString() => message;
+}
+
+/// Wall-clock heartbeat watchdog that bounds the ENTIRE walkthrough body, not
+/// just the individual wait-poll loops inside it.
+///
+/// `flutter drive` runs the whole `testWidgets` body under a single
+/// `request_data` request. A single unbounded `await` anywhere in that body
+/// therefore silences the whole run: finder-poll budgets that live *inside* a
+/// later step never get the chance to fire. This watchdog races the body
+/// against a real-timer deadline, so any stretch of the body that stops making
+/// progress for [timeout] fails with [WalkthroughStallFailure] naming the last
+/// completed step, the attempted step, and what was being awaited.
+///
+/// Call [beat] whenever the body completes a step or crosses a phase boundary
+/// (a workflow starts, a screenshot is captured, a workflow completes). The
+/// timer restarts on each beat, so the bound measures *a single
+/// no-progress gap* rather than the total runtime of a long capture.
+class WalkthroughBodyWatch {
+  WalkthroughBodyWatch({
+    Duration timeout = WalkthroughWaitBudget.defaultTimeout,
+    DateTime Function()? now,
+    Timer Function(Duration duration, void Function() callback)? createTimer,
+    required String lastCompletedStep,
+    required String attemptedStep,
+    required String waitingFor,
+  }) : timeout = timeout,
+       _now = now ?? WalkthroughWaitBudget._systemNow,
+       _createTimer = createTimer ?? _defaultCreateTimer,
+       _lastCompletedStep = lastCompletedStep,
+       _attemptedStep = attemptedStep,
+       _waitingFor = waitingFor {
+    _deadline = Completer<Never>();
+    _beat();
+  }
+
+  static Timer _defaultCreateTimer(
+    Duration duration,
+    void Function() callback,
+  ) {
+    return Timer(duration, callback);
+  }
+
+  final Duration timeout;
+  final DateTime Function() _now;
+  final Timer Function(Duration duration, void Function() callback)
+  _createTimer;
+
+  String? _lastCompletedStep;
+  String _attemptedStep;
+  String _waitingFor;
+
+  late final Completer<Never> _deadline;
+  Timer? _timer;
+  DateTime _lastBeat = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+  bool _fired = false;
+  bool _cancelled = false;
+
+  /// Completes with [WalkthroughStallFailure] if the body stops progressing
+  /// for [timeout]. Raced against the walkthrough body by
+  /// [watchWalkthroughBodyWith].
+  Future<Never> get deadline => _deadline.future;
+
+  Duration get elapsedSinceLastBeat => _now().toUtc().difference(_lastBeat);
+
+  /// Reports progress and restarts the deadline. All three fields are optional
+  /// so a beat can update only what changed; the other fields keep their most
+  /// recent diagnostic value.
+  void beat({
+    String? lastCompletedStep,
+    String? attemptedStep,
+    String? waitingFor,
+  }) {
+    if (lastCompletedStep != null) _lastCompletedStep = lastCompletedStep;
+    if (attemptedStep != null) _attemptedStep = attemptedStep;
+    if (waitingFor != null) _waitingFor = waitingFor;
+    _lastBeat = _now().toUtc();
+    _beat();
+  }
+
+  void _beat() {
+    _timer?.cancel();
+    if (_cancelled || _fired) {
+      return;
+    }
+    _timer = _createTimer(timeout, _onExpired);
+  }
+
+  void _onExpired() {
+    if (_cancelled || _fired) {
+      return;
+    }
+    _fired = true;
+    final budget = WalkthroughWaitBudget(
+      timeout: timeout,
+      now: () => _lastBeat.add(timeout),
+    );
+    final message = buildWalkthroughStallMessage(
+      lastCompletedStep: _lastCompletedStep,
+      attemptedStep: _attemptedStep,
+      waitingFor: _waitingFor,
+      budget: budget,
+    );
+    if (!_deadline.isCompleted) {
+      _deadline.completeError(WalkthroughStallFailure(message));
+    }
+  }
+
+  /// Stops the watchdog after the body completes. Cancelling the timer
+  /// prevents an error from firing against an already-abandoned deadline once
+  /// [watchWalkthroughBodyWith] has returned.
+  void cancel() {
+    _cancelled = true;
+    _timer?.cancel();
+    _timer = null;
+  }
+}
+
+/// Races [body] against [watch]'s deadline and returns [body]'s result, or
+/// rethrows the watchdog's [WalkthroughStallFailure] if the body stopped
+/// progressing. The watchdog is always cancelled in a `finally` so a completed
+/// body can never surface a late timer error.
+Future<T> watchWalkthroughBodyWith<T>(
+  Future<T> body,
+  WalkthroughBodyWatch watch,
+) async {
+  try {
+    return await Future.any<T>([body, watch.deadline]);
+  } finally {
+    watch.cancel();
+  }
 }

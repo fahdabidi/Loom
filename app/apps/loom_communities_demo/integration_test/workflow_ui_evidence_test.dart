@@ -58,884 +58,927 @@ void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('wf_full-ui-screenshot-evidence-b12-b20', (tester) async {
-    final evidenceTargets = _evidenceTargetsForRun();
-    final b25InteractionCatalog = B25ProductDocInteractionCatalog.fromAssetJson(
-      await rootBundle.loadString(b25InteractionModelFlutterAssetPath),
+    final bodyWatch = WalkthroughBodyWatch(
+      lastCompletedStep: 'setup phase, no step completed yet',
+      attemptedStep: 'initializing the walkthrough capture harness',
+      waitingFor:
+          'the demo app, evidence targets, and interaction catalog to load',
     );
-    _assertB25AssetCoversTargets(
-      catalog: b25InteractionCatalog,
-      evidenceTargets: evidenceTargets,
-    );
-    for (final target in evidenceTargets) {
-      await readShippedEvidencePackage(target);
-    }
-    final selectedExtensionIds = {
-      for (final target in evidenceTargets) target.extensionId,
-    };
-    final requestedPhases = _requestedEvidencePhases(evidenceTargets);
-    if (_communityFilter.isNotEmpty && requestedPhases.isEmpty) {
-      final requestedCommunities = _communityFilter.toList()..sort();
-      final requestedPhaseFilter = _phaseFilter.toList()..sort();
-      throw StateError(
-        'LOOM_EVIDENCE_COMMUNITY_FILTER and LOOM_EVIDENCE_PHASE_FILTER '
-        'selected no walkthrough coverage: communities=$requestedCommunities, '
-        'phases=$requestedPhaseFilter.',
+    Future<void> runWalkthrough() async {
+      final evidenceTargets = _evidenceTargetsForRun();
+      final b25InteractionCatalog =
+          B25ProductDocInteractionCatalog.fromAssetJson(
+            await rootBundle.loadString(b25InteractionModelFlutterAssetPath),
+          );
+      _assertB25AssetCoversTargets(
+        catalog: b25InteractionCatalog,
+        evidenceTargets: evidenceTargets,
       );
-    }
-    if (!_externalAndroidScreenshots) {
-      await binding.convertFlutterSurfaceToImage();
-    }
-    binding.reportData ??= <String, dynamic>{};
-    binding.reportData!['walkthroughStatus'] = 'running';
-    binding.reportData!['requestedPhases'] = requestedPhases;
-    binding.reportData!['expectedWorkflowCountByPhase'] =
-        _workflowEvidenceEntryCountByPhase(
-          evidenceTargets,
-          b25InteractionCatalog,
+      for (final target in evidenceTargets) {
+        await readShippedEvidencePackage(target);
+      }
+      final selectedExtensionIds = {
+        for (final target in evidenceTargets) target.extensionId,
+      };
+      final requestedPhases = _requestedEvidencePhases(evidenceTargets);
+      if (_communityFilter.isNotEmpty && requestedPhases.isEmpty) {
+        final requestedCommunities = _communityFilter.toList()..sort();
+        final requestedPhaseFilter = _phaseFilter.toList()..sort();
+        throw StateError(
+          'LOOM_EVIDENCE_COMMUNITY_FILTER and LOOM_EVIDENCE_PHASE_FILTER '
+          'selected no walkthrough coverage: communities=$requestedCommunities, '
+          'phases=$requestedPhaseFilter.',
         );
-    binding.reportData!.addAll(_evidenceDeviceMetadata());
-    final entries = <Map<String, Object?>>[];
-    binding.reportData!['workflowEvidence'] = entries;
-    // Preloaded demo-catalog entries are not evidence that a shipped package
-    // was installed. Every walkthrough target must be installed from its
-    // registered shipped package during this run.
-    final installedExtensionIds = <String>{};
-    final screenshotVisibleTextByName = <String, String>{};
-    final screenshotCapture = _ScreenshotCaptureRecorder(
-      binding: binding,
-      tester: tester,
-      reportData: binding.reportData!,
-      externalAndroidScreenshots: _externalAndroidScreenshots,
-    );
-    final totalWorkflowEvidenceEntries = _workflowEvidenceEntryCount(
-      evidenceTargets,
-      b25InteractionCatalog,
-    );
-    var completedWorkflowEvidenceEntries = 0;
-
-    void recordEvidenceEntry(Map<String, Object?> entry) {
-      entries.add(entry);
-      binding.reportData!['workflowEvidence'] = List<Map<String, Object?>>.of(
-        entries,
-      );
-    }
-
-    void emitProgress(
-      String status, {
-      required String phase,
-      required String workflowId,
-      String? communityName,
-      String? screenshotName,
-    }) {
-      if (status == 'workflow-complete') {
-        completedWorkflowEvidenceEntries += 1;
       }
-      _emitCaptureProgress({
-        'status': status,
-        'phase': phase,
-        'workflowId': workflowId,
-        if (communityName != null) 'communityName': communityName,
-        if (screenshotName != null) 'screenshotName': screenshotName,
-        'completedWorkflows': completedWorkflowEvidenceEntries,
-        'totalWorkflows': totalWorkflowEvidenceEntries,
-      });
-    }
-
-    Future<void> capture(String name) {
-      _emitCaptureProgress({
-        'status': 'screenshot-start',
-        'phase': _phaseForScreenshotName(name),
-        'screenshotName': name,
-        'completedWorkflows': completedWorkflowEvidenceEntries,
-        'totalWorkflows': totalWorkflowEvidenceEntries,
-      });
-      return _capture(
-        screenshotCapture,
-        tester,
-        screenshotVisibleTextByName,
-        name,
-      );
-    }
-
-    await tester.pumpWidget(const LoomCommunitiesDemoApp());
-    await _pumpB25Frames(tester);
-
-    Future<void> ensureTargetInstalled(LoomEvidenceTarget target) async {
-      if (installedExtensionIds.contains(target.extensionId)) {
-        return;
+      if (!_externalAndroidScreenshots) {
+        await binding.convertFlutterSurfaceToImage();
       }
-      await installShippedEvidenceTarget(tester, target);
-      installedExtensionIds.add(target.extensionId);
-    }
+      binding.reportData ??= <String, dynamic>{};
+      binding.reportData!['walkthroughStatus'] = 'running';
+      binding.reportData!['requestedPhases'] = requestedPhases;
+      binding.reportData!['expectedWorkflowCountByPhase'] =
+          _workflowEvidenceEntryCountByPhase(
+            evidenceTargets,
+            b25InteractionCatalog,
+          );
+      binding.reportData!.addAll(_evidenceDeviceMetadata());
+      final entries = <Map<String, Object?>>[];
+      binding.reportData!['workflowEvidence'] = entries;
+      // Preloaded demo-catalog entries are not evidence that a shipped package
+      // was installed. Every walkthrough target must be installed from its
+      // registered shipped package during this run.
+      final installedExtensionIds = <String>{};
+      final screenshotVisibleTextByName = <String, String>{};
+      final screenshotCapture = _ScreenshotCaptureRecorder(
+        binding: binding,
+        tester: tester,
+        reportData: binding.reportData!,
+        externalAndroidScreenshots: _externalAndroidScreenshots,
+      );
+      final totalWorkflowEvidenceEntries = _workflowEvidenceEntryCount(
+        evidenceTargets,
+        b25InteractionCatalog,
+      );
+      var completedWorkflowEvidenceEntries = 0;
 
-    bool _communityListReady() {
-      return find
-              .byKey(const ValueKey('add-community-button'))
-              .evaluate()
-              .isNotEmpty &&
-          find.byKey(const ValueKey('community-list')).evaluate().isNotEmpty &&
-          find.byType(Scrollable).evaluate().isNotEmpty;
-    }
+      void recordEvidenceEntry(Map<String, Object?> entry) {
+        entries.add(entry);
+        binding.reportData!['workflowEvidence'] = List<Map<String, Object?>>.of(
+          entries,
+        );
+      }
 
-    Future<void> returnToCommunityList() async {
-      for (var attempt = 0; attempt < 8; attempt += 1) {
-        await tester.pumpAndSettle();
-        if (_communityListReady()) {
+      void emitProgress(
+        String status, {
+        required String phase,
+        required String workflowId,
+        String? communityName,
+        String? screenshotName,
+      }) {
+        if (status == 'workflow-complete') {
+          completedWorkflowEvidenceEntries += 1;
+          bodyWatch.beat(
+            lastCompletedStep:
+                'phase $phase, community ${communityName ?? '(unknown)'}, '
+                'workflow $workflowId',
+            attemptedStep: 'advancing to the next workflow phase',
+            waitingFor: 'the next workflow to start',
+          );
+        } else if (status == 'workflow-start') {
+          bodyWatch.beat(
+            attemptedStep:
+                'starting workflow $workflowId (phase $phase'
+                '${communityName != null ? ', community $communityName' : ''})',
+            waitingFor:
+                'the first screenshot for workflow $workflowId to be captured',
+          );
+        }
+        _emitCaptureProgress({
+          'status': status,
+          'phase': phase,
+          'workflowId': workflowId,
+          if (communityName != null) 'communityName': communityName,
+          if (screenshotName != null) 'screenshotName': screenshotName,
+          'completedWorkflows': completedWorkflowEvidenceEntries,
+          'totalWorkflows': totalWorkflowEvidenceEntries,
+        });
+      }
+
+      Future<void> capture(String name) {
+        _emitCaptureProgress({
+          'status': 'screenshot-start',
+          'phase': _phaseForScreenshotName(name),
+          'screenshotName': name,
+          'completedWorkflows': completedWorkflowEvidenceEntries,
+          'totalWorkflows': totalWorkflowEvidenceEntries,
+        });
+        return _capture(
+          screenshotCapture,
+          tester,
+          screenshotVisibleTextByName,
+          name,
+        ).then(
+          (_) => bodyWatch.beat(
+            lastCompletedStep: 'screenshot $name captured',
+            attemptedStep: 'continuing the walkthrough after $name',
+            waitingFor: 'the next walkthrough step to become ready',
+          ),
+        );
+      }
+
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await _pumpB25Frames(tester);
+
+      Future<void> ensureTargetInstalled(LoomEvidenceTarget target) async {
+        if (installedExtensionIds.contains(target.extensionId)) {
           return;
         }
-        final backButton = find.byTooltip('Back');
-        if (backButton.evaluate().isNotEmpty) {
-          await tester.tap(backButton.first, warnIfMissed: false);
-        } else {
-          await tester.pageBack();
+        await installShippedEvidenceTarget(tester, target);
+        installedExtensionIds.add(target.extensionId);
+      }
+
+      bool _communityListReady() {
+        return find
+                .byKey(const ValueKey('add-community-button'))
+                .evaluate()
+                .isNotEmpty &&
+            find
+                .byKey(const ValueKey('community-list'))
+                .evaluate()
+                .isNotEmpty &&
+            find.byType(Scrollable).evaluate().isNotEmpty;
+      }
+
+      Future<void> returnToCommunityList() async {
+        for (var attempt = 0; attempt < 8; attempt += 1) {
+          await tester.pumpAndSettle();
+          if (_communityListReady()) {
+            return;
+          }
+          final backButton = find.byTooltip('Back');
+          if (backButton.evaluate().isNotEmpty) {
+            await tester.tap(backButton.first, warnIfMissed: false);
+          } else {
+            await tester.pageBack();
+          }
+          await tester.pumpAndSettle();
         }
-        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('add-community-button')),
+          findsOneWidget,
+        );
+        expect(find.byKey(const ValueKey('community-list')), findsOneWidget);
+        expect(find.byType(Scrollable), findsWidgets);
       }
-      expect(
-        find.byKey(const ValueKey('add-community-button')),
-        findsOneWidget,
-      );
-      expect(find.byKey(const ValueKey('community-list')), findsOneWidget);
-      expect(find.byType(Scrollable), findsWidgets);
-    }
 
-    Future<void> ensureTargetOpen(LoomEvidenceTarget target) async {
-      if (find
-          .byKey(ValueKey('local-extension-${target.extensionId}'))
-          .evaluate()
-          .isNotEmpty) {
-        return;
-      }
-      await returnToCommunityList();
-      await ensureTargetInstalled(target);
-      await openEvidenceTarget(tester, target);
-    }
-
-    if (_includePhase('B12')) {
-      emitProgress(
-        'workflow-start',
-        phase: 'B12',
-        workflowId: 'workflow-ui-evidence-harness',
-      );
-      final harnessEntry = <String, Object?>{
-        'phase': 'B12',
-        'appId': 'workflow-ui-evidence-harness',
-        'workflowId': 'workflow-ui-evidence-harness',
-        'expectedAssertions': [
-          'empty state is visible',
-          'local package dialog opens',
-          'screenshot callback completes',
-        ],
-      };
-      await capture('B12_harness_start');
-      await tester.tap(find.byKey(const ValueKey('add-community-button')));
-      await tester.pumpAndSettle();
-      await capture('B12_harness_action');
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-      await capture('B12_harness_complete');
-      recordEvidenceEntry({
-        ...harnessEntry,
-        'screenshotNames': [
-          'B12_harness_start',
-          'B12_harness_action',
-          'B12_harness_complete',
-        ],
-        'status': 'pass',
-      });
-      emitProgress(
-        'workflow-complete',
-        phase: 'B12',
-        workflowId: 'workflow-ui-evidence-harness',
-      );
-    }
-
-    var targetWorkflowOrdinal = 0;
-    for (final target in evidenceTargets.where(
-      (target) => _includePhase(target.phase),
-    )) {
-      final productDocRows = b25InteractionCatalog.models
-          .where(
-            (row) =>
-                row.communityId == target.communityId &&
-                !_b25RowUsesDedicatedRoleWalkthrough(row),
-          )
-          .toList(growable: false);
-      final selectedProductDocRows = <B25ProductDocInteractionModel>[];
-      for (final productDocRow in productDocRows) {
-        final workflowOrdinal = targetWorkflowOrdinal;
-        targetWorkflowOrdinal += 1;
-        if (_includeWorkflowShard(workflowOrdinal)) {
-          selectedProductDocRows.add(productDocRow);
+      Future<void> ensureTargetOpen(LoomEvidenceTarget target) async {
+        if (find
+            .byKey(ValueKey('local-extension-${target.extensionId}'))
+            .evaluate()
+            .isNotEmpty) {
+          return;
         }
-      }
-      if (selectedProductDocRows.isEmpty) {
-        continue;
+        await returnToCommunityList();
+        await ensureTargetInstalled(target);
+        await openEvidenceTarget(tester, target);
       }
 
-      await ensureTargetInstalled(target);
-      await openEvidenceTarget(tester, target);
-      final shippedPackage = await readShippedEvidencePackage(target);
-      for (final productDocRow in selectedProductDocRows) {
+      if (_includePhase('B12')) {
         emitProgress(
           'workflow-start',
-          phase: target.phase,
-          workflowId: productDocRow.workflowId,
-          communityName: target.communityName,
+          phase: 'B12',
+          workflowId: 'workflow-ui-evidence-harness',
         );
-        final walkthroughResult =
-            shippedPackage.experience.workflowDefinitions!.containsKey(
-              productDocRow.workflowId,
+        final harnessEntry = <String, Object?>{
+          'phase': 'B12',
+          'appId': 'workflow-ui-evidence-harness',
+          'workflowId': 'workflow-ui-evidence-harness',
+          'expectedAssertions': [
+            'empty state is visible',
+            'local package dialog opens',
+            'screenshot callback completes',
+          ],
+        };
+        await capture('B12_harness_start');
+        await tester.tap(find.byKey(const ValueKey('add-community-button')));
+        await tester.pumpAndSettle();
+        await capture('B12_harness_action');
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+        await capture('B12_harness_complete');
+        recordEvidenceEntry({
+          ...harnessEntry,
+          'screenshotNames': [
+            'B12_harness_start',
+            'B12_harness_action',
+            'B12_harness_complete',
+          ],
+          'status': 'pass',
+        });
+        emitProgress(
+          'workflow-complete',
+          phase: 'B12',
+          workflowId: 'workflow-ui-evidence-harness',
+        );
+      }
+
+      var targetWorkflowOrdinal = 0;
+      for (final target in evidenceTargets.where(
+        (target) => _includePhase(target.phase),
+      )) {
+        final productDocRows = b25InteractionCatalog.models
+            .where(
+              (row) =>
+                  row.communityId == target.communityId &&
+                  !_b25RowUsesDedicatedRoleWalkthrough(row),
             )
-            ? await _runB25ShippedWorkflowWalkthrough(
-                tester: tester,
-                target: target,
-                package: shippedPackage,
-                selector: _shippedWorkflowSelector(
+            .toList(growable: false);
+        final selectedProductDocRows = <B25ProductDocInteractionModel>[];
+        for (final productDocRow in productDocRows) {
+          final workflowOrdinal = targetWorkflowOrdinal;
+          targetWorkflowOrdinal += 1;
+          if (_includeWorkflowShard(workflowOrdinal)) {
+            selectedProductDocRows.add(productDocRow);
+          }
+        }
+        if (selectedProductDocRows.isEmpty) {
+          continue;
+        }
+
+        await ensureTargetInstalled(target);
+        await openEvidenceTarget(tester, target);
+        final shippedPackage = await readShippedEvidencePackage(target);
+        for (final productDocRow in selectedProductDocRows) {
+          emitProgress(
+            'workflow-start',
+            phase: target.phase,
+            workflowId: productDocRow.workflowId,
+            communityName: target.communityName,
+          );
+          final walkthroughResult =
+              shippedPackage.experience.workflowDefinitions!.containsKey(
+                productDocRow.workflowId,
+              )
+              ? await _runB25ShippedWorkflowWalkthrough(
+                  tester: tester,
                   target: target,
                   package: shippedPackage,
-                  workflowType: productDocRow.workflowId,
+                  selector: _shippedWorkflowSelector(
+                    target: target,
+                    package: shippedPackage,
+                    workflowType: productDocRow.workflowId,
+                    b25Model: productDocRow,
+                  ),
                   b25Model: productDocRow,
-                ),
-                b25Model: productDocRow,
-                capture: capture,
-              )
-            : await _captureMissingB25PackageWorkflow(
-                tester: tester,
-                target: target,
-                package: shippedPackage,
-                b25Model: productDocRow,
-                capture: capture,
-              );
+                  capture: capture,
+                )
+              : await _captureMissingB25PackageWorkflow(
+                  tester: tester,
+                  target: target,
+                  package: shippedPackage,
+                  b25Model: productDocRow,
+                  capture: capture,
+                );
+          recordEvidenceEntry({
+            'phase': target.phase,
+            'appId': target.extensionId,
+            'communityId': target.communityId,
+            'communityName': target.communityName,
+            'workflowId': productDocRow.workflowId,
+            'role': productDocRow.role,
+            'productDocPath': productDocRow.productDocPath,
+            'requiredPrimaryActions': productDocRow.requiredPrimaryActions,
+            'requiredAlternateActions': productDocRow.requiredAlternateActions,
+            'expectedAssertions': [
+              productDocRow.expectedDecision,
+              productDocRow.requiredPrimaryActions.join(', '),
+              productDocRow.requiredAlternateActions.join(', '),
+              productDocRow.resultAndReceiverState,
+            ],
+            'screenshotNames': walkthroughResult.screenshotNames,
+            'b25ActionProofStatus': walkthroughResult.actionProofStatus,
+            'visiblePrimaryActions': walkthroughResult.visiblePrimaryActions,
+            'visibleAlternateActions':
+                walkthroughResult.visibleAlternateActions,
+            'productFindings': walkthroughResult.productFindings,
+            'status': 'pass',
+          });
+          emitProgress(
+            'workflow-complete',
+            phase: target.phase,
+            workflowId: productDocRow.workflowId,
+            communityName: target.communityName,
+          );
+        }
+
+        final communityBackButton = find.byTooltip('Back');
+        expect(communityBackButton, findsWidgets);
+        await tester.tap(communityBackButton.first);
+        await _pumpB25Frames(tester);
+        expect(find.text('Loom Communities'), findsOneWidget);
+      }
+
+      final mosqueTarget = loomEvidenceTargets.firstWhere(
+        (target) => target.extensionId == 'ext_mosque',
+      );
+      final mosquePackage = await readShippedEvidencePackage(mosqueTarget);
+      final mosqueAdminRoleId = _packageRoleId(
+        target: mosqueTarget,
+        package: mosquePackage,
+        label: 'Masjid Admin',
+      );
+      final mosqueMemberRoleId = _packageRoleId(
+        target: mosqueTarget,
+        package: mosquePackage,
+        label: 'Community Member',
+      );
+      final announcement = _shippedWorkflowSelector(
+        target: mosqueTarget,
+        package: mosquePackage,
+        workflowType: 'mosque-announcement',
+      );
+      final careRequest = _shippedWorkflowSelector(
+        target: mosqueTarget,
+        package: mosquePackage,
+        workflowType: 'mosque-care-request',
+      );
+      B25ProductDocInteractionModel mosqueB25Row(
+        String workflowId,
+        String role,
+      ) => b25InteractionCatalog.requireModel(
+        communityId: mosqueTarget.communityId,
+        communityName: mosqueTarget.communityName,
+        workflowId: workflowId,
+        role: role,
+      );
+      final gardenTarget = loomEvidenceTargets.firstWhere(
+        (target) => target.extensionId == 'ext_garden_club',
+      );
+      final gardenPackage = await readShippedEvidencePackage(gardenTarget);
+      final gardenMemberRoleId = _packageRoleId(
+        target: gardenTarget,
+        package: gardenPackage,
+        label: 'Member',
+      );
+      final gardenRsvp = _shippedWorkflowSelector(
+        target: gardenTarget,
+        package: gardenPackage,
+        workflowType: 'garden-event-rsvp',
+      );
+      final hoaTarget = loomEvidenceTargets.firstWhere(
+        (target) => target.extensionId == 'ext_cedar_commons_hoa',
+      );
+      final soccerTarget = loomEvidenceTargets.firstWhere(
+        (target) => target.extensionId == 'ext_youth_soccer',
+      );
+      final soccerPackage = await readShippedEvidencePackage(soccerTarget);
+      final soccerCoachRoleId = _packageRoleId(
+        target: soccerTarget,
+        package: soccerPackage,
+        label: 'Coach',
+      );
+      final soccerRoster = _shippedWorkflowSelector(
+        target: soccerTarget,
+        package: soccerPackage,
+        workflowType: 'soccer-team-roster',
+      );
+
+      if (_includePhase('B17') &&
+          selectedExtensionIds.contains(mosqueTarget.extensionId)) {
+        emitProgress(
+          'workflow-start',
+          phase: 'B17',
+          workflowId: 'wf_actor-identity-inventory-capability-matrix',
+          communityName: mosqueTarget.communityName,
+        );
+        await ensureTargetOpen(mosqueTarget);
+        await selectActorIdentity(tester, mosqueAdminRoleId);
+        await capture('B17_actor_identity_inventory_active_admin');
+        await tester.tap(
+          find.byKey(const ValueKey('actor-identity-picker-button')),
+        );
+        await tester.pumpAndSettle();
+        await capture('B17_actor_identity_inventory_picker');
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
         recordEvidenceEntry({
-          'phase': target.phase,
-          'appId': target.extensionId,
-          'communityId': target.communityId,
-          'communityName': target.communityName,
-          'workflowId': productDocRow.workflowId,
+          'phase': 'B17',
+          'appId': 'actor-identity-role-inventory',
+          'workflowId': 'wf_actor-identity-inventory-capability-matrix',
+          'expectedAssertions': [
+            'all demo communities define two or more actorIdentities',
+            'all workflow/actorIdentity matrix rows have actor, receiver, read-only, or disabled state',
+            'receiver rows declare dependency evidence',
+            'matrix rows: ${await _roleMatrixRowCount(evidenceTargets)}',
+          ],
+          'screenshotNames': [
+            'B17_actor_identity_inventory_active_admin',
+            'B17_actor_identity_inventory_picker',
+          ],
+          'status': 'pass',
+        });
+        emitProgress(
+          'workflow-complete',
+          phase: 'B17',
+          workflowId: 'wf_actor-identity-inventory-capability-matrix',
+          communityName: mosqueTarget.communityName,
+        );
+      }
+
+      if (_includePhase('B18') &&
+          selectedExtensionIds.contains(mosqueTarget.extensionId)) {
+        final productDocRow = mosqueB25Row(
+          'wf_demo-app-persona-picker',
+          'member',
+        );
+        emitProgress(
+          'workflow-start',
+          phase: 'B18',
+          workflowId: 'wf_demo-app-persona-picker',
+          communityName: mosqueTarget.communityName,
+        );
+        await ensureTargetOpen(mosqueTarget);
+        await tester.tap(
+          find.byKey(const ValueKey('actor-identity-picker-button')),
+        );
+        await tester.pumpAndSettle();
+        await capture('B18_member_actor_identity_picker_dialog');
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+        await _showShippedWorkflowInstance(
+          tester: tester,
+          target: mosqueTarget,
+          package: mosquePackage,
+          selector: announcement,
+          roleId: mosqueMemberRoleId,
+        );
+        await capture('B18_actor_identity_picker_member_selected');
+        recordEvidenceEntry({
+          'phase': 'B18',
+          'appId': mosqueTarget.extensionId,
+          'communityId': mosqueTarget.communityId,
+          'communityName': mosqueTarget.communityName,
+          'workflowId': 'wf_demo-app-persona-picker',
           'role': productDocRow.role,
           'productDocPath': productDocRow.productDocPath,
           'requiredPrimaryActions': productDocRow.requiredPrimaryActions,
           'requiredAlternateActions': productDocRow.requiredAlternateActions,
           'expectedAssertions': [
             productDocRow.expectedDecision,
-            productDocRow.requiredPrimaryActions.join(', '),
-            productDocRow.requiredAlternateActions.join(', '),
             productDocRow.resultAndReceiverState,
           ],
-          'screenshotNames': walkthroughResult.screenshotNames,
-          'b25ActionProofStatus': walkthroughResult.actionProofStatus,
-          'visiblePrimaryActions': walkthroughResult.visiblePrimaryActions,
-          'visibleAlternateActions': walkthroughResult.visibleAlternateActions,
-          'productFindings': walkthroughResult.productFindings,
+          'screenshotNames': [
+            'B18_member_actor_identity_picker_dialog',
+            'B18_actor_identity_picker_member_selected',
+          ],
+          'b25ActionProofStatus': 'pass',
+          'visiblePrimaryActions': [
+            'choose per'
+                'sona',
+          ],
+          'visibleAlternateActions': ['cancel picker'],
+          'productFindings': <String>[],
           'status': 'pass',
         });
         emitProgress(
           'workflow-complete',
-          phase: target.phase,
-          workflowId: productDocRow.workflowId,
-          communityName: target.communityName,
+          phase: 'B18',
+          workflowId: 'wf_demo-app-persona-picker',
+          communityName: mosqueTarget.communityName,
         );
       }
 
-      final communityBackButton = find.byTooltip('Back');
-      expect(communityBackButton, findsWidgets);
-      await tester.tap(communityBackButton.first);
-      await _pumpB25Frames(tester);
-      expect(find.text('Loom Communities'), findsOneWidget);
-    }
-
-    final mosqueTarget = loomEvidenceTargets.firstWhere(
-      (target) => target.extensionId == 'ext_mosque',
-    );
-    final mosquePackage = await readShippedEvidencePackage(mosqueTarget);
-    final mosqueAdminRoleId = _packageRoleId(
-      target: mosqueTarget,
-      package: mosquePackage,
-      label: 'Masjid Admin',
-    );
-    final mosqueMemberRoleId = _packageRoleId(
-      target: mosqueTarget,
-      package: mosquePackage,
-      label: 'Community Member',
-    );
-    final announcement = _shippedWorkflowSelector(
-      target: mosqueTarget,
-      package: mosquePackage,
-      workflowType: 'mosque-announcement',
-    );
-    final careRequest = _shippedWorkflowSelector(
-      target: mosqueTarget,
-      package: mosquePackage,
-      workflowType: 'mosque-care-request',
-    );
-    B25ProductDocInteractionModel mosqueB25Row(
-      String workflowId,
-      String role,
-    ) => b25InteractionCatalog.requireModel(
-      communityId: mosqueTarget.communityId,
-      communityName: mosqueTarget.communityName,
-      workflowId: workflowId,
-      role: role,
-    );
-    final gardenTarget = loomEvidenceTargets.firstWhere(
-      (target) => target.extensionId == 'ext_garden_club',
-    );
-    final gardenPackage = await readShippedEvidencePackage(gardenTarget);
-    final gardenMemberRoleId = _packageRoleId(
-      target: gardenTarget,
-      package: gardenPackage,
-      label: 'Member',
-    );
-    final gardenRsvp = _shippedWorkflowSelector(
-      target: gardenTarget,
-      package: gardenPackage,
-      workflowType: 'garden-event-rsvp',
-    );
-    final hoaTarget = loomEvidenceTargets.firstWhere(
-      (target) => target.extensionId == 'ext_cedar_commons_hoa',
-    );
-    final soccerTarget = loomEvidenceTargets.firstWhere(
-      (target) => target.extensionId == 'ext_youth_soccer',
-    );
-    final soccerPackage = await readShippedEvidencePackage(soccerTarget);
-    final soccerCoachRoleId = _packageRoleId(
-      target: soccerTarget,
-      package: soccerPackage,
-      label: 'Coach',
-    );
-    final soccerRoster = _shippedWorkflowSelector(
-      target: soccerTarget,
-      package: soccerPackage,
-      workflowType: 'soccer-team-roster',
-    );
-
-    if (_includePhase('B17') &&
-        selectedExtensionIds.contains(mosqueTarget.extensionId)) {
-      emitProgress(
-        'workflow-start',
-        phase: 'B17',
-        workflowId: 'wf_actor-identity-inventory-capability-matrix',
-        communityName: mosqueTarget.communityName,
-      );
-      await ensureTargetOpen(mosqueTarget);
-      await selectActorIdentity(tester, mosqueAdminRoleId);
-      await capture('B17_actor_identity_inventory_active_admin');
-      await tester.tap(
-        find.byKey(const ValueKey('actor-identity-picker-button')),
-      );
-      await tester.pumpAndSettle();
-      await capture('B17_actor_identity_inventory_picker');
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-      recordEvidenceEntry({
-        'phase': 'B17',
-        'appId': 'actor-identity-role-inventory',
-        'workflowId': 'wf_actor-identity-inventory-capability-matrix',
-        'expectedAssertions': [
-          'all demo communities define two or more actorIdentities',
-          'all workflow/actorIdentity matrix rows have actor, receiver, read-only, or disabled state',
-          'receiver rows declare dependency evidence',
-          'matrix rows: ${await _roleMatrixRowCount(evidenceTargets)}',
-        ],
-        'screenshotNames': [
-          'B17_actor_identity_inventory_active_admin',
-          'B17_actor_identity_inventory_picker',
-        ],
-        'status': 'pass',
-      });
-      emitProgress(
-        'workflow-complete',
-        phase: 'B17',
-        workflowId: 'wf_actor-identity-inventory-capability-matrix',
-        communityName: mosqueTarget.communityName,
-      );
-    }
-
-    if (_includePhase('B18') &&
-        selectedExtensionIds.contains(mosqueTarget.extensionId)) {
-      final productDocRow = mosqueB25Row(
-        'wf_demo-app-persona-picker',
-        'member',
-      );
-      emitProgress(
-        'workflow-start',
-        phase: 'B18',
-        workflowId: 'wf_demo-app-persona-picker',
-        communityName: mosqueTarget.communityName,
-      );
-      await ensureTargetOpen(mosqueTarget);
-      await tester.tap(
-        find.byKey(const ValueKey('actor-identity-picker-button')),
-      );
-      await tester.pumpAndSettle();
-      await capture('B18_member_actor_identity_picker_dialog');
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-      await _showShippedWorkflowInstance(
-        tester: tester,
-        target: mosqueTarget,
-        package: mosquePackage,
-        selector: announcement,
-        roleId: mosqueMemberRoleId,
-      );
-      await capture('B18_actor_identity_picker_member_selected');
-      recordEvidenceEntry({
-        'phase': 'B18',
-        'appId': mosqueTarget.extensionId,
-        'communityId': mosqueTarget.communityId,
-        'communityName': mosqueTarget.communityName,
-        'workflowId': 'wf_demo-app-persona-picker',
-        'role': productDocRow.role,
-        'productDocPath': productDocRow.productDocPath,
-        'requiredPrimaryActions': productDocRow.requiredPrimaryActions,
-        'requiredAlternateActions': productDocRow.requiredAlternateActions,
-        'expectedAssertions': [
-          productDocRow.expectedDecision,
-          productDocRow.resultAndReceiverState,
-        ],
-        'screenshotNames': [
-          'B18_member_actor_identity_picker_dialog',
-          'B18_actor_identity_picker_member_selected',
-        ],
-        'b25ActionProofStatus': 'pass',
-        'visiblePrimaryActions': [
-          'choose per'
-              'sona',
-        ],
-        'visibleAlternateActions': ['cancel picker'],
-        'productFindings': <String>[],
-        'status': 'pass',
-      });
-      emitProgress(
-        'workflow-complete',
-        phase: 'B18',
-        workflowId: 'wf_demo-app-persona-picker',
-        communityName: mosqueTarget.communityName,
-      );
-    }
-
-    if (_includePhase('B19') &&
-        selectedExtensionIds.contains(mosqueTarget.extensionId)) {
-      final memberProductDocRow = mosqueB25Row(
-        'wf_community-persona-aware-ux',
-        'member',
-      );
-      final adminProductDocRow = mosqueB25Row(
-        'wf_community-persona-aware-ux',
-        'admin',
-      );
-      emitProgress(
-        'workflow-start',
-        phase: 'B19',
-        workflowId: 'wf_community-persona-aware-ux',
-        communityName: mosqueTarget.communityName,
-      );
-      await ensureTargetOpen(mosqueTarget);
-      await seedEvidenceAccounts(tester, mosqueTarget, [
-        LoomAccount(
-          accountId: mosqueMemberRoleId,
-          displayName: 'Walkthrough community member',
+      if (_includePhase('B19') &&
+          selectedExtensionIds.contains(mosqueTarget.extensionId)) {
+        final memberProductDocRow = mosqueB25Row(
+          'wf_community-persona-aware-ux',
+          'member',
+        );
+        final adminProductDocRow = mosqueB25Row(
+          'wf_community-persona-aware-ux',
+          'admin',
+        );
+        emitProgress(
+          'workflow-start',
+          phase: 'B19',
+          workflowId: 'wf_community-persona-aware-ux',
+          communityName: mosqueTarget.communityName,
+        );
+        await ensureTargetOpen(mosqueTarget);
+        await seedEvidenceAccounts(tester, mosqueTarget, [
+          LoomAccount(
+            accountId: mosqueMemberRoleId,
+            displayName: 'Walkthrough community member',
+            roleId: mosqueMemberRoleId,
+          ),
+        ]);
+        await signInEvidenceAccount(tester, 'Walkthrough community member');
+        await _showShippedWorkflowInstance(
+          tester: tester,
+          target: mosqueTarget,
+          package: mosquePackage,
+          selector: careRequest,
           roleId: mosqueMemberRoleId,
-        ),
-      ]);
-      await signInEvidenceAccount(tester, 'Walkthrough community member');
-      await _showShippedWorkflowInstance(
-        tester: tester,
-        target: mosqueTarget,
-        package: mosquePackage,
-        selector: careRequest,
-        roleId: mosqueMemberRoleId,
-        selectRole: false,
-      );
-      await capture('B19_member_primary_member_workflow');
-      await tester.tap(
-        find.byKey(const ValueKey('actor-identity-picker-button')),
-      );
-      await tester.pumpAndSettle();
-      await capture('B19_member_alternate_leave_unchanged');
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
-      await capture('B19_member_result_unchanged');
-      recordEvidenceEntry({
-        'phase': 'B19',
-        'appId': mosqueTarget.extensionId,
-        'communityId': mosqueTarget.communityId,
-        'communityName': mosqueTarget.communityName,
-        'workflowId': memberProductDocRow.workflowId,
-        'role': memberProductDocRow.role,
-        'productDocPath': memberProductDocRow.productDocPath,
-        'requiredPrimaryActions': memberProductDocRow.requiredPrimaryActions,
-        'requiredAlternateActions':
-            memberProductDocRow.requiredAlternateActions,
-        'expectedAssertions': [
-          memberProductDocRow.expectedDecision,
-          memberProductDocRow.resultAndReceiverState,
-        ],
-        'screenshotNames': [
-          'B19_member_primary_member_workflow',
-          'B19_member_alternate_leave_unchanged',
-          'B19_member_result_unchanged',
-        ],
-        'b25ActionProofStatus': 'pass',
-        'visiblePrimaryActions': ['view member workflow'],
-        'visibleAlternateActions': ['leave unchanged'],
-        'productFindings': <String>[],
-        'status': 'pass',
-      });
-      await _createAndPublishShippedAnnouncement(
-        tester: tester,
-        target: mosqueTarget,
-        package: mosquePackage,
-        selector: announcement,
-        adminRoleId: mosqueAdminRoleId,
-        capture: capture,
-        screenshotPrefix: 'B19_role_aware',
-        announcementTitle: 'B19 admin receiver-target announcement',
-      );
-      recordEvidenceEntry({
-        'phase': 'B19',
-        'appId': mosqueTarget.extensionId,
-        'communityId': mosqueTarget.communityId,
-        'communityName': mosqueTarget.communityName,
-        'workflowId': adminProductDocRow.workflowId,
-        'role': adminProductDocRow.role,
-        'productDocPath': adminProductDocRow.productDocPath,
-        'requiredPrimaryActions': adminProductDocRow.requiredPrimaryActions,
-        'requiredAlternateActions': adminProductDocRow.requiredAlternateActions,
-        'expectedAssertions': [
-          adminProductDocRow.expectedDecision,
-          adminProductDocRow.resultAndReceiverState,
-        ],
-        'screenshotNames': [
-          'B19_role_aware_admin_start',
-          'B19_role_aware_admin_action',
-          'B19_role_aware_admin_alternate_action',
-          'B19_role_aware_admin_alternate_result',
-          'B19_role_aware_admin_primary_action',
-          'B19_role_aware_admin_complete',
-        ],
-        'b25ActionProofStatus': 'pass',
-        'visiblePrimaryActions': ['publish/update'],
-        'visibleAlternateActions': ['save draft'],
-        'productFindings': <String>[],
-        'status': 'pass',
-      });
-      emitProgress(
-        'workflow-complete',
-        phase: 'B19',
-        workflowId: 'wf_community-persona-aware-ux',
-        communityName: mosqueTarget.communityName,
-      );
-    }
-
-    if (_includePhase('B20') &&
-        selectedExtensionIds.contains(mosqueTarget.extensionId)) {
-      final adminProductDocRow = mosqueB25Row(
-        'wf_multi-persona-workflow-evidence',
-        'admin',
-      );
-      final memberProductDocRow = mosqueB25Row(
-        'wf_multi-persona-workflow-evidence',
-        'member',
-      );
-      emitProgress(
-        'workflow-start',
-        phase: 'B20',
-        workflowId: 'wf_multi-persona-workflow-evidence',
-        communityName: mosqueTarget.communityName,
-      );
-      await ensureTargetOpen(mosqueTarget);
-      final publishedAnnouncementId =
-          await _createAndPublishShippedAnnouncement(
-            tester: tester,
-            target: mosqueTarget,
-            package: mosquePackage,
-            selector: announcement,
-            adminRoleId: mosqueAdminRoleId,
-            capture: capture,
-            screenshotPrefix: 'B20_announcement',
-            announcementTitle: 'Walkthrough community announcement',
-          );
-      recordEvidenceEntry({
-        'phase': 'B20',
-        'appId': mosqueTarget.extensionId,
-        'communityId': mosqueTarget.communityId,
-        'communityName': mosqueTarget.communityName,
-        'workflowId': adminProductDocRow.workflowId,
-        'role': adminProductDocRow.role,
-        'productDocPath': adminProductDocRow.productDocPath,
-        'requiredPrimaryActions': adminProductDocRow.requiredPrimaryActions,
-        'requiredAlternateActions': adminProductDocRow.requiredAlternateActions,
-        'expectedAssertions': [
-          adminProductDocRow.expectedDecision,
-          adminProductDocRow.resultAndReceiverState,
-        ],
-        'screenshotNames': [
-          'B20_announcement_admin_start',
-          'B20_announcement_admin_action',
-          'B20_announcement_admin_alternate_action',
-          'B20_announcement_admin_alternate_result',
-          'B20_announcement_admin_primary_action',
-          'B20_announcement_admin_complete',
-        ],
-        'b25ActionProofStatus': 'pass',
-        'visiblePrimaryActions': ['publish announcement'],
-        'visibleAlternateActions': ['save draft'],
-        'productFindings': <String>[],
-        'status': 'pass',
-      });
-      await selectActorIdentity(tester, mosqueMemberRoleId);
-      await _selectPackageTab(
-        tester: tester,
-        target: mosqueTarget,
-        package: mosquePackage,
-        roleId: mosqueMemberRoleId,
-        tabId: 'home',
-      );
-      final publishedAnnouncement = find.text(
-        'Walkthrough community announcement',
-      );
-      await waitForEngineNativeWidget(
-        tester,
-        publishedAnnouncement,
-        description: 'published walkthrough announcement for community member',
-      );
-      await capture('B20_announcement_member_ready');
-      final markRead = _packageTransitionByLabel(
-        target: mosqueTarget,
-        machine: announcement.machine,
-        label: 'Mark read',
-      );
-      final announcementReceiveButton = _engineActionFinder(
-        publishedAnnouncementId,
-        markRead.id,
-      );
-      await waitForEngineNativeWidget(
-        tester,
-        announcementReceiveButton,
-        description: 'shipped member announcement receipt action',
-      );
-      await tester.ensureVisible(announcementReceiveButton.first);
-      await capture('B20_announcement_member_action');
-      await tester.tap(announcementReceiveButton.first, warnIfMissed: false);
-      for (var attempt = 0; attempt < 8; attempt += 1) {
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 5)),
+          selectRole: false,
         );
-        await tester.pump(const Duration(milliseconds: 100));
+        await capture('B19_member_primary_member_workflow');
+        await tester.tap(
+          find.byKey(const ValueKey('actor-identity-picker-button')),
+        );
+        await tester.pumpAndSettle();
+        await capture('B19_member_alternate_leave_unchanged');
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+        await capture('B19_member_result_unchanged');
+        recordEvidenceEntry({
+          'phase': 'B19',
+          'appId': mosqueTarget.extensionId,
+          'communityId': mosqueTarget.communityId,
+          'communityName': mosqueTarget.communityName,
+          'workflowId': memberProductDocRow.workflowId,
+          'role': memberProductDocRow.role,
+          'productDocPath': memberProductDocRow.productDocPath,
+          'requiredPrimaryActions': memberProductDocRow.requiredPrimaryActions,
+          'requiredAlternateActions':
+              memberProductDocRow.requiredAlternateActions,
+          'expectedAssertions': [
+            memberProductDocRow.expectedDecision,
+            memberProductDocRow.resultAndReceiverState,
+          ],
+          'screenshotNames': [
+            'B19_member_primary_member_workflow',
+            'B19_member_alternate_leave_unchanged',
+            'B19_member_result_unchanged',
+          ],
+          'b25ActionProofStatus': 'pass',
+          'visiblePrimaryActions': ['view member workflow'],
+          'visibleAlternateActions': ['leave unchanged'],
+          'productFindings': <String>[],
+          'status': 'pass',
+        });
+        await _createAndPublishShippedAnnouncement(
+          tester: tester,
+          target: mosqueTarget,
+          package: mosquePackage,
+          selector: announcement,
+          adminRoleId: mosqueAdminRoleId,
+          capture: capture,
+          screenshotPrefix: 'B19_role_aware',
+          announcementTitle: 'B19 admin receiver-target announcement',
+        );
+        recordEvidenceEntry({
+          'phase': 'B19',
+          'appId': mosqueTarget.extensionId,
+          'communityId': mosqueTarget.communityId,
+          'communityName': mosqueTarget.communityName,
+          'workflowId': adminProductDocRow.workflowId,
+          'role': adminProductDocRow.role,
+          'productDocPath': adminProductDocRow.productDocPath,
+          'requiredPrimaryActions': adminProductDocRow.requiredPrimaryActions,
+          'requiredAlternateActions':
+              adminProductDocRow.requiredAlternateActions,
+          'expectedAssertions': [
+            adminProductDocRow.expectedDecision,
+            adminProductDocRow.resultAndReceiverState,
+          ],
+          'screenshotNames': [
+            'B19_role_aware_admin_start',
+            'B19_role_aware_admin_action',
+            'B19_role_aware_admin_alternate_action',
+            'B19_role_aware_admin_alternate_result',
+            'B19_role_aware_admin_primary_action',
+            'B19_role_aware_admin_complete',
+          ],
+          'b25ActionProofStatus': 'pass',
+          'visiblePrimaryActions': ['publish/update'],
+          'visibleAlternateActions': ['save draft'],
+          'productFindings': <String>[],
+          'status': 'pass',
+        });
+        emitProgress(
+          'workflow-complete',
+          phase: 'B19',
+          workflowId: 'wf_community-persona-aware-ux',
+          communityName: mosqueTarget.communityName,
+        );
       }
-      expect(
-        announcementReceiveButton,
-        findsNothing,
-        reason:
-            'The shipped member receipt action did not mark the published '
-            'announcement as read.',
-      );
-      await capture('B20_announcement_member_received');
-      await capture('B20_announcement_member_alternate_unavailable');
-      await _selectPackageTab(
-        tester: tester,
-        target: mosqueTarget,
-        package: mosquePackage,
-        roleId: mosqueMemberRoleId,
-        tabId: 'calendar',
-      );
-      await capture('B20_member_calendar_tab_pinned_event');
-      await _selectPackageTab(
-        tester: tester,
-        target: mosqueTarget,
-        package: mosquePackage,
-        roleId: mosqueMemberRoleId,
-        tabId: 'messages',
-      );
-      await capture('B20_member_messages_tab');
-      await selectActorIdentity(tester, mosqueAdminRoleId);
-      await _selectPackageTab(
-        tester: tester,
-        target: mosqueTarget,
-        package: mosquePackage,
-        roleId: mosqueAdminRoleId,
-        tabId: 'admin',
-      );
-      await capture('B20_admin_custom_tab_pinned_surface');
-      recordEvidenceEntry({
-        'phase': 'B20',
-        'appId': mosqueTarget.extensionId,
-        'communityId': mosqueTarget.communityId,
-        'communityName': mosqueTarget.communityName,
-        'workflowId': memberProductDocRow.workflowId,
-        'role': memberProductDocRow.role,
-        'productDocPath': memberProductDocRow.productDocPath,
-        'requiredPrimaryActions': memberProductDocRow.requiredPrimaryActions,
-        'requiredAlternateActions':
-            memberProductDocRow.requiredAlternateActions,
-        'expectedAssertions': [
-          memberProductDocRow.expectedDecision,
-          memberProductDocRow.resultAndReceiverState,
-        ],
-        'screenshotNames': [
-          'B20_announcement_member_ready',
-          'B20_announcement_member_action',
-          'B20_announcement_member_received',
-          'B20_announcement_member_alternate_unavailable',
-          'B20_member_calendar_tab_pinned_event',
-          'B20_member_messages_tab',
-          'B20_admin_custom_tab_pinned_surface',
-        ],
-        'b25ActionProofStatus': 'fail',
-        'visiblePrimaryActions': ['receive announcement', 'mark read'],
-        'visibleAlternateActions': <String>[],
-        'productFindings': [
-          '${memberProductDocRow.communityName} / '
-              '${memberProductDocRow.workflowId} / '
-              '${memberProductDocRow.role}: the shipped announcement '
-              'offers `Mark read` to a member, but no member-visible '
-              '`Archive`, `Request follow-up`, or `Keep unread` action.',
-        ],
-        'status': 'pass',
-      });
-      emitProgress(
-        'workflow-complete',
-        phase: 'B20',
-        workflowId: 'wf_multi-persona-workflow-evidence',
-        communityName: mosqueTarget.communityName,
-      );
-    }
 
-    final includeGardenCapability = selectedExtensionIds.contains(
-      gardenTarget.extensionId,
-    );
-    final includeHoaCapability = selectedExtensionIds.contains(
-      hoaTarget.extensionId,
-    );
-    final includeSoccerCapability = selectedExtensionIds.contains(
-      soccerTarget.extensionId,
-    );
-    if (_includePhase('B20') &&
-        (includeGardenCapability ||
-            includeHoaCapability ||
-            includeSoccerCapability)) {
-      emitProgress(
-        'workflow-start',
-        phase: 'B20',
-        workflowId: 'wf_app-shell-capability-evidence',
-        communityName: 'Loom Communities',
-      );
-      final capabilityScreenshots = <String>[];
-
-      await returnToCommunityList();
-      await capture('B20_app_shell_main_community_list_states');
-      capabilityScreenshots.add('B20_app_shell_main_community_list_states');
-
-      if (includeGardenCapability) {
-        await ensureTargetOpen(gardenTarget);
-        await selectActorIdentity(tester, gardenMemberRoleId);
+      if (_includePhase('B20') &&
+          selectedExtensionIds.contains(mosqueTarget.extensionId)) {
+        final adminProductDocRow = mosqueB25Row(
+          'wf_multi-persona-workflow-evidence',
+          'admin',
+        );
+        final memberProductDocRow = mosqueB25Row(
+          'wf_multi-persona-workflow-evidence',
+          'member',
+        );
+        emitProgress(
+          'workflow-start',
+          phase: 'B20',
+          workflowId: 'wf_multi-persona-workflow-evidence',
+          communityName: mosqueTarget.communityName,
+        );
+        await ensureTargetOpen(mosqueTarget);
+        final publishedAnnouncementId =
+            await _createAndPublishShippedAnnouncement(
+              tester: tester,
+              target: mosqueTarget,
+              package: mosquePackage,
+              selector: announcement,
+              adminRoleId: mosqueAdminRoleId,
+              capture: capture,
+              screenshotPrefix: 'B20_announcement',
+              announcementTitle: 'Walkthrough community announcement',
+            );
+        recordEvidenceEntry({
+          'phase': 'B20',
+          'appId': mosqueTarget.extensionId,
+          'communityId': mosqueTarget.communityId,
+          'communityName': mosqueTarget.communityName,
+          'workflowId': adminProductDocRow.workflowId,
+          'role': adminProductDocRow.role,
+          'productDocPath': adminProductDocRow.productDocPath,
+          'requiredPrimaryActions': adminProductDocRow.requiredPrimaryActions,
+          'requiredAlternateActions':
+              adminProductDocRow.requiredAlternateActions,
+          'expectedAssertions': [
+            adminProductDocRow.expectedDecision,
+            adminProductDocRow.resultAndReceiverState,
+          ],
+          'screenshotNames': [
+            'B20_announcement_admin_start',
+            'B20_announcement_admin_action',
+            'B20_announcement_admin_alternate_action',
+            'B20_announcement_admin_alternate_result',
+            'B20_announcement_admin_primary_action',
+            'B20_announcement_admin_complete',
+          ],
+          'b25ActionProofStatus': 'pass',
+          'visiblePrimaryActions': ['publish announcement'],
+          'visibleAlternateActions': ['save draft'],
+          'productFindings': <String>[],
+          'status': 'pass',
+        });
+        await selectActorIdentity(tester, mosqueMemberRoleId);
         await _selectPackageTab(
           tester: tester,
-          target: gardenTarget,
-          package: gardenPackage,
-          roleId: gardenMemberRoleId,
+          target: mosqueTarget,
+          package: mosquePackage,
+          roleId: mosqueMemberRoleId,
           tabId: 'home',
         );
-        final gardenRsvpInstance = _engineInstanceFinder(
-          gardenRsvp.instance.instanceId,
+        final publishedAnnouncement = find.text(
+          'Walkthrough community announcement',
         );
         await waitForEngineNativeWidget(
           tester,
-          gardenRsvpInstance,
+          publishedAnnouncement,
           description:
-              'shipped Garden RSVP summary on the package Home binding',
+              'published walkthrough announcement for community member',
         );
-        await tester.ensureVisible(gardenRsvpInstance.first);
-        await capture('B20_app_shell_garden_home_medium_minimized_stack');
-        capabilityScreenshots.add(
-          'B20_app_shell_garden_home_medium_minimized_stack',
+        await capture('B20_announcement_member_ready');
+        final markRead = _packageTransitionByLabel(
+          target: mosqueTarget,
+          machine: announcement.machine,
+          label: 'Mark read',
         );
-        await _expandShippedWorkflowSurface(
+        final announcementReceiveButton = _engineActionFinder(
+          publishedAnnouncementId,
+          markRead.id,
+        );
+        await waitForEngineNativeWidget(
+          tester,
+          announcementReceiveButton,
+          description: 'shipped member announcement receipt action',
+        );
+        await tester.ensureVisible(announcementReceiveButton.first);
+        await capture('B20_announcement_member_action');
+        await tester.tap(announcementReceiveButton.first, warnIfMissed: false);
+        for (var attempt = 0; attempt < 8; attempt += 1) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 5)),
+          );
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        expect(
+          announcementReceiveButton,
+          findsNothing,
+          reason:
+              'The shipped member receipt action did not mark the published '
+              'announcement as read.',
+        );
+        await capture('B20_announcement_member_received');
+        await capture('B20_announcement_member_alternate_unavailable');
+        await _selectPackageTab(
           tester: tester,
-          selector: gardenRsvp,
+          target: mosqueTarget,
+          package: mosquePackage,
+          roleId: mosqueMemberRoleId,
+          tabId: 'calendar',
         );
-        await capture('B20_app_shell_garden_home_expanded_surface');
-        capabilityScreenshots.add('B20_app_shell_garden_home_expanded_surface');
+        await capture('B20_member_calendar_tab_pinned_event');
+        await _selectPackageTab(
+          tester: tester,
+          target: mosqueTarget,
+          package: mosquePackage,
+          roleId: mosqueMemberRoleId,
+          tabId: 'messages',
+        );
+        await capture('B20_member_messages_tab');
+        await selectActorIdentity(tester, mosqueAdminRoleId);
+        await _selectPackageTab(
+          tester: tester,
+          target: mosqueTarget,
+          package: mosquePackage,
+          roleId: mosqueAdminRoleId,
+          tabId: 'admin',
+        );
+        await capture('B20_admin_custom_tab_pinned_surface');
+        recordEvidenceEntry({
+          'phase': 'B20',
+          'appId': mosqueTarget.extensionId,
+          'communityId': mosqueTarget.communityId,
+          'communityName': mosqueTarget.communityName,
+          'workflowId': memberProductDocRow.workflowId,
+          'role': memberProductDocRow.role,
+          'productDocPath': memberProductDocRow.productDocPath,
+          'requiredPrimaryActions': memberProductDocRow.requiredPrimaryActions,
+          'requiredAlternateActions':
+              memberProductDocRow.requiredAlternateActions,
+          'expectedAssertions': [
+            memberProductDocRow.expectedDecision,
+            memberProductDocRow.resultAndReceiverState,
+          ],
+          'screenshotNames': [
+            'B20_announcement_member_ready',
+            'B20_announcement_member_action',
+            'B20_announcement_member_received',
+            'B20_announcement_member_alternate_unavailable',
+            'B20_member_calendar_tab_pinned_event',
+            'B20_member_messages_tab',
+            'B20_admin_custom_tab_pinned_surface',
+          ],
+          'b25ActionProofStatus': 'fail',
+          'visiblePrimaryActions': ['receive announcement', 'mark read'],
+          'visibleAlternateActions': <String>[],
+          'productFindings': [
+            '${memberProductDocRow.communityName} / '
+                '${memberProductDocRow.workflowId} / '
+                '${memberProductDocRow.role}: the shipped announcement '
+                'offers `Mark read` to a member, but no member-visible '
+                '`Archive`, `Request follow-up`, or `Keep unread` action.',
+          ],
+          'status': 'pass',
+        });
+        emitProgress(
+          'workflow-complete',
+          phase: 'B20',
+          workflowId: 'wf_multi-persona-workflow-evidence',
+          communityName: mosqueTarget.communityName,
+        );
       }
 
-      if (includeHoaCapability) {
-        await ensureTargetOpen(hoaTarget);
-        await selectActorIdentity(tester, 'hoa-homeowner');
-        await _selectCommunityTab(tester, 'documents');
-        await capture('B20_app_shell_hoa_documents_pinning_policy');
-        capabilityScreenshots.add('B20_app_shell_hoa_documents_pinning_policy');
-      }
-
-      if (includeSoccerCapability) {
-        await ensureTargetOpen(soccerTarget);
-        await _showShippedWorkflowInstance(
-          tester: tester,
-          target: soccerTarget,
-          package: soccerPackage,
-          selector: soccerRoster,
-          roleId: soccerCoachRoleId,
-        );
-        await capture('B20_app_shell_soccer_roster_renderer_medium');
-        capabilityScreenshots.add(
-          'B20_app_shell_soccer_roster_renderer_medium',
-        );
-        await _expandShippedWorkflowSurface(
-          tester: tester,
-          selector: soccerRoster,
-        );
-        await capture('B20_app_shell_soccer_roster_renderer_expanded');
-        capabilityScreenshots.add(
-          'B20_app_shell_soccer_roster_renderer_expanded',
-        );
-      }
-
-      recordEvidenceEntry({
-        'phase': 'B20',
-        'appId': 'app-shell-capability-evidence',
-        'workflowId': 'wf_app-shell-capability-evidence',
-        'communityId': 'loom-communities',
-        'communityName': 'Loom Communities',
-        'expectedAssertions': [
-          'main community list shows themed launch cards with medium and minimized states',
-          if (includeGardenCapability)
-            'Garden Club Home tab proves medium/minimized workflow surfaces and tap-to-expanded behavior',
-          if (includeHoaCapability)
-            'HOA Documents tab proves an explicit pin-first-critical-surface policy with a pinned document/status surface',
-          if (includeSoccerCapability)
-            'Riverside Youth Soccer roster proves renderer selection by card-surface family in medium and expanded states',
-        ],
-        'screenshotNames': capabilityScreenshots,
-        'status': 'pass',
-      });
-      emitProgress(
-        'workflow-complete',
-        phase: 'B20',
-        workflowId: 'wf_app-shell-capability-evidence',
-        communityName: 'Loom Communities',
+      final includeGardenCapability = selectedExtensionIds.contains(
+        gardenTarget.extensionId,
       );
+      final includeHoaCapability = selectedExtensionIds.contains(
+        hoaTarget.extensionId,
+      );
+      final includeSoccerCapability = selectedExtensionIds.contains(
+        soccerTarget.extensionId,
+      );
+      if (_includePhase('B20') &&
+          (includeGardenCapability ||
+              includeHoaCapability ||
+              includeSoccerCapability)) {
+        emitProgress(
+          'workflow-start',
+          phase: 'B20',
+          workflowId: 'wf_app-shell-capability-evidence',
+          communityName: 'Loom Communities',
+        );
+        final capabilityScreenshots = <String>[];
+
+        await returnToCommunityList();
+        await capture('B20_app_shell_main_community_list_states');
+        capabilityScreenshots.add('B20_app_shell_main_community_list_states');
+
+        if (includeGardenCapability) {
+          await ensureTargetOpen(gardenTarget);
+          await selectActorIdentity(tester, gardenMemberRoleId);
+          await _selectPackageTab(
+            tester: tester,
+            target: gardenTarget,
+            package: gardenPackage,
+            roleId: gardenMemberRoleId,
+            tabId: 'home',
+          );
+          final gardenRsvpInstance = _engineInstanceFinder(
+            gardenRsvp.instance.instanceId,
+          );
+          await waitForEngineNativeWidget(
+            tester,
+            gardenRsvpInstance,
+            description:
+                'shipped Garden RSVP summary on the package Home binding',
+          );
+          await tester.ensureVisible(gardenRsvpInstance.first);
+          await capture('B20_app_shell_garden_home_medium_minimized_stack');
+          capabilityScreenshots.add(
+            'B20_app_shell_garden_home_medium_minimized_stack',
+          );
+          await _expandShippedWorkflowSurface(
+            tester: tester,
+            selector: gardenRsvp,
+          );
+          await capture('B20_app_shell_garden_home_expanded_surface');
+          capabilityScreenshots.add(
+            'B20_app_shell_garden_home_expanded_surface',
+          );
+        }
+
+        if (includeHoaCapability) {
+          await ensureTargetOpen(hoaTarget);
+          await selectActorIdentity(tester, 'hoa-homeowner');
+          await _selectCommunityTab(tester, 'documents');
+          await capture('B20_app_shell_hoa_documents_pinning_policy');
+          capabilityScreenshots.add(
+            'B20_app_shell_hoa_documents_pinning_policy',
+          );
+        }
+
+        if (includeSoccerCapability) {
+          await ensureTargetOpen(soccerTarget);
+          await _showShippedWorkflowInstance(
+            tester: tester,
+            target: soccerTarget,
+            package: soccerPackage,
+            selector: soccerRoster,
+            roleId: soccerCoachRoleId,
+          );
+          await capture('B20_app_shell_soccer_roster_renderer_medium');
+          capabilityScreenshots.add(
+            'B20_app_shell_soccer_roster_renderer_medium',
+          );
+          await _expandShippedWorkflowSurface(
+            tester: tester,
+            selector: soccerRoster,
+          );
+          await capture('B20_app_shell_soccer_roster_renderer_expanded');
+          capabilityScreenshots.add(
+            'B20_app_shell_soccer_roster_renderer_expanded',
+          );
+        }
+
+        recordEvidenceEntry({
+          'phase': 'B20',
+          'appId': 'app-shell-capability-evidence',
+          'workflowId': 'wf_app-shell-capability-evidence',
+          'communityId': 'loom-communities',
+          'communityName': 'Loom Communities',
+          'expectedAssertions': [
+            'main community list shows themed launch cards with medium and minimized states',
+            if (includeGardenCapability)
+              'Garden Club Home tab proves medium/minimized workflow surfaces and tap-to-expanded behavior',
+            if (includeHoaCapability)
+              'HOA Documents tab proves an explicit pin-first-critical-surface policy with a pinned document/status surface',
+            if (includeSoccerCapability)
+              'Riverside Youth Soccer roster proves renderer selection by card-surface family in medium and expanded states',
+          ],
+          'screenshotNames': capabilityScreenshots,
+          'status': 'pass',
+        });
+        emitProgress(
+          'workflow-complete',
+          phase: 'B20',
+          workflowId: 'wf_app-shell-capability-evidence',
+          communityName: 'Loom Communities',
+        );
+      }
+
+      if (find
+          .byKey(ValueKey('local-extension-${mosqueTarget.extensionId}'))
+          .evaluate()
+          .isNotEmpty) {
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+      }
+
+      screenshotCapture.finish();
+      binding.reportData!['workflowEvidenceSchemaVersion'] = 2;
+      binding.reportData!['workflowEvidence'] = entries;
+      binding.reportData!['screenshotVisibleTextByName'] =
+          screenshotVisibleTextByName;
+      binding.reportData!['walkthroughStatus'] = 'pass';
+      _emitCaptureProgress({
+        'status': 'run-complete',
+        'completedWorkflows': completedWorkflowEvidenceEntries,
+        'totalWorkflows': totalWorkflowEvidenceEntries,
+      });
     }
 
-    if (find
-        .byKey(ValueKey('local-extension-${mosqueTarget.extensionId}'))
-        .evaluate()
-        .isNotEmpty) {
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-    }
-
-    screenshotCapture.finish();
-    binding.reportData!['workflowEvidenceSchemaVersion'] = 2;
-    binding.reportData!['workflowEvidence'] = entries;
-    binding.reportData!['screenshotVisibleTextByName'] =
-        screenshotVisibleTextByName;
-    binding.reportData!['walkthroughStatus'] = 'pass';
-    _emitCaptureProgress({
-      'status': 'run-complete',
-      'completedWorkflows': completedWorkflowEvidenceEntries,
-      'totalWorkflows': totalWorkflowEvidenceEntries,
-    });
+    await watchWalkthroughBodyWith<void>(runWalkthrough(), bodyWatch);
   });
 }
 

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
@@ -85,4 +88,49 @@ void main() {
       );
     },
   );
+
+  test('whole-body bound fails a never-completing await before the first '
+      'screenshot and names the setup phase plus what was awaited', () {
+    fakeAsync((async) {
+      final neverCompletes = Completer<void>();
+      final watch = WalkthroughBodyWatch(
+        timeout: const Duration(seconds: 5),
+        lastCompletedStep: 'setup phase, no step completed yet',
+        attemptedStep:
+            'starting workflow garden-event-rsvp (phase B13, '
+            'community Garden Club)',
+        waitingFor:
+            'the first screenshot for workflow garden-event-rsvp to be '
+            'captured',
+      );
+
+      final result = watchWalkthroughBodyWith<void>(
+        neverCompletes.future,
+        watch,
+      );
+
+      Object? capturedError;
+      result.catchError((Object error) {
+        capturedError = error;
+      });
+
+      // The body never makes progress, so the watchdog must fire within its
+      // bound and turn the silent await into a self-describing failure.
+      async.elapse(const Duration(seconds: 5));
+
+      expect(capturedError, isA<WalkthroughStallFailure>());
+      final message = (capturedError as WalkthroughStallFailure).message;
+      expect(message, contains('Walkthrough stalled'));
+      expect(message, contains('setup phase, no step completed yet'));
+      expect(message, contains('garden-event-rsvp'));
+      expect(message, contains('phase B13'));
+      expect(message, contains('Garden Club'));
+      expect(
+        message,
+        contains('first screenshot for workflow garden-event-rsvp'),
+      );
+      expect(message, contains('elapsed'));
+      expect(message, contains('limit'));
+    });
+  });
 }
