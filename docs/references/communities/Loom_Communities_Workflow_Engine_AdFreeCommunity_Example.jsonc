@@ -502,7 +502,7 @@
         ],
         "instanceDataSchema": {
           "memberFanId": {
-            "type": "fanId?",
+            "type": "fanId",
             "writableBy": "effect",
             "displayContexts": []
           },
@@ -956,7 +956,7 @@
         ],
         "instanceDataSchema": {
           "payerFanId": {
-            "type": "fanId?",
+            "type": "fanId",
             "writableBy": "effect",
             "displayContexts": []
           },
@@ -1210,7 +1210,7 @@
             "icon": "do_not_disturb",
             "tone": "secondary",
             "from": ["change-requested"],
-            "to": "active",
+            "to": "change-declined",
             "guard": {
               "allowedRoleIds": ["ad-off-owner"]
             },

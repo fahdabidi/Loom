@@ -141,6 +141,7 @@
                 "fields": {
                   "registrationCaseId": "{id}", "documentTitle": "{waiverTitle}", "documentVersion": "{waiverVersion}",
                   "documentUrl": "{waiverUrl}", "sourceLabel": "Riverside Youth Soccer", "guardianFanId": "{guardianFanId}",
+                  "authorizedGuardianFanIds": ["{guardianFanId}"],
                   "accessLabel": "Members may open; acknowledgement is tracked", "askedCoachFanIds": [], "acknowledgementHistory": []
                 }
               }
@@ -246,6 +247,7 @@
                 "fields": {
                   "registrationCaseId": "{id}", "documentTitle": "{input.documentTitle}", "documentVersion": "{input.documentVersion}",
                   "documentUrl": "{input.documentUrl}", "sourceLabel": "Guardian registration attachment", "guardianFanId": "{guardianFanId}",
+                  "authorizedGuardianFanIds": ["{guardianFanId}"],
                   "accessLabel": "Members may open; acknowledgement is tracked", "askedCoachFanIds": [], "acknowledgementHistory": []
                 }
               },
@@ -826,12 +828,12 @@
         "visibility": {
           "default": "guarded",
           "readGuard": { "allowedRoleIds": ["soccer-coach"] },
-          "fields": { "sharedWith": "guardianFanId" }
+          "fields": { "sharedWith": "authorizedGuardianFanIds" }
         },
         "states": {
           "unread": {
             "label": "Unread document", "tone": "info",
-            "editableFields": ["documentTitle", "documentVersion", "documentUrl", "sourceLabel", "accessLabel", "guardianFanId"],
+            "editableFields": ["documentTitle", "documentVersion", "documentUrl", "sourceLabel", "accessLabel", "guardianFanId", "authorizedGuardianFanIds"],
             "editGuard": { "allowedRoleIds": ["soccer-coach"] }
           },
           "read": { "label": "Document read", "tone": "info" },
@@ -938,6 +940,7 @@
           "sourceLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "source", "labelTemplate": "Source: {value}", "displayContexts": ["tile", "detail"] },
           "accessLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "lock_open", "labelTemplate": "Access: {value}", "displayContexts": ["tile", "detail"] },
           "guardianFanId": { "type": "fanId", "required": true, "writableBy": "formEntry", "displayIcon": "family_restroom", "labelTemplate": "Guardian: {value}", "displayContexts": ["detail"] },
+          "authorizedGuardianFanIds": { "type": "fanId[]", "required": true, "writableBy": "formEntry", "displayIcon": "group", "labelTemplate": "Authorized guardians: {value.length}", "displayContexts": ["detail"] },
           "askedCoachFanIds": { "type": "fanId[]", "writableBy": "effect", "displayIcon": "contact_support", "labelTemplate": "Coach questions: {value.length}", "displayContexts": ["detail"] },
           "lastOpenedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Last opened {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "acknowledgedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Acknowledged {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
@@ -1386,6 +1389,7 @@
           "sourceLabel": "Riverside Youth Soccer",
           "accessLabel": "Members may open; acknowledgement is tracked",
           "guardianFanId": "soccer-guardian",
+          "authorizedGuardianFanIds": ["soccer-guardian"],
           "askedCoachFanIds": [],
           "lastOpenedAt": "2026-08-10T16:45:00-07:00",
           "acknowledgedAt": "2026-08-10T16:50:00-07:00",

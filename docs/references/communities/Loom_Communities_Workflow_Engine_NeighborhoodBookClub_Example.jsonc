@@ -103,7 +103,7 @@
           "meetingCycle": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "date_range", "labelTemplate": "Cycle: {value}",
             "displayContexts": ["tile", "detail"] },
-          "nominatorFanId": { "type": "fanId?", "writableBy": "effect",
+          "nominatorFanId": { "type": "fanId", "writableBy": "effect",
             "displayIcon": "badge_outlined", "labelTemplate": "Nominated by {value}",
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "submittedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true }
