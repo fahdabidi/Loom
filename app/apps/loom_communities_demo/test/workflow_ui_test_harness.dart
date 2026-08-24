@@ -9,6 +9,8 @@ import 'package:loom_ux_judges/src/validator/jsonc.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
     show currentCommunitySpecVersion;
 
+import 'walkthrough_wait.dart';
+
 typedef _ShippedCommunityPackageLocation = ({
   String repositoryPath,
   String assetPath,
@@ -516,19 +518,32 @@ Future<void> signInEvidenceAccount(
   );
 }
 
-Future<void> _waitForCommunityEntryResolution(WidgetTester tester) async {
-  for (var attempt = 0; attempt < 80; attempt += 1) {
-    if (find
-        .byKey(const ValueKey('community-entry-checking'))
-        .evaluate()
-        .isEmpty) {
+Future<void> _waitForCommunityEntryResolution(
+  WidgetTester tester, {
+  Duration? timeout,
+  String? lastCompletedStep,
+  DateTime Function()? now,
+}) async {
+  final budget = WalkthroughWaitBudget(
+    timeout: timeout ?? WalkthroughWaitBudget.defaultTimeout,
+    now: now,
+  );
+  final finder = find.byKey(const ValueKey('community-entry-checking'));
+  while (!budget.expired) {
+    if (finder.evaluate().isEmpty) {
       return;
     }
     await tester.pump(const Duration(milliseconds: 50));
   }
-  fail(
-    'Community entry did not finish checking membership. '
-    '${_visibleScreenDescription()}',
+  throw WalkthroughStallFailure(
+    buildWalkthroughStallMessage(
+      lastCompletedStep: lastCompletedStep,
+      attemptedStep: 'wait for community membership checking to resolve',
+      waitingFor:
+          '${finder.describeMatch(Plurality.many)} to disappear. '
+          '${_visibleScreenDescription()}',
+      budget: budget,
+    ),
   );
 }
 
@@ -574,14 +589,28 @@ Future<void> _waitForEvidenceFinder(
   WidgetTester tester,
   Finder finder, {
   required String description,
+  Duration? timeout,
+  String? lastCompletedStep,
+  DateTime Function()? now,
 }) async {
-  for (var attempt = 0; attempt < 80; attempt += 1) {
+  final budget = WalkthroughWaitBudget(
+    timeout: timeout ?? WalkthroughWaitBudget.defaultTimeout,
+    now: now,
+  );
+  while (!budget.expired) {
     if (finder.evaluate().isNotEmpty) {
       return;
     }
     await tester.pump(const Duration(milliseconds: 50));
   }
-  fail('Timed out waiting for $description. ${_visibleScreenDescription()}');
+  throw WalkthroughStallFailure(
+    buildWalkthroughStallMessage(
+      lastCompletedStep: lastCompletedStep,
+      attemptedStep: description,
+      waitingFor: finder.describeMatch(Plurality.many),
+      budget: budget,
+    ),
+  );
 }
 
 /// Waits for an engine-backed widget whose future may complete outside the
@@ -590,15 +619,29 @@ Future<void> waitForEngineNativeWidget(
   WidgetTester tester,
   Finder finder, {
   required String description,
+  Duration? timeout,
+  String? lastCompletedStep,
+  DateTime Function()? now,
 }) async {
-  for (var attempt = 0; attempt < 80; attempt += 1) {
+  final budget = WalkthroughWaitBudget(
+    timeout: timeout ?? WalkthroughWaitBudget.defaultTimeout,
+    now: now,
+  );
+  while (!budget.expired) {
     if (finder.evaluate().isNotEmpty) return;
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 5)),
     );
     await tester.pump(const Duration(milliseconds: 50));
   }
-  fail('Timed out waiting for $description. ${_visibleScreenDescription()}');
+  throw WalkthroughStallFailure(
+    buildWalkthroughStallMessage(
+      lastCompletedStep: lastCompletedStep,
+      attemptedStep: description,
+      waitingFor: finder.describeMatch(Plurality.many),
+      budget: budget,
+    ),
+  );
 }
 
 String _visibleScreenDescription() {

@@ -28,6 +28,7 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart'
         workflowEffectTransitionRelated;
 
 import '../test/workflow_ui_test_harness.dart';
+import '../test/walkthrough_wait.dart';
 
 const _phaseFilterText = String.fromEnvironment('LOOM_EVIDENCE_PHASE_FILTER');
 final Set<String> _phaseFilter = _phaseFilterText
@@ -1319,9 +1320,25 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
   final primaryResult = _b25ScreenshotName(target, b25Model, 'primary_result');
   await capture(start);
 
+  final lastCompletedStep =
+      'phase ${target.phase}, community ${target.communityName}, '
+      'workflow ${b25Model.workflowId}, role ${b25Model.role}, '
+      'screenshot $start';
+  final attemptedStep =
+      'waiting for a tappable shipped workflow action for '
+      '${b25Model.workflowId} instance ${selector.instance.instanceId} '
+      'on the ${selector.binding.tabId} tab';
+  final stallDiagnosticName =
+      '${target.phase}_${target.extensionId}_'
+      '${b25Model.workflowId}_${b25Model.role}_STALL_DIAGNOSTIC';
+
   final visibleAction = await _waitForShippedWorkflowAction(
     tester: tester,
     selector: selector,
+    lastCompletedStep: lastCompletedStep,
+    attemptedStep: attemptedStep,
+    diagnosticFrameName: stallDiagnosticName,
+    captureDiagnostic: capture,
   );
   final sourceInstance = identical(selector.actionMachine, selector.machine)
       ? await _readShippedInstance(
@@ -2564,8 +2581,20 @@ Future<({_ShippedTransitionCandidate candidate, Finder finder})>
 _waitForShippedWorkflowAction({
   required WidgetTester tester,
   required _ShippedWorkflowSelector selector,
+  required String lastCompletedStep,
+  required String attemptedStep,
+  required String diagnosticFrameName,
+  required Future<void> Function(String name) captureDiagnostic,
 }) async {
-  for (var attempt = 0; attempt < 80; attempt += 1) {
+  final budget = WalkthroughWaitBudget();
+  final actionDescriptions = selector.transitions
+      .map(
+        (candidate) =>
+            '${candidate.transition.id} (${candidate.transition.label})',
+      )
+      .join(', ');
+  var attemptedExpansion = false;
+  while (!budget.expired) {
     for (final candidate in selector.transitions) {
       final finder = _engineActionFinder(
         selector.instance.instanceId,
@@ -2575,7 +2604,8 @@ _waitForShippedWorkflowAction({
         return (candidate: candidate, finder: finder);
       }
     }
-    if (attempt == 20) {
+    if (!attemptedExpansion && budget.elapsed >= const Duration(seconds: 1)) {
+      attemptedExpansion = true;
       final instance = _engineInstanceFinder(selector.instance.instanceId);
       if (instance.evaluate().isNotEmpty) {
         await tester.ensureVisible(instance.first);
@@ -2588,11 +2618,18 @@ _waitForShippedWorkflowAction({
     );
     await tester.pump(const Duration(milliseconds: 50));
   }
-  fail(
-    'Shipped workflow ${selector.machine.workflowType} instance '
-    '${selector.instance.instanceId} exposed none of its package-declared '
-    'actions ${selector.transitions.map((candidate) => candidate.transition.id).toList()} '
-    'for ${selector.roleId} on ${selector.binding.tabId}.',
+  await captureDiagnostic(diagnosticFrameName);
+  throw WalkthroughStallFailure(
+    buildWalkthroughStallMessage(
+      lastCompletedStep: lastCompletedStep,
+      attemptedStep: attemptedStep,
+      waitingFor:
+          'a tappable shipped workflow action on the '
+          '${selector.binding.tabId} tab for ${selector.roleId}. '
+          'Polled action widgets: [$actionDescriptions].',
+      budget: budget,
+      diagnosticFrameName: diagnosticFrameName,
+    ),
   );
 }
 
