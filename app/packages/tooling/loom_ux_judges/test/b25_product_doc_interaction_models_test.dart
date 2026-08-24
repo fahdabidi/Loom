@@ -196,6 +196,117 @@ void main() {
       ),
     );
   });
+
+  group('B25 primary/alternate negation matching', () {
+    Map<String, Object?> gardenClubRsvpReview(String visibleText) {
+      final fanId = 'community-garden-club-member';
+      return <String, Object?>{
+        'screenRows': <Map<String, Object?>>[
+          <String, Object?>{
+            'rowId': 'garden-event-rsvp-result',
+            'communityId': 'community_garden_club',
+            'communityName': 'Garden Club',
+            'workflowId': 'garden-event-rsvp',
+            'role': 'member',
+            'fanId': fanId,
+            'visibleTextExtract': visibleText,
+            'screenshotPath': 'garden-event-rsvp.png',
+          },
+        ],
+        'workflowRoleCoverage': <Map<String, Object?>>[
+          <String, Object?>{
+            'coverageRowId': 'garden-event-rsvp-member',
+            'communityId': 'community_garden_club',
+            'communityName': 'Garden Club',
+            'workflowId': 'garden-event-rsvp',
+            'role': 'member',
+            'fanId': fanId,
+            'screenRowIds': <String>['garden-event-rsvp-result'],
+            'missingEvidence': <String>[],
+          },
+        ],
+      };
+    }
+
+    Map<String, Object?> interactionModelFor(String visibleText) {
+      final judged = buildB25WorkflowLifecycleReview(
+        gardenClubRsvpReview(visibleText),
+      );
+      final scorecard =
+          (judged['workflowLifecycleScorecards'] as List<Object?>).single
+              as Map<String, Object?>;
+      return scorecard['semanticInteractionModel'] as Map<String, Object?>;
+    }
+
+    test('"Not attending" does not satisfy primary "attend"', () {
+      final model = interactionModelFor('Not attending');
+      expect(
+        model['visiblePrimaryActions'],
+        isEmpty,
+        reason: 'a negation must not count as the term it negates',
+      );
+      expect(model['visibleAlternateActions'], contains('not attending'));
+      expect(model['status'], 'fail');
+      expect(
+        model['missingActions'],
+        contains('domain-specific primary action'),
+      );
+    });
+
+    test('"Cancel RSVP" does not satisfy primary "rsvp"', () {
+      final model = interactionModelFor('Cancel RSVP');
+      expect(
+        model['visiblePrimaryActions'],
+        isEmpty,
+        reason: 'cancel rsvp is an alternate phrase, not a primary rsvp',
+      );
+      expect(model['visibleAlternateActions'], contains('cancel rsvp'));
+      expect(model['status'], 'fail');
+      expect(
+        model['missingActions'],
+        contains('domain-specific primary action'),
+      );
+    });
+
+    test('"Going" satisfies primary "going"', () {
+      final model = interactionModelFor('Going');
+      expect(model['visiblePrimaryActions'], contains('going'));
+      expect(model['status'], 'fail');
+      expect(
+        model['missingActions'],
+        contains('domain-specific alternate/change/reject action'),
+      );
+    });
+
+    test('decline-only screen fails instead of passing both bars', () {
+      final model = interactionModelFor(
+        'Not attending. Cancel RSVP. Change response.',
+      );
+      expect(model['visiblePrimaryActions'], isEmpty);
+      expect(
+        model['visibleAlternateActions'],
+        contains('not attending'),
+      );
+      expect(model['visibleAlternateActions'], contains('cancel rsvp'));
+      expect(model['status'], 'fail');
+      expect(model['missingActions'], hasLength(1));
+      expect(
+        model['missingActions'],
+        contains('domain-specific primary action'),
+      );
+    });
+
+    test('a full happy-path plus alternate path still passes', () {
+      final model = interactionModelFor(
+        'Attend. Going. Not attending. Cancel RSVP.',
+      );
+      expect(model['visiblePrimaryActions'], contains('attend'));
+      expect(model['visiblePrimaryActions'], contains('going'));
+      expect(model['visibleAlternateActions'], contains('not attending'));
+      expect(model['visibleAlternateActions'], contains('cancel rsvp'));
+      expect(model['status'], 'pass');
+    });
+  });
 }
 
 Map<String, Object?> _singleWorkflowReview({

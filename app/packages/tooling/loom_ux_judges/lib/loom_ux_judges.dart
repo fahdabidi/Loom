@@ -3695,8 +3695,18 @@ JsonMap _semanticInteractionModelForWorkflow({
   final genericSubstitutes = _asStringList(
     model['disallowedGenericSubstitutes'],
   );
-  final visiblePrimary = _matchingTerms(visibleText, primaryActions);
-  final visibleAlternate = _matchingTerms(visibleText, alternateActions);
+  final alternateMatches = _matchTermsOnWordBoundaries(
+    visibleText,
+    alternateActions,
+  );
+  final visibleAlternate = _matchesToSortedTerms(alternateMatches);
+  final visiblePrimary = _matchesToSortedTerms(
+    _matchTermsOnWordBoundaries(
+      visibleText,
+      primaryActions,
+      excludedSpans: alternateMatches.map((match) => match.span).toList(),
+    ),
+  );
   final visibleGenericSubstitutes = _matchingTerms(
     visibleText,
     genericSubstitutes,
@@ -3778,12 +3788,74 @@ bool _isAdSurfaceWorkflow(String id) {
 }
 
 List<String> _matchingTerms(String text, Iterable<String> terms) {
+  return _matchesToSortedTerms(_matchTermsOnWordBoundaries(text, terms));
+}
+
+List<String> _matchesToSortedTerms(Iterable<_TermMatch> matches) {
+  return matches.map((match) => match.term).toSet().toList()..sort();
+}
+
+class _TextSpan {
+  const _TextSpan(this.start, this.end);
+
+  final int start;
+  final int end;
+
+  bool contains(_TextSpan other) => start <= other.start && other.end <= end;
+}
+
+class _TermMatch {
+  const _TermMatch({required this.term, required this.span});
+
+  final String term;
+  final _TextSpan span;
+}
+
+bool _isWordCharacter(String codeUnit) {
+  final code = codeUnit.codeUnitAt(0);
+  return (code >= 0x30 && code <= 0x39) ||
+      (code >= 0x41 && code <= 0x5a) ||
+      (code >= 0x61 && code <= 0x7a);
+}
+
+bool _isWordBoundaryStart(String text, int index) {
+  if (index == 0) return true;
+  return !_isWordCharacter(text[index - 1]);
+}
+
+bool _isWordBoundaryEnd(String text, int end) {
+  if (end >= text.length) return true;
+  return !_isWordCharacter(text[end]);
+}
+
+List<_TermMatch> _matchTermsOnWordBoundaries(
+  String text,
+  Iterable<String> terms, {
+  Iterable<_TextSpan> excludedSpans = const [],
+}) {
   final lower = text.toLowerCase();
-  return terms
-      .where((term) => lower.contains(term.toLowerCase()))
-      .toSet()
-      .toList()
-    ..sort();
+  final excluded = excludedSpans.toList();
+  final matches = <_TermMatch>[];
+  for (final term in terms) {
+    final needle = term.toLowerCase();
+    if (needle.isEmpty) continue;
+    var searchFrom = 0;
+    while (searchFrom <= lower.length) {
+      final index = lower.indexOf(needle, searchFrom);
+      if (index < 0) break;
+      final start = index;
+      final end = index + needle.length;
+      final boundaryOk = _isWordBoundaryStart(lower, start) &&
+          _isWordBoundaryEnd(lower, end);
+      final span = _TextSpan(start, end);
+      if (boundaryOk &&
+          !excluded.any((excludedSpan) => excludedSpan.contains(span))) {
+        matches.add(_TermMatch(term: term, span: span));
+      }
+      searchFrom = end;
+    }
+  }
+  return matches;
 }
 
 List<JsonMap> _workflowLifecycleRequirementGroupsForWorkflow(
