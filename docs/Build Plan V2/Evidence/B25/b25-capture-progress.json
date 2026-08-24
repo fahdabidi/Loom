@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "toolId": "b25_capture_workflow_screenshots",
-  "updatedAt": "2026-08-23T22:19:58.249552Z",
-  "status": "running",
+  "updatedAt": "2026-08-24T04:19:52.306839Z",
+  "status": "failed",
   "mode": "targeted-precheck",
   "phases": [
     "B13"
@@ -11,11 +11,10 @@
   "completedPhases": 0,
   "currentPhase": "B13",
   "currentPhaseIndex": 1,
-  "currentWorkflowId": null,
-  "completedWorkflowsInCurrentPhase": 0,
-  "totalWorkflowsInCurrentPhase": null,
+  "currentShardIndex": 0,
+  "shardCount": 2,
+  "exitCode": 1,
   "device": "emulator-5554",
   "evidenceRoot": "/home/fahd/Loom/docs/Build Plan V2/Evidence",
-  "logPath": "/home/fahd/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-  "shardCount": 2
+  "logPath": "/home/fahd/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log"
 }

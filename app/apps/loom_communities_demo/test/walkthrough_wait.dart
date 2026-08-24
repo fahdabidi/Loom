@@ -16,9 +16,10 @@ class WalkthroughWaitBudget {
   WalkthroughWaitBudget({
     Duration timeout = const Duration(minutes: 3),
     DateTime Function()? now,
+    DateTime? startedAt,
   }) : timeout = timeout,
        now = now ?? _systemNow,
-       _startedAt = (now ?? _systemNow)().toUtc();
+       _startedAt = (startedAt ?? (now ?? _systemNow)()).toUtc();
 
   /// Three minutes is deliberately slower than the fastest walkthroughs so a
   /// cold, non-accelerated emulator does not fail an otherwise healthy step,
@@ -191,7 +192,8 @@ class WalkthroughBodyWatch {
     _fired = true;
     final budget = WalkthroughWaitBudget(
       timeout: timeout,
-      now: () => _lastBeat.add(timeout),
+      now: _now,
+      startedAt: _lastBeat,
     );
     final message = buildWalkthroughStallMessage(
       lastCompletedStep: _lastCompletedStep,

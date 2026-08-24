@@ -2,16 +2,39 @@
   "schemaVersion": 2,
   "status": "fail",
   "evidenceMode": "failed",
-  "walkthroughStatus": "not-completed",
-  "screenshotStatus": "not-captured",
+  "walkthroughStatus": "fail",
+  "screenshotStatus": "missing",
   "completionGateEligible": false,
-  "failureReason": "The walkthrough started but did not return a completed result.",
-  "phases": [],
+  "failureReason": "The walkthrough assertions did not complete successfully; see commandOutputPath.",
+  "phases": [
+    "B13"
+  ],
+  "phaseSummaries": [
+    {
+      "phase": "B13",
+      "status": "fail",
+      "walkthroughStatus": "fail",
+      "screenshotStatus": "missing",
+      "expectedWorkflowCount": 2,
+      "workflowCount": 0,
+      "requestedScreenshotCount": 0,
+      "screenshotCount": 0
+    }
+  ],
+  "expectedWorkflowCount": 2,
   "workflowCount": 0,
   "requestedScreenshotCount": 0,
   "screenshotCount": 0,
   "missingScreenshotCount": 0,
-  "workflowEvidenceManifestPaths": [],
-  "commandOutputPath": "../../../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-  "startedAt": "2026-08-23T01:00:15.277713Z"
+  "missingScreenshotNames": [],
+  "workflowEvidenceManifestPaths": [
+    "/home/fahd/Loom/docs/Build Plan V2/Evidence/B13/workflow-ui-evidence.json"
+  ],
+  "deviceName": "emulator-5554",
+  "emulatorName": "emulator-5554",
+  "deviceClass": "Android emulator",
+  "platform": "android",
+  "apiLevel": "Android 16 API 36",
+  "commandOutputPath": "/home/fahd/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "recordedAt": "2026-08-24T04:19:41.841074Z"
 }

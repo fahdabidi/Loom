@@ -1,7 +1,10 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "phase": "B13",
-  "status": "pass",
-  "screenshotsAudited": 15,
+  "status": "fail",
+  "walkthroughStatus": "fail",
+  "screenshotStatus": "missing",
+  "completionGateEligible": false,
+  "screenshotsAudited": 0,
   "missingScreenshots": []
 }

@@ -133,4 +133,46 @@ void main() {
       expect(message, contains('limit'));
     });
   });
+
+  test('whole-body watchdog reports the real stalled duration, not 0m 0s',
+      () {
+    fakeAsync((async) {
+      // The injected clock and the injected timer advance together, so the
+      // watchdog fires after a real `timeout` of quiet and the diagnostic must
+      // report that same interval rather than a zeroed-out read.
+      var current = DateTime.utc(2026, 1, 1);
+      final watch = WalkthroughBodyWatch(
+        timeout: const Duration(seconds: 5),
+        now: () => current,
+        lastCompletedStep: 'setup phase, no step completed yet',
+        attemptedStep:
+            'starting workflow garden-event-rsvp (phase B13, '
+            'community Garden Club)',
+        waitingFor:
+            'the first screenshot for workflow garden-event-rsvp to be '
+            'captured',
+      );
+
+      final neverCompletes = Completer<void>();
+      final result = watchWalkthroughBodyWith<void>(
+        neverCompletes.future,
+        watch,
+      );
+
+      Object? capturedError;
+      result.catchError((Object error) {
+        capturedError = error;
+      });
+
+      // Move both the clock and the fake timer past the full quiet interval.
+      current = current.add(const Duration(seconds: 5));
+      async.elapse(const Duration(seconds: 5));
+
+      expect(capturedError, isA<WalkthroughStallFailure>());
+      final message = (capturedError as WalkthroughStallFailure).message;
+      expect(message, contains('0m 5s elapsed'));
+      expect(message, contains('limit 0m 5s'));
+      expect(message, isNot(contains('0m 0s')));
+    });
+  });
 }

@@ -1,1575 +1,64 @@
 b25_capture_workflow_screenshots
-workingDirectory=/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app/apps/loom_communities_demo
-WORKFLOW_EVIDENCE_ROOT=/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence
-mode=full-b25
-phases=B12,B13,B14,B15,B16,B17,B18,B19,B20
+workingDirectory=/home/fahd/Loom/app/apps/loom_communities_demo
+WORKFLOW_EVIDENCE_ROOT=/home/fahd/Loom/docs/Build Plan V2/Evidence
+mode=targeted-precheck
+phases=B13
+communities=ext_garden_club
 device=emulator-5554
-progressReport=/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B25/b25-capture-progress.json
+appPackage=com.example.loom_communities_demo
+b25InteractionModelAsset=/home/fahd/Loom/app/packages/core/loom_communities_app_shell/assets/b25_semantic_interaction_models.json
+progressReport=/home/fahd/Loom/docs/Build Plan V2/Evidence/B25/b25-capture-progress.json
 
---- B12 shard 1/1 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B12
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             78.6s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        2,742ms
-D/WindowLayoutComponentImpl(18054): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@fa5ca31, of which baseContext=android.app.ContextImpl@7336d33
-D/FlutterJNI(18054): Sending viewport metrics to the engine.
-I/flutter (18054): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/FlutterJNI(18054): Sending viewport metrics to the engine.
-D/InsetsController(18054): hide(ime(), fromIme=false)
-I/ImeTracker(18054): com.example.loom_communities_demo:423999a9: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-I/flutter (18054): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:16:10.333168Z","status":"workflow-start","phase":"B12","workflowId":"workflow-ui-evidence-harness","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (18054): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:16:10.337583Z","status":"screenshot-start","phase":"B12","screenshotName":"B12_harness_start","completedWorkflows":0,"totalWorkflows":1}
-I/ommunities_demo(18054): AssetManager2(0x735a60eb30f8) locale list changing from [] to [en-US]
-I/flutter (18054): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:16:11.426370Z","status":"screenshot-start","phase":"B12","screenshotName":"B12_harness_action","completedWorkflows":0,"totalWorkflows":1}
-W/WindowOnBackDispatcher(18054): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@fd90967
-I/flutter (18054): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:16:12.144025Z","status":"screenshot-start","phase":"B12","screenshotName":"B12_harness_complete","completedWorkflows":0,"totalWorkflows":1}
-D/ProfileInstaller(18054): Installing profile for com.example.loom_communities_demo
-I/flutter (18054): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:16:12.283959Z","status":"workflow-complete","phase":"B12","workflowId":"workflow-ui-evidence-harness","completedWorkflows":1,"totalWorkflows":1}
-I/flutter (18054): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:16:12.286900Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
-I/flutter (18054): 00:03 +1: (tearDownAll)
-I/flutter (18054): 00:03 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:39531/2-mFIDQBv08=/
-VMServiceFlutterDriver: Isolate found with number: 1558163288148775
-VMServiceFlutterDriver: Isolate 1558163288148775 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-
---- B13 shard 1/1 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B13
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             47.2s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,445ms
-I/ommunities_demo(18303): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-D/WindowLayoutComponentImpl(18303): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@1a51884, of which baseContext=android.app.ContextImpl@478d0ee
-D/FlutterJNI(18303): Sending viewport metrics to the engine.
-I/flutter (18303): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/FlutterJNI(18303): Sending viewport metrics to the engine.
-D/InsetsController(18303): hide(ime(), fromIme=false)
-I/ImeTracker(18303): com.example.loom_communities_demo:a55b1a26: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/FlutterJNI(18303): Sending viewport metrics to the engine.
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:17:07.630562Z","status":"workflow-start","phase":"B13","workflowId":"garden-event-rsvp","communityName":"Garden Club","completedWorkflows":0,"totalWorkflows":5}
-D/ProfileInstaller(18303): Installing profile for com.example.loom_communities_demo
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:17:09.100259Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-event-rsvp_start","completedWorkflows":0,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:17:10.309232Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-event-rsvp_action","completedWorkflows":0,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:17:49.927593Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-event-rsvp_complete","completedWorkflows":0,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:17:50.058141Z","status":"workflow-complete","phase":"B13","workflowId":"garden-event-rsvp","communityName":"Garden Club","completedWorkflows":1,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:17:50.058965Z","status":"workflow-start","phase":"B13","workflowId":"plant-exchange-submission","communityName":"Garden Club","completedWorkflows":1,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:17:51.375943Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_plant-exchange-submission_start","completedWorkflows":1,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:17:52.558665Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_plant-exchange-submission_action","completedWorkflows":1,"totalWorkflows":5}
-I/ommunities_demo(18303): AssetManager2(0x735a60eca4d8) locale list changing from [] to [en-US]
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:18:30.285043Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_plant-exchange-submission_complete","completedWorkflows":1,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:18:30.415142Z","status":"workflow-complete","phase":"B13","workflowId":"plant-exchange-submission","communityName":"Garden Club","completedWorkflows":2,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:18:30.415851Z","status":"workflow-start","phase":"B13","workflowId":"garden-tool-loan","communityName":"Garden Club","completedWorkflows":2,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:18:31.742079Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-tool-loan_start","completedWorkflows":2,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:18:32.842041Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-tool-loan_action","completedWorkflows":2,"totalWorkflows":5}
-I/ommunities_demo(18303): AssetManager2(0x735a60eb5678) locale list changing from [] to [en-US]
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:19:10.510801Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-tool-loan_complete","completedWorkflows":2,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:19:10.634068Z","status":"workflow-complete","phase":"B13","workflowId":"garden-tool-loan","communityName":"Garden Club","completedWorkflows":3,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:19:10.634332Z","status":"workflow-start","phase":"B13","workflowId":"garden-volunteer-shift","communityName":"Garden Club","completedWorkflows":3,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:19:11.942664Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-volunteer-shift_start","completedWorkflows":3,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:19:13.128049Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-volunteer-shift_action","completedWorkflows":3,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:19:52.660802Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-volunteer-shift_complete","completedWorkflows":3,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:19:52.786449Z","status":"workflow-complete","phase":"B13","workflowId":"garden-volunteer-shift","communityName":"Garden Club","completedWorkflows":4,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:19:52.786764Z","status":"workflow-start","phase":"B13","workflowId":"garden-export-custom-schemas","communityName":"Garden Club","completedWorkflows":4,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:19:54.130678Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-export-custom-schemas_start","completedWorkflows":4,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:19:55.291631Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-export-custom-schemas_action","completedWorkflows":4,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:20:34.214834Z","status":"screenshot-start","phase":"B13","screenshotName":"B13_ext_garden_club_garden-export-custom-schemas_complete","completedWorkflows":4,"totalWorkflows":5}
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:20:34.335554Z","status":"workflow-complete","phase":"B13","workflowId":"garden-export-custom-schemas","communityName":"Garden Club","completedWorkflows":5,"totalWorkflows":5}
-W/WindowOnBackDispatcher(18303): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@3abff8b
-D/FlutterJNI(18303): Sending viewport metrics to the engine.
-I/flutter (18303): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:20:34.959552Z","status":"run-complete","completedWorkflows":5,"totalWorkflows":5}
-I/flutter (18303): 03:29 +1: (tearDownAll)
-I/flutter (18303): 03:29 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:35021/A-UQkMCUejU=/
-VMServiceFlutterDriver: Isolate found with number: 3327696808514899
-VMServiceFlutterDriver: Isolate 3327696808514899 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B14 shard 1/4 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B14 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=4 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=0
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             46.6s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,435ms
-I/ommunities_demo(18527): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-D/WindowLayoutComponentImpl(18527): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@fa5ca31, of which baseContext=android.app.ContextImpl@7336d33
-D/FlutterJNI(18527): Sending viewport metrics to the engine.
-I/flutter (18527): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/InsetsController(18527): hide(ime(), fromIme=false)
-I/ImeTracker(18527): com.example.loom_communities_demo:9989b980: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/FlutterJNI(18527): Sending viewport metrics to the engine.
-D/FlutterJNI(18527): Sending viewport metrics to the engine.
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:21:29.798271Z","status":"workflow-start","phase":"B14","workflowId":"book-nomination","communityName":"Neighborhood Book Club","completedWorkflows":0,"totalWorkflows":9}
-D/ProfileInstaller(18527): Installing profile for com.example.loom_communities_demo
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:21:31.326798Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-nomination_start","completedWorkflows":0,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:21:32.575700Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-nomination_action","completedWorkflows":0,"totalWorkflows":9}
-I/ommunities_demo(18527): AssetManager2(0x735a60eb5358) locale list changing from [] to [en-US]
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:22:09.411135Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-nomination_complete","completedWorkflows":0,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:22:09.535610Z","status":"workflow-complete","phase":"B14","workflowId":"book-nomination","communityName":"Neighborhood Book Club","completedWorkflows":1,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:22:09.535977Z","status":"workflow-start","phase":"B14","workflowId":"book-selection-publish","communityName":"Neighborhood Book Club","completedWorkflows":1,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:22:10.777890Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-selection-publish_start","completedWorkflows":1,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:22:11.958437Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-selection-publish_action","completedWorkflows":1,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:22:50.444563Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-selection-publish_complete","completedWorkflows":1,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:22:50.574377Z","status":"workflow-complete","phase":"B14","workflowId":"book-selection-publish","communityName":"Neighborhood Book Club","completedWorkflows":2,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:22:50.574794Z","status":"workflow-start","phase":"B14","workflowId":"book-reading-material","communityName":"Neighborhood Book Club","completedWorkflows":2,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:22:51.892471Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-reading-material_start","completedWorkflows":2,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:22:53.059121Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-reading-material_action","completedWorkflows":2,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:23:32.328009Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-reading-material_complete","completedWorkflows":2,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:23:32.449024Z","status":"workflow-complete","phase":"B14","workflowId":"book-reading-material","communityName":"Neighborhood Book Club","completedWorkflows":3,"totalWorkflows":9}
-W/WindowOnBackDispatcher(18527): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@c74b07c
-D/FlutterJNI(18527): Sending viewport metrics to the engine.
-D/FlutterJNI(18527): Sending viewport metrics to the engine.
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:23:34.227096Z","status":"workflow-start","phase":"B14","workflowId":"soccer-registration-payment","communityName":"Riverside Youth Soccer","completedWorkflows":3,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:23:35.659237Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-registration-payment_start","completedWorkflows":3,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:23:36.991542Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-registration-payment_action","completedWorkflows":3,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:24:15.927797Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-registration-payment_complete","completedWorkflows":3,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:24:16.052614Z","status":"workflow-complete","phase":"B14","workflowId":"soccer-registration-payment","communityName":"Riverside Youth Soccer","completedWorkflows":4,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:24:16.052884Z","status":"workflow-start","phase":"B14","workflowId":"soccer-waiver-document","communityName":"Riverside Youth Soccer","completedWorkflows":4,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:24:17.392722Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-waiver-document_start","completedWorkflows":4,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:24:18.475186Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-waiver-document_action","completedWorkflows":4,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:24:57.044836Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-waiver-document_complete","completedWorkflows":4,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:24:57.174851Z","status":"workflow-complete","phase":"B14","workflowId":"soccer-waiver-document","communityName":"Riverside Youth Soccer","completedWorkflows":5,"totalWorkflows":9}
-W/WindowOnBackDispatcher(18527): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@c74b07c
-D/FlutterJNI(18527): Sending viewport metrics to the engine.
-D/FlutterJNI(18527): Sending viewport metrics to the engine.
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:24:58.993453Z","status":"workflow-start","phase":"B14","workflowId":"hoa-facility-reservation","communityName":"Cedar Commons HOA","completedWorkflows":5,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:25:00.408899Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-facility-reservation_start","completedWorkflows":5,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:25:01.858352Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-facility-reservation_action","completedWorkflows":5,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:25:41.648816Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-facility-reservation_complete","completedWorkflows":5,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:25:41.769142Z","status":"workflow-complete","phase":"B14","workflowId":"hoa-facility-reservation","communityName":"Cedar Commons HOA","completedWorkflows":6,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:25:41.769419Z","status":"workflow-start","phase":"B14","workflowId":"hoa-export-evidence","communityName":"Cedar Commons HOA","completedWorkflows":6,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:25:43.075261Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-export-evidence_start","completedWorkflows":6,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:25:44.241646Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-export-evidence_action","completedWorkflows":6,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:26:23.844022Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-export-evidence_complete","completedWorkflows":6,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:26:23.970350Z","status":"workflow-complete","phase":"B14","workflowId":"hoa-export-evidence","communityName":"Cedar Commons HOA","completedWorkflows":7,"totalWorkflows":9}
-W/WindowOnBackDispatcher(18527): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@c74b07c
-D/FlutterJNI(18527): Sending viewport metrics to the engine.
-D/FlutterJNI(18527): Sending viewport metrics to the engine.
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:26:25.726884Z","status":"workflow-start","phase":"B14","workflowId":"mosque-donor-visibility","communityName":"Masjid Nur","completedWorkflows":7,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:26:27.158840Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-donor-visibility_start","completedWorkflows":7,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:26:28.324801Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-donor-visibility_action","completedWorkflows":7,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:27:05.894328Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-donor-visibility_complete","completedWorkflows":7,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:27:06.021185Z","status":"workflow-complete","phase":"B14","workflowId":"mosque-donor-visibility","communityName":"Masjid Nur","completedWorkflows":8,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:27:06.021415Z","status":"workflow-start","phase":"B14","workflowId":"mosque-search-ai-citation","communityName":"Masjid Nur","completedWorkflows":8,"totalWorkflows":9}
-I/ommunities_demo(18527): AssetManager2(0x735a60e9b9f8) locale list changing from [] to [en-US]
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:27:43.859347Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-search-ai-citation_start","completedWorkflows":8,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:27:45.174966Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-search-ai-citation_action","completedWorkflows":8,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:28:24.210094Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-search-ai-citation_complete","completedWorkflows":8,"totalWorkflows":9}
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:28:24.340610Z","status":"workflow-complete","phase":"B14","workflowId":"mosque-search-ai-citation","communityName":"Masjid Nur","completedWorkflows":9,"totalWorkflows":9}
-W/WindowOnBackDispatcher(18527): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@c74b07c
-D/FlutterJNI(18527): Sending viewport metrics to the engine.
-I/flutter (18527): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:28:24.925713Z","status":"run-complete","completedWorkflows":9,"totalWorkflows":9}
-I/flutter (18527): 06:57 +1: (tearDownAll)
-I/flutter (18527): 06:57 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:40451/j36VYDkVF-w=/
-VMServiceFlutterDriver: Isolate found with number: 1444725698802691
-VMServiceFlutterDriver: Isolate 1444725698802691 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B14 shard 2/4 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B14 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=4 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=1
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             45.7s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,388ms
-I/ommunities_demo(18817): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-D/WindowLayoutComponentImpl(18817): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@f7f7e97, of which baseContext=android.app.ContextImpl@7ea8e69
-D/FlutterJNI(18817): Sending viewport metrics to the engine.
-I/flutter (18817): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/InsetsController(18817): hide(ime(), fromIme=false)
-I/ImeTracker(18817): com.example.loom_communities_demo:522d3835: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/FlutterJNI(18817): Sending viewport metrics to the engine.
-D/FlutterJNI(18817): Sending viewport metrics to the engine.
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:29:20.237607Z","status":"workflow-start","phase":"B14","workflowId":"book-vote","communityName":"Neighborhood Book Club","completedWorkflows":0,"totalWorkflows":9}
-D/ProfileInstaller(18817): Installing profile for com.example.loom_communities_demo
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:29:21.759993Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-vote_start","completedWorkflows":0,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:29:22.925759Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-vote_action","completedWorkflows":0,"totalWorkflows":9}
-I/ommunities_demo(18817): AssetManager2(0x735a60ef8018) locale list changing from [] to [en-US]
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:29:59.677839Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-vote_complete","completedWorkflows":0,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:29:59.802024Z","status":"workflow-complete","phase":"B14","workflowId":"book-vote","communityName":"Neighborhood Book Club","completedWorkflows":1,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:29:59.802315Z","status":"workflow-start","phase":"B14","workflowId":"book-search-ai-digest","communityName":"Neighborhood Book Club","completedWorkflows":1,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:30:01.143126Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-search-ai-digest_start","completedWorkflows":1,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:30:02.208495Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-search-ai-digest_action","completedWorkflows":1,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:30:41.477805Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-search-ai-digest_complete","completedWorkflows":1,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:30:41.602646Z","status":"workflow-complete","phase":"B14","workflowId":"book-search-ai-digest","communityName":"Neighborhood Book Club","completedWorkflows":2,"totalWorkflows":9}
-W/WindowOnBackDispatcher(18817): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85b115a
-D/FlutterJNI(18817): Sending viewport metrics to the engine.
-D/FlutterJNI(18817): Sending viewport metrics to the engine.
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:30:43.427097Z","status":"workflow-start","phase":"B14","workflowId":"soccer-guardian-join-approval","communityName":"Riverside Youth Soccer","completedWorkflows":2,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:30:44.876019Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-guardian-join-approval_start","completedWorkflows":2,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:30:46.058483Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-guardian-join-approval_action","completedWorkflows":2,"totalWorkflows":9}
-I/ommunities_demo(18817): AssetManager2(0x735a60ec6c98) locale list changing from [] to [en-US]
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:31:22.279083Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-guardian-join-approval_complete","completedWorkflows":2,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:31:22.405087Z","status":"workflow-complete","phase":"B14","workflowId":"soccer-guardian-join-approval","communityName":"Riverside Youth Soccer","completedWorkflows":3,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:31:22.405358Z","status":"workflow-start","phase":"B14","workflowId":"soccer-practice-schedule","communityName":"Riverside Youth Soccer","completedWorkflows":3,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:31:23.725670Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-practice-schedule_start","completedWorkflows":3,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:31:24.891686Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-practice-schedule_action","completedWorkflows":3,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:02.527446Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-practice-schedule_complete","completedWorkflows":3,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:02.654016Z","status":"workflow-complete","phase":"B14","workflowId":"soccer-practice-schedule","communityName":"Riverside Youth Soccer","completedWorkflows":4,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:02.654363Z","status":"workflow-start","phase":"B14","workflowId":"soccer-team-discussion","communityName":"Riverside Youth Soccer","completedWorkflows":4,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:03.992067Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-team-discussion_start","completedWorkflows":4,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:05.158304Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-team-discussion_action","completedWorkflows":4,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:06.813874Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-team-discussion_complete","completedWorkflows":4,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:06.939901Z","status":"workflow-complete","phase":"B14","workflowId":"soccer-team-discussion","communityName":"Riverside Youth Soccer","completedWorkflows":5,"totalWorkflows":9}
-W/WindowOnBackDispatcher(18817): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85b115a
-D/FlutterJNI(18817): Sending viewport metrics to the engine.
-D/FlutterJNI(18817): Sending viewport metrics to the engine.
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:08.676512Z","status":"workflow-start","phase":"B14","workflowId":"hoa-architectural-request","communityName":"Cedar Commons HOA","completedWorkflows":5,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:10.108566Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-architectural-request_start","completedWorkflows":5,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:11.275504Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-architectural-request_action","completedWorkflows":5,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:12.713587Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-architectural-request_complete","completedWorkflows":5,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:12.836459Z","status":"workflow-complete","phase":"B14","workflowId":"hoa-architectural-request","communityName":"Cedar Commons HOA","completedWorkflows":6,"totalWorkflows":9}
-W/WindowOnBackDispatcher(18817): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85b115a
-D/FlutterJNI(18817): Sending viewport metrics to the engine.
-D/FlutterJNI(18817): Sending viewport metrics to the engine.
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:14.542930Z","status":"workflow-start","phase":"B14","workflowId":"mosque-announcement","communityName":"Masjid Nur","completedWorkflows":6,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:15.959011Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-announcement_start","completedWorkflows":6,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:17.274970Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-announcement_action","completedWorkflows":6,"totalWorkflows":9}
-I/ommunities_demo(18817): AssetManager2(0x735a60efd478) locale list changing from [] to [en-US]
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:51.410735Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-announcement_complete","completedWorkflows":6,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:51.536250Z","status":"workflow-complete","phase":"B14","workflowId":"mosque-announcement","communityName":"Masjid Nur","completedWorkflows":7,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:51.536505Z","status":"workflow-start","phase":"B14","workflowId":"mosque-donation-payment","communityName":"Masjid Nur","completedWorkflows":7,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:52.842365Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-donation-payment_start","completedWorkflows":7,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:32:54.008161Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-donation-payment_action","completedWorkflows":7,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:33:31.378022Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-donation-payment_complete","completedWorkflows":7,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:33:31.507816Z","status":"workflow-complete","phase":"B14","workflowId":"mosque-donation-payment","communityName":"Masjid Nur","completedWorkflows":8,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:33:31.508095Z","status":"workflow-start","phase":"B14","workflowId":"mosque-discussion-thread","communityName":"Masjid Nur","completedWorkflows":8,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:33:32.825941Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-discussion-thread_start","completedWorkflows":8,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:33:33.991399Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-discussion-thread_action","completedWorkflows":8,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:33:35.646914Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-discussion-thread_complete","completedWorkflows":8,"totalWorkflows":9}
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:33:35.770041Z","status":"workflow-complete","phase":"B14","workflowId":"mosque-discussion-thread","communityName":"Masjid Nur","completedWorkflows":9,"totalWorkflows":9}
-W/WindowOnBackDispatcher(18817): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85b115a
-D/FlutterJNI(18817): Sending viewport metrics to the engine.
-I/flutter (18817): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:33:36.359335Z","status":"run-complete","completedWorkflows":9,"totalWorkflows":9}
-I/flutter (18817): 04:18 +1: (tearDownAll)
-I/flutter (18817): 04:19 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:42817/ApMWSbI0v9Q=/
-VMServiceFlutterDriver: Isolate found with number: 6177453999159111
-VMServiceFlutterDriver: Isolate 6177453999159111 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B14 shard 3/4 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B14 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=4 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=2
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             45.9s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,462ms
-I/ommunities_demo(19079): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-D/WindowLayoutComponentImpl(19079): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@fa5ca31, of which baseContext=android.app.ContextImpl@7336d33
-D/FlutterJNI(19079): Sending viewport metrics to the engine.
-I/flutter (19079): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/InsetsController(19079): hide(ime(), fromIme=false)
-I/ImeTracker(19079): com.example.loom_communities_demo:9631c110: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/FlutterJNI(19079): Sending viewport metrics to the engine.
-D/FlutterJNI(19079): Sending viewport metrics to the engine.
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:34:31.506042Z","status":"workflow-start","phase":"B14","workflowId":"book-meeting-rsvp","communityName":"Neighborhood Book Club","completedWorkflows":0,"totalWorkflows":8}
-D/ProfileInstaller(19079): Installing profile for com.example.loom_communities_demo
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:34:33.010350Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-meeting-rsvp_start","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:34:34.176690Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-meeting-rsvp_action","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:35:13.361727Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-meeting-rsvp_complete","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:35:13.486412Z","status":"workflow-complete","phase":"B14","workflowId":"book-meeting-rsvp","communityName":"Neighborhood Book Club","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:35:13.486712Z","status":"workflow-start","phase":"B14","workflowId":"book-export-metadata","communityName":"Neighborhood Book Club","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:35:14.809660Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-export-metadata_start","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:35:15.975141Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-export-metadata_action","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:35:54.294566Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-export-metadata_complete","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:35:54.421683Z","status":"workflow-complete","phase":"B14","workflowId":"book-export-metadata","communityName":"Neighborhood Book Club","completedWorkflows":2,"totalWorkflows":8}
-W/WindowOnBackDispatcher(19079): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@c74b07c
-D/FlutterJNI(19079): Sending viewport metrics to the engine.
-D/FlutterJNI(19079): Sending viewport metrics to the engine.
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:35:56.093826Z","status":"workflow-start","phase":"B14","workflowId":"soccer-team-roster","communityName":"Riverside Youth Soccer","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:35:57.542499Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-team-roster_start","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:35:58.708289Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-team-roster_action","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:36:33.293991Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-team-roster_complete","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:36:33.420654Z","status":"workflow-complete","phase":"B14","workflowId":"soccer-team-roster","communityName":"Riverside Youth Soccer","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:36:33.420969Z","status":"workflow-start","phase":"B14","workflowId":"soccer-reminder-notification","communityName":"Riverside Youth Soccer","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:36:34.642294Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-reminder-notification_start","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:36:35.824910Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-reminder-notification_action","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:36:37.264066Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-reminder-notification_complete","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:36:37.386759Z","status":"workflow-complete","phase":"B14","workflowId":"soccer-reminder-notification","communityName":"Riverside Youth Soccer","completedWorkflows":4,"totalWorkflows":8}
-W/WindowOnBackDispatcher(19079): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@c74b07c
-D/FlutterJNI(19079): Sending viewport metrics to the engine.
-D/FlutterJNI(19079): Sending viewport metrics to the engine.
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:36:39.109659Z","status":"workflow-start","phase":"B14","workflowId":"hoa-dues-payment","communityName":"Cedar Commons HOA","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:36:40.542103Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-dues-payment_start","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:36:41.858454Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-dues-payment_action","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:37:21.561399Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-dues-payment_complete","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:37:21.686271Z","status":"workflow-complete","phase":"B14","workflowId":"hoa-dues-payment","communityName":"Cedar Commons HOA","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:37:21.686564Z","status":"workflow-start","phase":"B14","workflowId":"hoa-committee-decision","communityName":"Cedar Commons HOA","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:37:26.875331Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-committee-decision_start","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:37:28.041724Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-committee-decision_action","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:38:07.643980Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-committee-decision_complete","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:38:07.768718Z","status":"workflow-complete","phase":"B14","workflowId":"hoa-committee-decision","communityName":"Cedar Commons HOA","completedWorkflows":6,"totalWorkflows":8}
-W/WindowOnBackDispatcher(19079): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@c74b07c
-D/FlutterJNI(19079): Sending viewport metrics to the engine.
-D/FlutterJNI(19079): Sending viewport metrics to the engine.
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:38:09.481188Z","status":"workflow-start","phase":"B14","workflowId":"mosque-event-rsvp","communityName":"Masjid Nur","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:38:10.925329Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-event-rsvp_start","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:38:12.091708Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-event-rsvp_action","completedWorkflows":6,"totalWorkflows":8}
-I/ommunities_demo(19079): AssetManager2(0x735a60f1d818) locale list changing from [] to [en-US]
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:38:49.044293Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-event-rsvp_complete","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:38:49.166791Z","status":"workflow-complete","phase":"B14","workflowId":"mosque-event-rsvp","communityName":"Masjid Nur","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:38:49.167010Z","status":"workflow-start","phase":"B14","workflowId":"mosque-care-request","communityName":"Masjid Nur","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:38:50.475581Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-care-request_start","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:38:51.658147Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-care-request_action","completedWorkflows":7,"totalWorkflows":8}
-I/ommunities_demo(19079): AssetManager2(0x735a60ed4a78) locale list changing from [] to [en-US]
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:39:27.177302Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-care-request_complete","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:39:27.303898Z","status":"workflow-complete","phase":"B14","workflowId":"mosque-care-request","communityName":"Masjid Nur","completedWorkflows":8,"totalWorkflows":8}
-W/WindowOnBackDispatcher(19079): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@c74b07c
-D/FlutterJNI(19079): Sending viewport metrics to the engine.
-I/flutter (19079): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:39:27.892526Z","status":"run-complete","completedWorkflows":8,"totalWorkflows":8}
-I/flutter (19079): 04:58 +1: (tearDownAll)
-I/flutter (19079): 04:59 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:42889/qZt6y-lWkhk=/
-VMServiceFlutterDriver: Isolate found with number: 8040159802301883
-VMServiceFlutterDriver: Isolate 8040159802301883 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B14 shard 4/4 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B14 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=4 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=3
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             45.9s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,452ms
-I/ommunities_demo(19329): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-D/WindowLayoutComponentImpl(19329): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@f7f7e97, of which baseContext=android.app.ContextImpl@7ea8e69
-D/FlutterJNI(19329): Sending viewport metrics to the engine.
-I/flutter (19329): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/InsetsController(19329): hide(ime(), fromIme=false)
-I/ImeTracker(19329): com.example.loom_communities_demo:78b64c6b: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/FlutterJNI(19329): Sending viewport metrics to the engine.
-D/FlutterJNI(19329): Sending viewport metrics to the engine.
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:40:23.000977Z","status":"workflow-start","phase":"B14","workflowId":"book-discussion-message","communityName":"Neighborhood Book Club","completedWorkflows":0,"totalWorkflows":8}
-D/ProfileInstaller(19329): Installing profile for com.example.loom_communities_demo
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:40:24.527388Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-discussion-message_start","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:40:25.692285Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-discussion-message_action","completedWorkflows":0,"totalWorkflows":8}
-I/ommunities_demo(19329): AssetManager2(0x735a60ea8518) locale list changing from [] to [en-US]
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:04.827925Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-discussion-message_complete","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:04.950410Z","status":"workflow-complete","phase":"B14","workflowId":"book-discussion-message","communityName":"Neighborhood Book Club","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:04.950678Z","status":"workflow-start","phase":"B14","workflowId":"book-library-item","communityName":"Neighborhood Book Club","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:06.292699Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-library-item_start","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:07.458284Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-library-item_action","completedWorkflows":1,"totalWorkflows":8}
-I/ommunities_demo(19329): AssetManager2(0x735a60e9dc58) locale list changing from [] to [en-US]
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:46.504178Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_book_club_book-library-item_complete","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:46.620638Z","status":"workflow-complete","phase":"B14","workflowId":"book-library-item","communityName":"Neighborhood Book Club","completedWorkflows":2,"totalWorkflows":8}
-W/WindowOnBackDispatcher(19329): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85b115a
-D/FlutterJNI(19329): Sending viewport metrics to the engine.
-D/FlutterJNI(19329): Sending viewport metrics to the engine.
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:48.310642Z","status":"workflow-start","phase":"B14","workflowId":"soccer-minor-redaction","communityName":"Riverside Youth Soccer","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:49.759549Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-minor-redaction_start","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:50.824940Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-minor-redaction_action","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:52.397349Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-minor-redaction_complete","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:52.532708Z","status":"workflow-complete","phase":"B14","workflowId":"soccer-minor-redaction","communityName":"Riverside Youth Soccer","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:52.532990Z","status":"workflow-start","phase":"B14","workflowId":"soccer-export-metadata","communityName":"Riverside Youth Soccer","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:53.859787Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-export-metadata_start","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:41:55.179060Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-export-metadata_action","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:42:34.227713Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_youth_soccer_soccer-export-metadata_complete","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:42:34.354416Z","status":"workflow-complete","phase":"B14","workflowId":"soccer-export-metadata","communityName":"Riverside Youth Soccer","completedWorkflows":4,"totalWorkflows":8}
-W/WindowOnBackDispatcher(19329): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85b115a
-D/FlutterJNI(19329): Sending viewport metrics to the engine.
-D/FlutterJNI(19329): Sending viewport metrics to the engine.
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:42:36.059630Z","status":"workflow-start","phase":"B14","workflowId":"hoa-member-document","communityName":"Cedar Commons HOA","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:42:37.475604Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-member-document_start","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:42:38.541342Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-member-document_action","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:43:18.377129Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-member-document_complete","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:43:18.500181Z","status":"workflow-complete","phase":"B14","workflowId":"hoa-member-document","communityName":"Cedar Commons HOA","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:43:18.500425Z","status":"workflow-start","phase":"B14","workflowId":"hoa-owner-notification","communityName":"Cedar Commons HOA","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:44:05.758724Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-owner-notification_start","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:44:07.058443Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-owner-notification_action","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:44:08.612606Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_hoa_hoa-owner-notification_complete","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:44:08.738404Z","status":"workflow-complete","phase":"B14","workflowId":"hoa-owner-notification","communityName":"Cedar Commons HOA","completedWorkflows":6,"totalWorkflows":8}
-W/WindowOnBackDispatcher(19329): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85b115a
-D/FlutterJNI(19329): Sending viewport metrics to the engine.
-D/FlutterJNI(19329): Sending viewport metrics to the engine.
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:44:10.559811Z","status":"workflow-start","phase":"B14","workflowId":"mosque-volunteer-signup","communityName":"Masjid Nur","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:44:11.992119Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-volunteer-signup_start","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:44:13.158548Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-volunteer-signup_action","completedWorkflows":6,"totalWorkflows":8}
-I/ommunities_demo(19329): AssetManager2(0x735a60f0c518) locale list changing from [] to [en-US]
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:44:50.877327Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-volunteer-signup_complete","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:44:51.000567Z","status":"workflow-complete","phase":"B14","workflowId":"mosque-volunteer-signup","communityName":"Masjid Nur","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:44:51.000831Z","status":"workflow-start","phase":"B14","workflowId":"mosque-neutral-notification","communityName":"Masjid Nur","completedWorkflows":7,"totalWorkflows":8}
-I/ommunities_demo(19329): AssetManager2(0x735a60f0f3f8) locale list changing from [] to [en-US]
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:45:30.442366Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-neutral-notification_start","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:45:31.624912Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-neutral-notification_action","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:45:33.164499Z","status":"screenshot-start","phase":"B14","screenshotName":"B14_ext_mosque_mosque-neutral-notification_complete","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:45:33.297183Z","status":"workflow-complete","phase":"B14","workflowId":"mosque-neutral-notification","communityName":"Masjid Nur","completedWorkflows":8,"totalWorkflows":8}
-W/WindowOnBackDispatcher(19329): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85b115a
-D/FlutterJNI(19329): Sending viewport metrics to the engine.
-I/flutter (19329): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:45:33.909167Z","status":"run-complete","completedWorkflows":8,"totalWorkflows":8}
-I/flutter (19329): 05:13 +1: (tearDownAll)
-I/flutter (19329): 05:13 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:39373/SIajDAsgfQk=/
-VMServiceFlutterDriver: Isolate found with number: 2638478229296795
-VMServiceFlutterDriver: Isolate 2638478229296795 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B15 shard 1/1 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B15
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             46.2s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,401ms
-D/FlutterJNI(19587): Sending viewport metrics to the engine.
-D/WindowLayoutComponentImpl(19587): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@f7f7e97, of which baseContext=android.app.ContextImpl@7ea8e69
-D/FlutterJNI(19587): Sending viewport metrics to the engine.
-I/flutter (19587): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/FlutterJNI(19587): Sending viewport metrics to the engine.
-D/InsetsController(19587): hide(ime(), fromIme=false)
-I/ImeTracker(19587): com.example.loom_communities_demo:66bd7fe1: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/FlutterJNI(19587): Sending viewport metrics to the engine.
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:46:29.505065Z","status":"workflow-start","phase":"B15","workflowId":"chess-match-meetup","communityName":"Chess Club","completedWorkflows":0,"totalWorkflows":12}
-D/ProfileInstaller(19587): Installing profile for com.example.loom_communities_demo
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:46:30.993377Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-match-meetup_start","completedWorkflows":0,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:46:32.141713Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-match-meetup_action","completedWorkflows":0,"totalWorkflows":12}
-I/ommunities_demo(19587): AssetManager2(0x735a60e9e298) locale list changing from [] to [en-US]
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:08.344267Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-match-meetup_complete","completedWorkflows":0,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:08.471430Z","status":"workflow-complete","phase":"B15","workflowId":"chess-match-meetup","communityName":"Chess Club","completedWorkflows":1,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:08.471745Z","status":"workflow-start","phase":"B15","workflowId":"chess-match-result","communityName":"Chess Club","completedWorkflows":1,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:09.815349Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-match-result_start","completedWorkflows":1,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:10.975116Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-match-result_action","completedWorkflows":1,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:12.414482Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-match-result_complete","completedWorkflows":1,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:12.535290Z","status":"workflow-complete","phase":"B15","workflowId":"chess-match-result","communityName":"Chess Club","completedWorkflows":2,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:12.535618Z","status":"workflow-start","phase":"B15","workflowId":"chess-rankings-table","communityName":"Chess Club","completedWorkflows":2,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:13.859004Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-rankings-table_start","completedWorkflows":2,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:15.024916Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-rankings-table_action","completedWorkflows":2,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:54.177388Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-rankings-table_complete","completedWorkflows":2,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:54.304720Z","status":"workflow-complete","phase":"B15","workflowId":"chess-rankings-table","communityName":"Chess Club","completedWorkflows":3,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:54.305033Z","status":"workflow-start","phase":"B15","workflowId":"chess-club-night","communityName":"Chess Club","completedWorkflows":3,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:55.658601Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-club-night_start","completedWorkflows":3,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:47:56.724949Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-club-night_action","completedWorkflows":3,"totalWorkflows":12}
-I/ommunities_demo(19587): AssetManager2(0x735a60ef95f8) locale list changing from [] to [en-US]
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:48:33.644017Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-club-night_complete","completedWorkflows":3,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:48:33.768133Z","status":"workflow-complete","phase":"B15","workflowId":"chess-club-night","communityName":"Chess Club","completedWorkflows":4,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:48:33.768443Z","status":"workflow-start","phase":"B15","workflowId":"chess-pairing-queue","communityName":"Chess Club","completedWorkflows":4,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:48:35.092481Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-pairing-queue_start","completedWorkflows":4,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:48:36.258182Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-pairing-queue_action","completedWorkflows":4,"totalWorkflows":12}
-I/ommunities_demo(19587): AssetManager2(0x735a60ec6338) locale list changing from [] to [en-US]
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:12.560696Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-pairing-queue_complete","completedWorkflows":4,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:12.683158Z","status":"workflow-complete","phase":"B15","workflowId":"chess-pairing-queue","communityName":"Chess Club","completedWorkflows":5,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:12.683413Z","status":"workflow-start","phase":"B15","workflowId":"chess-export-package","communityName":"Chess Club","completedWorkflows":5,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:13.992313Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-export-package_start","completedWorkflows":5,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:15.158812Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-export-package_action","completedWorkflows":5,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:16.580026Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-export-package_complete","completedWorkflows":5,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:16.700911Z","status":"workflow-complete","phase":"B15","workflowId":"chess-export-package","communityName":"Chess Club","completedWorkflows":6,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:16.701164Z","status":"workflow-start","phase":"B15","workflowId":"chess-rules-documents","communityName":"Chess Club","completedWorkflows":6,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:18.025653Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-rules-documents_start","completedWorkflows":6,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:19.191380Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-rules-documents_action","completedWorkflows":6,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:58.411642Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-rules-documents_complete","completedWorkflows":6,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:58.542013Z","status":"workflow-complete","phase":"B15","workflowId":"chess-rules-documents","communityName":"Chess Club","completedWorkflows":7,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:58.542299Z","status":"workflow-start","phase":"B15","workflowId":"chess-discussion-thread","communityName":"Chess Club","completedWorkflows":7,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:49:59.842333Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-discussion-thread_start","completedWorkflows":7,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:50:01.025025Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-discussion-thread_action","completedWorkflows":7,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:50:02.463576Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_chess_club_chess-discussion-thread_complete","completedWorkflows":7,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:50:02.595319Z","status":"workflow-complete","phase":"B15","workflowId":"chess-discussion-thread","communityName":"Chess Club","completedWorkflows":8,"totalWorkflows":12}
-W/WindowOnBackDispatcher(19587): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@628e926
-D/FlutterJNI(19587): Sending viewport metrics to the engine.
-D/FlutterJNI(19587): Sending viewport metrics to the engine.
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:50:04.192831Z","status":"workflow-start","phase":"B15","workflowId":"photo-walk-rsvp","communityName":"Camera Club","completedWorkflows":8,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:50:05.608656Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_photo-walk-rsvp_start","completedWorkflows":8,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:50:06.774837Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_photo-walk-rsvp_action","completedWorkflows":8,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:50:45.660142Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_photo-walk-rsvp_complete","completedWorkflows":8,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:50:45.783757Z","status":"workflow-complete","phase":"B15","workflowId":"photo-walk-rsvp","communityName":"Camera Club","completedWorkflows":9,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:50:45.784046Z","status":"workflow-start","phase":"B15","workflowId":"critique-submission","communityName":"Camera Club","completedWorkflows":9,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:50:47.075118Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_critique-submission_start","completedWorkflows":9,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:50:48.241677Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_critique-submission_action","completedWorkflows":9,"totalWorkflows":12}
-I/ommunities_demo(19587): AssetManager2(0x735a60ebc6f8) locale list changing from [] to [en-US]
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:51:26.476419Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_critique-submission_complete","completedWorkflows":9,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:51:26.602479Z","status":"workflow-complete","phase":"B15","workflowId":"critique-submission","communityName":"Camera Club","completedWorkflows":10,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:51:26.602801Z","status":"workflow-start","phase":"B15","workflowId":"gear-loan-request","communityName":"Camera Club","completedWorkflows":10,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:51:27.908237Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_gear-loan-request_start","completedWorkflows":10,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:51:29.075Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_gear-loan-request_action","completedWorkflows":10,"totalWorkflows":12}
-I/ommunities_demo(19587): AssetManager2(0x735a60eb8eb8) locale list changing from [] to [en-US]
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:52:05.060101Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_gear-loan-request_complete","completedWorkflows":10,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:52:05.185940Z","status":"workflow-complete","phase":"B15","workflowId":"gear-loan-request","communityName":"Camera Club","completedWorkflows":11,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:52:05.186203Z","status":"workflow-start","phase":"B15","workflowId":"camera-validation-report","communityName":"Camera Club","completedWorkflows":11,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:52:06.491644Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_camera-validation-report_start","completedWorkflows":11,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:52:07.658359Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_camera-validation-report_action","completedWorkflows":11,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:52:47.210030Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_camera-validation-report_complete","completedWorkflows":11,"totalWorkflows":12}
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:52:47.334148Z","status":"workflow-complete","phase":"B15","workflowId":"camera-validation-report","communityName":"Camera Club","completedWorkflows":12,"totalWorkflows":12}
-W/WindowOnBackDispatcher(19587): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@628e926
-D/FlutterJNI(19587): Sending viewport metrics to the engine.
-I/flutter (19587): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:52:47.925989Z","status":"run-complete","completedWorkflows":12,"totalWorkflows":12}
-I/flutter (19587): 06:21 +1: (tearDownAll)
-I/flutter (19587): 06:21 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:35677/6-VQpDuDU4s=/
-VMServiceFlutterDriver: Isolate found with number: 5766218501506007
-VMServiceFlutterDriver: Isolate 5766218501506007 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B16 shard 1/3 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B16 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=3 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=0
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             46.7s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,445ms
-I/ommunities_demo(19853): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-D/WindowLayoutComponentImpl(19853): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@fa5ca31, of which baseContext=android.app.ContextImpl@7336d33
-D/FlutterJNI(19853): Sending viewport metrics to the engine.
-I/flutter (19853): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/FlutterJNI(19853): Sending viewport metrics to the engine.
-D/InsetsController(19853): hide(ime(), fromIme=false)
-I/ImeTracker(19853): com.example.loom_communities_demo:f121875d: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/ProfileInstaller(19853): Installing profile for com.example.loom_communities_demo
-D/FlutterJNI(19853): Sending viewport metrics to the engine.
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:03.264733Z","status":"workflow-start","phase":"B16","workflowId":"platform-messages-entry","communityName":"Member Social Space","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:04.726232Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-messages-entry_start","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:06.058388Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-messages-entry_action","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:08.231177Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-messages-entry_complete","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:08.353902Z","status":"workflow-complete","phase":"B16","workflowId":"platform-messages-entry","communityName":"Member Social Space","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:08.354200Z","status":"workflow-start","phase":"B16","workflowId":"platform-blocked-target","communityName":"Member Social Space","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:09.575708Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-blocked-target_start","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:10.775042Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-blocked-target_action","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:12.328530Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-blocked-target_complete","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:12.453752Z","status":"workflow-complete","phase":"B16","workflowId":"platform-blocked-target","communityName":"Member Social Space","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:12.454130Z","status":"workflow-start","phase":"B16","workflowId":"platform-top-banner-no-fill","communityName":"Member Social Space","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:13.781296Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-top-banner-no-fill_start","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:15.258415Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-top-banner-no-fill_action","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:54.910649Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-top-banner-no-fill_complete","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:55.040772Z","status":"workflow-complete","phase":"B16","workflowId":"platform-top-banner-no-fill","communityName":"Member Social Space","completedWorkflows":3,"totalWorkflows":8}
-W/WindowOnBackDispatcher(19853): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@fd90967
-D/FlutterJNI(19853): Sending viewport metrics to the engine.
-D/FlutterJNI(19853): Sending viewport metrics to the engine.
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:56.476024Z","status":"workflow-start","phase":"B16","workflowId":"ad-off-community-checkout","communityName":"Ad-Free Community","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:57.909162Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-community-checkout_start","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:54:59.208281Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-community-checkout_action","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:00.730584Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-community-checkout_complete","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:00.851564Z","status":"workflow-complete","phase":"B16","workflowId":"ad-off-community-checkout","communityName":"Ad-Free Community","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:00.851879Z","status":"workflow-start","phase":"B16","workflowId":"ad-off-ad-suppression","communityName":"Ad-Free Community","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:02.158738Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-ad-suppression_start","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:03.341618Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-ad-suppression_action","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:04.879311Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-ad-suppression_complete","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:05.004487Z","status":"workflow-complete","phase":"B16","workflowId":"ad-off-ad-suppression","communityName":"Ad-Free Community","completedWorkflows":5,"totalWorkflows":8}
-W/WindowOnBackDispatcher(19853): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@fd90967
-D/FlutterJNI(19853): Sending viewport metrics to the engine.
-D/FlutterJNI(19853): Sending viewport metrics to the engine.
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:06.476263Z","status":"workflow-start","phase":"B16","workflowId":"export-import-replay","communityName":"Data Portability Community","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:07.908785Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-import-replay_start","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:09.225068Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-import-replay_action","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:48.943783Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-import-replay_complete","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:49.070162Z","status":"workflow-complete","phase":"B16","workflowId":"export-import-replay","communityName":"Data Portability Community","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:49.070424Z","status":"workflow-start","phase":"B16","workflowId":"export-full-bundle","communityName":"Data Portability Community","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:50.391754Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-full-bundle_start","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:55:51.741792Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-full-bundle_action","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:56:31.327205Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-full-bundle_complete","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:56:31.453959Z","status":"workflow-complete","phase":"B16","workflowId":"export-full-bundle","communityName":"Data Portability Community","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:56:31.454258Z","status":"workflow-start","phase":"B16","workflowId":"export-transfer-verification","communityName":"Data Portability Community","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:56:32.775347Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-transfer-verification_start","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:56:33.958320Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-transfer-verification_action","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:57:13.543756Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-transfer-verification_complete","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:57:13.670710Z","status":"workflow-complete","phase":"B16","workflowId":"export-transfer-verification","communityName":"Data Portability Community","completedWorkflows":8,"totalWorkflows":8}
-W/WindowOnBackDispatcher(19853): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@fd90967
-D/FlutterJNI(19853): Sending viewport metrics to the engine.
-I/flutter (19853): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:57:14.258999Z","status":"run-complete","completedWorkflows":8,"totalWorkflows":8}
-I/flutter (19853): 03:32 +1: (tearDownAll)
-I/flutter (19853): 03:32 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:42893/uU95_qOHfAo=/
-VMServiceFlutterDriver: Isolate found with number: 4058920520792267
-VMServiceFlutterDriver: Isolate 4058920520792267 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B16 shard 2/3 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B16 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=3 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=1
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             46.0s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,389ms
-I/ommunities_demo(20070): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-D/WindowLayoutComponentImpl(20070): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@fa5ca31, of which baseContext=android.app.ContextImpl@7336d33
-D/FlutterJNI(20070): Sending viewport metrics to the engine.
-I/flutter (20070): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/FlutterJNI(20070): Sending viewport metrics to the engine.
-D/InsetsController(20070): hide(ime(), fromIme=false)
-I/ImeTracker(20070): com.example.loom_communities_demo:a1dec1eb: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/ProfileInstaller(20070): Installing profile for com.example.loom_communities_demo
-D/FlutterJNI(20070): Sending viewport metrics to the engine.
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:27.715709Z","status":"workflow-start","phase":"B16","workflowId":"platform-connections-entry","communityName":"Member Social Space","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:29.159766Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-connections-entry_start","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:30.475215Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-connections-entry_action","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:32.064533Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-connections-entry_complete","completedWorkflows":0,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:32.185443Z","status":"workflow-complete","phase":"B16","workflowId":"platform-connections-entry","communityName":"Member Social Space","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:32.185697Z","status":"workflow-start","phase":"B16","workflowId":"platform-message-stream","communityName":"Member Social Space","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:33.509076Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-message-stream_start","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:34.675103Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-message-stream_action","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:36.814379Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-message-stream_complete","completedWorkflows":1,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:36.936368Z","status":"workflow-complete","phase":"B16","workflowId":"platform-message-stream","communityName":"Member Social Space","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:36.936719Z","status":"workflow-start","phase":"B16","workflowId":"platform-sensitive-no-fill","communityName":"Member Social Space","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:38.259019Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-sensitive-no-fill_start","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:58:39.425386Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-sensitive-no-fill_action","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:19.010935Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-sensitive-no-fill_complete","completedWorkflows":2,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:19.139041Z","status":"workflow-complete","phase":"B16","workflowId":"platform-sensitive-no-fill","communityName":"Member Social Space","completedWorkflows":3,"totalWorkflows":8}
-W/WindowOnBackDispatcher(20070): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@fd90967
-D/FlutterJNI(20070): Sending viewport metrics to the engine.
-D/FlutterJNI(20070): Sending viewport metrics to the engine.
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:20.576171Z","status":"workflow-start","phase":"B16","workflowId":"ad-off-entitlement-status","communityName":"Ad-Free Community","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:21.992438Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-entitlement-status_start","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:23.308312Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-entitlement-status_action","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:24.746596Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-entitlement-status_complete","completedWorkflows":3,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:24.867168Z","status":"workflow-complete","phase":"B16","workflowId":"ad-off-entitlement-status","communityName":"Ad-Free Community","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:24.867433Z","status":"workflow-start","phase":"B16","workflowId":"ad-off-settlement-utility","communityName":"Ad-Free Community","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:26.175892Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-settlement-utility_start","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:27.341625Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-settlement-utility_action","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:28.763954Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-settlement-utility_complete","completedWorkflows":4,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:28.887354Z","status":"workflow-complete","phase":"B16","workflowId":"ad-off-settlement-utility","communityName":"Ad-Free Community","completedWorkflows":5,"totalWorkflows":8}
-W/WindowOnBackDispatcher(20070): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@fd90967
-D/FlutterJNI(20070): Sending viewport metrics to the engine.
-D/FlutterJNI(20070): Sending viewport metrics to the engine.
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:30.426598Z","status":"workflow-start","phase":"B16","workflowId":"export-protected-redaction","communityName":"Data Portability Community","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:31.859974Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-protected-redaction_start","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T09:59:33.175304Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-protected-redaction_action","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:00:12.878161Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-protected-redaction_complete","completedWorkflows":5,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:00:13.006743Z","status":"workflow-complete","phase":"B16","workflowId":"export-protected-redaction","communityName":"Data Portability Community","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:00:13.007085Z","status":"workflow-start","phase":"B16","workflowId":"export-redacted-bundle","communityName":"Data Portability Community","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:00:14.325902Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-redacted-bundle_start","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:00:15.558176Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-redacted-bundle_action","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:00:55.127035Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-redacted-bundle_complete","completedWorkflows":6,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:00:55.251724Z","status":"workflow-complete","phase":"B16","workflowId":"export-redacted-bundle","communityName":"Data Portability Community","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:00:55.251994Z","status":"workflow-start","phase":"B16","workflowId":"export-transfer-rollback","communityName":"Data Portability Community","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:01:38.775492Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-transfer-rollback_start","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:01:39.941641Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-transfer-rollback_action","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:02:19.510894Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-transfer-rollback_complete","completedWorkflows":7,"totalWorkflows":8}
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:02:19.635660Z","status":"workflow-complete","phase":"B16","workflowId":"export-transfer-rollback","communityName":"Data Portability Community","completedWorkflows":8,"totalWorkflows":8}
-W/WindowOnBackDispatcher(20070): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@fd90967
-D/FlutterJNI(20070): Sending viewport metrics to the engine.
-I/flutter (20070): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:02:20.225571Z","status":"run-complete","completedWorkflows":8,"totalWorkflows":8}
-I/flutter (20070): 04:13 +1: (tearDownAll)
-I/flutter (20070): 04:14 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:39907/dFPppgqasS4=/
-VMServiceFlutterDriver: Isolate found with number: 5165383133856187
-VMServiceFlutterDriver: Isolate 5165383133856187 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B16 shard 3/3 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B16 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=3 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=2
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             46.1s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,492ms
-I/ommunities_demo(20289): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-D/WindowLayoutComponentImpl(20289): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@fa5ca31, of which baseContext=android.app.ContextImpl@7336d33
-D/FlutterJNI(20289): Sending viewport metrics to the engine.
-I/flutter (20289): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/InsetsController(20289): hide(ime(), fromIme=false)
-I/ImeTracker(20289): com.example.loom_communities_demo:d160eb55: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/FlutterJNI(20289): Sending viewport metrics to the engine.
-D/ProfileInstaller(20289): Installing profile for com.example.loom_communities_demo
-D/FlutterJNI(20289): Sending viewport metrics to the engine.
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:03:34.264477Z","status":"workflow-start","phase":"B16","workflowId":"platform-connection-invite","communityName":"Member Social Space","completedWorkflows":0,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:03:35.744028Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-connection-invite_start","completedWorkflows":0,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:03:36.891770Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-connection-invite_action","completedWorkflows":0,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:03:38.531680Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-connection-invite_complete","completedWorkflows":0,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:03:38.653761Z","status":"workflow-complete","phase":"B16","workflowId":"platform-connection-invite","communityName":"Member Social Space","completedWorkflows":1,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:03:38.654101Z","status":"workflow-start","phase":"B16","workflowId":"platform-in-stream-ad","communityName":"Member Social Space","completedWorkflows":1,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:03:39.959469Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-in-stream-ad_start","completedWorkflows":1,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:03:41.141734Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-in-stream-ad_action","completedWorkflows":1,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:20.777385Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_platform_social_platform-in-stream-ad_complete","completedWorkflows":1,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:20.903310Z","status":"workflow-complete","phase":"B16","workflowId":"platform-in-stream-ad","communityName":"Member Social Space","completedWorkflows":2,"totalWorkflows":7}
-W/WindowOnBackDispatcher(20289): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@fd90967
-D/FlutterJNI(20289): Sending viewport metrics to the engine.
-D/FlutterJNI(20289): Sending viewport metrics to the engine.
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:22.409354Z","status":"workflow-start","phase":"B16","workflowId":"ad-off-member-checkout","communityName":"Ad-Free Community","completedWorkflows":2,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:23.825567Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-member-checkout_start","completedWorkflows":2,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:25.141961Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-member-checkout_action","completedWorkflows":2,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:26.562707Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-member-checkout_complete","completedWorkflows":2,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:26.682905Z","status":"workflow-complete","phase":"B16","workflowId":"ad-off-member-checkout","communityName":"Ad-Free Community","completedWorkflows":3,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:26.683191Z","status":"workflow-start","phase":"B16","workflowId":"ad-off-receipt-evidence","communityName":"Ad-Free Community","completedWorkflows":3,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:27.991954Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-receipt-evidence_start","completedWorkflows":3,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:29.308220Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-receipt-evidence_action","completedWorkflows":3,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:30.745754Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_off_ad-off-receipt-evidence_complete","completedWorkflows":3,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:30.867943Z","status":"workflow-complete","phase":"B16","workflowId":"ad-off-receipt-evidence","communityName":"Ad-Free Community","completedWorkflows":4,"totalWorkflows":7}
-W/WindowOnBackDispatcher(20289): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@fd90967
-D/FlutterJNI(20289): Sending viewport metrics to the engine.
-D/FlutterJNI(20289): Sending viewport metrics to the engine.
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:32.293392Z","status":"workflow-start","phase":"B16","workflowId":"export-import-preview","communityName":"Data Portability Community","completedWorkflows":4,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:33.725634Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-import-preview_start","completedWorkflows":4,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:04:34.975175Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-import-preview_action","completedWorkflows":4,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:05:14.694107Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-import-preview_complete","completedWorkflows":4,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:05:14.819889Z","status":"workflow-complete","phase":"B16","workflowId":"export-import-preview","communityName":"Data Portability Community","completedWorkflows":5,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:05:14.820171Z","status":"workflow-start","phase":"B16","workflowId":"export-schema-listing","communityName":"Data Portability Community","completedWorkflows":5,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:05:16.142370Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-schema-listing_start","completedWorkflows":5,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:05:17.475302Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-schema-listing_action","completedWorkflows":5,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:05:57.062036Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-schema-listing_complete","completedWorkflows":5,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:05:57.197058Z","status":"workflow-complete","phase":"B16","workflowId":"export-schema-listing","communityName":"Data Portability Community","completedWorkflows":6,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:05:57.197367Z","status":"workflow-start","phase":"B16","workflowId":"export-checksum-evidence","communityName":"Data Portability Community","completedWorkflows":6,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:05:58.508858Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-checksum-evidence_start","completedWorkflows":6,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:05:59.841718Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-checksum-evidence_action","completedWorkflows":6,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:06:39.393749Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_export_migration_export-checksum-evidence_complete","completedWorkflows":6,"totalWorkflows":7}
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:06:39.520452Z","status":"workflow-complete","phase":"B16","workflowId":"export-checksum-evidence","communityName":"Data Portability Community","completedWorkflows":7,"totalWorkflows":7}
-W/WindowOnBackDispatcher(20289): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@fd90967
-D/FlutterJNI(20289): Sending viewport metrics to the engine.
-I/flutter (20289): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:06:40.109004Z","status":"run-complete","completedWorkflows":7,"totalWorkflows":7}
-I/flutter (20289): 03:27 +1: (tearDownAll)
-I/flutter (20289): 03:27 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:43657/SpOIqF9OcZQ=/
-VMServiceFlutterDriver: Isolate found with number: 532773764285035
-VMServiceFlutterDriver: Isolate 532773764285035 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B17 shard 1/1 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B17
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             46.0s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,418ms
-I/ommunities_demo(20513): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-D/WindowLayoutComponentImpl(20513): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@fa5ca31, of which baseContext=android.app.ContextImpl@7336d33
-D/FlutterJNI(20513): Sending viewport metrics to the engine.
-I/flutter (20513): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/FlutterJNI(20513): Sending viewport metrics to the engine.
-D/InsetsController(20513): hide(ime(), fromIme=false)
-I/ImeTracker(20513): com.example.loom_communities_demo:7d9580a9: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-I/flutter (20513): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:07:33.423887Z","status":"workflow-start","phase":"B17","workflowId":"wf_persona-role-inventory-capability-matrix","communityName":"Masjid Nur","completedWorkflows":0,"totalWorkflows":1}
-D/FlutterJNI(20513): Sending viewport metrics to the engine.
-I/flutter (20513): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:07:35.198732Z","status":"screenshot-start","phase":"B17","screenshotName":"B17_persona_inventory_active_admin","completedWorkflows":0,"totalWorkflows":1}
-D/ProfileInstaller(20513): Installing profile for com.example.loom_communities_demo
-I/flutter (20513): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:07:36.125369Z","status":"screenshot-start","phase":"B17","screenshotName":"B17_persona_inventory_picker","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (20513): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:07:36.643669Z","status":"workflow-complete","phase":"B17","workflowId":"wf_persona-role-inventory-capability-matrix","communityName":"Masjid Nur","completedWorkflows":1,"totalWorkflows":1}
-W/WindowOnBackDispatcher(20513): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@89a5868
-D/FlutterJNI(20513): Sending viewport metrics to the engine.
-I/flutter (20513): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:07:37.274775Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
-I/flutter (20513): 00:04 +1: (tearDownAll)
-I/flutter (20513): 00:04 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:35147/8ppzQ41pwbk=/
-VMServiceFlutterDriver: Isolate found with number: 5075035809240187
-VMServiceFlutterDriver: Isolate 5075035809240187 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B18 shard 1/1 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B18
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             46.2s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,359ms
-I/ommunities_demo(20661): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-D/WindowLayoutComponentImpl(20661): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@f7f7e97, of which baseContext=android.app.ContextImpl@7ea8e69
-D/FlutterJNI(20661): Sending viewport metrics to the engine.
-I/flutter (20661): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/FlutterJNI(20661): Sending viewport metrics to the engine.
-D/InsetsController(20661): hide(ime(), fromIme=false)
-I/ImeTracker(20661): com.example.loom_communities_demo:c35ea1ce: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-I/flutter (20661): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:08:29.722815Z","status":"workflow-start","phase":"B18","workflowId":"wf_demo-app-persona-picker","communityName":"Masjid Nur","completedWorkflows":0,"totalWorkflows":1}
-D/FlutterJNI(20661): Sending viewport metrics to the engine.
-D/ProfileInstaller(20661): Installing profile for com.example.loom_communities_demo
-I/flutter (20661): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:08:32.243266Z","status":"screenshot-start","phase":"B18","screenshotName":"B18_persona_picker_dialog","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (20661): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:08:33.194256Z","status":"screenshot-start","phase":"B18","screenshotName":"B18_persona_picker_member_selected","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (20661): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:08:33.321298Z","status":"workflow-complete","phase":"B18","workflowId":"wf_demo-app-persona-picker","communityName":"Masjid Nur","completedWorkflows":1,"totalWorkflows":1}
-W/WindowOnBackDispatcher(20661): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@628e926
-D/FlutterJNI(20661): Sending viewport metrics to the engine.
-I/flutter (20661): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:08:34.024678Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
-I/flutter (20661): 00:05 +1: (tearDownAll)
-I/flutter (20661): 00:05 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:41311/U7Tvh7R6Aug=/
-VMServiceFlutterDriver: Isolate found with number: 8772529223402595
-VMServiceFlutterDriver: Isolate 8772529223402595 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B19 shard 1/1 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B19
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             45.9s
-✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,360ms
-D/WindowLayoutComponentImpl(20833): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@f7f7e97, of which baseContext=android.app.ContextImpl@7ea8e69
-D/FlutterJNI(20833): Sending viewport metrics to the engine.
-I/flutter (20833): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/FlutterJNI(20833): Sending viewport metrics to the engine.
-D/InsetsController(20833): hide(ime(), fromIme=false)
-I/ImeTracker(20833): com.example.loom_communities_demo:cf6edd1d: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-I/flutter (20833): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:09:25.608008Z","status":"workflow-start","phase":"B19","workflowId":"wf_community-persona-aware-ux","communityName":"Masjid Nur","completedWorkflows":0,"totalWorkflows":1}
-D/FlutterJNI(20833): Sending viewport metrics to the engine.
-D/ProfileInstaller(20833): Installing profile for com.example.loom_communities_demo
-I/flutter (20833): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:09:28.926717Z","status":"screenshot-start","phase":"B19","screenshotName":"B19_member_care_request_actor","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (20833): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:09:30.314555Z","status":"screenshot-start","phase":"B19","screenshotName":"B19_admin_announcement_actor","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (20833): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:09:30.439903Z","status":"workflow-complete","phase":"B19","workflowId":"wf_community-persona-aware-ux","communityName":"Masjid Nur","completedWorkflows":1,"totalWorkflows":1}
-W/WindowOnBackDispatcher(20833): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@628e926
-D/FlutterJNI(20833): Sending viewport metrics to the engine.
-I/flutter (20833): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:09:31.108450Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
-I/flutter (20833): 00:06 +1: (tearDownAll)
-I/flutter (20833): 00:06 +2: All tests passed!
-All tests passed.
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:34893/31FI_hI98Jo=/
-VMServiceFlutterDriver: Isolate found with number: 7831153978135863
-VMServiceFlutterDriver: Isolate 7831153978135863 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B20 shard 1/1 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B20
+--- B13 shard 1/2 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B13 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_garden_club --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=2 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=0
 exitCode=1
 
 --- stdout ---
-Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`...
+Resolving dependencies in `/home/fahd/Loom/app`...
 Downloading packages...
   _fe_analyzer_shared 93.0.0 (105.0.0 available)
   analyzer 10.0.1 (14.1.0 available)
+  animations 2.2.0 (3.0.0 available)
+  archive 4.0.9 (4.2.0 available)
   build 4.0.6 (4.0.10 available)
   build_config 1.3.0 (1.3.2 available)
   build_daemon 4.1.1 (4.1.5 available)
   build_runner 2.15.0 (2.16.0 available)
   built_value 8.12.6 (8.12.7 available)
   cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.5.2 available)
-  code_assets 1.2.0 (1.2.1 available)
+  cli_util 0.4.2 (0.6.0 available)
+  code_assets 1.2.0 (2.0.0 available)
+  crypto_keys 0.3.0+2 (0.3.1 available)
   dart_style 3.1.7 (3.1.12 available)
+  dbus 0.7.14 (0.7.15 available)
   drift 2.34.1 (2.34.3 available)
   drift_dev 2.34.0 (2.34.5 available)
   flutter_local_notifications 22.2.0 (22.3.0 available)
   flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  hooks 2.0.0 (2.1.0 available)
-  image 4.8.0 (4.9.1 available)
+  flutter_secure_storage 10.3.1 (11.0.0 available)
+  flutter_secure_storage_darwin 0.3.2 (0.4.0 available)
+  hooks 2.0.0 (2.2.0 available)
+  image 4.8.0 (4.9.2 available)
   jni 1.0.0 (1.0.3 available)
   jni_flutter 1.0.1 (1.0.2 available)
+  jose 0.3.5+1 (0.3.5+2 available)
   matcher 0.12.19 (0.12.20 available)
-  melos 7.8.0 (8.2.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  melos 7.8.0 (8.3.0 available)
   meta 1.17.0 (1.19.0 available)
   mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.3 available)
-  objective_c 9.4.1 (9.5.0 available)
+  native_toolchain_c 0.19.2 (0.19.4 available)
+  objective_c 9.4.1 (9.6.0 available)
   package_config 2.2.0 (3.0.0 available)
   path_provider 2.1.5 (2.1.6 available)
   path_provider_linux 2.2.1 (2.2.2 available)
   path_provider_platform_interface 2.1.2 (2.1.3 available)
   posix 6.5.0 (6.5.2 available)
-  record_use 0.6.0 (1.0.0 available)
-  source_gen 4.2.3 (4.2.4 available)
-  sqlite3 3.3.4 (3.5.1 available)
+  pub_updater 0.5.0 (0.6.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  source_gen 4.2.3 (4.3.0 available)
+  source_maps 0.10.13 (0.10.14 available)
+  sqlite3 3.3.4 (3.5.2 available)
   sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
   sqlparser 0.44.6 (retracted, 0.45.0 available)
   test 1.30.0 (1.31.2 available)
@@ -1577,73 +66,124 @@ Downloading packages...
   test_core 0.6.16 (0.6.19 available)
   url_launcher_android 6.3.30 (6.3.32 available)
   vector_math 2.2.0 (2.4.2 available)
+  vm_service 15.2.0 (15.3.0 available)
   webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.13.0 available)
+  webview_flutter_android 4.12.0 (4.14.0 available)
   webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  x509 0.2.4+2 (0.2.4+3 available)
   xml 6.6.1 (7.0.1 available)
-Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/app`!
-44 packages have newer versions incompatible with dependency constraints.
+Got dependencies in `/home/fahd/Loom/app`!
+56 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             46.5s
+Running Gradle task 'assembleDebug'...                             40.8s
 ✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,383ms
-I/ommunities_demo(20983): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-D/WindowLayoutComponentImpl(20983): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@f7f7e97, of which baseContext=android.app.ContextImpl@7ea8e69
-D/FlutterJNI(20983): Sending viewport metrics to the engine.
-I/flutter (20983): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/FlutterJNI(20983): Sending viewport metrics to the engine.
-D/InsetsController(20983): hide(ime(), fromIme=false)
-I/ImeTracker(20983): com.example.loom_communities_demo:8c64a22a: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-I/flutter (20983): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:10:23.839037Z","status":"workflow-start","phase":"B20","workflowId":"wf_multi-persona-workflow-evidence","communityName":"Masjid Nur","completedWorkflows":0,"totalWorkflows":2}
-D/FlutterJNI(20983): Sending viewport metrics to the engine.
-D/ProfileInstaller(20983): Installing profile for com.example.loom_communities_demo
-I/flutter (20983): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:10:27.093327Z","status":"screenshot-start","phase":"B20","screenshotName":"B20_announcement_admin_start","completedWorkflows":0,"totalWorkflows":2}
-I/flutter (20983): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-09T10:10:28.408520Z","status":"screenshot-start","phase":"B20","screenshotName":"B20_announcement_admin_action","completedWorkflows":0,"totalWorkflows":2}
-I/ommunities_demo(20983): AssetManager2(0x735a60ef4198) locale list changing from [] to [en-US]
-I/flutter (20983): ══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
-I/flutter (20983): The following TestFailure was thrown running a test:
-I/flutter (20983): Could not find workflow card mosque-announcement
-I/flutter (20983): 
-I/flutter (20983): When the exception was thrown, this was the stack:
-I/flutter (20983): #0      fail (package:matcher/src/expect/expect.dart:187:31)
-I/flutter (20983): #1      _scrollToWorkflow (file:///mnt/c/Users/fahd_/OneDrive/Documents/Pi%20Project/Loom/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart:757:3)
-I/flutter (20983): <asynchronous suspension>
-I/flutter (20983): #2      main.<anonymous closure> (file:///mnt/c/Users/fahd_/OneDrive/Documents/Pi%20Project/Loom/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart:479:7)
-I/flutter (20983): <asynchronous suspension>
-I/flutter (20983): #3      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
-I/flutter (20983): <asynchronous suspension>
-I/flutter (20983): #4      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
-I/flutter (20983): <asynchronous suspension>
-I/flutter (20983): #5      TestWidgetsFlutterBinding._createTestCompletionHandler.<anonymous closure> (package:flutter_test/src/binding.dart:1437:12)
-I/flutter (20983): <asynchronous suspension>
-I/flutter (20983): 
-I/flutter (20983): The test description was:
-I/flutter (20983):   wf_full-ui-screenshot-evidence-b12-b20
-I/flutter (20983): ════════════════════════════════════════════════════════════════════════════════════════════════════
-I/flutter (20983): 00:36 +0: wf_full-ui-screenshot-evidence-b12-b20 [E]
-I/flutter (20983):   Test failed. See exception logs above.
-I/flutter (20983):   The test description was: wf_full-ui-screenshot-evidence-b12-b20
-I/flutter (20983):   
-I/flutter (20983): 00:36 +0 -1: (tearDownAll)
-I/flutter (20983): 00:36 +1 -1: Some tests failed.
+Installing build/app/outputs/flutter-apk/app-debug.apk...          59.2s
+D/FlutterRenderer(30298): Width is zero. 0,0
+D/FlutterJNI(30298): Sending viewport metrics to the engine.
+I/Choreographer(30298): Skipped 150 frames!  The application may be doing too much work on its main thread.
+D/WindowLayoutComponentImpl(30298): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@df92bf1, of which baseContext=android.app.ContextImpl@d85c0f3
+D/FlutterJNI(30298): Sending viewport metrics to the engine.
+I/flutter (30298): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+I/Choreographer(30298): Skipped 40 frames!  The application may be doing too much work on its main thread.
+I/ommunities_demo(30298): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+I/Choreographer(30298): Skipped 37 frames!  The application may be doing too much work on its main thread.
+D/FlutterJNI(30298): Sending viewport metrics to the engine.
+I/HWUI    (30298): Davey! duration=763ms; Flags=1, FrameTimelineVsyncId=59286, IntendedVsync=10546951678962, Vsync=10547301678948, InputEventId=0, HandleInputStart=10547315106000, AnimationStart=10547315106000, PerformTraversalsStart=10547315106000, DrawStart=10547403111500, FrameDeadline=10546968345628, FrameStartTime=10547311105750, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=10547415112250, SyncStart=10547415112250, IssueDrawCommandsStart=10547419112500, SwapBuffers=10547671128250, FrameCompleted=10547715131000, DequeueBufferDuration=0, QueueBufferDuration=4000250, GpuCompleted=10547715131000, SwapBuffersCompleted=10547715131000, DisplayPresentTime=0, CommandSubmissionCompleted=10547671128250, 
+D/InsetsController(30298): hide(ime(), fromIme=false)
+I/ImeTracker(30298): com.example.loom_communities_demo:a0998371: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+I/ommunities_demo(30298): AssetManager2(0x7f4958ebf9b8) locale list changing from [] to [en-US]
+I/ImeTracker(30298): com.example.loom_communities_demo:6021412c: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(30298): show(ime(), fromIme=false)
+D/InsetsController(30298): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(30298): com.example.loom_communities_demo:1d300fe5: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(30298): show(ime(), fromIme=false)
+I/ImeTracker(30298): com.example.loom_communities_demo:1d300fe5: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ommunities_demo(30298): NativeAlloc concurrent mark compact GC freed 2088KB AllocSpace bytes, 4(76KB) LOS objects, 49% free, 2495KB/4990KB, paused 0,56.003ms total 808.050ms
+I/ImeTracker(30298): com.example.loom_communities_demo:5907a53c: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(30298): show(ime(), fromIme=false)
+I/ImeTracker(30298): com.example.loom_communities_demo:5907a53c: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(30298): com.example.loom_communities_demo:8463fbb8: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(30298): show(ime(), fromIme=false)
+I/ImeTracker(30298): com.example.loom_communities_demo:8463fbb8: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+W/RemoteInputConnectionImpl(30298): requestCursorUpdates on inactive InputConnection
+I/ImeTracker(30298): com.example.loom_communities_demo:84a7b9c4: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(30298): hide(ime(), fromIme=false)
+W/WindowOnBackDispatcher(30298): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@8abf7ca
+D/InsetsController(30298): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(30298): Compat change id reported: 395521150; UID 10218; state: ENABLED
+W/WindowOnBackDispatcher(30298): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@4bdfc6a
+I/Choreographer(30298): Skipped 58 frames!  The application may be doing too much work on its main thread.
+W/RemoteInputConnectionImpl(30298): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(30298): getSurroundingText on inactive InputConnection
+I/ImeTracker(30298): com.example.loom_communities_demo:6021412c: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+I/ommunities_demo(30298): AssetManager2(0x7f4958ed6438) locale list changing from [] to [en-US]
+I/flutter (30298): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-24T03:59:54.886050Z","status":"workflow-start","phase":"B13","workflowId":"garden-event-rsvp","communityName":"Garden Club","completedWorkflows":0,"totalWorkflows":2}
+I/ImeTracker(30298): com.example.loom_communities_demo:6c903209: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(30298): show(ime(), fromIme=false)
+D/InsetsController(30298): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(30298): com.example.loom_communities_demo:d4128280: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(30298): show(ime(), fromIme=false)
+I/ImeTracker(30298): com.example.loom_communities_demo:d4128280: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(30298): The input method toggled cursor monitoring on
+I/ImeTracker(30298): com.example.loom_communities_demo:3d32b2f8: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(30298): hide(ime(), fromIme=false)
+W/WindowOnBackDispatcher(30298): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@8abf7ca
+D/InsetsController(30298): Setting requestedVisibleTypes to -9 (was -1)
+I/ImeTracker(30298): com.example.loom_communities_demo:6c903209: onCancelled at PHASE_CLIENT_ANIMATION_CANCEL
+W/InteractionJankMonitor(30298): Initializing without READ_DEVICE_CONFIG permission. enabled=true, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.example.loom_communities_demo
+D/FlutterJNI(30298): Sending viewport metrics to the engine.
+D/FlutterJNI(30298): Sending viewport metrics to the engine.
+D/FlutterJNI(30298): Sending viewport metrics to the engine.
+I/ImeTracker(30298): system_server:d7677f3: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+W/FrameTracker(30298): Missed SF frame:JANK_COMPOSER, 60312, 291135624, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
+I/flutter (30298): ══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+I/flutter (30298): The following WalkthroughStallFailure was thrown running a test:
+I/flutter (30298): Walkthrough stalled: a step could not proceed within its bounded wait (0m 0s elapsed, limit 3m 0s).
+I/flutter (30298):   Last completed step: setup phase, no step completed yet
+I/flutter (30298):   Attempted step: starting workflow garden-event-rsvp (phase B13, community Garden Club)
+I/flutter (30298):   Waiting for: the first screenshot for workflow garden-event-rsvp to be captured
+I/flutter (30298):   Diagnostic frame: (not captured).
+I/flutter (30298): 
+I/flutter (30298): When the exception was thrown, this was the stack
+I/flutter (30298): 
+I/flutter (30298): The test description was:
+I/flutter (30298):   wf_full-ui-screenshot-evidence-b12-b20
+I/flutter (30298): ════════════════════════════════════════════════════════════════════════════════════════════════════
+I/flutter (30298): 03:11 +0: wf_full-ui-screenshot-evidence-b12-b20 [E]
+I/flutter (30298):   Test failed. See exception logs above.
+I/flutter (30298):   The test description was: wf_full-ui-screenshot-evidence-b12-b20
+I/flutter (30298):   
+I/flutter (30298):   'package:flutter_test/src/binding.dart': Failed assertion: line 2780 pos 12: '!_expectingFrame': is not true.
+I/flutter (30298):   dart:core-patch/errors_patch.dart 67:4            _AssertionError._doThrowNew
+I/flutter (30298):   dart:core-patch/errors_patch.dart 49:5            _AssertionError._throwNew
+I/flutter (30298):   package:flutter_test/src/binding.dart 2780:12     LiveTestWidgetsFlutterBinding.postTest
+I/flutter (30298):   dart:async/future.dart 325:27                     new Future.sync
+I/flutter (30298):   package:test_api/src/backend/invoker.dart 296:18  Invoker.runTearDowns.<fn>.<fn>
+I/flutter (30298):   package:test_api/src/backend/invoker.dart 318:17  Invoker._waitForOutstandingCallbacks.<fn>
+I/flutter (30298):   dart:async/zone_root.dart 35:13                   _rootRun
+I/flutter (30298):   dart:async/zone.dart 726:19                       _CustomZone.run
+I/flutter (30298):   dart:async/zone_api.dart 166:6                    _runZoned
+I/flutter (30298):   dart:async/zone_api.dart 92:10                    runZoned
+I/flutter (30298):   package:test_api/src/backend/invoker.dart 314:5   Invoker._waitForOutstandingCallbacks
+I/flutter (30298):   package:test_api/src/backend/invoker.dart 295:9   Invoker.runTearDowns.<fn>
+I/flutter (30298):   dart:async/zone_root.dart 35:13                   _rootRun
+I/flutter (30298):   dart:async/zone.dart 726:19                    
+I/flutter (30298): 03:11 +0 -1: (tearDownAll)
+I/flutter (30298): 03:11 +1 -1: Some tests failed.
 Failure Details:
 Failure in method: wf_full-ui-screenshot-evidence-b12-b20
 ══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞═════════════════
-The following TestFailure was thrown running a test:
-Could not find workflow card mosque-announcement
+The following WalkthroughStallFailure was thrown running a test:
+Walkthrough stalled: a step could not proceed within its bounded
+wait (0m 0s elapsed, limit 3m 0s).
+  Last completed step: setup phase, no step completed yet
+  Attempted step: starting workflow garden-event-rsvp (phase B13,
+community Garden Club)
+  Waiting for: the first screenshot for workflow
+garden-event-rsvp to be captured
+  Diagnostic frame: (not captured).
 
-When the exception was thrown, this was the stack:
-#0      fail (package:matcher/src/expect/expect.dart:187:31)
-#1      _scrollToWorkflow (file:///mnt/c/Users/fahd_/OneDrive/Documents/Pi%20Project/Loom/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart:757:3)
-<asynchronous suspension>
-#2      main.<anonymous closure> (file:///mnt/c/Users/fahd_/OneDrive/Documents/Pi%20Project/Loom/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart:479:7)
-<asynchronous suspension>
-#3      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
-<asynchronous suspension>
-#4      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
-<asynchronous suspension>
-#5      TestWidgetsFlutterBinding._createTestCompletionHandler.<anonymous closure> (package:flutter_test/src/binding.dart:1437:12)
-<asynchronous suspension>
+When the exception was thrown, this was the stack
 
 The test description was:
   wf_full-ui-screenshot-evidence-b12-b20
@@ -1653,13 +193,15 @@ end of failure 1
 
 
 
+WORKFLOW_EVIDENCE_RESULT status=fail walkthroughStatus=fail screenshotStatus=missing workflows=0 screenshots=0/0 completionGateEligible=false
 
 --- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:35965/Jgfr_j27fM8=/
-VMServiceFlutterDriver: Isolate found with number: 1197945397261195
-VMServiceFlutterDriver: Isolate 1197945397261195 is runnable.
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:46487/5_lZNZM41gs=/
+VMServiceFlutterDriver: Isolate found with number: 4492044001156443
+VMServiceFlutterDriver: Isolate 4492044001156443 is runnable.
 VMServiceFlutterDriver: Isolate is paused at start.
 VMServiceFlutterDriver: Attempting to resume isolate
+VMServiceFlutterDriver: get_health message is taking a long time to complete...
 VMServiceFlutterDriver: Connected to Flutter application.
 VMServiceFlutterDriver: request_data message is taking a long time to complete...
 
