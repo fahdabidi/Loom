@@ -5878,9 +5878,11 @@ String _gitStatusForPath(String repoRootPath, String repoRelativePath) {
 }
 
 String _fileSha256(String path) {
-  final result = Process.runSync('sha256sum', <String>[_hostPath(path)]);
-  if (result.exitCode == 0) {
-    return result.stdout.toString().trim().split(RegExp(r'\s+')).first;
+  if (!Platform.isWindows) {
+    final result = Process.runSync('sha256sum', <String>[_hostPath(path)]);
+    if (result.exitCode == 0) {
+      return result.stdout.toString().trim().split(RegExp(r'\s+')).first;
+    }
   }
   final certUtil = Process.runSync('certutil', <String>[
     '-hashfile',
