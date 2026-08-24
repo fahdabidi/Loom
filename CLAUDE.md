@@ -35,8 +35,14 @@ and usable"), because the host hypervisor is enabled. That same hypervisor is wh
 have KVM. Measured 2026-08-24: **72 seconds to boot on Windows** versus 10–20 minutes in the VM,
 which also failed four times in one day.
 
-Windows SDK lives at `C:\Android\Sdk` (JDK at `C:\Android\jdk`), AVD `loom_win`, configured
-1080x2400 to match the VM's `loom_demo`.
+Windows SDK lives at `C:\Android\Sdk`, AVD `loom_win`, configured 1080x2400 to match the VM's
+retired `loom_demo`.
+
+**`JAVA_HOME` is `C:\Android\jdk\jdk-17.0.20.1+1`, not `C:\Android\jdk`.** The version directory
+is nested one level down, and pointing at the parent fails the Gradle build with "JAVA_HOME is set
+to an invalid directory" — which reads like a missing JDK rather than a wrong path. A full APK
+build needs all three: `PATH` with `C:\Android\flutter\bin`, that `JAVA_HOME`, and
+`ANDROID_SDK_ROOT=C:\Android\Sdk`.
 
 An idle KVM-less emulator costs ~70% CPU on the VM and roughly quadruples Flutter suite times —
 a suite TIMEOUT under that load is environmental. Re-run the single test in isolation before
