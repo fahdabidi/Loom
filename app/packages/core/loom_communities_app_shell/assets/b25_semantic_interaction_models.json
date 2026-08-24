@@ -1756,7 +1756,7 @@
       "productDocPath": "docs/references/communities/riverside-youth-soccer-product-experience.md",
       "workflowId": "soccer-waiver-document",
       "role": "guardian",
-      "expectedDecision": "Guardian opens a concrete waiver or policy, reviews version/source, chooses embedded or external open, acknowledges it, and sees season registration impact.",
+      "expectedDecision": "Guardian opens a concrete waiver or policy, reviews version/source and the authorized-guardian access set, chooses embedded or external open, acknowledges it, and sees season registration impact.",
       "requiredPrimaryActions": [
         "open document",
         "acknowledge waiver",
@@ -1768,7 +1768,7 @@
         "mark unread",
         "ask coach"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show title/version/source, embedded/external open options, acknowledgement state, access guard, and registration-status linkage."
+      "resultAndReceiverState": "Fresh screenshots must show title/version/source, embedded/external open options, acknowledgement state, authorized-guardian access proof, access guard, and registration-status linkage."
     },
     {
       "communityId": "community_youth_soccer",
