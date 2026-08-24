@@ -364,31 +364,69 @@ real enum (fetched at step 7) instead.
     waiver, paying a registration fee, a coach reviewing a player) remain legitimate workflows — it is the
     membership grant itself that must not be one.
 
-14. **The product doc records the experience; the JSON implements it. Perfect the doc first,
-    then write the package from it, and return both.**
+14. **Converge the product doc and the JSON. Doc first, then JSON, then compare, then loop.**
 
     You may be dispatched two ways: with a target product doc, or with nothing but a prompt
-    ("create me a community for X"). Either way the product doc is a deliverable, not just an
-    input. Starting from a prompt, you write it. Starting from a doc, you extend and correct
-    it. It must end up describing the full experience you are implementing — if the doc does
-    not say something the experience needs, add it.
+    ("create me a community for X"). Either way BOTH artifacts are your output, and neither is
+    finished until they describe the same experience.
 
-    Only once the doc captures the intended experience do you write the corresponding JSON.
+    Work in this order, and do not skip ahead:
+
+    **(a) Research the community and perfect the PRODUCT DOC first — before touching any JSON.**
+    Starting from a prompt, you write the doc. Starting from a doc, you extend and correct it.
+    Where it is thin, deepen it; where it is silent about something the experience needs, add
+    it; where it is wrong about what the experience should be, correct it and say so. Do this
+    from research into what this kind of community actually does, not from what happens to be
+    easy to express in the grammar.
+
+    **(b) Write the JSON from the perfected doc.**
+
+    **(c) Compare them, in both directions.** For every workflow, transition, role, tab and
+    B25 row: is everything the doc promises implemented, and is everything the package
+    implements described?
+
+    **(d) Loop.**
+      - Something in the doc that the JSON does not implement -> take another pass at the JSON
+        and implement it.
+      - Something in the JSON that the doc does not describe -> update the doc, then REBUILD
+        the JSON from the updated doc so the derivation stays honest.
+      - Repeat until they match.
+
+    The loop terminates ONLY when the two agree, or when the sole remaining difference is a
+    gap you have typed and declared under rule 14a. Report how many passes you took and what
+    changed in each -- a single pass through a non-trivial community almost always means you
+    did not really compare.
+
+    **CONVERGENCE IS NEVER ACHIEVED BY REMOVAL.** You may change either artifact to IMPROVE the
+    product. You may not delete a doc requirement, drop a workflow, prune a transition, or
+    narrow a role in order to make the two line up or to make a check pass. Deleting the
+    requirement and implementing the requirement both produce "matching" artifacts; only one of
+    them is the job. If you genuinely believe something should be removed because it is wrong
+    for the community -- not because it is inconvenient -- say so explicitly, name exactly what
+    you removed and why the experience is better without it, and expect that to be reviewed.
+
+    A concrete case this rule exists for: Garden Club's B25 table named
+    `garden-tool-loan-giveaway` while the package shipped `garden-tool-loan` and
+    `garden-tool-giveaway` as separate workflows. Nothing matched the combined id, so the
+    walkthrough routed to the missing-package path and crashed. Both artifacts were internally
+    reasonable; nobody had ever compared them. The fix is to split the doc row to match the
+    two real lifecycles (return vs. permanent transfer) -- NOT to merge two lifecycles into one
+    state machine, and NOT to delete a row.
+
     Every transition you author must appear in the doc's workflow-to-surface mapping, its
-    persona/state matrix, and — most important — the **B25 addendum table's required primary
-    and required alternate/change/reject cells**, because that table is what the UX judge
-    scores against. An interaction missing from it is invisible to the production bar no
-    matter how well it works.
+    persona/state matrix, and -- most important -- the **B25 addendum table's required primary
+    and required alternate/change/reject cells**, because that table is what the UX judge scores
+    against. An interaction missing from it is invisible to the production bar no matter how
+    well it works.
 
     **Never leave an alternate cell saying `(none ...)` for a workflow that implements a
-    change, reject, withdraw, cancel, close, revise, retire or archive path.** The shipped
-    Chess package implemented `withdraw-club-night-rsvp`, `cancel-club-night`,
-    `close-pairing-queue`, `revise-ranking`, `retire-ranking` and `archive-document` while its
-    doc declared `(none — one-way notification)` and `(none — single decisive action)` for
-    those very rows. Four rows could never pass the production bar, and the near-miss fix was
-    to loosen the judge — which would have hidden six real affordances instead of proving
-    them. A row that genuinely has no alternate is a design smell worth a second look: most
-    real interactions have a way back.
+    change, reject, withdraw, cancel, close, revise, retire or archive path.** The shipped Chess
+    package implemented `withdraw-club-night-rsvp`, `cancel-club-night`, `close-pairing-queue`,
+    `revise-ranking`, `retire-ranking` and `archive-document` while its doc declared
+    `(none - one-way notification)` for those very rows. Four rows could never pass the
+    production bar, and the near-miss fix was to loosen the judge -- which would have hidden six
+    real affordances instead of proving them. A row that genuinely has no alternate is a design
+    smell worth a second look: most real interactions have a way back.
 
 14a. **Some of the experience may not be implementable. Say which, and never quietly shrink
     the doc to fit.** The JSON grammar and the archetype set are finite. You will meet
@@ -590,18 +628,26 @@ justification. Never describe a validator result you did not actually obtain.
    cross-referenced again, and every `NEEDS IMPLEMENTATION (platform service)` comment you left in the JSON
    listed explicitly so the reviewer doesn't have to grep for them — there should be no other kind of
    `NEEDS IMPLEMENTATION` comment left; all 13 archetypes are real as of 2026-08-12.
-5. **The product doc** (hard rules 14 and 14a) — the experience you are implementing, written
-   down. If you were dispatched with only a prompt, this is the whole doc and you authored it.
-   If you were given a doc, this is the exact replacement text for every row you changed or
-   added, across the workflow-to-surface mapping, the persona/state matrix, and the B25
-   addendum's required-primary and required-alternate cells. Give full replacement rows, not
-   descriptions of changes, so they apply verbatim — you have no repo write access here.
+5. **The product doc, and the convergence record** (hard rules 14 and 14a) -- the experience you
+   are implementing, written down, plus proof you actually compared it to the package.
 
-   State which rows you deepened, which you corrected and why, and which you left untouched.
-   List separately any requirement the doc states that the package does NOT implement, with
-   its kind (grammar gap or missing archetype) per rule 14a — those requirements stay in the
-   doc; they are reported, never deleted.
+   If you were dispatched with only a prompt, this is the whole doc and you authored it. If you
+   were given a doc, this is the exact replacement text for every row you changed or added,
+   across the workflow-to-surface mapping, the persona/state matrix, and the B25 addendum's
+   required-primary and required-alternate cells. Give full replacement rows, not descriptions
+   of changes, so they apply verbatim -- you have no repo write access here.
 
+   Then the convergence record, which is the part that proves rule 14 was followed:
+
+   - how many doc <-> JSON passes you took, and what changed in each;
+   - anything the DOC promised that the JSON did not implement, and how you closed it;
+   - anything the JSON implemented that the DOC did not describe, and how you closed it;
+   - anything you REMOVED from either artifact, named explicitly, with why the community is
+     better without it. Removals are reviewed. "It made them match" is not a reason;
+   - any residual mismatch, which is only acceptable as a typed gap under rule 14a.
+
+   A convergence record claiming one pass and zero differences on a non-trivial community reads
+   as "I did not compare", and will be checked against the package.
 4. Your validation results, per the "On validation" section above: the **final** `/validate` response
    (`status`, `errorCount`, `warningCount`), how many validate-and-fix rounds you took, and every
    warning you left standing with its type and your justification. Plus the manual checks that the
