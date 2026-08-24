@@ -112,6 +112,7 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
       return error.message;
     }
     setState(() {
+      _authApisByCommunityId.remove(report.community.communityId);
       _importedSeedFilesByCommunityId[report.community.communityId] =
           report.importedSeedFiles;
       _lastLocalImportMessage = reportMessage(
@@ -219,19 +220,38 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
 
   LoomAuthApi _authApiForCommunity(LocalInstalledCommunity community) {
     return _authApisByCommunityId.putIfAbsent(community.communityId, () {
-      final experience = experienceForExtensionId(
-        community.extensionId,
-        displayName: community.displayName,
-        specVersion: community.specVersion,
-        experienceConfiguration: community.experienceConfiguration,
-      );
       return LocalAuthApi(
-        actorIdentityResolver: (_) => actorIdentitiesForExtensionId(
-          community.extensionId,
-          experience: experience,
-        ),
-        experienceResolver: (_) => experience,
+        actorIdentityResolver: (communityExtensionId) {
+          final experience = _experienceForInstalledCommunityExtensionId(
+            communityExtensionId,
+          );
+          return actorIdentitiesForExtensionId(
+            communityExtensionId,
+            experience: experience,
+          );
+        },
+        experienceResolver: _experienceForInstalledCommunityExtensionId,
       );
     });
+  }
+
+  LoomExperienceDefinition _experienceForInstalledCommunityExtensionId(
+    String communityExtensionId,
+  ) {
+    for (final community in _backend.listCommunities()) {
+      if (community.extensionId == communityExtensionId) {
+        return experienceForExtensionId(
+          community.extensionId,
+          displayName: community.displayName,
+          specVersion: community.specVersion,
+          experienceConfiguration: community.experienceConfiguration,
+        );
+      }
+    }
+    throw ArgumentError.value(
+      communityExtensionId,
+      'communityExtensionId',
+      'must identify an installed community',
+    );
   }
 }
