@@ -28,7 +28,16 @@ MODEL="${CLAUDE_UX_JUDGE_MODEL:-sonnet}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-. "$HOME/.loom-env.sh"
+# Toolchain env: the Linux VM has ~/.loom-env.sh; Windows (Git Bash) does not,
+# so fall back to the repo-local data/loom-env.sh. One script body, either host.
+if [ -f "$HOME/.loom-env.sh" ]; then
+  . "$HOME/.loom-env.sh"
+elif [ -f "$SCRIPT_DIR/loom-env.sh" ]; then
+  . "$SCRIPT_DIR/loom-env.sh"
+else
+  echo "ERROR: no toolchain env found (~/.loom-env.sh or $SCRIPT_DIR/loom-env.sh)" >&2
+  exit 1
+fi
 
 if [ ! -f "$PROMPT_FILE" ]; then
   echo "ERROR: prompt file not found: $PROMPT_FILE" >&2
