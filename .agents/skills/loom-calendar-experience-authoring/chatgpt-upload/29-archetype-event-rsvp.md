@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 1.3.0
+doc_version: 1.4.0
 status: proposed
-last_verified: 2026-08-14
+last_verified: 2026-08-20
 audience: llm-agent
 derived_from:
   - docs/references/archetypes/CONTRACTS.md
@@ -28,6 +28,7 @@ Eleven. Permission ids are `event_rsvp.<action>`.
 | Authoring | `create` · `edit` · `cancel` · `reopen` |
 | Responding | `respond` · `withdraw_response` · `join_waitlist` |
 | Personal | `set_reminder` |
+| Platform-applied | `deliver_reminder` — the Calendar sweep sends a reminder a member asked for. No role is granted it, so it never renders as a button. Not to be confused with `set_reminder`, which is the member asking. |
 | Suggesting | `propose_change` |
 | Recording | `record_outcome` |
 | Reading | `view` |
@@ -82,7 +83,7 @@ instead of encoding it, and make Tabletop's missing-exclusivity bug unrepresenta
 |---|---|
 | the response row's lifecycle | one row per member per event, created eagerly at event creation (§4) |
 | response state transitions | `respond` and `join_waitlist` move the row; a row has one state |
-| `reminderFanIds` | `set_reminder`, on the event — genuinely a set, and unambiguous |
+| `reminderFanIds` | `set_reminder`, on the event — genuinely a set, and unambiguous. Delivery to those fans is `deliver_reminder`, a separate action nobody holds. |
 
 Counts, capacity remaining and "is full" **derive** from the rows. A community never stores them: a
 stored count and the rows it summarises will drift.
