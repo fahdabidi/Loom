@@ -120,17 +120,22 @@ void main() {
     final appDirectory = Directory('${root.path}/app');
     for (final entity in appDirectory.listSync(recursive: true)) {
       if (entity is! File || !entity.path.endsWith('.dart')) continue;
-      if (entity.path ==
-          '${root.path}/app/packages/core/loom_workflow_engine/test/'
+      // Compare on forward slashes. File.path uses the platform separator, so
+      // on Windows every literal below silently fails to match and allowlisted
+      // files get reported as discrepancies.
+      final normalizedPath = entity.path.replaceAll(r'\', '/');
+      final normalizedRoot = root.path.replaceAll(r'\', '/');
+      if (normalizedPath ==
+          '$normalizedRoot/app/packages/core/loom_workflow_engine/test/'
               'capability_conformance_test.dart') {
         continue;
       }
-      if (entity.path.contains('/.dart_tool/') ||
-          entity.path.contains('/build/')) {
+      if (normalizedPath.contains('/.dart_tool/') ||
+          normalizedPath.contains('/build/')) {
         continue;
       }
-      if (entity.path.endsWith('/lib/src/spec_version.dart')) continue;
-      final relativePath = entity.path.substring(root.path.length + 1);
+      if (normalizedPath.endsWith('/lib/src/spec_version.dart')) continue;
+      final relativePath = normalizedPath.substring(normalizedRoot.length + 1);
       final lines = entity.readAsLinesSync();
       for (var index = 0; index < lines.length; index++) {
         final match = literalPattern.firstMatch(lines[index]);

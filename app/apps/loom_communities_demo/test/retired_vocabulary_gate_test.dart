@@ -26,7 +26,13 @@ void main() {
       if (entity is! File || !entity.path.endsWith('.dart')) {
         continue;
       }
-      final relativePath = entity.path.substring(appDirectory.path.length + 1);
+      // File.path uses the platform separator; every path literal in this
+      // test is written with forward slashes, so normalise or the allowlist
+      // self-exclusion silently fails on Windows and the gate flags its own
+      // allowlist entries.
+      final relativePath = entity.path
+          .substring(appDirectory.path.length + 1)
+          .replaceAll(r'\', '/');
       final lines = entity.readAsLinesSync();
       for (var index = 0; index < lines.length; index += 1) {
         final line = lines[index];
