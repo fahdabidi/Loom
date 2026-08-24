@@ -1,26 +1,22 @@
 {
   "schemaVersion": 2,
   "phase": "B12",
-  "status": "walkthrough-only",
+  "status": "pass",
   "walkthroughStatus": "pass",
-  "screenshotStatus": "unavailable",
-  "completionGateEligible": false,
-  "deviceName": "linux-desktop",
-  "emulatorName": "linux-desktop",
-  "deviceClass": "Linux desktop",
-  "platform": "linux",
-  "commandOutputPath": "../../../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "screenshotStatus": "complete",
+  "completionGateEligible": true,
+  "deviceName": "emulator-5554",
+  "emulatorName": "emulator-5554",
+  "deviceClass": "Android emulator",
+  "platform": "android",
+  "apiLevel": "Android 16 API 36",
+  "commandOutputPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
   "expectedWorkflowCount": 1,
   "workflowCount": 1,
   "requestedScreenshotCount": 3,
-  "screenshotCount": 0,
-  "missingScreenshotCount": 3,
-  "missingScreenshotNames": [
-    "B12_harness_action",
-    "B12_harness_complete",
-    "B12_harness_start"
-  ],
-  "screenshotUnavailableReason": "MissingPluginException(No implementation found for method captureScreenshot on channel plugins.flutter.io/integration_test)",
+  "screenshotCount": 3,
+  "missingScreenshotCount": 0,
+  "missingScreenshotNames": [],
   "workflows": [
     {
       "phase": "B12",
@@ -36,21 +32,26 @@
         "B12_harness_action",
         "B12_harness_complete"
       ],
-      "status": "walkthrough-only",
+      "status": "pass",
       "assertionStatus": "pass",
-      "screenshotStatus": "unavailable",
-      "screenshotPaths": [],
-      "screenshotVisibleTexts": [
-        "Loaded 10 example communities | Garden Club | Coordinate garden events and plant exchange requests. | Open community | Theme applied | Neighborhood Book Club | Nominate, vote, meet, discuss, and digest club selections. | Riverside Youth Soccer | Manage guardian flows, teams, privacy, payments, and schedules. | Cedar Commons HOA | Run dues, documents, facilities, reviews, and exports. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Chess Club | Propose matches, record results, and keep live ladder rankings. | Loom Communities | Add Community",
-        "Loaded 10 example communities | Garden Club | Coordinate garden events and plant exchange requests. | Open community | Theme applied | Neighborhood Book Club | Nominate, vote, meet, discuss, and digest club selections. | Riverside Youth Soccer | Manage guardian flows, teams, privacy, payments, and schedules. | Cedar Commons HOA | Run dues, documents, facilities, reviews, and exports. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Chess Club | Propose matches, record results, and keep live ladder rankings. | Loom Communities | Add Community | Add local community | Point to the extension package and initialization package in the emulator file system. | Extension package | .loom-extension.zip | Initialization package | .loom-init.zip | Cancel | Validate and install",
-        "Loaded 10 example communities | Garden Club | Coordinate garden events and plant exchange requests. | Open community | Theme applied | Neighborhood Book Club | Nominate, vote, meet, discuss, and digest club selections. | Riverside Youth Soccer | Manage guardian flows, teams, privacy, payments, and schedules. | Cedar Commons HOA | Run dues, documents, facilities, reviews, and exports. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Chess Club | Propose matches, record results, and keep live ladder rankings. | Loom Communities | Add Community"
+      "screenshotStatus": "complete",
+      "screenshotPaths": [
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_start.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_action.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_complete.png"
       ],
-      "commandOutputPath": "../../../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "deviceName": "linux-desktop",
-      "emulatorName": "linux-desktop",
-      "deviceClass": "Linux desktop",
-      "platform": "linux",
-      "pass": false
+      "screenshotVisibleTexts": [
+        "No communities installed | Use Add Community to load a local extension package and initialization package. | Add Community | Loom Communities",
+        "No communities installed | Use Add Community to load a local extension package and initialization package. | Add Community | Loom Communities | Add local community | Point to the extension package and initialization package in the emulator file system. | Extension package | .loom-extension.zip | Initialization package | .loom-init.zip | Cancel | Validate and install",
+        "No communities installed | Use Add Community to load a local extension package and initialization package. | Add Community | Loom Communities"
+      ],
+      "commandOutputPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "deviceName": "emulator-5554",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "platform": "android",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
     }
   ]
 }

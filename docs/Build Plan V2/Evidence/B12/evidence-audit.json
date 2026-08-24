@@ -1,15 +1,10 @@
 {
   "schemaVersion": 2,
   "phase": "B12",
-  "status": "walkthrough-only",
+  "status": "pass",
   "walkthroughStatus": "pass",
-  "screenshotStatus": "unavailable",
-  "completionGateEligible": false,
-  "screenshotsAudited": 0,
-  "missingScreenshots": [
-    "B12_harness_action",
-    "B12_harness_complete",
-    "B12_harness_start"
-  ],
-  "screenshotUnavailableReason": "MissingPluginException(No implementation found for method captureScreenshot on channel plugins.flutter.io/integration_test)"
+  "screenshotStatus": "complete",
+  "completionGateEligible": true,
+  "screenshotsAudited": 3,
+  "missingScreenshots": []
 }
