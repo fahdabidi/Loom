@@ -2,15 +2,15 @@ b25_capture_workflow_screenshots
 workingDirectory=C:\LoomWin\app/apps/loom_communities_demo
 WORKFLOW_EVIDENCE_ROOT=C:\LoomWin/docs/Build Plan V2/Evidence
 mode=targeted-precheck
-phases=B12,B15
-communities=ext_camera_club
+phases=B12,B16
+communities=ext_ad_free_community
 device=emulator-5554
 appPackage=com.example.loom_communities_demo
 b25InteractionModelAsset=C:\LoomWin/app/packages/core/loom_communities_app_shell/assets/b25_semantic_interaction_models.json
 progressReport=C:\LoomWin/docs/Build Plan V2/Evidence/B25/b25-capture-progress.json
 
 --- B12 shard 1/1 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B12 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_camera_club
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B12 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_ad_free_community
 exitCode=0
 
 --- stdout ---
@@ -75,48 +75,335 @@ Downloading packages...
 Got dependencies in `C:\LoomWin\app`!
 56 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                              9.7s
+Running Gradle task 'assembleDebug'...                              9.0s
 √ Built build\app\outputs\flutter-apk\app-debug.apk
-Installing build\app\outputs\flutter-apk\app-debug.apk...        2,122ms
-W/HWUI    (15840): Unknown dataspace 0
-I/WindowExtensionsImpl(15840): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
-D/FlutterRenderer(15840): Width is zero. 0,0
-D/FlutterJNI(15840): Sending viewport metrics to the engine.
-I/ommunities_demo(15840): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-I/Choreographer(15840): Skipped 44 frames!  The application may be doing too much work on its main thread.
-D/WindowLayoutComponentImpl(15840): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@c0acb60, of which baseContext=android.app.ContextImpl@a3c8cea
-D/FlutterJNI(15840): Sending viewport metrics to the engine.
-I/flutter (15840): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/ProfileInstaller(15840): Installing profile for com.example.loom_communities_demo
-I/Choreographer(15840): Skipped 49 frames!  The application may be doing too much work on its main thread.
-D/InsetsController(15840): hide(ime(), fromIme=false)
-I/ImeTracker(15840): com.example.loom_communities_demo:59a719d2: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/FlutterJNI(15840): Sending viewport metrics to the engine.
-I/flutter (15840): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:16:00.142407Z","status":"workflow-start","phase":"B12","workflowId":"workflow-ui-evidence-harness","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (15840): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:16:00.156049Z","status":"screenshot-start","phase":"B12","screenshotName":"B12_harness_start","completedWorkflows":0,"totalWorkflows":1}
-I/ommunities_demo(15840): AssetManager2(0x7c9844b1fff8) locale list changing from [] to [en-US]
-I/flutter (15840): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:16:09.115910Z","status":"screenshot-start","phase":"B12","screenshotName":"B12_harness_action","completedWorkflows":0,"totalWorkflows":1}
-W/WindowOnBackDispatcher(15840): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85ef43
-I/flutter (15840): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:16:17.831177Z","status":"screenshot-start","phase":"B12","screenshotName":"B12_harness_complete","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (15840): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:16:25.866421Z","status":"workflow-complete","phase":"B12","workflowId":"workflow-ui-evidence-harness","completedWorkflows":1,"totalWorkflows":1}
-I/flutter (15840): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=3 completed=3 unavailable=0
-I/flutter (15840): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:16:26.113755Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
-I/flutter (15840): 00:30 +1: (tearDownAll)
+Installing build\app\outputs\flutter-apk\app-debug.apk...        1,901ms
+D/nativeloader(17398): Load /data/app/~~EZqLwtxtEL3dEYhjM5_2gQ==/com.example.loom_communities_demo-M5jGXV48ReL5_p9CntrY-Q==/base.apk!/lib/x86_64/libdartjni.so using class loader ns clns-9 (caller=/data/app/~~EZqLwtxtEL3dEYhjM5_2gQ==/com.example.loom_communities_demo-M5jGXV48ReL5_p9CntrY-Q==/base.apk!classes7.dex): ok
+I/ommunities_demo(17398): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityNodeInfo;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported,test-api) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(17398): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityRecord;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(17398): hiddenapi: Accessing hidden field Landroid/view/accessibility/AccessibilityNodeInfo;->mChildNodeIds:Landroid/util/LongArray; (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(17398): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+D/FlutterRenderer(17398): Width is zero. 0,0
+D/CompatChangeReporter(17398): Compat change id reported: 377864165; UID 10261; state: ENABLED
+W/HWUI    (17398): Unknown dataspace 0
+I/WindowExtensionsImpl(17398): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+D/FlutterRenderer(17398): Width is zero. 0,0
+D/FlutterJNI(17398): Sending viewport metrics to the engine.
+I/ommunities_demo(17398): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+I/Choreographer(17398): Skipped 33 frames!  The application may be doing too much work on its main thread.
+D/WindowLayoutComponentImpl(17398): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@c0acb60, of which baseContext=android.app.ContextImpl@a3c8cea
+D/FlutterJNI(17398): Sending viewport metrics to the engine.
+I/flutter (17398): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+D/InsetsController(17398): hide(ime(), fromIme=false)
+I/ImeTracker(17398): com.example.loom_communities_demo:9d331ccc: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/ProfileInstaller(17398): Installing profile for com.example.loom_communities_demo
+D/FlutterJNI(17398): Sending viewport metrics to the engine.
+I/flutter (17398): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:46:26.761022Z","status":"workflow-start","phase":"B12","workflowId":"workflow-ui-evidence-harness","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (17398): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:46:26.768420Z","status":"screenshot-start","phase":"B12","screenshotName":"B12_harness_start","completedWorkflows":0,"totalWorkflows":1}
+I/ommunities_demo(17398): AssetManager2(0x7c9844b24198) locale list changing from [] to [en-US]
+I/flutter (17398): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:46:35.697314Z","status":"screenshot-start","phase":"B12","screenshotName":"B12_harness_action","completedWorkflows":0,"totalWorkflows":1}
+W/WindowOnBackDispatcher(17398): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e671284
+I/flutter (17398): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:46:44.413501Z","status":"screenshot-start","phase":"B12","screenshotName":"B12_harness_complete","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (17398): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:46:52.474295Z","status":"workflow-complete","phase":"B12","workflowId":"workflow-ui-evidence-harness","completedWorkflows":1,"totalWorkflows":1}
+I/flutter (17398): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=3 completed=3 unavailable=0
+I/flutter (17398): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:46:52.700308Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
+I/flutter (17398): 00:29 +1: (tearDownAll)
 All tests passed.
-I/flutter (15840): 00:30 +2: All tests passed!
+WORKFLOW_EVIDENCE_RESULT status=pass walkthroughStatus=pass screenshotStatus=complete workflows=1 screenshots=3/3 completionGateEligible=true
+I/flutter (17398): 00:29 +2: All tests passed!
+
+--- stderr ---
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:57072/yMOtUH6ABWI=/
+VMServiceFlutterDriver: Isolate found with number: 7976051972317491
+VMServiceFlutterDriver: Isolate 7976051972317491 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+VMServiceFlutterDriver: Connected to Flutter application.
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+
+--- B16 shard 1/12 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B16 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_ad_free_community --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=12 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=0
+exitCode=0
+
+--- stdout ---
+Resolving dependencies in `C:\LoomWin\app`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (105.0.0 available)
+  analyzer 10.0.1 (14.1.0 available)
+  animations 2.2.0 (3.0.0 available)
+  archive 4.0.9 (4.2.0 available)
+  build 4.0.6 (4.0.10 available)
+  build_config 1.3.0 (1.3.2 available)
+  build_daemon 4.1.1 (4.1.5 available)
+  build_runner 2.15.0 (2.16.0 available)
+  built_value 8.12.6 (8.12.7 available)
+  cli_launcher 0.3.3+1 (0.3.3+2 available)
+  cli_util 0.4.2 (0.6.0 available)
+  code_assets 1.2.0 (2.0.0 available)
+  crypto_keys 0.3.0+2 (0.3.1 available)
+  dart_style 3.1.7 (3.1.12 available)
+  dbus 0.7.14 (0.7.15 available)
+  drift 2.34.1 (2.34.3 available)
+  drift_dev 2.34.0 (2.34.5 available)
+  flutter_local_notifications 22.2.0 (22.3.0 available)
+  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
+  flutter_secure_storage 10.3.1 (11.0.0 available)
+  flutter_secure_storage_darwin 0.3.2 (0.4.0 available)
+  hooks 2.0.0 (2.2.0 available)
+  image 4.8.0 (4.9.2 available)
+  jni 1.0.0 (1.0.3 available)
+  jni_flutter 1.0.1 (1.0.2 available)
+  jose 0.3.5+1 (0.3.5+2 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  melos 7.8.0 (8.3.0 available)
+  meta 1.17.0 (1.19.0 available)
+  mustache_template 2.0.4 (2.0.5 available)
+  native_toolchain_c 0.19.2 (0.19.4 available)
+  objective_c 9.4.1 (9.6.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  posix 6.5.0 (6.5.2 available)
+  pub_updater 0.5.0 (0.6.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  source_gen 4.2.3 (4.3.0 available)
+  source_maps 0.10.13 (0.10.14 available)
+  sqlite3 3.3.4 (3.5.2 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.6 (retracted, 0.45.0 available)
+  test 1.30.0 (1.31.2 available)
+  test_api 0.7.10 (0.7.13 available)
+  test_core 0.6.16 (0.6.19 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.2 available)
+  vm_service 15.2.0 (15.3.0 available)
+  webview_flutter 4.13.1 (4.14.1 available)
+  webview_flutter_android 4.12.0 (4.14.0 available)
+  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  x509 0.2.4+2 (0.2.4+3 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies in `C:\LoomWin\app`!
+56 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                              8.8s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...        1,760ms
+D/FlutterRenderer(17603): Width is zero. 0,0
+I/WindowExtensionsImpl(17603): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+D/FlutterRenderer(17603): Width is zero. 0,0
+D/FlutterJNI(17603): Sending viewport metrics to the engine.
+I/ommunities_demo(17603): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+I/Choreographer(17603): Skipped 35 frames!  The application may be doing too much work on its main thread.
+D/WindowLayoutComponentImpl(17603): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@c0acb60, of which baseContext=android.app.ContextImpl@a3c8cea
+D/FlutterJNI(17603): Sending viewport metrics to the engine.
+I/flutter (17603): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+D/ProfileInstaller(17603): Installing profile for com.example.loom_communities_demo
+D/InsetsController(17603): hide(ime(), fromIme=false)
+I/ImeTracker(17603): com.example.loom_communities_demo:26475f61: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/FlutterJNI(17603): Sending viewport metrics to the engine.
+I/ommunities_demo(17603): AssetManager2(0x7c9844b24198) locale list changing from [] to [en-US]
+I/ImeTracker(17603): com.example.loom_communities_demo:3c12a7b: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(17603): show(ime(), fromIme=false)
+D/InsetsController(17603): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(17603): com.example.loom_communities_demo:78482072: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(17603): show(ime(), fromIme=false)
+I/ImeTracker(17603): com.example.loom_communities_demo:78482072: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(17603): The input method toggled cursor monitoring on
+I/AssistStructure(17603): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ommunities_demo(17603): NativeAlloc concurrent mark compact GC freed 2272KB AllocSpace bytes, 4(76KB) LOS objects, 49% free, 2511KB/5022KB, paused 17.828ms,39.047ms total 167.996ms
+I/ImeTracker(17603): com.example.loom_communities_demo:85cff41d: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(17603): show(ime(), fromIme=false)
+I/ImeTracker(17603): com.example.loom_communities_demo:85cff41d: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(17603): com.example.loom_communities_demo:583cc560: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(17603): show(ime(), fromIme=false)
+I/ImeTracker(17603): com.example.loom_communities_demo:583cc560: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(17603): com.example.loom_communities_demo:d62c4c4a: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(17603): hide(ime(), fromIme=false)
+D/InsetsController(17603): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(17603): Compat change id reported: 395521150; UID 10262; state: ENABLED
+I/ImeTracker(17603): com.example.loom_communities_demo:3c12a7b: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+I/ImeTracker(17603): system_server:e74bb078: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+W/RemoteInputConnectionImpl(17603): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(17603): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(17603): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(17603): getTextBeforeCursor on inactive InputConnection
+I/ommunities_demo(17603): AssetManager2(0x7c9844b376f8) locale list changing from [] to [en-US]
+I/flutter (17603): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:47:23.111436Z","status":"workflow-start","phase":"B16","workflowId":"ad-off-member-checkout","communityName":"Ad-Free Community","completedWorkflows":0,"totalWorkflows":1}
+W/WindowOnBackDispatcher(17603): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85ef43
+D/FlutterJNI(17603): Sending viewport metrics to the engine.
+I/flutter (17603): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:47:29.525962Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-member-checkout_member_start","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (17603): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:47:38.781840Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-member-checkout_member_primary_action","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (17603): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:47:49.596865Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-member-checkout_member_primary_result","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (17603): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:47:58.772244Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-member-checkout_member_alternate_action","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (17603): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:48:09.707440Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-member-checkout_member_result_receiver","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (17603): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:48:17.764599Z","status":"workflow-complete","phase":"B16","workflowId":"ad-off-member-checkout","communityName":"Ad-Free Community","completedWorkflows":1,"totalWorkflows":1}
+W/WindowOnBackDispatcher(17603): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85ef43
+D/FlutterJNI(17603): Sending viewport metrics to the engine.
+I/flutter (17603): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=5 completed=5 unavailable=0
+I/flutter (17603): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:48:19.280944Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
+I/flutter (17603): 01:05 +1: (tearDownAll)
+I/flutter (17603): 01:05 +2: All tests passed!
+All tests passed.
+WORKFLOW_EVIDENCE_RESULT status=pass walkthroughStatus=pass screenshotStatus=complete workflows=1 screenshots=5/5 completionGateEligible=true
+
+--- stderr ---
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:58969/K-wDbVZ-2qk=/
+VMServiceFlutterDriver: Isolate found with number: 6589920500635727
+VMServiceFlutterDriver: Isolate 6589920500635727 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+VMServiceFlutterDriver: Connected to Flutter application.
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+
+--- B16 shard 2/12 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B16 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_ad_free_community --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=12 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=1
+exitCode=0
+
+--- stdout ---
+Resolving dependencies in `C:\LoomWin\app`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (105.0.0 available)
+  analyzer 10.0.1 (14.1.0 available)
+  animations 2.2.0 (3.0.0 available)
+  archive 4.0.9 (4.2.0 available)
+  build 4.0.6 (4.0.10 available)
+  build_config 1.3.0 (1.3.2 available)
+  build_daemon 4.1.1 (4.1.5 available)
+  build_runner 2.15.0 (2.16.0 available)
+  built_value 8.12.6 (8.12.7 available)
+  cli_launcher 0.3.3+1 (0.3.3+2 available)
+  cli_util 0.4.2 (0.6.0 available)
+  code_assets 1.2.0 (2.0.0 available)
+  crypto_keys 0.3.0+2 (0.3.1 available)
+  dart_style 3.1.7 (3.1.12 available)
+  dbus 0.7.14 (0.7.15 available)
+  drift 2.34.1 (2.34.3 available)
+  drift_dev 2.34.0 (2.34.5 available)
+  flutter_local_notifications 22.2.0 (22.3.0 available)
+  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
+  flutter_secure_storage 10.3.1 (11.0.0 available)
+  flutter_secure_storage_darwin 0.3.2 (0.4.0 available)
+  hooks 2.0.0 (2.2.0 available)
+  image 4.8.0 (4.9.2 available)
+  jni 1.0.0 (1.0.3 available)
+  jni_flutter 1.0.1 (1.0.2 available)
+  jose 0.3.5+1 (0.3.5+2 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  melos 7.8.0 (8.3.0 available)
+  meta 1.17.0 (1.19.0 available)
+  mustache_template 2.0.4 (2.0.5 available)
+  native_toolchain_c 0.19.2 (0.19.4 available)
+  objective_c 9.4.1 (9.6.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  posix 6.5.0 (6.5.2 available)
+  pub_updater 0.5.0 (0.6.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  source_gen 4.2.3 (4.3.0 available)
+  source_maps 0.10.13 (0.10.14 available)
+  sqlite3 3.3.4 (3.5.2 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.6 (retracted, 0.45.0 available)
+  test 1.30.0 (1.31.2 available)
+  test_api 0.7.10 (0.7.13 available)
+  test_core 0.6.16 (0.6.19 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.2 available)
+  vm_service 15.2.0 (15.3.0 available)
+  webview_flutter 4.13.1 (4.14.1 available)
+  webview_flutter_android 4.12.0 (4.14.0 available)
+  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  x509 0.2.4+2 (0.2.4+3 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies in `C:\LoomWin\app`!
+56 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                              8.9s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...        2,119ms
+D/nativeloader(17819): Load /data/app/~~aim-U5jjNce0wEE6ySWMjQ==/com.example.loom_communities_demo-dS3gHsdGMq3aWllDX_3gJA==/base.apk!/lib/x86_64/libdartjni.so using class loader ns clns-9 (caller=/data/app/~~aim-U5jjNce0wEE6ySWMjQ==/com.example.loom_communities_demo-dS3gHsdGMq3aWllDX_3gJA==/base.apk!classes7.dex): ok
+I/ommunities_demo(17819): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityNodeInfo;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported,test-api) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(17819): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityRecord;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(17819): hiddenapi: Accessing hidden field Landroid/view/accessibility/AccessibilityNodeInfo;->mChildNodeIds:Landroid/util/LongArray; (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(17819): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+D/FlutterRenderer(17819): Width is zero. 0,0
+D/CompatChangeReporter(17819): Compat change id reported: 377864165; UID 10263; state: ENABLED
+W/HWUI    (17819): Unknown dataspace 0
+I/WindowExtensionsImpl(17819): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+D/FlutterRenderer(17819): Width is zero. 0,0
+D/FlutterJNI(17819): Sending viewport metrics to the engine.
+I/ommunities_demo(17819): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+I/Choreographer(17819): Skipped 39 frames!  The application may be doing too much work on its main thread.
+D/WindowLayoutComponentImpl(17819): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@c0acb60, of which baseContext=android.app.ContextImpl@a3c8cea
+D/FlutterJNI(17819): Sending viewport metrics to the engine.
+I/flutter (17819): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+I/Choreographer(17819): Skipped 43 frames!  The application may be doing too much work on its main thread.
+D/ProfileInstaller(17819): Installing profile for com.example.loom_communities_demo
+D/InsetsController(17819): hide(ime(), fromIme=false)
+I/ImeTracker(17819): com.example.loom_communities_demo:29b8c1c4: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/FlutterJNI(17819): Sending viewport metrics to the engine.
+I/ommunities_demo(17819): AssetManager2(0x7c9844b215d8) locale list changing from [] to [en-US]
+I/ImeTracker(17819): com.example.loom_communities_demo:b8fb2d54: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(17819): show(ime(), fromIme=false)
+D/InsetsController(17819): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(17819): com.example.loom_communities_demo:ba2752ec: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(17819): show(ime(), fromIme=false)
+I/ImeTracker(17819): com.example.loom_communities_demo:ba2752ec: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(17819): The input method toggled cursor monitoring on
+I/AssistStructure(17819): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(17819): com.example.loom_communities_demo:59858b72: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(17819): show(ime(), fromIme=false)
+I/ImeTracker(17819): com.example.loom_communities_demo:59858b72: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(17819): com.example.loom_communities_demo:9dc264fe: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(17819): show(ime(), fromIme=false)
+I/ImeTracker(17819): com.example.loom_communities_demo:9dc264fe: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+W/RemoteInputConnectionImpl(17819): getSurroundingText on inactive InputConnection
+I/ImeTracker(17819): com.example.loom_communities_demo:f737fb10: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(17819): hide(ime(), fromIme=false)
+D/InsetsController(17819): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(17819): Compat change id reported: 395521150; UID 10263; state: ENABLED
+I/AssistStructure(17819): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+I/ImeTracker(17819): com.example.loom_communities_demo:b8fb2d54: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+W/RemoteInputConnectionImpl(17819): getSurroundingText on inactive InputConnection
+I/ImeTracker(17819): system_server:c3dc1e57: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+W/RemoteInputConnectionImpl(17819): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(17819): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(17819): getSurroundingText on inactive InputConnection
+I/ommunities_demo(17819): AssetManager2(0x7c9844b39f98) locale list changing from [] to [en-US]
+W/RemoteInputConnectionImpl(17819): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(17819): getTextBeforeCursor on inactive InputConnection
+I/flutter (17819): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:48:51.464766Z","status":"workflow-start","phase":"B16","workflowId":"ad-off-community-checkout","communityName":"Ad-Free Community","completedWorkflows":0,"totalWorkflows":1}
+W/WindowOnBackDispatcher(17819): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85ef43
+D/FlutterJNI(17819): Sending viewport metrics to the engine.
+I/flutter (17819): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:48:58.159035Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-community-checkout_owner_start","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (17819): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:49:06.213804Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-community-checkout_owner_primary_action_unavailable","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (17819): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:49:15.359140Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-community-checkout_owner_result_receiver_unavailable","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (17819): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:49:23.417618Z","status":"workflow-complete","phase":"B16","workflowId":"ad-off-community-checkout","communityName":"Ad-Free Community","completedWorkflows":1,"totalWorkflows":1}
+W/WindowOnBackDispatcher(17819): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85ef43
+D/FlutterJNI(17819): Sending viewport metrics to the engine.
+I/flutter (17819): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=3 completed=3 unavailable=0
+I/flutter (17819): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:49:24.872923Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
+I/flutter (17819): 00:43 +1: (tearDownAll)
+All tests passed.
+I/flutter (17819): 00:43 +2: All tests passed!
 WORKFLOW_EVIDENCE_RESULT status=pass walkthroughStatus=pass screenshotStatus=complete workflows=1 screenshots=3/3 completionGateEligible=true
 
 --- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:52574/XhMSnDEmoJQ=/
-VMServiceFlutterDriver: Isolate found with number: 4997298762292587
-VMServiceFlutterDriver: Isolate 4997298762292587 is runnable.
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:54333/yQ7k5hAbE5Q=/
+VMServiceFlutterDriver: Isolate found with number: 997888085703295
+VMServiceFlutterDriver: Isolate 997888085703295 is runnable.
 VMServiceFlutterDriver: Isolate is paused at start.
 VMServiceFlutterDriver: Attempting to resume isolate
 VMServiceFlutterDriver: Connected to Flutter application.
 VMServiceFlutterDriver: request_data message is taking a long time to complete...
 
---- B15 shard 1/7 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B15 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_camera_club --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=7 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=0
+--- B16 shard 3/12 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B16 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_ad_free_community --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=12 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=2
 exitCode=0
 
 --- stdout ---
@@ -181,100 +468,100 @@ Downloading packages...
 Got dependencies in `C:\LoomWin\app`!
 56 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                              8.4s
+Running Gradle task 'assembleDebug'...                             17.0s
 √ Built build\app\outputs\flutter-apk\app-debug.apk
-Installing build\app\outputs\flutter-apk\app-debug.apk...        1,680ms
-D/FlutterRenderer(16044): Width is zero. 0,0
-D/CompatChangeReporter(16044): Compat change id reported: 377864165; UID 10254; state: ENABLED
-W/HWUI    (16044): Unknown dataspace 0
-I/WindowExtensionsImpl(16044): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
-D/FlutterRenderer(16044): Width is zero. 0,0
-D/FlutterJNI(16044): Sending viewport metrics to the engine.
-I/ommunities_demo(16044): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-I/Choreographer(16044): Skipped 37 frames!  The application may be doing too much work on its main thread.
-D/WindowLayoutComponentImpl(16044): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@c0acb60, of which baseContext=android.app.ContextImpl@a3c8cea
-D/FlutterJNI(16044): Sending viewport metrics to the engine.
-I/flutter (16044): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/InsetsController(16044): hide(ime(), fromIme=false)
-I/ImeTracker(16044): com.example.loom_communities_demo:7ef28912: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/ProfileInstaller(16044): Installing profile for com.example.loom_communities_demo
-D/FlutterJNI(16044): Sending viewport metrics to the engine.
-I/ommunities_demo(16044): AssetManager2(0x7c9844b22258) locale list changing from [] to [en-US]
-I/ImeTracker(16044): com.example.loom_communities_demo:add71be6: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16044): show(ime(), fromIme=false)
-D/InsetsController(16044): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(16044): com.example.loom_communities_demo:7c9da5cc: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16044): show(ime(), fromIme=false)
-I/ImeTracker(16044): com.example.loom_communities_demo:7c9da5cc: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(16044): The input method toggled cursor monitoring on
-I/AssistStructure(16044): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
-I/ImeTracker(16044): com.example.loom_communities_demo:f478f1f6: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16044): show(ime(), fromIme=false)
-I/ImeTracker(16044): com.example.loom_communities_demo:f478f1f6: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(16044): com.example.loom_communities_demo:f683268d: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16044): show(ime(), fromIme=false)
-I/ImeTracker(16044): com.example.loom_communities_demo:f683268d: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-W/RemoteInputConnectionImpl(16044): getSurroundingText on inactive InputConnection
-I/ImeTracker(16044): com.example.loom_communities_demo:c4994643: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(16044): hide(ime(), fromIme=false)
-D/InsetsController(16044): Setting requestedVisibleTypes to -9 (was -1)
-D/CompatChangeReporter(16044): Compat change id reported: 395521150; UID 10254; state: ENABLED
-I/AssistStructure(16044): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
-W/RemoteInputConnectionImpl(16044): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(16044): getTextBeforeCursor on inactive InputConnection
-W/RemoteInputConnectionImpl(16044): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(16044): getSurroundingText on inactive InputConnection
-I/ommunities_demo(16044): AssetManager2(0x7c9844b36438) locale list changing from [] to [en-US]
-W/RemoteInputConnectionImpl(16044): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(16044): getTextBeforeCursor on inactive InputConnection
-I/ImeTracker(16044): system_server:c2fea1d3: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-I/flutter (16044): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:16:55.851882Z","status":"workflow-start","phase":"B15","workflowId":"photo-walk-rsvp","communityName":"Camera Club","completedWorkflows":0,"totalWorkflows":1}
-I/ImeTracker(16044): com.example.loom_communities_demo:842123d9: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16044): show(ime(), fromIme=false)
-D/InsetsController(16044): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(16044): com.example.loom_communities_demo:f07b5206: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16044): show(ime(), fromIme=false)
-I/ImeTracker(16044): com.example.loom_communities_demo:f07b5206: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(16044): The input method toggled cursor monitoring on
-I/ImeTracker(16044): com.example.loom_communities_demo:847fd3d7: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(16044): hide(ime(), fromIme=false)
-W/WindowOnBackDispatcher(16044): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@3f18711
-D/InsetsController(16044): Setting requestedVisibleTypes to -9 (was -1)
-I/ImeTracker(16044): com.example.loom_communities_demo:842123d9: onCancelled at PHASE_CLIENT_ANIMATION_CANCEL
-W/InteractionJankMonitor(16044): Initializing without READ_DEVICE_CONFIG permission. enabled=true, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.example.loom_communities_demo
-D/FlutterJNI(16044): Sending viewport metrics to the engine.
-D/FlutterJNI(16044): Sending viewport metrics to the engine.
-D/FlutterJNI(16044): Sending viewport metrics to the engine.
-D/FlutterJNI(16044): Sending viewport metrics to the engine.
-W/FrameTracker(16044): Missed App frame:JANK_APPLICATION, 676448, 342494340, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(16044): Missed SF frame:JANK_COMPOSER, 676565, 514739420, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-I/ImeTracker(16044): system_server:e47dbea4: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-I/flutter (16044): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:17:02.954554Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_photo-walk-rsvp_member_start","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16044): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:17:12.155128Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_photo-walk-rsvp_member_primary_action","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16044): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:17:23.026640Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_photo-walk-rsvp_member_primary_result","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16044): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:17:32.243795Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_photo-walk-rsvp_member_alternate_action","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16044): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:17:43.059530Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_photo-walk-rsvp_member_result_receiver","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16044): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:17:51.103804Z","status":"workflow-complete","phase":"B15","workflowId":"photo-walk-rsvp","communityName":"Camera Club","completedWorkflows":1,"totalWorkflows":1}
-W/WindowOnBackDispatcher(16044): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e671284
-D/FlutterJNI(16044): Sending viewport metrics to the engine.
-I/flutter (16044): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=5 completed=5 unavailable=0
-I/flutter (16044): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:17:52.750658Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
-I/flutter (16044): 01:06 +1: (tearDownAll)
+Installing build\app\outputs\flutter-apk\app-debug.apk...        1,802ms
+I/ommunities_demo(18029): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+D/FlutterRenderer(18029): Width is zero. 0,0
+D/CompatChangeReporter(18029): Compat change id reported: 377864165; UID 10264; state: ENABLED
+W/HWUI    (18029): Unknown dataspace 0
+I/WindowExtensionsImpl(18029): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+D/FlutterRenderer(18029): Width is zero. 0,0
+D/FlutterJNI(18029): Sending viewport metrics to the engine.
+I/Choreographer(18029): Skipped 34 frames!  The application may be doing too much work on its main thread.
+D/WindowLayoutComponentImpl(18029): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@c0acb60, of which baseContext=android.app.ContextImpl@a3c8cea
+D/FlutterJNI(18029): Sending viewport metrics to the engine.
+I/ommunities_demo(18029): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+I/Choreographer(18029): Skipped 32 frames!  The application may be doing too much work on its main thread.
+I/flutter (18029): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+I/Choreographer(18029): Skipped 68 frames!  The application may be doing too much work on its main thread.
+D/ProfileInstaller(18029): Installing profile for com.example.loom_communities_demo
+D/InsetsController(18029): hide(ime(), fromIme=false)
+I/ImeTracker(18029): com.example.loom_communities_demo:ef020e3: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/FlutterJNI(18029): Sending viewport metrics to the engine.
+I/ommunities_demo(18029): AssetManager2(0x7c9844b1f058) locale list changing from [] to [en-US]
+I/ImeTracker(18029): com.example.loom_communities_demo:9ed16d36: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18029): show(ime(), fromIme=false)
+D/InsetsController(18029): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(18029): com.example.loom_communities_demo:1da6a043: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18029): show(ime(), fromIme=false)
+I/ImeTracker(18029): com.example.loom_communities_demo:1da6a043: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/AssistStructure(18029): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+D/InputConnectionAdaptor(18029): The input method toggled cursor monitoring on
+I/ommunities_demo(18029): NativeAlloc concurrent mark compact GC freed 2268KB AllocSpace bytes, 4(76KB) LOS objects, 49% free, 2515KB/5030KB, paused 3.327ms,5.454ms total 53.982ms
+I/ImeTracker(18029): com.example.loom_communities_demo:c9cc8142: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18029): show(ime(), fromIme=false)
+I/ImeTracker(18029): com.example.loom_communities_demo:c9cc8142: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(18029): com.example.loom_communities_demo:be9783cd: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18029): show(ime(), fromIme=false)
+I/ImeTracker(18029): com.example.loom_communities_demo:be9783cd: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(18029): com.example.loom_communities_demo:530d0460: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(18029): hide(ime(), fromIme=false)
+D/InsetsController(18029): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(18029): Compat change id reported: 395521150; UID 10264; state: ENABLED
+W/WindowOnBackDispatcher(18029): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e671284
+W/RemoteInputConnectionImpl(18029): getSurroundingText on inactive InputConnection
+I/AssistStructure(18029): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(18029): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(18029): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(18029): getSurroundingText on inactive InputConnection
+I/ommunities_demo(18029): AssetManager2(0x7c9844b36438) locale list changing from [] to [en-US]
+W/RemoteInputConnectionImpl(18029): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(18029): getTextBeforeCursor on inactive InputConnection
+I/ImeTracker(18029): system_server:7a9e5605: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+I/flutter (18029): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:50:04.007969Z","status":"workflow-start","phase":"B16","workflowId":"ad-off-entitlement-status","communityName":"Ad-Free Community","completedWorkflows":0,"totalWorkflows":1}
+W/WindowOnBackDispatcher(18029): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e671284
+D/FlutterJNI(18029): Sending viewport metrics to the engine.
+I/flutter (18029): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:50:10.859168Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-entitlement-status_member_start","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (18029): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:50:20.075439Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-entitlement-status_member_primary_action","completedWorkflows":0,"totalWorkflows":1}
+I/ImeTracker(18029): com.example.loom_communities_demo:94383cd9: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18029): show(ime(), fromIme=false)
+D/InsetsController(18029): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(18029): com.example.loom_communities_demo:23f76c8f: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18029): show(ime(), fromIme=false)
+I/ImeTracker(18029): com.example.loom_communities_demo:23f76c8f: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(18029): The input method toggled cursor monitoring on
+I/AssistStructure(18029): Flattened final assist data: 448 bytes, containing 1 windows, 3 views
+I/ImeTracker(18029): com.example.loom_communities_demo:58d45f62: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(18029): hide(ime(), fromIme=false)
+D/InsetsController(18029): Setting requestedVisibleTypes to -9 (was -1)
+W/RemoteInputConnectionImpl(18029): getSurroundingText on inactive InputConnection
+W/WindowOnBackDispatcher(18029): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@3f18711
+I/ImeTracker(18029): system_server:ad1cbb63: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+I/flutter (18029): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:50:31.742490Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-entitlement-status_member_primary_result","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (18029): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:50:40.979888Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-entitlement-status_member_alternate_action","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (18029): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:50:51.890530Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-entitlement-status_member_result_receiver","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (18029): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:50:59.939761Z","status":"workflow-complete","phase":"B16","workflowId":"ad-off-entitlement-status","communityName":"Ad-Free Community","completedWorkflows":1,"totalWorkflows":1}
+W/WindowOnBackDispatcher(18029): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e671284
+D/FlutterJNI(18029): Sending viewport metrics to the engine.
+I/flutter (18029): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=5 completed=5 unavailable=0
+I/flutter (18029): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:51:01.386116Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
+I/flutter (18029): 01:07 +1: (tearDownAll)
+I/flutter (18029): 01:07 +2: All tests passed!
 All tests passed.
-I/flutter (16044): 01:06 +2: All tests passed!
 WORKFLOW_EVIDENCE_RESULT status=pass walkthroughStatus=pass screenshotStatus=complete workflows=1 screenshots=5/5 completionGateEligible=true
 
 --- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:55599/xpIUPiNLFBY=/
-VMServiceFlutterDriver: Isolate found with number: 376777698233459
-VMServiceFlutterDriver: Isolate 376777698233459 is runnable.
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:50559/-K1axnXmaf4=/
+VMServiceFlutterDriver: Isolate found with number: 6636018747426455
+VMServiceFlutterDriver: Isolate 6636018747426455 is runnable.
 VMServiceFlutterDriver: Isolate is paused at start.
 VMServiceFlutterDriver: Attempting to resume isolate
 VMServiceFlutterDriver: Connected to Flutter application.
 VMServiceFlutterDriver: request_data message is taking a long time to complete...
 
---- B15 shard 2/7 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B15 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_camera_club --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=7 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=1
+--- B16 shard 4/12 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B16 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_ad_free_community --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=12 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=3
 exitCode=0
 
 --- stdout ---
@@ -339,93 +626,88 @@ Downloading packages...
 Got dependencies in `C:\LoomWin\app`!
 56 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                              8.3s
+Running Gradle task 'assembleDebug'...                             16.8s
 √ Built build\app\outputs\flutter-apk\app-debug.apk
-Installing build\app\outputs\flutter-apk\app-debug.apk...        1,970ms
-D/FlutterRenderer(16269): Width is zero. 0,0
-I/WindowExtensionsImpl(16269): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
-D/FlutterRenderer(16269): Width is zero. 0,0
-D/FlutterJNI(16269): Sending viewport metrics to the engine.
-I/ommunities_demo(16269): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-I/Choreographer(16269): Skipped 41 frames!  The application may be doing too much work on its main thread.
-D/WindowLayoutComponentImpl(16269): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@6d00819, of which baseContext=android.app.ContextImpl@5b37bdb
-D/FlutterJNI(16269): Sending viewport metrics to the engine.
-I/flutter (16269): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/InsetsController(16269): hide(ime(), fromIme=false)
-I/ImeTracker(16269): com.example.loom_communities_demo:11e11de2: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/ProfileInstaller(16269): Installing profile for com.example.loom_communities_demo
-D/FlutterJNI(16269): Sending viewport metrics to the engine.
-I/ommunities_demo(16269): AssetManager2(0x7c9844b20318) locale list changing from [] to [en-US]
-I/ImeTracker(16269): com.example.loom_communities_demo:be9dc51d: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16269): show(ime(), fromIme=false)
-D/InsetsController(16269): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(16269): com.example.loom_communities_demo:7fcd7819: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16269): show(ime(), fromIme=false)
-I/ImeTracker(16269): com.example.loom_communities_demo:7fcd7819: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(16269): The input method toggled cursor monitoring on
-I/AssistStructure(16269): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
-I/ImeTracker(16269): com.example.loom_communities_demo:3666b26f: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16269): show(ime(), fromIme=false)
-I/ImeTracker(16269): com.example.loom_communities_demo:3666b26f: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ommunities_demo(16269): NativeAlloc concurrent mark compact GC freed 2272KB AllocSpace bytes, 4(76KB) LOS objects, 49% free, 2575KB/5151KB, paused 2.775ms,45.780ms total 486.298ms
-I/ImeTracker(16269): com.example.loom_communities_demo:f114297b: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16269): show(ime(), fromIme=false)
-I/ImeTracker(16269): com.example.loom_communities_demo:f114297b: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(16269): com.example.loom_communities_demo:1856c3c5: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(16269): hide(ime(), fromIme=false)
-D/InsetsController(16269): Setting requestedVisibleTypes to -9 (was -1)
-D/CompatChangeReporter(16269): Compat change id reported: 395521150; UID 10255; state: ENABLED
-I/ImeTracker(16269): com.example.loom_communities_demo:be9dc51d: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-I/ImeTracker(16269): system_server:1cbc31ba: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/RemoteInputConnectionImpl(16269): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(16269): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(16269): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(16269): getTextBeforeCursor on inactive InputConnection
-I/ommunities_demo(16269): AssetManager2(0x7c9844b33b98) locale list changing from [] to [en-US]
-I/flutter (16269): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:18:22.206367Z","status":"workflow-start","phase":"B15","workflowId":"critique-submission","communityName":"Camera Club","completedWorkflows":0,"totalWorkflows":1}
-W/WindowOnBackDispatcher(16269): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@f9f4a6d
-D/FlutterJNI(16269): Sending viewport metrics to the engine.
-I/flutter (16269): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:18:28.980752Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_critique-submission_member_start","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16269): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:18:38.152698Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_critique-submission_member_primary_action","completedWorkflows":0,"totalWorkflows":1}
-I/ImeTracker(16269): com.example.loom_communities_demo:fbe1d8d4: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16269): show(ime(), fromIme=false)
-D/InsetsController(16269): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(16269): com.example.loom_communities_demo:e5fa1ea8: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16269): show(ime(), fromIme=false)
-I/ImeTracker(16269): com.example.loom_communities_demo:e5fa1ea8: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(16269): The input method toggled cursor monitoring on
-I/AssistStructure(16269): Flattened final assist data: 448 bytes, containing 1 windows, 3 views
-I/ImeTracker(16269): com.example.loom_communities_demo:6baec6ae: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(16269): hide(ime(), fromIme=false)
-D/InsetsController(16269): Setting requestedVisibleTypes to -9 (was -1)
-W/RemoteInputConnectionImpl(16269): getSurroundingText on inactive InputConnection
-W/WindowOnBackDispatcher(16269): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@2aad820
-I/ImeTracker(16269): system_server:6eb37c43: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-I/flutter (16269): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:18:49.690377Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_critique-submission_member_primary_result","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16269): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:18:58.876476Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_critique-submission_member_alternate_action","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16269): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:19:09.608098Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_critique-submission_member_result_receiver","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16269): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:19:17.664014Z","status":"workflow-complete","phase":"B15","workflowId":"critique-submission","communityName":"Camera Club","completedWorkflows":1,"totalWorkflows":1}
-W/WindowOnBackDispatcher(16269): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@f9f4a6d
-D/FlutterJNI(16269): Sending viewport metrics to the engine.
-I/flutter (16269): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=5 completed=5 unavailable=0
-I/flutter (16269): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:19:19.168413Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
-I/flutter (16269): 01:05 +1: (tearDownAll)
+Installing build\app\outputs\flutter-apk\app-debug.apk...        1,903ms
+I/ommunities_demo(18249): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityNodeInfo;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported,test-api) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(18249): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityRecord;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(18249): hiddenapi: Accessing hidden field Landroid/view/accessibility/AccessibilityNodeInfo;->mChildNodeIds:Landroid/util/LongArray; (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(18249): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+D/FlutterRenderer(18249): Width is zero. 0,0
+D/CompatChangeReporter(18249): Compat change id reported: 377864165; UID 10265; state: ENABLED
+W/HWUI    (18249): Unknown dataspace 0
+I/WindowExtensionsImpl(18249): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+D/FlutterRenderer(18249): Width is zero. 0,0
+D/FlutterJNI(18249): Sending viewport metrics to the engine.
+I/ommunities_demo(18249): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+I/Choreographer(18249): Skipped 39 frames!  The application may be doing too much work on its main thread.
+D/WindowLayoutComponentImpl(18249): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@6d00819, of which baseContext=android.app.ContextImpl@5b37bdb
+D/FlutterJNI(18249): Sending viewport metrics to the engine.
+I/flutter (18249): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+I/Choreographer(18249): Skipped 32 frames!  The application may be doing too much work on its main thread.
+D/InsetsController(18249): hide(ime(), fromIme=false)
+I/ImeTracker(18249): com.example.loom_communities_demo:f799c947: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/ProfileInstaller(18249): Installing profile for com.example.loom_communities_demo
+D/FlutterJNI(18249): Sending viewport metrics to the engine.
+I/ommunities_demo(18249): AssetManager2(0x7c9844b20318) locale list changing from [] to [en-US]
+I/ImeTracker(18249): com.example.loom_communities_demo:983b7915: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18249): show(ime(), fromIme=false)
+D/InsetsController(18249): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(18249): com.example.loom_communities_demo:e18dbb57: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18249): show(ime(), fromIme=false)
+I/ImeTracker(18249): com.example.loom_communities_demo:e18dbb57: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(18249): The input method toggled cursor monitoring on
+I/AssistStructure(18249): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(18249): com.example.loom_communities_demo:d98af9d2: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18249): show(ime(), fromIme=false)
+I/ImeTracker(18249): com.example.loom_communities_demo:d98af9d2: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(18249): com.example.loom_communities_demo:761fe78b: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18249): show(ime(), fromIme=false)
+I/ImeTracker(18249): com.example.loom_communities_demo:761fe78b: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+W/RemoteInputConnectionImpl(18249): getSurroundingText on inactive InputConnection
+I/ImeTracker(18249): com.example.loom_communities_demo:f5e1e5b7: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(18249): hide(ime(), fromIme=false)
+D/InsetsController(18249): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(18249): Compat change id reported: 395521150; UID 10265; state: ENABLED
+W/RemoteInputConnectionImpl(18249): getSurroundingText on inactive InputConnection
+I/AssistStructure(18249): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(18249): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(18249): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(18249): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(18249): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(18249): getTextBeforeCursor on inactive InputConnection
+I/ommunities_demo(18249): AssetManager2(0x7c9844b36438) locale list changing from [] to [en-US]
+I/ImeTracker(18249): system_server:181176c0: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+I/flutter (18249): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:51:40.923414Z","status":"workflow-start","phase":"B16","workflowId":"ad-off-receipt-evidence","communityName":"Ad-Free Community","completedWorkflows":0,"totalWorkflows":1}
+W/WindowOnBackDispatcher(18249): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@8bf79c0
+D/FlutterJNI(18249): Sending viewport metrics to the engine.
+I/flutter (18249): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:51:47.976206Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-receipt-evidence_member_start","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (18249): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:51:57.263248Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-receipt-evidence_member_primary_action","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (18249): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:52:08.055340Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-receipt-evidence_member_primary_result","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (18249): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:52:24.394328Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-receipt-evidence_member_alternate_action_unavailable","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (18249): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:52:33.597222Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-receipt-evidence_member_result_receiver","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (18249): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:52:41.658235Z","status":"workflow-complete","phase":"B16","workflowId":"ad-off-receipt-evidence","communityName":"Ad-Free Community","completedWorkflows":1,"totalWorkflows":1}
+W/WindowOnBackDispatcher(18249): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@8bf79c0
+D/FlutterJNI(18249): Sending viewport metrics to the engine.
+I/flutter (18249): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=5 completed=5 unavailable=0
+I/flutter (18249): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:52:43.091375Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
+I/flutter (18249): 01:12 +1: (tearDownAll)
 All tests passed.
-I/flutter (16269): 01:05 +2: All tests passed!
+I/flutter (18249): 01:12 +2: All tests passed!
 WORKFLOW_EVIDENCE_RESULT status=pass walkthroughStatus=pass screenshotStatus=complete workflows=1 screenshots=5/5 completionGateEligible=true
 
 --- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:61870/-UMvfNPD4Z4=/
-VMServiceFlutterDriver: Isolate found with number: 6467070548654707
-VMServiceFlutterDriver: Isolate 6467070548654707 is runnable.
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:56034/NFqNLDuXa_w=/
+VMServiceFlutterDriver: Isolate found with number: 5439597409319755
+VMServiceFlutterDriver: Isolate 5439597409319755 is runnable.
 VMServiceFlutterDriver: Isolate is paused at start.
 VMServiceFlutterDriver: Attempting to resume isolate
 VMServiceFlutterDriver: Connected to Flutter application.
 VMServiceFlutterDriver: request_data message is taking a long time to complete...
 
---- B15 shard 3/7 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B15 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_camera_club --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=7 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=2
-exitCode=0
+--- B16 shard 5/12 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B16 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_ad_free_community --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=12 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=4
+exitCode=1
 
 --- stdout ---
 Resolving dependencies in `C:\LoomWin\app`...
@@ -489,525 +771,176 @@ Downloading packages...
 Got dependencies in `C:\LoomWin\app`!
 56 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                              8.2s
+Running Gradle task 'assembleDebug'...                             16.8s
 √ Built build\app\outputs\flutter-apk\app-debug.apk
-Installing build\app\outputs\flutter-apk\app-debug.apk...        1,768ms
-D/nativeloader(16495): Load /data/app/~~Fxa2NjpEfXIgdqhQzhdUCw==/com.example.loom_communities_demo-MOr4kEQF4o4pdRVYsfq-aA==/base.apk!/lib/x86_64/libdartjni.so using class loader ns clns-9 (caller=/data/app/~~Fxa2NjpEfXIgdqhQzhdUCw==/com.example.loom_communities_demo-MOr4kEQF4o4pdRVYsfq-aA==/base.apk!classes7.dex): ok
-I/ommunities_demo(16495): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityNodeInfo;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported,test-api) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-I/ommunities_demo(16495): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityRecord;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-I/ommunities_demo(16495): hiddenapi: Accessing hidden field Landroid/view/accessibility/AccessibilityNodeInfo;->mChildNodeIds:Landroid/util/LongArray; (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-I/ommunities_demo(16495): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-D/FlutterRenderer(16495): Width is zero. 0,0
-D/CompatChangeReporter(16495): Compat change id reported: 377864165; UID 10256; state: ENABLED
-W/HWUI    (16495): Unknown dataspace 0
-I/WindowExtensionsImpl(16495): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
-D/FlutterRenderer(16495): Width is zero. 0,0
-D/FlutterJNI(16495): Sending viewport metrics to the engine.
-I/ommunities_demo(16495): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-I/Choreographer(16495): Skipped 38 frames!  The application may be doing too much work on its main thread.
-D/WindowLayoutComponentImpl(16495): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@c0acb60, of which baseContext=android.app.ContextImpl@a3c8cea
-D/FlutterJNI(16495): Sending viewport metrics to the engine.
-I/flutter (16495): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/ProfileInstaller(16495): Installing profile for com.example.loom_communities_demo
-D/InsetsController(16495): hide(ime(), fromIme=false)
-I/ImeTracker(16495): com.example.loom_communities_demo:29fddde2: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/FlutterJNI(16495): Sending viewport metrics to the engine.
-I/ommunities_demo(16495): AssetManager2(0x7c9844b182f8) locale list changing from [] to [en-US]
-I/ImeTracker(16495): com.example.loom_communities_demo:21be76fd: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16495): show(ime(), fromIme=false)
-D/InsetsController(16495): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(16495): com.example.loom_communities_demo:5a7ccd9c: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16495): show(ime(), fromIme=false)
-I/ImeTracker(16495): com.example.loom_communities_demo:5a7ccd9c: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/AssistStructure(16495): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
-D/InputConnectionAdaptor(16495): The input method toggled cursor monitoring on
-I/ImeTracker(16495): com.example.loom_communities_demo:148eb623: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16495): show(ime(), fromIme=false)
-I/ImeTracker(16495): com.example.loom_communities_demo:148eb623: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ommunities_demo(16495): NativeAlloc concurrent mark compact GC freed 2236KB AllocSpace bytes, 4(76KB) LOS objects, 49% free, 2515KB/5030KB, paused 919us,5.510ms total 61.062ms
-I/ImeTracker(16495): com.example.loom_communities_demo:59ac06f7: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16495): show(ime(), fromIme=false)
-I/ImeTracker(16495): com.example.loom_communities_demo:59ac06f7: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-W/RemoteInputConnectionImpl(16495): getSurroundingText on inactive InputConnection
-I/ImeTracker(16495): com.example.loom_communities_demo:ec643c4f: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(16495): hide(ime(), fromIme=false)
-D/InsetsController(16495): Setting requestedVisibleTypes to -9 (was -1)
-D/CompatChangeReporter(16495): Compat change id reported: 395521150; UID 10256; state: ENABLED
-I/AssistStructure(16495): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
-W/RemoteInputConnectionImpl(16495): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(16495): getTextBeforeCursor on inactive InputConnection
-W/RemoteInputConnectionImpl(16495): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(16495): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(16495): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(16495): getTextBeforeCursor on inactive InputConnection
-I/ommunities_demo(16495): AssetManager2(0x7c9844b389b8) locale list changing from [] to [en-US]
-I/ImeTracker(16495): system_server:4bc5cff2: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-I/flutter (16495): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:19:48.854686Z","status":"workflow-start","phase":"B15","workflowId":"gear-loan-request","communityName":"Camera Club","completedWorkflows":0,"totalWorkflows":1}
-I/ImeTracker(16495): com.example.loom_communities_demo:f0f2730e: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16495): show(ime(), fromIme=false)
-D/InsetsController(16495): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(16495): com.example.loom_communities_demo:19a08ca7: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16495): show(ime(), fromIme=false)
-I/ImeTracker(16495): com.example.loom_communities_demo:19a08ca7: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(16495): The input method toggled cursor monitoring on
-I/ImeTracker(16495): com.example.loom_communities_demo:cce7118d: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(16495): hide(ime(), fromIme=false)
-W/WindowOnBackDispatcher(16495): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@3f18711
-D/InsetsController(16495): Setting requestedVisibleTypes to -9 (was -1)
-I/ImeTracker(16495): com.example.loom_communities_demo:f0f2730e: onCancelled at PHASE_CLIENT_ANIMATION_CANCEL
-W/InteractionJankMonitor(16495): Initializing without READ_DEVICE_CONFIG permission. enabled=true, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.example.loom_communities_demo
-D/FlutterJNI(16495): Sending viewport metrics to the engine.
-D/FlutterJNI(16495): Sending viewport metrics to the engine.
-D/FlutterJNI(16495): Sending viewport metrics to the engine.
-D/FlutterJNI(16495): Sending viewport metrics to the engine.
-D/FlutterJNI(16495): Sending viewport metrics to the engine.
-D/FlutterJNI(16495): Sending viewport metrics to the engine.
-I/ImeTracker(16495): system_server:3a7ec6f8: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/FrameTracker(16495): Missed SF frame:JANK_COMPOSER, 688013, 251720660, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(16495): Missed App frame:JANK_APPLICATION, 688134, 516264504, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-I/flutter (16495): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:19:55.562426Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_gear-loan-request_member_start","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16495): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:20:04.855090Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_gear-loan-request_member_primary_action","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16495): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:20:15.628589Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_gear-loan-request_member_primary_result","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16495): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:20:24.832347Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_gear-loan-request_member_alternate_action","completedWorkflows":0,"totalWorkflows":1}
-I/ImeTracker(16495): com.example.loom_communities_demo:c4c72c10: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16495): show(ime(), fromIme=false)
-D/InsetsController(16495): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(16495): com.example.loom_communities_demo:3bb65840: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(16495): show(ime(), fromIme=false)
-I/ImeTracker(16495): com.example.loom_communities_demo:3bb65840: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(16495): The input method toggled cursor monitoring on
-I/AssistStructure(16495): Flattened final assist data: 448 bytes, containing 1 windows, 3 views
-I/ImeTracker(16495): com.example.loom_communities_demo:8491601e: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(16495): hide(ime(), fromIme=false)
-D/InsetsController(16495): Setting requestedVisibleTypes to -9 (was -1)
-W/RemoteInputConnectionImpl(16495): getSurroundingText on inactive InputConnection
-W/WindowOnBackDispatcher(16495): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@3f18711
-I/ImeTracker(16495): system_server:4e071b94: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-I/flutter (16495): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:20:36.423826Z","status":"screenshot-start","phase":"B15","screenshotName":"B15_ext_camera_club_gear-loan-request_member_result_receiver","completedWorkflows":0,"totalWorkflows":1}
-I/flutter (16495): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:20:44.477799Z","status":"workflow-complete","phase":"B15","workflowId":"gear-loan-request","communityName":"Camera Club","completedWorkflows":1,"totalWorkflows":1}
-W/WindowOnBackDispatcher(16495): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85ef43
-D/FlutterJNI(16495): Sending viewport metrics to the engine.
-I/flutter (16495): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=5 completed=5 unavailable=0
-I/flutter (16495): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:20:46.036101Z","status":"run-complete","completedWorkflows":1,"totalWorkflows":1}
-I/flutter (16495): 01:06 +1: (tearDownAll)
-All tests passed.
-I/flutter (16495): 01:06 +2: All tests passed!
-WORKFLOW_EVIDENCE_RESULT status=pass walkthroughStatus=pass screenshotStatus=complete workflows=1 screenshots=5/5 completionGateEligible=true
+Installing build\app\outputs\flutter-apk\app-debug.apk...        1,942ms
+D/nativeloader(18486): Load /data/app/~~fJfV0RrssSNi-i2xDWgpUw==/com.example.loom_communities_demo-JUaQ6329jYaKjRVxYnwjZw==/base.apk!/lib/x86_64/libdartjni.so using class loader ns clns-9 (caller=/data/app/~~fJfV0RrssSNi-i2xDWgpUw==/com.example.loom_communities_demo-JUaQ6329jYaKjRVxYnwjZw==/base.apk!classes7.dex): ok
+I/ommunities_demo(18486): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityNodeInfo;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported,test-api) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(18486): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityRecord;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(18486): hiddenapi: Accessing hidden field Landroid/view/accessibility/AccessibilityNodeInfo;->mChildNodeIds:Landroid/util/LongArray; (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+I/ommunities_demo(18486): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+D/FlutterRenderer(18486): Width is zero. 0,0
+D/CompatChangeReporter(18486): Compat change id reported: 377864165; UID 10266; state: ENABLED
+W/HWUI    (18486): Unknown dataspace 0
+I/WindowExtensionsImpl(18486): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+D/FlutterRenderer(18486): Width is zero. 0,0
+D/FlutterJNI(18486): Sending viewport metrics to the engine.
+I/ommunities_demo(18486): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+I/Choreographer(18486): Skipped 34 frames!  The application may be doing too much work on its main thread.
+D/WindowLayoutComponentImpl(18486): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@c0acb60, of which baseContext=android.app.ContextImpl@a3c8cea
+D/FlutterJNI(18486): Sending viewport metrics to the engine.
+I/flutter (18486): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+I/Choreographer(18486): Skipped 34 frames!  The application may be doing too much work on its main thread.
+D/InsetsController(18486): hide(ime(), fromIme=false)
+I/ImeTracker(18486): com.example.loom_communities_demo:a00c6d89: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/ProfileInstaller(18486): Installing profile for com.example.loom_communities_demo
+D/FlutterJNI(18486): Sending viewport metrics to the engine.
+I/ommunities_demo(18486): AssetManager2(0x7c9844b1f058) locale list changing from [] to [en-US]
+I/ImeTracker(18486): com.example.loom_communities_demo:9909a08: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18486): show(ime(), fromIme=false)
+D/InsetsController(18486): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(18486): com.example.loom_communities_demo:9c863aaa: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18486): show(ime(), fromIme=false)
+I/ImeTracker(18486): com.example.loom_communities_demo:9c863aaa: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(18486): The input method toggled cursor monitoring on
+I/AssistStructure(18486): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(18486): com.example.loom_communities_demo:ab1d2e0: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18486): show(ime(), fromIme=false)
+I/ImeTracker(18486): com.example.loom_communities_demo:ab1d2e0: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(18486): com.example.loom_communities_demo:ec6b69db: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(18486): show(ime(), fromIme=false)
+I/ImeTracker(18486): com.example.loom_communities_demo:ec6b69db: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+W/RemoteInputConnectionImpl(18486): getSurroundingText on inactive InputConnection
+I/ommunities_demo(18486): NativeAlloc concurrent mark compact GC freed 2296KB AllocSpace bytes, 4(76KB) LOS objects, 49% free, 2551KB/5102KB, paused 15.469ms,2.088ms total 99.046ms
+I/ImeTracker(18486): com.example.loom_communities_demo:6314eca5: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(18486): hide(ime(), fromIme=false)
+D/InsetsController(18486): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(18486): Compat change id reported: 395521150; UID 10266; state: ENABLED
+W/RemoteInputConnectionImpl(18486): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(18486): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(18486): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(18486): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(18486): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(18486): getSurroundingText on inactive InputConnection
+I/ommunities_demo(18486): AssetManager2(0x7c9844b36758) locale list changing from [] to [en-US]
+I/ImeTracker(18486): system_server:eb426701: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+I/flutter (18486): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:53:21.624008Z","status":"workflow-start","phase":"B16","workflowId":"ad-off-ad-suppression","communityName":"Ad-Free Community","completedWorkflows":0,"totalWorkflows":1}
+W/WindowOnBackDispatcher(18486): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@85ef43
+D/FlutterJNI(18486): Sending viewport metrics to the engine.
+I/flutter (18486): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:53:28.390315Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-ad-suppression_member_start","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (18486): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:53:37.643088Z","status":"screenshot-start","phase":"B16","screenshotName":"B16_ext_ad_free_community_ad-off-ad-suppression_member_primary_action","completedWorkflows":0,"totalWorkflows":1}
+I/flutter (18486): ══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+I/flutter (18486): The following TestFailure was thrown running a test:
+I/flutter (18486): Expected: no matching candidates
+I/flutter (18486):   Actual: _WidgetPredicateWidgetFinder:<Found 1 widget with ad-off-suppression-proof action
+I/flutter (18486): acknowledge-proof: [
+I/flutter (18486):             FilledButton-[<'generic-instance-ad-off-suppression-proof-action-acknowledge-proof'>](style:
+I/flutter (18486): ButtonStyle#2c7d8(textStyle: WidgetStatePropertyAll(TextStyle(inherit: true, weight: 700)),
+I/flutter (18486): backgroundColor: WidgetStateMapper<Color?>({WidgetState.disabled: null, WidgetState.any:
+I/flutter (18486): Color(alpha: 1.0000, red: 0.1647, green: 0.4353, blue: 0.5255, colorSpace: ColorSpace.sRGB)}),
+I/flutter (18486): foregroundColor: WidgetStateMapper<Color?>({WidgetState.disabled: null, WidgetState.any:
+I/flutter (18486): Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB)}),
+I/flutter (18486): overlayColor: WidgetStateMapper<Color?>({WidgetState.pressed: Color(alpha: 0.1020, red: 1.0000,
+I/flutter (18486): green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), WidgetState.hovered: Color(alpha: 0.0784,
+I/flutter (18486): red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), WidgetState.focused:
+I/flutter (18486): Color(alpha: 0.1020, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB)}),
+I/flutter (18486): iconColor: WidgetStateMapper<Color?>({WidgetState.disabled: null, WidgetState.any: Color(alpha:
+I/flutter (18486): 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB)}), side:
+I/flutter (18486): WidgetStatePropertyAll(BorderSide(width: 0.0, style: none)), shape:
+I/flutter (18486): WidgetStatePropertyAll(StadiumBorder(BorderSide(width: 0.0, style: none))), mouseCursor:
+I/flutter (18486): WidgetStateMapper<MouseCursor?>({WidgetState.disabled: null, WidgetState.any: null})), dependencies:
+I/flutter (18486): [IconTheme, InheritedCupertinoTheme, MediaQuery, _InheritedTheme,
+I/flutter (18486): _LocalizationsScope-[GlobalKey#7adc0], _ScrollableScope], state: _ButtonStyleState#03fb4),
+I/flutter (18486):           ]>
+I/flutter (18486):    Which: means one was found but none were expected
+I/flutter (18486): Shipped workflow ad-off-ad-suppression exposed acknowledge-proof for ad-off-member, but the action
+I/flutter (18486): did not leave its package-declared source state unreviewed.
+I/flutter (18486): 
+I/flutter (18486): When the exception was thrown, this was the stack:
+I/flutter (18486): #4      _runB25ShippedWorkflowWalkthrough (file:///C:/LoomWin/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart:1523:5)
+I/flutter (18486): <asynchronous suspension>
+I/flutter (18486): #5      main.<anonymous closure>.runWalkthrough (file:///C:/LoomWin/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart:322:17)
+I/flutter (18486): <asynchronous suspension>
+I/flutter (18486): <asynchronous suspension>
+I/flutter (18486): (elided one frame from dart:async)
+I/flutter (18486): 
+I/flutter (18486): This was caught by the test expectation on the following line:
+I/flutter (18486):   file:///C:/LoomWin/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart line 1523
+I/flutter (18486): The test description was:
+I/flutter (18486):   wf_full-ui-screenshot-evidence-b12-b20
+I/flutter (18486): ════════════════════════════════════════════════════════════════════════════════════════════════════
+I/flutter (18486): 00:36 +0: wf_full-ui-screenshot-evidence-b12-b20 [E]
+I/flutter (18486):   Test failed. See exception logs above.
+I/flutter (18486):   The test description was: wf_full-ui-screenshot-evidence-b12-b20
+I/flutter (18486):   
+I/flutter (18486): 00:36 +0 -1: (tearDownAll)
+Failure Details:
+Failure in method: wf_full-ui-screenshot-evidence-b12-b20
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞═════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _WidgetPredicateWidgetFinder:<Found 1 widget with
+ad-off-suppression-proof action acknowledge-proof: [
+            FilledButton-[<'generic-instance-ad-off-suppression-proof-action-acknowledge-proof'>](style:
+ButtonStyle#2c7d8(textStyle:
+WidgetStatePropertyAll(TextStyle(inherit: true, weight: 700)),
+backgroundColor: WidgetStateMapper<Color?>({WidgetState.disabled:
+null, WidgetState.any: Color(alpha: 1.0000, red: 0.1647, green:
+0.4353, blue: 0.5255, colorSpace: ColorSpace.sRGB)}),
+foregroundColor: WidgetStateMapper<Color?>({WidgetState.disabled:
+null, WidgetState.any: Color(alpha: 1.0000, red: 1.0000, green:
+1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB)}),
+overlayColor: WidgetStateMapper<Color?>({WidgetState.pressed:
+Color(alpha: 0.1020, red: 1.0000, green: 1.0000, blue: 1.0000,
+colorSpace: ColorSpace.sRGB), WidgetState.hovered: Color(alpha:
+0.0784, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace:
+ColorSpace.sRGB), WidgetState.focused: Color(alpha: 0.1020, red:
+1.0000, green: 1.0000, blue: 1.0000, colorSpace:
+ColorSpace.sRGB)}), iconColor:
+WidgetStateMapper<Color?>({WidgetState.disabled: null,
+WidgetState.any: Color(alpha: 1.0000, red: 1.0000, green: 1.0000,
+blue: 1.0000, colorSpace: ColorSpace.sRGB)}), side:
+WidgetStatePropertyAll(BorderSide(width: 0.0, style: none)),
+shape: WidgetStatePropertyAll(StadiumBorder(BorderSide(width:
+0.0, style: none))), mouseCursor:
+WidgetStateMapper<MouseCursor?>({WidgetState.disabled: null,
+WidgetState.any: null})), dependencies: [IconTheme,
+InheritedCupertinoTheme, MediaQuery, _InheritedTheme,
+_LocalizationsScope-[GlobalKey#7adc0], _ScrollableScope], state:
+_ButtonStyleState#03fb4),
+          ]>
+   Which: means one was found but none were expected
+Shipped workflow ad-off-ad-suppression exposed acknowledge-proof
+for ad-off-member, but the action did not leave its
+package-declared source state unreviewed.
+
+When the exception was thrown, this was the stack:
+#4      _runB25ShippedWorkflowWalkthrough (file:///C:/LoomWin/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart:1523:5)
+<asynchronous suspension>
+#5      main.<anonymous closure>.runWalkthrough (file:///C:/LoomWin/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart:322:17)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from dart:async)
+
+This was caught by the test expectation on the following line:
+  file:///C:/LoomWin/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart line 1523
+The test description was:
+  wf_full-ui-screenshot-evidence-b12-b20
+═════════════════════════════════════════════════════════════════
+
+end of failure 1
+
+
+
+WORKFLOW_EVIDENCE_RESULT status=fail walkthroughStatus=fail screenshotStatus=complete workflows=0 screenshots=2/2 completionGateEligible=false
+I/flutter (18486): 00:36 +1 -1: Some tests failed.
 
 --- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:62550/zgZr-x6j6OQ=/
-VMServiceFlutterDriver: Isolate found with number: 7699007794442699
-VMServiceFlutterDriver: Isolate 7699007794442699 is runnable.
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:56098/AlunFT8ESjc=/
+VMServiceFlutterDriver: Isolate found with number: 8468109872656587
+VMServiceFlutterDriver: Isolate 8468109872656587 is runnable.
 VMServiceFlutterDriver: Isolate is paused at start.
 VMServiceFlutterDriver: Attempting to resume isolate
 VMServiceFlutterDriver: Connected to Flutter application.
 VMServiceFlutterDriver: request_data message is taking a long time to complete...
-
---- B15 shard 4/7 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B15 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_camera_club --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=7 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=3
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `C:\LoomWin\app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  animations 2.2.0 (3.0.0 available)
-  archive 4.0.9 (4.2.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.6.0 available)
-  code_assets 1.2.0 (2.0.0 available)
-  crypto_keys 0.3.0+2 (0.3.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  dbus 0.7.14 (0.7.15 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  flutter_secure_storage 10.3.1 (11.0.0 available)
-  flutter_secure_storage_darwin 0.3.2 (0.4.0 available)
-  hooks 2.0.0 (2.2.0 available)
-  image 4.8.0 (4.9.2 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  jose 0.3.5+1 (0.3.5+2 available)
-  matcher 0.12.19 (0.12.20 available)
-  material_color_utilities 0.13.0 (0.13.1 available)
-  melos 7.8.0 (8.3.0 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.4 available)
-  objective_c 9.4.1 (9.6.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  pub_updater 0.5.0 (0.6.0 available)
-  record_use 0.6.0 (1.1.1 available)
-  source_gen 4.2.3 (4.3.0 available)
-  source_maps 0.10.13 (0.10.14 available)
-  sqlite3 3.3.4 (3.5.2 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  vm_service 15.2.0 (15.3.0 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.14.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  x509 0.2.4+2 (0.2.4+3 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `C:\LoomWin\app`!
-56 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                              8.2s
-√ Built build\app\outputs\flutter-apk\app-debug.apk
-Installing build\app\outputs\flutter-apk\app-debug.apk...        1,721ms
-I/ommunities_demo(16746): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-D/FlutterRenderer(16746): Width is zero. 0,0
-D/CompatChangeReporter(16746): Compat change id reported: 377864165; UID 10257; state: ENABLED
-W/HWUI    (16746): Unknown dataspace 0
-I/WindowExtensionsImpl(16746): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
-D/FlutterRenderer(16746): Width is zero. 0,0
-D/FlutterJNI(16746): Sending viewport metrics to the engine.
-I/ommunities_demo(16746): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-I/Choreographer(16746): Skipped 37 frames!  The application may be doing too much work on its main thread.
-D/WindowLayoutComponentImpl(16746): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@c0acb60, of which baseContext=android.app.ContextImpl@a3c8cea
-D/FlutterJNI(16746): Sending viewport metrics to the engine.
-I/flutter (16746): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-D/InsetsController(16746): hide(ime(), fromIme=false)
-I/ImeTracker(16746): com.example.loom_communities_demo:e7a4ea53: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/ProfileInstaller(16746): Installing profile for com.example.loom_communities_demo
-D/FlutterJNI(16746): Sending viewport metrics to the engine.
-I/flutter (16746): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=0 completed=0 unavailable=0
-I/flutter (16746): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:21:09.816955Z","status":"run-complete","completedWorkflows":0,"totalWorkflows":0}
-I/flutter (16746): 00:04 +1: (tearDownAll)
-All tests passed.
-WORKFLOW_EVIDENCE_RESULT status=fail walkthroughStatus=fail screenshotStatus=missing workflows=0 screenshots=0/0 completionGateEligible=false
-I/flutter (16746): 00:04 +2: All tests passed!
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:59657/Dvx8rMbkPcM=/
-VMServiceFlutterDriver: Isolate found with number: 5038140920883867
-VMServiceFlutterDriver: Isolate 5038140920883867 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-
---- B15 shard 5/7 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B15 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_camera_club --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=7 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=4
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `C:\LoomWin\app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  animations 2.2.0 (3.0.0 available)
-  archive 4.0.9 (4.2.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.6.0 available)
-  code_assets 1.2.0 (2.0.0 available)
-  crypto_keys 0.3.0+2 (0.3.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  dbus 0.7.14 (0.7.15 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  flutter_secure_storage 10.3.1 (11.0.0 available)
-  flutter_secure_storage_darwin 0.3.2 (0.4.0 available)
-  hooks 2.0.0 (2.2.0 available)
-  image 4.8.0 (4.9.2 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  jose 0.3.5+1 (0.3.5+2 available)
-  matcher 0.12.19 (0.12.20 available)
-  material_color_utilities 0.13.0 (0.13.1 available)
-  melos 7.8.0 (8.3.0 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.4 available)
-  objective_c 9.4.1 (9.6.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  pub_updater 0.5.0 (0.6.0 available)
-  record_use 0.6.0 (1.1.1 available)
-  source_gen 4.2.3 (4.3.0 available)
-  source_maps 0.10.13 (0.10.14 available)
-  sqlite3 3.3.4 (3.5.2 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  vm_service 15.2.0 (15.3.0 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.14.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  x509 0.2.4+2 (0.2.4+3 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `C:\LoomWin\app`!
-56 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                              7.9s
-√ Built build\app\outputs\flutter-apk\app-debug.apk
-Installing build\app\outputs\flutter-apk\app-debug.apk...        1,732ms
-D/nativeloader(16878): Load /data/app/~~BgROsfigeQ3JxGostHfRAg==/com.example.loom_communities_demo-tRRzEGNP3AwyYEwHQdIxAQ==/base.apk!/lib/x86_64/libdartjni.so using class loader ns clns-9 (caller=/data/app/~~BgROsfigeQ3JxGostHfRAg==/com.example.loom_communities_demo-tRRzEGNP3AwyYEwHQdIxAQ==/base.apk!classes7.dex): ok
-I/ommunities_demo(16878): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityNodeInfo;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported,test-api) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-I/ommunities_demo(16878): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityRecord;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-I/ommunities_demo(16878): hiddenapi: Accessing hidden field Landroid/view/accessibility/AccessibilityNodeInfo;->mChildNodeIds:Landroid/util/LongArray; (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-I/ommunities_demo(16878): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-D/FlutterRenderer(16878): Width is zero. 0,0
-D/CompatChangeReporter(16878): Compat change id reported: 377864165; UID 10258; state: ENABLED
-W/HWUI    (16878): Unknown dataspace 0
-I/WindowExtensionsImpl(16878): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
-D/FlutterRenderer(16878): Width is zero. 0,0
-D/FlutterJNI(16878): Sending viewport metrics to the engine.
-I/Choreographer(16878): Skipped 35 frames!  The application may be doing too much work on its main thread.
-D/WindowLayoutComponentImpl(16878): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@6d00819, of which baseContext=android.app.ContextImpl@5b37bdb
-D/FlutterJNI(16878): Sending viewport metrics to the engine.
-I/ommunities_demo(16878): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-I/flutter (16878): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-I/Choreographer(16878): Skipped 30 frames!  The application may be doing too much work on its main thread.
-D/InsetsController(16878): hide(ime(), fromIme=false)
-I/ImeTracker(16878): com.example.loom_communities_demo:d60921cb: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/ProfileInstaller(16878): Installing profile for com.example.loom_communities_demo
-D/FlutterJNI(16878): Sending viewport metrics to the engine.
-I/flutter (16878): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=0 completed=0 unavailable=0
-I/flutter (16878): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:21:32.946003Z","status":"run-complete","completedWorkflows":0,"totalWorkflows":0}
-I/flutter (16878): 00:03 +1: (tearDownAll)
-All tests passed.
-I/flutter (16878): 00:03 +2: All tests passed!
-WORKFLOW_EVIDENCE_RESULT status=fail walkthroughStatus=fail screenshotStatus=missing workflows=0 screenshots=0/0 completionGateEligible=false
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:59724/iVj43rO20lY=/
-VMServiceFlutterDriver: Isolate found with number: 7640320026641923
-VMServiceFlutterDriver: Isolate 7640320026641923 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-
---- B15 shard 6/7 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B15 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_camera_club --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=7 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=5
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `C:\LoomWin\app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  animations 2.2.0 (3.0.0 available)
-  archive 4.0.9 (4.2.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.6.0 available)
-  code_assets 1.2.0 (2.0.0 available)
-  crypto_keys 0.3.0+2 (0.3.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  dbus 0.7.14 (0.7.15 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  flutter_secure_storage 10.3.1 (11.0.0 available)
-  flutter_secure_storage_darwin 0.3.2 (0.4.0 available)
-  hooks 2.0.0 (2.2.0 available)
-  image 4.8.0 (4.9.2 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  jose 0.3.5+1 (0.3.5+2 available)
-  matcher 0.12.19 (0.12.20 available)
-  material_color_utilities 0.13.0 (0.13.1 available)
-  melos 7.8.0 (8.3.0 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.4 available)
-  objective_c 9.4.1 (9.6.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  pub_updater 0.5.0 (0.6.0 available)
-  record_use 0.6.0 (1.1.1 available)
-  source_gen 4.2.3 (4.3.0 available)
-  source_maps 0.10.13 (0.10.14 available)
-  sqlite3 3.3.4 (3.5.2 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  vm_service 15.2.0 (15.3.0 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.14.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  x509 0.2.4+2 (0.2.4+3 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `C:\LoomWin\app`!
-56 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                              8.1s
-√ Built build\app\outputs\flutter-apk\app-debug.apk
-Installing build\app\outputs\flutter-apk\app-debug.apk...        1,730ms
-D/nativeloader(17040): Load /data/app/~~HVXLyPSKm53aKj2EllQmHg==/com.example.loom_communities_demo-7UtNIPstv8vDIHFP5leAHw==/base.apk!/lib/x86_64/libdartjni.so using class loader ns clns-9 (caller=/data/app/~~HVXLyPSKm53aKj2EllQmHg==/com.example.loom_communities_demo-7UtNIPstv8vDIHFP5leAHw==/base.apk!classes7.dex): ok
-I/ommunities_demo(17040): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityNodeInfo;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported,test-api) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-I/ommunities_demo(17040): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityRecord;->getSourceNodeId()J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-I/ommunities_demo(17040): hiddenapi: Accessing hidden field Landroid/view/accessibility/AccessibilityNodeInfo;->mChildNodeIds:Landroid/util/LongArray; (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-I/ommunities_demo(17040): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
-D/FlutterRenderer(17040): Width is zero. 0,0
-D/CompatChangeReporter(17040): Compat change id reported: 377864165; UID 10259; state: ENABLED
-W/HWUI    (17040): Unknown dataspace 0
-I/WindowExtensionsImpl(17040): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
-D/FlutterRenderer(17040): Width is zero. 0,0
-D/FlutterJNI(17040): Sending viewport metrics to the engine.
-I/ommunities_demo(17040): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-I/Choreographer(17040): Skipped 37 frames!  The application may be doing too much work on its main thread.
-D/WindowLayoutComponentImpl(17040): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@c0acb60, of which baseContext=android.app.ContextImpl@a3c8cea
-D/FlutterJNI(17040): Sending viewport metrics to the engine.
-I/flutter (17040): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-I/Choreographer(17040): Skipped 30 frames!  The application may be doing too much work on its main thread.
-D/InsetsController(17040): hide(ime(), fromIme=false)
-I/ImeTracker(17040): com.example.loom_communities_demo:41b77235: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/ProfileInstaller(17040): Installing profile for com.example.loom_communities_demo
-D/FlutterJNI(17040): Sending viewport metrics to the engine.
-I/flutter (17040): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=0 completed=0 unavailable=0
-I/flutter (17040): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:21:56.516629Z","status":"run-complete","completedWorkflows":0,"totalWorkflows":0}
-I/flutter (17040): 00:03 +1: (tearDownAll)
-All tests passed.
-I/flutter (17040): 00:04 +2: All tests passed!
-WORKFLOW_EVIDENCE_RESULT status=fail walkthroughStatus=fail screenshotStatus=missing workflows=0 screenshots=0/0 completionGateEligible=false
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:59789/fEcYOX76sRg=/
-VMServiceFlutterDriver: Isolate found with number: 7133533869756523
-VMServiceFlutterDriver: Isolate 7133533869756523 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
-
---- B15 shard 7/7 ---
-$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B15 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_camera_club --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=7 --dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=6
-exitCode=0
-
---- stdout ---
-Resolving dependencies in `C:\LoomWin\app`...
-Downloading packages...
-  _fe_analyzer_shared 93.0.0 (105.0.0 available)
-  analyzer 10.0.1 (14.1.0 available)
-  animations 2.2.0 (3.0.0 available)
-  archive 4.0.9 (4.2.0 available)
-  build 4.0.6 (4.0.10 available)
-  build_config 1.3.0 (1.3.2 available)
-  build_daemon 4.1.1 (4.1.5 available)
-  build_runner 2.15.0 (2.16.0 available)
-  built_value 8.12.6 (8.12.7 available)
-  cli_launcher 0.3.3+1 (0.3.3+2 available)
-  cli_util 0.4.2 (0.6.0 available)
-  code_assets 1.2.0 (2.0.0 available)
-  crypto_keys 0.3.0+2 (0.3.1 available)
-  dart_style 3.1.7 (3.1.12 available)
-  dbus 0.7.14 (0.7.15 available)
-  drift 2.34.1 (2.34.3 available)
-  drift_dev 2.34.0 (2.34.5 available)
-  flutter_local_notifications 22.2.0 (22.3.0 available)
-  flutter_local_notifications_platform_interface 12.1.0 (12.2.0 available)
-  flutter_secure_storage 10.3.1 (11.0.0 available)
-  flutter_secure_storage_darwin 0.3.2 (0.4.0 available)
-  hooks 2.0.0 (2.2.0 available)
-  image 4.8.0 (4.9.2 available)
-  jni 1.0.0 (1.0.3 available)
-  jni_flutter 1.0.1 (1.0.2 available)
-  jose 0.3.5+1 (0.3.5+2 available)
-  matcher 0.12.19 (0.12.20 available)
-  material_color_utilities 0.13.0 (0.13.1 available)
-  melos 7.8.0 (8.3.0 available)
-  meta 1.17.0 (1.19.0 available)
-  mustache_template 2.0.4 (2.0.5 available)
-  native_toolchain_c 0.19.2 (0.19.4 available)
-  objective_c 9.4.1 (9.6.0 available)
-  package_config 2.2.0 (3.0.0 available)
-  path_provider 2.1.5 (2.1.6 available)
-  path_provider_linux 2.2.1 (2.2.2 available)
-  path_provider_platform_interface 2.1.2 (2.1.3 available)
-  posix 6.5.0 (6.5.2 available)
-  pub_updater 0.5.0 (0.6.0 available)
-  record_use 0.6.0 (1.1.1 available)
-  source_gen 4.2.3 (4.3.0 available)
-  source_maps 0.10.13 (0.10.14 available)
-  sqlite3 3.3.4 (3.5.2 available)
-  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
-  sqlparser 0.44.6 (retracted, 0.45.0 available)
-  test 1.30.0 (1.31.2 available)
-  test_api 0.7.10 (0.7.13 available)
-  test_core 0.6.16 (0.6.19 available)
-  url_launcher_android 6.3.30 (6.3.32 available)
-  vector_math 2.2.0 (2.4.2 available)
-  vm_service 15.2.0 (15.3.0 available)
-  webview_flutter 4.13.1 (4.14.1 available)
-  webview_flutter_android 4.12.0 (4.14.0 available)
-  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
-  x509 0.2.4+2 (0.2.4+3 available)
-  xml 6.6.1 (7.0.1 available)
-Got dependencies in `C:\LoomWin\app`!
-56 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                              8.3s
-√ Built build\app\outputs\flutter-apk\app-debug.apk
-Installing build\app\outputs\flutter-apk\app-debug.apk...        1,739ms
-D/FlutterRenderer(17161): Width is zero. 0,0
-I/WindowExtensionsImpl(17161): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
-D/FlutterRenderer(17161): Width is zero. 0,0
-D/FlutterJNI(17161): Sending viewport metrics to the engine.
-I/ommunities_demo(17161): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
-I/Choreographer(17161): Skipped 37 frames!  The application may be doing too much work on its main thread.
-D/WindowLayoutComponentImpl(17161): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@c0acb60, of which baseContext=android.app.ContextImpl@a3c8cea
-D/FlutterJNI(17161): Sending viewport metrics to the engine.
-I/flutter (17161): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
-I/Choreographer(17161): Skipped 31 frames!  The application may be doing too much work on its main thread.
-D/ProfileInstaller(17161): Installing profile for com.example.loom_communities_demo
-D/InsetsController(17161): hide(ime(), fromIme=false)
-I/ImeTracker(17161): com.example.loom_communities_demo:9070ea35: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/FlutterJNI(17161): Sending viewport metrics to the engine.
-I/flutter (17161): SCREENSHOT_CAPTURE_SUMMARY status=complete platform=android requested=0 completed=0 unavailable=0
-I/flutter (17161): B25_CAPTURE_PROGRESS {"emittedAt":"2026-08-25T09:22:20.296466Z","status":"run-complete","completedWorkflows":0,"totalWorkflows":0}
-I/flutter (17161): 00:04 +1: (tearDownAll)
-All tests passed.
-I/flutter (17161): 00:04 +2: All tests passed!
-WORKFLOW_EVIDENCE_RESULT status=fail walkthroughStatus=fail screenshotStatus=missing workflows=0 screenshots=0/0 completionGateEligible=false
-
---- stderr ---
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:59856/G7rEMOE7OFo=/
-VMServiceFlutterDriver: Isolate found with number: 8256443753241331
-VMServiceFlutterDriver: Isolate 8256443753241331 is runnable.
-VMServiceFlutterDriver: Isolate is paused at start.
-VMServiceFlutterDriver: Attempting to resume isolate
-VMServiceFlutterDriver: Connected to Flutter application.
 

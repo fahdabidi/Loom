@@ -1,29 +1,20 @@
 {
   "schemaVersion": 1,
   "toolId": "b25_capture_workflow_screenshots",
-  "updatedAt": "2026-08-25T09:22:21.406681Z",
+  "updatedAt": "2026-08-25T09:53:49.937087Z",
   "status": "failed",
-  "failure": "byte-identical-workflow-frame",
   "mode": "targeted-precheck",
   "phases": [
     "B12",
-    "B15"
+    "B16"
   ],
   "phaseCount": 2,
-  "completedPhases": 2,
-  "screenshotCount": 17,
-  "aggregatePath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B25/targeted-workflow-ui-evidence-b12-b15.json",
-  "captureIntegrityFindings": [
-    {
-      "phase": "B12",
-      "workflowId": "workflow-ui-evidence-harness",
-      "kind": "byte-identical-workflow-frame",
-      "firstScreenshotPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_start.png",
-      "duplicateScreenshotPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_complete.png",
-      "detail": "The frames \"C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_start.png\" and \"C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_complete.png\" are byte-for-byte identical. The capture cannot distinguish a legitimately unchanged screen from a duplicate write, so this workflow evidence is invalid and must be reviewed and re-run."
-    }
-  ],
-  "commitEligible": false,
+  "completedPhases": 1,
+  "currentPhase": "B16",
+  "currentPhaseIndex": 2,
+  "currentShardIndex": 4,
+  "shardCount": 12,
+  "exitCode": 1,
   "device": "emulator-5554",
   "evidenceRoot": "C:\\LoomWin/docs/Build Plan V2/Evidence",
   "logPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log"

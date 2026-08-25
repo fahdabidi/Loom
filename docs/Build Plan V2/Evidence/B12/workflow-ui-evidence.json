@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
   "phase": "B12",
-  "status": "fail",
+  "status": "pass",
   "walkthroughStatus": "pass",
-  "screenshotStatus": "failed-duplicate-frame",
-  "completionGateEligible": false,
+  "screenshotStatus": "complete",
+  "completionGateEligible": true,
   "deviceName": "emulator-5554",
   "emulatorName": "emulator-5554",
   "deviceClass": "Android emulator",
@@ -14,7 +14,7 @@
   "expectedWorkflowCount": 1,
   "workflowCount": 1,
   "requestedScreenshotCount": 3,
-  "screenshotCount": 2,
+  "screenshotCount": 3,
   "missingScreenshotCount": 0,
   "missingScreenshotNames": [],
   "workflows": [
@@ -32,9 +32,9 @@
         "B12_harness_action",
         "B12_harness_complete"
       ],
-      "status": "fail",
+      "status": "pass",
       "assertionStatus": "pass",
-      "screenshotStatus": "failed-duplicate-frame",
+      "screenshotStatus": "complete",
       "screenshotPaths": [
         "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_start.png",
         "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_action.png",
@@ -51,33 +51,7 @@
       "deviceClass": "Android emulator",
       "platform": "android",
       "apiLevel": "Android 16 API 36",
-      "pass": false,
-      "b25ActionProofStatus": "fail",
-      "screenshotCount": 2,
-      "invalidScreenshotCount": 1,
-      "captureIntegrityFindings": [
-        {
-          "kind": "byte-identical-workflow-frame",
-          "firstScreenshotPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_start.png",
-          "duplicateScreenshotPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_complete.png",
-          "detail": "The frames \"C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_start.png\" and \"C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_complete.png\" are byte-for-byte identical. The capture cannot distinguish a legitimately unchanged screen from a duplicate write, so this workflow evidence is invalid and must be reviewed and re-run."
-        }
-      ],
-      "productFindings": [
-        "The frames \"C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_start.png\" and \"C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_complete.png\" are byte-for-byte identical. The capture cannot distinguish a legitimately unchanged screen from a duplicate write, so this workflow evidence is invalid and must be reviewed and re-run."
-      ]
+      "pass": true
     }
-  ],
-  "invalidScreenshotCount": 1,
-  "captureIntegrityFindings": [
-    {
-      "phase": "B12",
-      "workflowId": "workflow-ui-evidence-harness",
-      "kind": "byte-identical-workflow-frame",
-      "firstScreenshotPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_start.png",
-      "duplicateScreenshotPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_complete.png",
-      "detail": "The frames \"C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_start.png\" and \"C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_complete.png\" are byte-for-byte identical. The capture cannot distinguish a legitimately unchanged screen from a duplicate write, so this workflow evidence is invalid and must be reviewed and re-run."
-    }
-  ],
-  "failureReason": "Byte-identical frames were captured within a workflow; the capture cannot distinguish an unchanged screen from a duplicate write."
+  ]
 }

@@ -3,8 +3,8 @@
   "phase": "B16",
   "status": "fail",
   "walkthroughStatus": "fail",
-  "screenshotStatus": "missing",
+  "screenshotStatus": "complete",
   "completionGateEligible": false,
-  "screenshotsAudited": 0,
+  "screenshotsAudited": 2,
   "missingScreenshots": []
 }
