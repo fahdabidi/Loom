@@ -1534,12 +1534,26 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
   if (identical(selector.actionMachine, selector.machine) &&
       transitionCategory.requiresSourceInstanceDataChange &&
       sourceInstance != null) {
-    await _expectShippedInstanceDataChanged(
+    final persisted = await _expectShippedInstanceDataChanged(
       tester: tester,
       target: target,
       package: package,
       selector: selector,
       sourceInstance: sourceInstance,
+    );
+    await _positionShippedResultForCapture(
+      tester: tester,
+      selector: selector,
+      transition: transition,
+      sourceInstance: sourceInstance,
+      persistedInstance: persisted,
+    );
+    await _expectVisibleShippedAlternateDataPostcondition(
+      tester: tester,
+      selector: selector,
+      transition: transition,
+      sourceInstance: sourceInstance,
+      persistedInstance: persisted,
     );
     await capture(primaryResult);
     return _finishB25WalkthroughAfterPrimary(
@@ -1560,6 +1574,18 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       target: target,
       package: package,
       selector: selector,
+      targetState: targetState,
+    );
+    await _positionShippedResultForCapture(
+      tester: tester,
+      selector: selector,
+      transition: transition,
+      targetState: targetState,
+    );
+    await _expectVisibleShippedAlternateStatePostcondition(
+      tester: tester,
+      selector: selector,
+      transition: transition,
       targetState: targetState,
     );
     await capture(primaryResult);
@@ -1609,6 +1635,12 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         'state "$targetStateLabel", a target-state action, nor removal from '
         'the source-state surface.',
   );
+  await _positionShippedFallbackResultForCapture(
+    tester: tester,
+    selector: selector,
+    transition: transition,
+    targetStateLabel: targetStateLabel,
+  );
   await capture(primaryResult);
   return _finishB25WalkthroughAfterPrimary(
     tester: tester,
@@ -1629,6 +1661,252 @@ Future<void> _pumpB25Frames(WidgetTester tester) async {
     );
     await tester.pump(const Duration(milliseconds: 100));
   }
+}
+
+/// Positions the exact rendered postcondition that the next result frame must
+/// prove. This deliberately does not scroll an entire instance card: a tall
+/// card can be technically visible while its state badge or changed value is
+/// still outside the viewport.
+Future<void> _positionShippedResultForCapture({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition transition,
+  String? targetState,
+  WorkflowInstance? sourceInstance,
+  WorkflowInstance? persistedInstance,
+}) async {
+  if (targetState != null) {
+    await _positionShippedStateResultForCapture(
+      tester: tester,
+      selector: selector,
+      transition: transition,
+      targetState: targetState,
+    );
+    return;
+  }
+  if (sourceInstance != null && persistedInstance != null) {
+    await _positionShippedDataResultForCapture(
+      tester: tester,
+      selector: selector,
+      transition: transition,
+      sourceInstance: sourceInstance,
+      persistedInstance: persistedInstance,
+    );
+    return;
+  }
+  fail(
+    'Shipped workflow ${selector.machine.workflowType} ran '
+    '${transition.id}, but B25 has no persisted semantic postcondition to '
+    'position before its result frame.',
+  );
+}
+
+Future<void> _positionShippedStateResultForCapture({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition transition,
+  required String targetState,
+}) async {
+  final stateLabel = selector.machine.states[targetState]?.label;
+  if (stateLabel == null) {
+    fail(
+      'Shipped workflow ${selector.machine.workflowType} transitioned '
+      '${selector.instance.instanceId} with ${transition.id} to undeclared '
+      'state $targetState, so B25 cannot position its visible result.',
+    );
+  }
+  final stateBadge = find.byKey(
+    ValueKey('generic-instance-state-${selector.instance.instanceId}'),
+  );
+  final stateLabelFinder = find.descendant(
+    of: _shippedResultCardFinder(selector),
+    matching: find.text(stateLabel),
+  );
+  var positionedBadge = false;
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    if (!positionedBadge && stateBadge.evaluate().isNotEmpty) {
+      await tester.ensureVisible(stateBadge.first);
+      await _pumpB25Frames(tester);
+      positionedBadge = true;
+    }
+    if (stateLabelFinder.evaluate().isNotEmpty) {
+      await tester.ensureVisible(stateLabelFinder.first);
+      await tester.pump();
+      return;
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail(
+    'Shipped workflow ${selector.machine.workflowType} persisted target '
+    'state $targetState after ${transition.id}, but B25 could not locate its '
+    'declared state label "$stateLabel" on source instance '
+    '${selector.instance.instanceId} to position the result frame.',
+  );
+}
+
+Future<void> _positionShippedDataResultForCapture({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition transition,
+  required WorkflowInstance sourceInstance,
+  required WorkflowInstance persistedInstance,
+}) async {
+  final acknowledgement = _shippedSuccessAcknowledgementFinder(
+    selector: selector,
+    transition: transition,
+  );
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    if (acknowledgement.evaluate().isNotEmpty) {
+      await tester.ensureVisible(acknowledgement.first);
+      await tester.pump();
+      return;
+    }
+    for (final card in _shippedResultCardFinder(selector).evaluate()) {
+      final cardWidget = card.widget as EngineNativeArchetypeCard;
+      final visibility = b25DataChangeVisibility(
+        sourceInstanceData: sourceInstance.instanceData,
+        resultInstanceData: persistedInstance.instanceData,
+        instanceDataSchema: selector.machine.instanceDataSchema,
+        displayContext: cardWidget.displayContext,
+      );
+      // The visible-postcondition gate immediately below this helper owns the
+      // detailed failure for a package that excludes every changed key.
+      if (visibility.everyChangedKeyIsExcludedByDisplayContext) {
+        return;
+      }
+      final cardFinder = _shippedResultCardElementFinder(card, cardWidget);
+      for (final candidates in visibility.renderedTextCandidatesByKey.values) {
+        for (final candidate in candidates) {
+          final renderedValue = find.descendant(
+            of: cardFinder,
+            matching: find.textContaining(candidate),
+          );
+          if (renderedValue.evaluate().isEmpty) continue;
+          await tester.ensureVisible(renderedValue.first);
+          await tester.pump();
+          return;
+        }
+      }
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail(
+    'Shipped workflow ${selector.machine.workflowType} changed source '
+    'instance data after ${transition.id}, but B25 could not locate a changed '
+    'rendered value or explicit success acknowledgement for '
+    '${selector.instance.instanceId} to position the result frame.',
+  );
+}
+
+/// Positions a result that is proved by the rendered response path rather
+/// than by a source-instance state or data mutation. This is intentionally
+/// loud when no semantic result can be named: an unanchored result frame is
+/// not evidence.
+Future<void> _positionShippedFallbackResultForCapture({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition transition,
+  required String? targetStateLabel,
+}) async {
+  if (_engineInstanceFinder(selector.instance.instanceId).evaluate().isEmpty) {
+    await _positionShippedRemovedResultForCapture(
+      tester: tester,
+      selector: selector,
+      transition: transition,
+    );
+    return;
+  }
+  if (targetStateLabel != null) {
+    await _positionShippedResultTextForCapture(
+      tester: tester,
+      selector: selector,
+      transition: transition,
+      resultText: targetStateLabel,
+    );
+    return;
+  }
+  final nextState = transition.to ?? selector.actionSourceState;
+  for (final nextTransition in selector.actionMachine.transitionsFrom(
+    nextState,
+  )) {
+    if (nextTransition.id == transition.id) continue;
+    final nextAction = _engineActionFinder(
+      selector.instance.instanceId,
+      nextTransition.id,
+    );
+    if (nextAction.evaluate().isEmpty) continue;
+    await tester.ensureVisible(nextAction.first);
+    await tester.pump();
+    return;
+  }
+  fail(
+    'Shipped workflow ${selector.machine.workflowType} ran ${transition.id}, '
+    'but B25 could not name a persisted state label, receiver action, or '
+    'source-instance removal to position its result frame.',
+  );
+}
+
+Future<void> _positionShippedResultTextForCapture({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition transition,
+  required String resultText,
+}) async {
+  final resultTextFinder = find.descendant(
+    of: _shippedResultCardFinder(selector),
+    matching: find.text(resultText),
+  );
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    if (resultTextFinder.evaluate().isNotEmpty) {
+      await tester.ensureVisible(resultTextFinder.first);
+      await tester.pump();
+      return;
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail(
+    'Shipped workflow ${selector.machine.workflowType} ran ${transition.id}, '
+    'but B25 could not locate "$resultText" on source instance '
+    '${selector.instance.instanceId} to position its result frame.',
+  );
+}
+
+Future<void> _positionShippedRemovedResultForCapture({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition transition,
+}) async {
+  final source = _engineInstanceFinder(selector.instance.instanceId);
+  expect(
+    source,
+    findsNothing,
+    reason:
+        'Shipped workflow ${selector.machine.workflowType} ran '
+        '${transition.id}, but its source instance still rendered while B25 '
+        'was preparing a removal-shaped result frame.',
+  );
+  final enclosingSurface = find.byKey(
+    Key('engine-native-bindings-${selector.binding.tabId}'),
+  );
+  expect(
+    enclosingSurface,
+    findsWidgets,
+    reason:
+        'Shipped workflow ${selector.machine.workflowType} removed source '
+        'instance ${selector.instance.instanceId}, but B25 could not locate '
+        'the ${selector.binding.tabId} list surface to capture that absence.',
+  );
+  await tester.ensureVisible(enclosingSurface.first);
+  await _pumpB25Frames(tester);
 }
 
 /// Waits for a rendered, on-screen state label rather than accepting the
@@ -1749,21 +2027,10 @@ List<_VisibleShippedResultSurface> _visibleShippedResultSurfaces(
   WidgetTester tester,
   _ShippedWorkflowSelector selector,
 ) {
-  final cards = find.byWidgetPredicate(
-    (widget) =>
-        widget is EngineNativeArchetypeCard &&
-        widget.resolved.instance.instanceId == selector.instance.instanceId,
-    description: 'rendered result surface for ${selector.instance.instanceId}',
-  );
   final surfaces = <_VisibleShippedResultSurface>[];
-  for (final card in cards.evaluate()) {
+  for (final card in _shippedResultCardFinder(selector).evaluate()) {
     final cardWidget = card.widget as EngineNativeArchetypeCard;
-    final cardFinder = find.byElementPredicate(
-      (candidate) => identical(candidate, card),
-      description:
-          'rendered ${cardWidget.displayContext} surface for '
-          '${selector.instance.instanceId}',
-    );
+    final cardFinder = _shippedResultCardElementFinder(card, cardWidget);
     final viewportTexts = _visibleTextValuesWithin(cardFinder);
     if (viewportTexts.isEmpty) continue;
     surfaces.add(
@@ -1774,6 +2041,27 @@ List<_VisibleShippedResultSurface> _visibleShippedResultSurfaces(
     );
   }
   return surfaces;
+}
+
+Finder _shippedResultCardFinder(_ShippedWorkflowSelector selector) {
+  return find.byWidgetPredicate(
+    (widget) =>
+        widget is EngineNativeArchetypeCard &&
+        widget.resolved.instance.instanceId == selector.instance.instanceId,
+    description: 'rendered result surface for ${selector.instance.instanceId}',
+  );
+}
+
+Finder _shippedResultCardElementFinder(
+  Element card,
+  EngineNativeArchetypeCard cardWidget,
+) {
+  return find.byElementPredicate(
+    (candidate) => identical(candidate, card),
+    description:
+        'rendered ${cardWidget.displayContext} surface for '
+        '${cardWidget.resolved.instance.instanceId}',
+  );
 }
 
 List<String> _visibleTextValuesWithin(Finder scope) {
@@ -1795,10 +2083,20 @@ bool _hasVisibleShippedSuccessAcknowledgement({
 }) {
   // This is intentionally a semantic result key, not the action key: a
   // still-visible action must never be mistaken for proof that it succeeded.
-  final acknowledgement = find.byKey(
-    ValueKey('b25-success-${selector.instance.instanceId}-${transition.id}'),
+  final acknowledgement = _shippedSuccessAcknowledgementFinder(
+    selector: selector,
+    transition: transition,
   );
   return acknowledgement.hitTestable().evaluate().isNotEmpty;
+}
+
+Finder _shippedSuccessAcknowledgementFinder({
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition transition,
+}) {
+  return find.byKey(
+    ValueKey('b25-success-${selector.instance.instanceId}-${transition.id}'),
+  );
 }
 
 Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
@@ -1861,6 +2159,7 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
     await tester.pump(const Duration(milliseconds: 150));
   }
 
+  var resultPositioned = false;
   if (identical(selector.actionMachine, selector.machine) &&
       sourceInstance != null) {
     final category = _classifyShippedTransition(
@@ -1881,12 +2180,19 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
         selector: selector,
         targetState: targetState,
       );
+      await _positionShippedResultForCapture(
+        tester: tester,
+        selector: selector,
+        transition: alternate.transition,
+        targetState: targetState,
+      );
       await _expectVisibleShippedAlternateStatePostcondition(
         tester: tester,
         selector: selector,
         transition: alternate.transition,
         targetState: targetState,
       );
+      resultPositioned = true;
     } else if (category.requiresSourceInstanceDataChange) {
       final persisted = await _expectShippedInstanceDataChanged(
         tester: tester,
@@ -1895,6 +2201,13 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
         selector: selector,
         sourceInstance: sourceInstance,
       );
+      await _positionShippedResultForCapture(
+        tester: tester,
+        selector: selector,
+        transition: alternate.transition,
+        sourceInstance: sourceInstance,
+        persistedInstance: persisted,
+      );
       await _expectVisibleShippedAlternateDataPostcondition(
         tester: tester,
         selector: selector,
@@ -1902,9 +2215,19 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
         sourceInstance: sourceInstance,
         persistedInstance: persisted,
       );
+      resultPositioned = true;
     }
   }
 
+  if (!resultPositioned) {
+    await _positionShippedFallbackResultForCapture(
+      tester: tester,
+      selector: selector,
+      transition: alternate.transition,
+      targetStateLabel:
+          selector.actionMachine.states[alternate.transition.to]?.label,
+    );
+  }
   final result = _b25ScreenshotName(target, model, 'result_receiver');
   await capture(result);
   return _b25WalkthroughResult(
