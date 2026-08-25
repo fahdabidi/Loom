@@ -166,7 +166,11 @@ echo "$$" > .codex-logs/.last_dispatch.pid
 
 CODEX_OUTPUT_CAPTURE="$(mktemp)"
 set +e
-if [ "$MODE" = "--fresh" ]; then
+# Sandbox add-dir targets. These MUST be computed OUTSIDE the mode branch below:
+# they are referenced by BOTH the --fresh and the resume invocations, and living
+# inside the --fresh branch made every resume run die under 'set -u' with
+# 'PUB_CACHE_DIR: unbound variable'. Since resume is the DEFAULT mode, the Root
+# Cause Agent was unusable except with --fresh. Fixed 2026-08-24.
 # flutter_tester binds a localhost control socket per test file; a default
 # workspace-write sandbox returns EPERM on that bind, so every Flutter widget
 # suite fails to start -- a harness failure that reads like real regressions.
@@ -182,6 +186,8 @@ fi
 PUB_CACHE_DIR="${PUB_CACHE:-$HOME/.pub-cache}"
 FLUTTER_CONFIG_DIR="$HOME/.config/flutter"
 CODEX_SANDBOX_NETWORK_CONFIG="sandbox_workspace_write.network_access=true"
+
+if [ "$MODE" = "--fresh" ]; then
   npx --yes @openai/codex exec \
     "${PROFILE_ARGS[@]}" \
     --sandbox "$SANDBOX_MODE" \
