@@ -1,18 +1,20 @@
 {
   "schemaVersion": 1,
   "toolId": "b25_capture_workflow_screenshots",
-  "updatedAt": "2026-08-25T02:48:21.047486Z",
-  "status": "complete",
+  "updatedAt": "2026-08-25T02:52:15.223169Z",
+  "status": "failed",
   "mode": "targeted-precheck",
   "phases": [
     "B12",
-    "B15"
+    "B16"
   ],
   "phaseCount": 2,
-  "completedPhases": 2,
-  "screenshotCount": 18,
-  "aggregatePath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B25/targeted-workflow-ui-evidence-b12-b15.json",
-  "commitEligible": false,
+  "completedPhases": 1,
+  "currentPhase": "B16",
+  "currentPhaseIndex": 2,
+  "currentShardIndex": 1,
+  "shardCount": 12,
+  "exitCode": 1,
   "device": "emulator-5554",
   "evidenceRoot": "C:\\LoomWin/docs/Build Plan V2/Evidence",
   "logPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log"
