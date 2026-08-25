@@ -1,10 +1,21 @@
 {
   "schemaVersion": 2,
   "phase": "B12",
-  "status": "pass",
+  "status": "fail",
   "walkthroughStatus": "pass",
-  "screenshotStatus": "complete",
-  "completionGateEligible": true,
-  "screenshotsAudited": 3,
-  "missingScreenshots": []
+  "screenshotStatus": "failed-duplicate-frame",
+  "completionGateEligible": false,
+  "screenshotsAudited": 2,
+  "missingScreenshots": [],
+  "invalidScreenshotCount": 1,
+  "captureIntegrityFindings": [
+    {
+      "phase": "B12",
+      "workflowId": "workflow-ui-evidence-harness",
+      "kind": "byte-identical-workflow-frame",
+      "firstScreenshotPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_start.png",
+      "duplicateScreenshotPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_complete.png",
+      "detail": "The frames \"C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_start.png\" and \"C:\\LoomWin/docs/Build Plan V2/Evidence/B12/screenshots/B12_harness_complete.png\" are byte-for-byte identical. The capture cannot distinguish a legitimately unchanged screen from a duplicate write, so this workflow evidence is invalid and must be reviewed and re-run."
+    }
+  ]
 }

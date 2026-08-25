@@ -5,30 +5,30 @@
   "walkthroughStatus": "fail",
   "screenshotStatus": "missing",
   "completionGateEligible": false,
-  "failureReason": "The walkthrough assertions did not complete successfully; see commandOutputPath.",
+  "failureReason": "The walkthrough returned no workflow evidence entries.",
   "phases": [
-    "B16"
+    "B15"
   ],
   "phaseSummaries": [
     {
-      "phase": "B16",
+      "phase": "B15",
       "status": "fail",
       "walkthroughStatus": "fail",
       "screenshotStatus": "missing",
-      "expectedWorkflowCount": 1,
+      "expectedWorkflowCount": 0,
       "workflowCount": 0,
       "requestedScreenshotCount": 0,
       "screenshotCount": 0
     }
   ],
-  "expectedWorkflowCount": 1,
+  "expectedWorkflowCount": 0,
   "workflowCount": 0,
   "requestedScreenshotCount": 0,
   "screenshotCount": 0,
   "missingScreenshotCount": 0,
   "missingScreenshotNames": [],
   "workflowEvidenceManifestPaths": [
-    "C:\\LoomWin/docs/Build Plan V2/Evidence/B16/workflow-ui-evidence.json"
+    "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/workflow-ui-evidence.json"
   ],
   "deviceName": "emulator-5554",
   "emulatorName": "emulator-5554",
@@ -36,5 +36,5 @@
   "platform": "android",
   "apiLevel": "Android 16 API 36",
   "commandOutputPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-  "recordedAt": "2026-08-25T02:52:14.386882Z"
+  "recordedAt": "2026-08-25T07:51:19.392193Z"
 }
