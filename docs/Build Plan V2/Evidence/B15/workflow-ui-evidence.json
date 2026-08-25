@@ -1,74 +1,83 @@
 {
   "schemaVersion": 2,
   "phase": "B15",
-  "status": "fail",
-  "walkthroughStatus": "fail",
+  "status": "pass",
+  "walkthroughStatus": "pass",
   "screenshotStatus": "complete",
-  "completionGateEligible": false,
+  "completionGateEligible": true,
   "deviceName": "emulator-5554",
   "emulatorName": "emulator-5554",
   "deviceClass": "Android emulator",
   "platform": "android",
   "apiLevel": "Android 16 API 36",
   "commandOutputPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-  "expectedWorkflowCount": 2,
-  "workflowCount": 1,
-  "requestedScreenshotCount": 4,
-  "screenshotCount": 4,
+  "expectedWorkflowCount": 1,
+  "workflowCount": 3,
+  "requestedScreenshotCount": 5,
+  "screenshotCount": 5,
   "missingScreenshotCount": 0,
   "missingScreenshotNames": [],
   "workflows": [
     {
       "phase": "B15",
-      "appId": "ext_chess_club",
-      "communityId": "community_chess_club",
-      "communityName": "Chess Club",
-      "workflowId": "chess-local-install-open",
+      "appId": "ext_camera_club",
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "workflowId": "photo-walk-rsvp",
       "role": "member",
-      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
+      "productDocPath": "docs/references/communities/camera-club-product-experience.md",
       "requiredPrimaryActions": [
-        "record match",
-        "submit score",
-        "save result"
+        "rsvp",
+        "attend",
+        "going",
+        "reserve spot",
+        "confirm attendance"
       ],
       "requiredAlternateActions": [
-        "edit score",
-        "undo result",
-        "correct result",
-        "dispute result"
+        "decline",
+        "not attending",
+        "maybe",
+        "change response",
+        "edit response",
+        "cancel rsvp"
       ],
       "expectedAssertions": [
-        "Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths.",
-        "record match, submit score, save result",
-        "edit score, undo result, correct result, dispute result",
+        "Member decides attendance for a named dated event with time, location, capacity/status, and a later change path.",
+        "rsvp, attend, going, reserve spot, confirm attendance",
+        "decline, not attending, maybe, change response, edit response, cancel rsvp",
         "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
       ],
       "screenshotNames": [
-        "B15_ext_chess_club_chess-local-install-open_member_start",
-        "B15_ext_chess_club_chess-local-install-open_member_primary_unavailable",
-        "B15_ext_chess_club_chess-local-install-open_member_alternate_unavailable",
-        "B15_ext_chess_club_chess-local-install-open_member_result_unavailable"
+        "B15_ext_camera_club_photo-walk-rsvp_member_start",
+        "B15_ext_camera_club_photo-walk-rsvp_member_primary_action",
+        "B15_ext_camera_club_photo-walk-rsvp_member_primary_result",
+        "B15_ext_camera_club_photo-walk-rsvp_member_alternate_action",
+        "B15_ext_camera_club_photo-walk-rsvp_member_result_receiver"
       ],
-      "b25ActionProofStatus": "fail",
-      "visiblePrimaryActions": [],
-      "visibleAlternateActions": [],
-      "productFindings": [
-        "Chess Club / chess-local-install-open / member: the shipped package has no workflow definition for this B25 row. It offers these workflow definitions instead: chess-club-night, chess-discussion-thread, chess-export-package, chess-match-meetup, chess-match-result, chess-pairing-queue, chess-rankings-table, chess-rules-documents."
+      "b25ActionProofStatus": "pass",
+      "visiblePrimaryActions": [
+        "going"
       ],
-      "status": "fail",
+      "visibleAlternateActions": [
+        "maybe"
+      ],
+      "productFindings": [],
+      "status": "pass",
       "assertionStatus": "pass",
       "screenshotStatus": "complete",
       "screenshotPaths": [
-        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_member_start.png",
-        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_member_primary_unavailable.png",
-        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_member_alternate_unavailable.png",
-        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_member_result_unavailable.png"
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_member_start.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_member_primary_action.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_member_primary_result.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_member_alternate_action.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_member_result_receiver.png"
       ],
       "screenshotVisibleTexts": [
-        "",
-        "",
-        "",
-        ""
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Evidence camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Walks | Named photo-walk routes, dates, times, locations, capacity, RSVP status, and reminders. | Day | Week | Month | Pending | Sep 2026 | MON | TUE | WED | THU | FRI | SAT | SUN | 31 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | Golden Gate sunrise photo walk | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 2026-09-12 | Agenda | 06:15 | 1 / 12 going | 11 seats left | Attendees | Maybe | • camera-club-member | Going | • camera-club-organizer | Route: Battery Spencer to Kirby Cove overlook | Battery Spencer trailhead, Sausalito | Led by Maya Chen | weatherChecklistNotes | No response record is available for you for this event. | Not attending | Add reminder | Local package details | Critique | Gear | Messages",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Evidence camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Walks | Named photo-walk routes, dates, times, locations, capacity, RSVP status, and reminders. | Day | Week | Month | Pending | Sep 2026 | MON | TUE | WED | THU | FRI | SAT | SUN | 31 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | Golden Gate sunrise photo walk | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 2026-09-12 | Agenda | 06:15 | 1 / 12 going | 11 seats left | Attendees | Maybe | • camera-club-member | Going | • camera-club-organizer | Route: Battery Spencer to Kirby Cove overlook | Battery Spencer trailhead, Sausalito | Led by Maya Chen | weatherChecklistNotes | No response record is available for you for this event. | Not attending | Add reminder | Local package details | Critique | Gear | Messages",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Evidence camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Walks | Named photo-walk routes, dates, times, locations, capacity, RSVP status, and reminders. | Day | Week | Month | Pending | Sep 2026 | MON | TUE | WED | THU | FRI | SAT | SUN | 31 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | Golden Gate sunrise photo walk | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 2026-09-12 | Agenda | 06:15 | 2 / 12 going | 10 seats left | Attendees | Going | • Evidence camera-club-member | • camera-club-organizer | Maybe | • camera-club-member | Route: Battery Spencer to Kirby Cove overlook | Battery Spencer trailhead, Sausalito | Led by Maya Chen | weatherChecklistNotes | Not attending | Cancel RSVP | Add reminder | Local package details | Critique | Gear | Messages",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Evidence camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Walks | Named photo-walk routes, dates, times, locations, capacity, RSVP status, and reminders. | Day | Week | Month | Pending | Sep 2026 | MON | TUE | WED | THU | FRI | SAT | SUN | 31 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | Golden Gate sunrise photo walk | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 2026-09-12 | Agenda | 06:15 | 2 / 12 going | 10 seats left | Attendees | Going | • Evidence camera-club-member | • camera-club-organizer | Maybe | • camera-club-member | Route: Battery Spencer to Kirby Cove overlook | Battery Spencer trailhead, Sausalito | Led by Maya Chen | weatherChecklistNotes | Not attending | Cancel RSVP | Add reminder | Local package details | Critique | Gear | Messages",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Evidence camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Walks | Named photo-walk routes, dates, times, locations, capacity, RSVP status, and reminders. | Day | Week | Month | Pending | Sep 2026 | MON | TUE | WED | THU | FRI | SAT | SUN | 31 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | Golden Gate sunrise photo walk | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 2026-09-12 | Agenda | 06:15 | 1 / 12 going | 11 seats left | Attendees | Maybe | • Evidence camera-club-member | • camera-club-member | Going | • camera-club-organizer | Route: Battery Spencer to Kirby Cove overlook | Battery Spencer trailhead, Sausalito | Led by Maya Chen | weatherChecklistNotes | Not attending | Cancel RSVP | Add reminder | Local package details | Critique | Gear | Messages"
       ],
       "commandOutputPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "deviceName": "emulator-5554",
@@ -76,7 +85,143 @@
       "deviceClass": "Android emulator",
       "platform": "android",
       "apiLevel": "Android 16 API 36",
-      "pass": false
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_camera_club",
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "workflowId": "critique-submission",
+      "role": "member",
+      "productDocPath": "docs/references/communities/camera-club-product-experience.md",
+      "requiredPrimaryActions": [
+        "submit critique",
+        "review critique",
+        "comment"
+      ],
+      "requiredAlternateActions": [
+        "edit critique",
+        "withdraw critique",
+        "request changes",
+        "resubmit"
+      ],
+      "expectedAssertions": [
+        "Participant reviews or submits a concrete critique item with content, author, feedback, and edit/withdraw paths.",
+        "submit critique, review critique, comment",
+        "edit critique, withdraw critique, request changes, resubmit",
+        "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      ],
+      "screenshotNames": [
+        "B15_ext_camera_club_critique-submission_member_start",
+        "B15_ext_camera_club_critique-submission_member_primary_action",
+        "B15_ext_camera_club_critique-submission_member_primary_result",
+        "B15_ext_camera_club_critique-submission_member_alternate_action",
+        "B15_ext_camera_club_critique-submission_member_result_receiver"
+      ],
+      "b25ActionProofStatus": "pass",
+      "visiblePrimaryActions": [
+        "comment"
+      ],
+      "visibleAlternateActions": [
+        "withdraw critique"
+      ],
+      "productFindings": [],
+      "status": "pass",
+      "assertionStatus": "pass",
+      "screenshotStatus": "complete",
+      "screenshotPaths": [
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_member_start.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_member_primary_action.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_member_primary_result.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_member_alternate_action.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_member_result_receiver.png"
+      ],
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Shipped camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Critique | Draft, submit, revise, discuss, and review member photographs. | Lighthouse at dusk | photoImage | Prompt: Weekly theme: silhouettes | By Camera Club Member | Comments | camera-club-organizer | The silhouette reads clearly. Please also consider whether a tighter crop would strengthen the horizon line. | 2026-08-18T02:15:00Z | 1 comments | Reply | Withdraw critique | Night market reflections | Prompt: Color and motion | Strong layering and color separation. The slower shutter supports the sense of movement without losing the vendor as an anchor. | 2026-08-12T19:30:00Z | Local package details | Walks | Gear | Messages | New critique",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Shipped camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Critique | Draft, submit, revise, discuss, and review member photographs. | Lighthouse at dusk | photoImage | Prompt: Weekly theme: silhouettes | By Camera Club Member | Comments | camera-club-organizer | The silhouette reads clearly. Please also consider whether a tighter crop would strengthen the horizon line. | 2026-08-18T02:15:00Z | 1 comments | Reply | Withdraw critique | Night market reflections | Prompt: Color and motion | Strong layering and color separation. The slower shutter supports the sense of movement without losing the vendor as an anchor. | 2026-08-12T19:30:00Z | Local package details | Walks | Gear | Messages | New critique",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Shipped camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Critique | Draft, submit, revise, discuss, and review member photographs. | Lighthouse at dusk | photoImage | Prompt: Weekly theme: silhouettes | By Camera Club Member | Comments | camera-club-organizer | The silhouette reads clearly. Please also consider whether a tighter crop would strengthen the horizon line. | 2026-08-18T02:15:00Z | camera-club-member | Evidence commentBody | 2026-08-24T23:57:50.018510Z | 2 comments | Reply | Withdraw critique | Night market reflections | Prompt: Color and motion | Strong layering and color separation. The slower shutter supports the sense of movement without losing the vendor as an anchor. | 2026-08-12T19:30:00Z | 1 comments | Local package details | Walks | Gear | Messages | New critique",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Shipped camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Critique | Draft, submit, revise, discuss, and review member photographs. | Lighthouse at dusk | photoImage | Prompt: Weekly theme: silhouettes | By Camera Club Member | Comments | camera-club-organizer | The silhouette reads clearly. Please also consider whether a tighter crop would strengthen the horizon line. | 2026-08-18T02:15:00Z | camera-club-member | Evidence commentBody | 2026-08-24T23:57:50.018510Z | 2 comments | Reply | Withdraw critique | Night market reflections | Prompt: Color and motion | Strong layering and color separation. The slower shutter supports the sense of movement without losing the vendor as an anchor. | 2026-08-12T19:30:00Z | 1 comments | Local package details | Walks | Gear | Messages | New critique",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Shipped camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Critique | Draft, submit, revise, discuss, and review member photographs. | Lighthouse at dusk | photoImage | Prompt: Weekly theme: silhouettes | By Camera Club Member | Comments | camera-club-organizer | The silhouette reads clearly. Please also consider whether a tighter crop would strengthen the horizon line. | 2026-08-18T02:15:00Z | camera-club-member | Evidence commentBody | 2026-08-24T23:57:50.018510Z | 2 comments | Night market reflections | Prompt: Color and motion | Strong layering and color separation. The slower shutter supports the sense of movement without losing the vendor as an anchor. | 2026-08-12T19:30:00Z | 1 comments | Local package details | Walks | Gear | Messages | New critique"
+      ],
+      "commandOutputPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "deviceName": "emulator-5554",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "platform": "android",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_camera_club",
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "workflowId": "gear-loan-request",
+      "role": "member",
+      "productDocPath": "docs/references/communities/camera-club-product-experience.md",
+      "requiredPrimaryActions": [
+        "browse gear",
+        "list gear",
+        "request loan",
+        "join waitlist",
+        "claim giveaway",
+        "schedule pickup"
+      ],
+      "requiredAlternateActions": [
+        "change request",
+        "leave queue",
+        "edit listing",
+        "delist",
+        "report damage",
+        "return gear"
+      ],
+      "expectedAssertions": [
+        "Member browses available camera gear, checks current holder/queue, chooses loan or giveaway, and can list/edit/delist their own gear.",
+        "browse gear, list gear, request loan, join waitlist, claim giveaway, schedule pickup",
+        "change request, leave queue, edit listing, delist, report damage, return gear",
+        "Fresh screenshots must show browse/list views, current holder or privacy-safe unavailable state, queue position, condition, custody history, pickup/return or ownership-transfer result."
+      ],
+      "screenshotNames": [
+        "B15_ext_camera_club_gear-loan-request_member_start",
+        "B15_ext_camera_club_gear-loan-request_member_primary_action",
+        "B15_ext_camera_club_gear-loan-request_member_primary_result",
+        "B15_ext_camera_club_gear-loan-request_member_alternate_action",
+        "B15_ext_camera_club_gear-loan-request_member_result_receiver"
+      ],
+      "b25ActionProofStatus": "pass",
+      "visiblePrimaryActions": [
+        "request loan"
+      ],
+      "visibleAlternateActions": [
+        "report damage"
+      ],
+      "productFindings": [],
+      "status": "pass",
+      "assertionStatus": "pass",
+      "screenshotStatus": "complete",
+      "screenshotPaths": [
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_member_start.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_member_primary_action.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_member_primary_result.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_member_alternate_action.png",
+        "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_member_result_receiver.png"
+      ],
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Evidence camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Gear | Browse, list, edit, request, queue for, claim, hand off, return, or report shared gear. | Search available items | Canon 70-200mm f/2.8 lens | Mode: Loan | Condition: Excellent — minor cosmetic wear only | Owner: Camera Club Member | Status: Available | 0 borrowers or claimants | Borrower/claim count: 0 | Request loan | Report damage | Fujifilm X100V walk kit | Condition: Good — light finish wear near the strap lug | Owner: Camera Club Organizer | Status: Overdue | Due back 2026-08-16 | 1 borrowers or claimants | Borrower/claim count: 1 | Join queue | Return gear | Report lost | Older speedlite flash — free | Mode: Giveaway | Condition: Fair — functional with cosmetic wear | Claim giveaway | Local package details | Walks | Critique | Messages | List gear",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Evidence camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Gear | Browse, list, edit, request, queue for, claim, hand off, return, or report shared gear. | Search available items | Canon 70-200mm f/2.8 lens | Mode: Loan | Condition: Excellent — minor cosmetic wear only | Owner: Camera Club Member | Status: Available | 0 borrowers or claimants | Borrower/claim count: 0 | Request loan | Report damage | Fujifilm X100V walk kit | Condition: Good — light finish wear near the strap lug | Owner: Camera Club Organizer | Status: Overdue | Due back 2026-08-16 | 1 borrowers or claimants | Borrower/claim count: 1 | Join queue | Return gear | Report lost | Older speedlite flash — free | Mode: Giveaway | Condition: Fair — functional with cosmetic wear | Claim giveaway | Local package details | Walks | Critique | Messages | List gear",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Evidence camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Gear | Browse, list, edit, request, queue for, claim, hand off, return, or report shared gear. | Search available items | Canon 70-200mm f/2.8 lens | Mode: Loan | Condition: Excellent — minor cosmetic wear only | Owner: Camera Club Member | Status: Requested | 0 borrowers or claimants | Borrower/claim count: 0 | Join queue | Cancel request | Report damage | Fujifilm X100V walk kit | Condition: Good — light finish wear near the strap lug | Owner: Camera Club Organizer | Status: Overdue | Due back 2026-08-16 | 1 borrowers or claimants | Borrower/claim count: 1 | Return gear | Report lost | Older speedlite flash — free | Mode: Giveaway | Condition: Fair — functional with cosmetic wear | Status: Available | Claim giveaway | Local package details | Walks | Critique | Messages | List gear",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Evidence camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Gear | Browse, list, edit, request, queue for, claim, hand off, return, or report shared gear. | Search available items | Canon 70-200mm f/2.8 lens | Mode: Loan | Condition: Excellent — minor cosmetic wear only | Owner: Camera Club Member | Status: Requested | 0 borrowers or claimants | Borrower/claim count: 0 | Join queue | Cancel request | Report damage | Fujifilm X100V walk kit | Condition: Good — light finish wear near the strap lug | Owner: Camera Club Organizer | Status: Overdue | Due back 2026-08-16 | 1 borrowers or claimants | Borrower/claim count: 1 | Return gear | Report lost | Older speedlite flash — free | Mode: Giveaway | Condition: Fair — functional with cosmetic wear | Status: Available | Claim giveaway | Local package details | Walks | Critique | Messages | List gear",
+        "No sponsored message right now. | Camera Club | Photo walks, thoughtful critiques, and camera gear shared by the club. | Signed in as Evidence camera-club-member | Member | Member - Joins photo walks, submits critiques, and lists, borrows, queues for, claims, or returns gear. | 2 roles | Gear | Browse, list, edit, request, queue for, claim, hand off, return, or report shared gear. | Search available items | Canon 70-200mm f/2.8 lens | Mode: Loan | Condition: Excellent — minor cosmetic wear only | Owner: Camera Club Member | Status: Requested | 0 borrowers or claimants | Borrower/claim count: 0 | Join queue | Cancel request | Report damage | Fujifilm X100V walk kit | Condition: Good — light finish wear near the strap lug | Owner: Camera Club Organizer | Status: Overdue | Due back 2026-08-16 | 1 borrowers or claimants | Borrower/claim count: 1 | Return gear | Report lost | Older speedlite flash — free | Mode: Giveaway | Condition: Fair — functional with cosmetic wear | Status: Available | Claim giveaway | Local package details | Walks | Critique | Messages | List gear"
+      ],
+      "commandOutputPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "deviceName": "emulator-5554",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "platform": "android",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
     }
-  ]
+  ],
+  "workflowShards": 7
 }

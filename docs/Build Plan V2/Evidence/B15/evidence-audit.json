@@ -1,10 +1,8 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "phase": "B15",
-  "status": "fail",
-  "walkthroughStatus": "fail",
-  "screenshotStatus": "complete",
-  "completionGateEligible": false,
-  "screenshotsAudited": 4,
+  "status": "pass",
+  "workflowShards": 7,
+  "screenshotsAudited": 15,
   "missingScreenshots": []
 }
