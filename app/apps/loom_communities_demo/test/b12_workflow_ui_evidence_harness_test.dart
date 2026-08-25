@@ -276,7 +276,7 @@ void main() {
       'ext_garden_club': {'garden-member', 'garden-coordinator'},
       'ext_camera_club': {'camera-club-member', 'camera-club-organizer'},
       'ext_neighborhood_book_club': {'book-member', 'book-organizer'},
-      'ext_chess_club': {'chess-member', 'chess-organizer'},
+      'ext_chess_club': {'chess-member', 'chess-organizer', 'chess-owner'},
       'ext_mosque': {'community-member', 'masjid-admin'},
       'ext_youth_soccer': {'soccer-guardian', 'soccer-coach', 'soccer-owner'},
       'ext_ad_free_community': {'ad-off-member', 'ad-off-owner'},

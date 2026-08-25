@@ -15,7 +15,7 @@ const _chessFixtureRelative =
 const _cedarFixtureRelative =
     'docs/references/communities/Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc';
 
-const _chessFanId = 'chess-organizer';
+const _chessFanId = 'chess-owner';
 const _cedarFanId = 'hoa-board';
 const _adminTab = 'admin';
 

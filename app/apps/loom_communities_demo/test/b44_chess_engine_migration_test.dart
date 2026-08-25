@@ -144,12 +144,6 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(
-        find.byKey(
-          const ValueKey('export-wizard-state-badge-chess-export-august-tile'),
-        ),
-        findsOneWidget,
-      );
       await _tapEngineAction(
         tester,
         instanceId: 'chess-pairing-friday-rapid',
@@ -158,6 +152,28 @@ void main() {
       expect(
         _engineAction('chess-pairing-friday-rapid', 'close-pairing-queue'),
         findsNothing,
+      );
+
+      await seedEvidenceAccounts(tester, target, const [
+        LoomAccount(
+          accountId: 'chess-owner',
+          displayName: 'Chess owner',
+          roleId: 'chess-owner',
+        ),
+      ]);
+      await signInEvidenceAccount(tester, 'Chess owner');
+      await _selectTab(tester, 'admin');
+      await _waitForFinder(
+        tester,
+        find.byKey(
+          const ValueKey('export-wizard-state-badge-chess-export-august-tile'),
+        ),
+      );
+      expect(
+        find.byKey(
+          const ValueKey('export-wizard-state-badge-chess-export-august-tile'),
+        ),
+        findsOneWidget,
       );
       await _tapEngineAction(
         tester,

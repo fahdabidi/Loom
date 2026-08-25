@@ -678,6 +678,16 @@ const Map<String, List<LoomActorIdentity>> _actorIdentitiesByExtensionId = {
       roleLabel: 'Member',
       description: 'Opens club routes and records match results.',
     ),
+    LoomActorIdentity(
+      fanId: 'chess-owner',
+      roleId: 'chess-owner',
+      label: 'Owner',
+      roleLabel: 'Owner',
+      description:
+          'Sets up the community and owns its data-export responsibilities; '
+          'admission authority remains in App Access and is not modeled as a '
+          'workflow.',
+    ),
   ],
   'ext_camera_club': [
     LoomActorIdentity(
@@ -960,6 +970,8 @@ LoomWorkflowRolePolicy _chessPolicy(String workflowId) {
         receiverActionText: 'Open result',
         receiverResultText: 'Organizer received the chess match result.',
       );
+    case 'chess-export-package':
+      return const LoomWorkflowRolePolicy(actorRoleIds: ['chess-owner']);
   }
   return const LoomWorkflowRolePolicy(actorRoleIds: ['chess-organizer']);
 }

@@ -366,7 +366,7 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
       LoomWorkflowDefinition(
         workflowId: 'chess-export-package',
         title: 'Chess records export',
-        entryText: 'Organizer can export match and ranking records.',
+        entryText: 'Owner can export match and ranking records.',
         actionText: 'Generate Chess Club export evidence.',
         resultText: 'Chess Club export package generated.',
       ),
