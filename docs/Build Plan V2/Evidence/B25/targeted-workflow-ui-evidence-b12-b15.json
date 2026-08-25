@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "pass",
+  "screenshotStatus": "complete",
   "phases": [
     "B12",
     "B15"
@@ -27,6 +28,7 @@
   ],
   "workflowCount": 4,
   "screenshotCount": 18,
+  "invalidScreenshotCount": 0,
   "workflowEvidenceManifestPaths": [
     "C:\\LoomWin/docs/Build Plan V2/Evidence/B12/workflow-ui-evidence.json",
     "C:\\LoomWin/docs/Build Plan V2/Evidence/B15/workflow-ui-evidence.json"

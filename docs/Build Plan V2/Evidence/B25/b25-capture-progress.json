@@ -1,16 +1,17 @@
 {
   "schemaVersion": 1,
   "toolId": "b25_capture_workflow_screenshots",
-  "updatedAt": "2026-08-25T00:57:38.335274Z",
+  "updatedAt": "2026-08-25T02:48:21.047486Z",
   "status": "complete",
   "mode": "targeted-precheck",
   "phases": [
-    "B12"
+    "B12",
+    "B15"
   ],
-  "phaseCount": 1,
-  "completedPhases": 1,
-  "screenshotCount": 3,
-  "aggregatePath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B25/targeted-workflow-ui-evidence-b12.json",
+  "phaseCount": 2,
+  "completedPhases": 2,
+  "screenshotCount": 18,
+  "aggregatePath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B25/targeted-workflow-ui-evidence-b12-b15.json",
   "commitEligible": false,
   "device": "emulator-5554",
   "evidenceRoot": "C:\\LoomWin/docs/Build Plan V2/Evidence",
