@@ -128,11 +128,11 @@ void main() {
     final workflow = experienceForExtensionId(target.extensionId).workflows
         .firstWhere((workflow) => workflow.workflowId == 'mosque-announcement');
 
-    await selectActorIdentity(tester, 'mosque-admin');
+    await selectActorIdentity(tester, 'masjid-admin');
     await completeWorkflow(tester, workflow);
     expect(find.text('Announcement posted'), findsOneWidget);
 
-    await selectActorIdentity(tester, 'mosque-member');
+    await selectActorIdentity(tester, 'community-member');
     final workflowCard = find.byKey(
       ValueKey('workflow-${workflow.workflowId}'),
     );

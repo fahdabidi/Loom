@@ -15,12 +15,12 @@ const _accounts = <LoomAccount>[
   LoomAccount(
     accountId: _payerAccountId,
     displayName: 'Avery Brooks',
-    roleId: 'hoa-homeowner',
+    roleId: 'hoa-member',
   ),
   LoomAccount(
     accountId: _peerAccountId,
     displayName: 'Casey Homeowner',
-    roleId: 'hoa-homeowner',
+    roleId: 'hoa-member',
   ),
   LoomAccount(
     accountId: _boardAccountId,
@@ -296,7 +296,7 @@ _writeFixture() {
       'theme': <String, Object?>{'accent': '#3E6B8F'},
       'roles': const <Object?>[
         <String, Object?>{
-          'roleId': 'hoa-homeowner',
+          'roleId': 'hoa-member',
           'label': 'Homeowner',
           'roleLabel': 'Homeowner',
           'description': 'Pays dues and reads their payment history.',
@@ -337,7 +337,7 @@ _writeFixture() {
           'tabId': 'giving',
           'label': 'Payments',
           'iconKey': 'payment',
-          'visibleRoleIds': <String>['hoa-homeowner', 'hoa-board'],
+          'visibleRoleIds': <String>['hoa-member', 'hoa-board'],
         },
       ],
     },

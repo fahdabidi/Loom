@@ -608,23 +608,23 @@ const Map<String, List<LoomActorIdentity>> _actorIdentitiesByExtensionId = {
   ],
   'ext_youth_soccer': [
     LoomActorIdentity(
-      fanId: 'guardian',
-      roleId: 'guardian',
+      fanId: 'soccer-guardian',
+      roleId: 'soccer-guardian',
       label: 'Guardian',
       roleLabel: 'Guardian',
       description: 'Handles player registration, payments, and reminders.',
     ),
     LoomActorIdentity(
-      fanId: 'coach',
-      roleId: 'coach',
+      fanId: 'soccer-coach',
+      roleId: 'soccer-coach',
       label: 'Coach',
       roleLabel: 'Team staff',
       description:
           'Approves guardians, manages rosters, and publishes team operations.',
     ),
     LoomActorIdentity(
-      fanId: 'owner',
-      roleId: 'owner',
+      fanId: 'soccer-owner',
+      roleId: 'soccer-owner',
       label: 'Owner',
       roleLabel: 'Owner',
       description: 'Runs protected exports with minor-data redaction.',
@@ -639,8 +639,8 @@ const Map<String, List<LoomActorIdentity>> _actorIdentitiesByExtensionId = {
       description: 'Manages requests, sends decisions, and exports records.',
     ),
     LoomActorIdentity(
-      fanId: 'hoa-homeowner',
-      roleId: 'hoa-homeowner',
+      fanId: 'hoa-member',
+      roleId: 'hoa-member',
       label: 'Homeowner',
       roleLabel: 'Member',
       description: 'Pays dues, reserves facilities, and submits requests.',
@@ -648,15 +648,15 @@ const Map<String, List<LoomActorIdentity>> _actorIdentitiesByExtensionId = {
   ],
   'ext_mosque': [
     LoomActorIdentity(
-      fanId: 'mosque-admin',
-      roleId: 'mosque-admin',
+      fanId: 'masjid-admin',
+      roleId: 'masjid-admin',
       label: 'Masjid Admin',
       roleLabel: 'Admin',
       description: 'Publishes announcements and sends neutral notifications.',
     ),
     LoomActorIdentity(
-      fanId: 'mosque-member',
-      roleId: 'mosque-member',
+      fanId: 'community-member',
+      roleId: 'community-member',
       label: 'Community Member',
       roleLabel: 'Member',
       description:
@@ -672,8 +672,8 @@ const Map<String, List<LoomActorIdentity>> _actorIdentitiesByExtensionId = {
       description: 'Runs community homes and match records.',
     ),
     LoomActorIdentity(
-      fanId: 'chess-player',
-      roleId: 'chess-player',
+      fanId: 'chess-member',
+      roleId: 'chess-member',
       label: 'Chess Player',
       roleLabel: 'Member',
       description: 'Opens club routes and records match results.',
@@ -681,15 +681,15 @@ const Map<String, List<LoomActorIdentity>> _actorIdentitiesByExtensionId = {
   ],
   'ext_camera_club': [
     LoomActorIdentity(
-      fanId: 'camera-organizer',
-      roleId: 'camera-organizer',
+      fanId: 'camera-club-organizer',
+      roleId: 'camera-club-organizer',
       label: 'Camera Organizer',
       roleLabel: 'Organizer',
       description: 'Coordinates RSVPs, critiques, and gear-loan requests.',
     ),
     LoomActorIdentity(
-      fanId: 'camera-member',
-      roleId: 'camera-member',
+      fanId: 'camera-club-member',
+      roleId: 'camera-club-member',
       label: 'Camera Member',
       roleLabel: 'Member',
       description: 'RSVPs, submits critiques, and requests shared gear.',
@@ -697,25 +697,18 @@ const Map<String, List<LoomActorIdentity>> _actorIdentitiesByExtensionId = {
   ],
   'ext_platform_social': [
     LoomActorIdentity(
-      fanId: 'platform-member',
-      roleId: 'platform-member',
+      fanId: 'member',
+      roleId: 'member',
       label: 'Platform Member',
       roleLabel: 'Member',
       description: 'Uses allowed messages, connections, and ad preferences.',
     ),
     LoomActorIdentity(
-      fanId: 'platform-moderator',
-      roleId: 'platform-moderator',
+      fanId: 'moderator',
+      roleId: 'moderator',
       label: 'Moderator',
       roleLabel: 'Moderator',
       description: 'Manages prevention and sensitive-page behavior.',
-    ),
-    LoomActorIdentity(
-      fanId: 'platform-blocked-member',
-      roleId: 'platform-blocked-member',
-      label: 'Blocked Member',
-      roleLabel: 'Restricted',
-      description: 'Sees restricted social actions and account status.',
     ),
   ],
   'ext_ad_off': [
@@ -727,38 +720,31 @@ const Map<String, List<LoomActorIdentity>> _actorIdentitiesByExtensionId = {
       description: 'Purchases and verifies member ad-off entitlement.',
     ),
     LoomActorIdentity(
-      fanId: 'ad-off-admin',
-      roleId: 'ad-off-admin',
+      fanId: 'ad-off-owner',
+      roleId: 'ad-off-owner',
       label: 'Community Admin',
       roleLabel: 'Admin',
       description: 'Purchases community ad-off and audits settlement.',
     ),
-    LoomActorIdentity(
-      fanId: 'ad-off-viewer',
-      roleId: 'ad-off-viewer',
-      label: 'Ad-Free Viewer',
-      roleLabel: 'Viewer',
-      description: 'Receives entitlement effects without checkout ownership.',
-    ),
   ],
   'ext_export_migration': [
     LoomActorIdentity(
-      fanId: 'export-owner',
-      roleId: 'export-owner',
+      fanId: 'portability-owner',
+      roleId: 'portability-owner',
       label: 'Data Owner',
       roleLabel: 'Owner',
       description: 'Runs import, export, redaction, and checksum actions.',
     ),
     LoomActorIdentity(
-      fanId: 'export-member',
-      roleId: 'export-member',
+      fanId: 'portability-member',
+      roleId: 'portability-member',
       label: 'Export Member',
       roleLabel: 'Member',
       description: 'Inspects redacted data without accessing protected values.',
     ),
     LoomActorIdentity(
-      fanId: 'export-provider',
-      roleId: 'export-provider',
+      fanId: 'portability-receiving-provider',
+      roleId: 'portability-receiving-provider',
       label: 'Receiving Provider',
       roleLabel: 'Provider',
       description: 'Verifies transfer and rollback outcomes.',
@@ -832,38 +818,40 @@ LoomWorkflowRolePolicy _soccerPolicy(String workflowId) {
   switch (workflowId) {
     case 'soccer-guardian-join-approval':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['guardian'],
-        receiverRoleIds: ['coach', 'owner'],
+        actorRoleIds: ['soccer-guardian'],
+        receiverRoleIds: ['soccer-coach', 'soccer-owner'],
         receiverEntryText: 'Guardian approval is ready to receive.',
         receiverActionText: 'Receive approval',
         receiverResultText: 'Guardian received active membership approval.',
       );
     case 'soccer-team-roster':
-      return const LoomWorkflowRolePolicy(actorRoleIds: ['coach', 'guardian']);
+      return const LoomWorkflowRolePolicy(
+        actorRoleIds: ['soccer-coach', 'soccer-guardian'],
+      );
     case 'soccer-minor-redaction':
     case 'soccer-registration-payment':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['guardian'],
-        readOnlyRoleIds: ['coach'],
+        actorRoleIds: ['soccer-guardian'],
+        readOnlyRoleIds: ['soccer-coach'],
         readOnlyText: 'Coach sees only permission-safe evidence.',
       );
     case 'soccer-practice-schedule':
     case 'soccer-reminder-notification':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['guardian'],
-        receiverRoleIds: ['coach', 'owner'],
+        actorRoleIds: ['soccer-guardian'],
+        receiverRoleIds: ['soccer-coach', 'soccer-owner'],
         receiverEntryText: 'Team update is ready for guardian receipt.',
         receiverActionText: 'Receive update',
         receiverResultText: 'Guardian received the team update.',
       );
     case 'soccer-export-metadata':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['owner'],
-        readOnlyRoleIds: ['guardian', 'coach'],
+        actorRoleIds: ['soccer-owner'],
+        readOnlyRoleIds: ['soccer-guardian', 'soccer-coach'],
         readOnlyText: 'Guardian can open protected export coverage.',
       );
   }
-  return const LoomWorkflowRolePolicy(actorRoleIds: ['coach']);
+  return const LoomWorkflowRolePolicy(actorRoleIds: ['soccer-coach']);
 }
 
 LoomWorkflowRolePolicy _hoaPolicy(String workflowId) {
@@ -873,7 +861,7 @@ LoomWorkflowRolePolicy _hoaPolicy(String workflowId) {
     case 'hoa-facility-reservation':
     case 'hoa-architectural-request':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['hoa-homeowner'],
+        actorRoleIds: ['hoa-member'],
         receiverRoleIds: ['hoa-board'],
         receiverEntryText: 'A homeowner action is ready for board action.',
         receiverActionText: 'Open',
@@ -882,7 +870,7 @@ LoomWorkflowRolePolicy _hoaPolicy(String workflowId) {
     case 'hoa-committee-decision':
       return const LoomWorkflowRolePolicy(
         actorRoleIds: ['hoa-board'],
-        receiverRoleIds: ['hoa-homeowner'],
+        receiverRoleIds: ['hoa-member'],
         prerequisiteWorkflowId: 'hoa-architectural-request',
         receiverEntryText: 'The committee decision is ready for the homeowner.',
         receiverActionText: 'Receive decision',
@@ -891,7 +879,7 @@ LoomWorkflowRolePolicy _hoaPolicy(String workflowId) {
     case 'hoa-owner-notification':
       return const LoomWorkflowRolePolicy(
         actorRoleIds: ['hoa-board'],
-        receiverRoleIds: ['hoa-homeowner'],
+        receiverRoleIds: ['hoa-member'],
         prerequisiteWorkflowId: 'hoa-committee-decision',
         receiverEntryText: 'The owner notification is ready to receive.',
         receiverActionText: 'Receive notice',
@@ -900,7 +888,7 @@ LoomWorkflowRolePolicy _hoaPolicy(String workflowId) {
     case 'hoa-export-evidence':
       return const LoomWorkflowRolePolicy(
         actorRoleIds: ['hoa-board'],
-        readOnlyRoleIds: ['hoa-homeowner'],
+        readOnlyRoleIds: ['hoa-member'],
         readOnlyText: 'Homeowners can open export evidence.',
       );
   }
@@ -911,34 +899,34 @@ LoomWorkflowRolePolicy _mosquePolicy(String workflowId) {
   switch (workflowId) {
     case 'mosque-announcement':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['mosque-admin'],
-        receiverRoleIds: ['mosque-member'],
+        actorRoleIds: ['masjid-admin'],
+        receiverRoleIds: ['community-member'],
         receiverEntryText: 'A public announcement is ready to receive.',
         receiverActionText: 'Receive announcement',
         receiverResultText: 'Member received the public announcement.',
       );
     case 'mosque-event-rsvp':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['mosque-admin', 'mosque-member'],
+        actorRoleIds: ['masjid-admin', 'community-member'],
       );
     case 'mosque-volunteer-signup':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['mosque-admin', 'mosque-member'],
+        actorRoleIds: ['masjid-admin', 'community-member'],
       );
     case 'mosque-donor-visibility':
     case 'mosque-donation-payment':
     case 'mosque-care-request':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['mosque-member'],
-        receiverRoleIds: ['mosque-admin'],
+        actorRoleIds: ['community-member'],
+        receiverRoleIds: ['masjid-admin'],
         receiverEntryText: 'A member submission is ready for admin action.',
         receiverActionText: 'Open',
         receiverResultText: 'Admin received the member submission.',
       );
     case 'mosque-neutral-notification':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['mosque-admin'],
-        receiverRoleIds: ['mosque-member'],
+        actorRoleIds: ['masjid-admin'],
+        receiverRoleIds: ['community-member'],
         prerequisiteWorkflowId: 'mosque-care-request',
         receiverEntryText: 'A neutral care notification is ready to receive.',
         receiverActionText: 'Receive notice',
@@ -946,15 +934,15 @@ LoomWorkflowRolePolicy _mosquePolicy(String workflowId) {
       );
     case 'mosque-discussion-thread':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['mosque-admin', 'mosque-member'],
+        actorRoleIds: ['masjid-admin', 'community-member'],
       );
     case 'mosque-search-ai-citation':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['mosque-admin', 'mosque-member'],
+        actorRoleIds: ['masjid-admin', 'community-member'],
         prerequisiteWorkflowId: 'mosque-announcement',
       );
   }
-  return const LoomWorkflowRolePolicy(actorRoleIds: ['mosque-admin']);
+  return const LoomWorkflowRolePolicy(actorRoleIds: ['masjid-admin']);
 }
 
 LoomWorkflowRolePolicy _chessPolicy(String workflowId) {
@@ -962,11 +950,11 @@ LoomWorkflowRolePolicy _chessPolicy(String workflowId) {
     case 'chess-local-install-open':
     case 'chess-route-home':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['chess-organizer', 'chess-player'],
+        actorRoleIds: ['chess-organizer', 'chess-member'],
       );
     case 'chess-match-result':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['chess-player'],
+        actorRoleIds: ['chess-member'],
         receiverRoleIds: ['chess-organizer'],
         receiverEntryText: 'A match result is ready for organizer action.',
         receiverActionText: 'Open result',
@@ -982,14 +970,14 @@ LoomWorkflowRolePolicy _cameraPolicy(String workflowId) {
     case 'critique-submission':
     case 'gear-loan-request':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['camera-member'],
-        receiverRoleIds: ['camera-organizer'],
+        actorRoleIds: ['camera-club-member'],
+        receiverRoleIds: ['camera-club-organizer'],
         receiverEntryText: 'A member camera-club action is ready for action.',
         receiverActionText: 'Open',
         receiverResultText: 'Camera organizer received the member action.',
       );
   }
-  return const LoomWorkflowRolePolicy(actorRoleIds: ['camera-organizer']);
+  return const LoomWorkflowRolePolicy(actorRoleIds: ['camera-club-organizer']);
 }
 
 LoomWorkflowRolePolicy _platformPolicy(String workflowId) {
@@ -1001,15 +989,12 @@ LoomWorkflowRolePolicy _platformPolicy(String workflowId) {
     case 'platform-top-banner-no-fill':
     case 'platform-sensitive-no-fill':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['platform-member', 'platform-moderator'],
-        readOnlyRoleIds: ['platform-blocked-member'],
-        readOnlyText:
-            'Blocked actor identity can open shell state but cannot initiate social actions.',
+        actorRoleIds: ['member', 'moderator'],
       );
     case 'platform-connection-invite':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['platform-member'],
-        receiverRoleIds: ['platform-moderator'],
+        actorRoleIds: ['member'],
+        receiverRoleIds: ['moderator'],
         disabledReason:
             'Blocked or moderator roles do not send this member invite.',
         receiverEntryText:
@@ -1020,8 +1005,8 @@ LoomWorkflowRolePolicy _platformPolicy(String workflowId) {
       );
     case 'platform-blocked-target':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['platform-moderator'],
-        receiverRoleIds: ['platform-member'],
+        actorRoleIds: ['moderator'],
+        receiverRoleIds: ['member'],
         disabledReason:
             'Blocked actor identity remains unable to receive invites.',
         receiverEntryText: 'Blocked-target prevention result is ready.',
@@ -1030,7 +1015,7 @@ LoomWorkflowRolePolicy _platformPolicy(String workflowId) {
             'Member received blocked-target prevention evidence.',
       );
   }
-  return const LoomWorkflowRolePolicy(actorRoleIds: ['platform-moderator']);
+  return const LoomWorkflowRolePolicy(actorRoleIds: ['moderator']);
 }
 
 LoomWorkflowRolePolicy _adOffPolicy(String workflowId) {
@@ -1038,7 +1023,7 @@ LoomWorkflowRolePolicy _adOffPolicy(String workflowId) {
     case 'ad-off-member-checkout':
       return const LoomWorkflowRolePolicy(
         actorRoleIds: ['ad-off-member'],
-        receiverRoleIds: ['ad-off-viewer'],
+        receiverRoleIds: ['ad-off-owner'],
         receiverEntryText: 'Member ad-off entitlement is ready to observe.',
         receiverActionText: 'Receive entitlement',
         receiverResultText:
@@ -1046,8 +1031,8 @@ LoomWorkflowRolePolicy _adOffPolicy(String workflowId) {
       );
     case 'ad-off-community-checkout':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['ad-off-admin'],
-        receiverRoleIds: ['ad-off-member', 'ad-off-viewer'],
+        actorRoleIds: ['ad-off-owner'],
+        receiverRoleIds: ['ad-off-member'],
         receiverEntryText: 'Community ad-off entitlement is ready to receive.',
         receiverActionText: 'Receive entitlement',
         receiverResultText:
@@ -1057,17 +1042,17 @@ LoomWorkflowRolePolicy _adOffPolicy(String workflowId) {
     case 'ad-off-receipt-evidence':
     case 'ad-off-ad-suppression':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['ad-off-member', 'ad-off-admin', 'ad-off-viewer'],
+        actorRoleIds: ['ad-off-member', 'ad-off-owner'],
       );
     case 'ad-off-settlement-utility':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['ad-off-admin'],
-        readOnlyRoleIds: ['ad-off-member', 'ad-off-viewer'],
+        actorRoleIds: ['ad-off-owner'],
+        readOnlyRoleIds: ['ad-off-member'],
         readOnlyText:
             'Non-admin roles can open economics without recalculating settlement.',
       );
   }
-  return const LoomWorkflowRolePolicy(actorRoleIds: ['ad-off-admin']);
+  return const LoomWorkflowRolePolicy(actorRoleIds: ['ad-off-owner']);
 }
 
 LoomWorkflowRolePolicy _exportPolicy(String workflowId) {
@@ -1079,15 +1064,18 @@ LoomWorkflowRolePolicy _exportPolicy(String workflowId) {
     case 'export-redacted-bundle':
     case 'export-checksum-evidence':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['export-owner'],
-        readOnlyRoleIds: ['export-member', 'export-provider'],
+        actorRoleIds: ['portability-owner'],
+        readOnlyRoleIds: [
+          'portability-member',
+          'portability-receiving-provider',
+        ],
         readOnlyText: 'Non-owner roles open redacted portability evidence.',
       );
     case 'export-full-bundle':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['export-owner'],
-        receiverRoleIds: ['export-provider'],
-        readOnlyRoleIds: ['export-member'],
+        actorRoleIds: ['portability-owner'],
+        receiverRoleIds: ['portability-receiving-provider'],
+        readOnlyRoleIds: ['portability-member'],
         receiverEntryText:
             'Export bundle is ready for receiving-provider validation.',
         receiverActionText: 'Receive bundle',
@@ -1095,9 +1083,9 @@ LoomWorkflowRolePolicy _exportPolicy(String workflowId) {
       );
     case 'export-transfer-verification':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['export-provider'],
-        receiverRoleIds: ['export-owner'],
-        readOnlyRoleIds: ['export-member'],
+        actorRoleIds: ['portability-receiving-provider'],
+        receiverRoleIds: ['portability-owner'],
+        readOnlyRoleIds: ['portability-member'],
         prerequisiteWorkflowId: 'export-full-bundle',
         receiverEntryText: 'Provider verification is ready for the data owner.',
         receiverActionText: 'Receive verification',
@@ -1106,9 +1094,9 @@ LoomWorkflowRolePolicy _exportPolicy(String workflowId) {
       );
     case 'export-transfer-rollback':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['export-provider'],
-        receiverRoleIds: ['export-owner'],
-        readOnlyRoleIds: ['export-member'],
+        actorRoleIds: ['portability-receiving-provider'],
+        receiverRoleIds: ['portability-owner'],
+        readOnlyRoleIds: ['portability-member'],
         prerequisiteWorkflowId: 'export-checksum-evidence',
         receiverEntryText:
             'Provider rollback result is ready for the data owner.',
@@ -1116,5 +1104,5 @@ LoomWorkflowRolePolicy _exportPolicy(String workflowId) {
         receiverResultText: 'Data owner received provider rollback result.',
       );
   }
-  return const LoomWorkflowRolePolicy(actorRoleIds: ['export-owner']);
+  return const LoomWorkflowRolePolicy(actorRoleIds: ['portability-owner']);
 }

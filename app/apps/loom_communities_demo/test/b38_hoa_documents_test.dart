@@ -14,12 +14,12 @@ const _accounts = <LoomAccount>[
   LoomAccount(
     accountId: _ownerAccountId,
     displayName: 'Avery Brooks',
-    roleId: 'hoa-homeowner',
+    roleId: 'hoa-member',
   ),
   LoomAccount(
     accountId: _peerAccountId,
     displayName: 'Casey Homeowner',
-    roleId: 'hoa-homeowner',
+    roleId: 'hoa-member',
   ),
   LoomAccount(
     accountId: _boardAccountId,
@@ -313,7 +313,7 @@ _writeFixture() {
         'from': <String>['available'],
         'to': null,
         'guard': <String, Object?>{
-          'allowedRoleIds': <String>['hoa-homeowner', 'hoa-board'],
+          'allowedRoleIds': <String>['hoa-member', 'hoa-board'],
           'actorInList': <String, Object?>{
             'key': 'openedFanIds',
             'present': false,
@@ -335,7 +335,7 @@ _writeFixture() {
         'from': <String>['available'],
         'to': null,
         'guard': <String, Object?>{
-          'allowedRoleIds': <String>['hoa-homeowner'],
+          'allowedRoleIds': <String>['hoa-member'],
           'actorInList': <String, Object?>{
             'key': 'acknowledgedFanIds',
             'present': false,
@@ -362,7 +362,7 @@ _writeFixture() {
         'from': <String>['restricted'],
         'to': null,
         'guard': <String, Object?>{
-          'allowedRoleIds': <String>['hoa-homeowner'],
+          'allowedRoleIds': <String>['hoa-member'],
           'actorInList': <String, Object?>{
             'key': 'accessRequestedFanIds',
             'present': false,
@@ -474,7 +474,7 @@ _writeFixture() {
       'theme': <String, Object?>{'accent': '#3E6B8F'},
       'roles': const <Object?>[
         <String, Object?>{
-          'roleId': 'hoa-homeowner',
+          'roleId': 'hoa-member',
           'label': 'Homeowner',
           'roleLabel': 'Homeowner',
           'description': 'Reads documents shared with their account.',
@@ -529,7 +529,7 @@ _writeFixture() {
           'tabId': 'documents',
           'label': 'Documents',
           'iconKey': 'documents',
-          'visibleRoleIds': <String>['hoa-homeowner', 'hoa-board'],
+          'visibleRoleIds': <String>['hoa-member', 'hoa-board'],
         },
       ],
     },

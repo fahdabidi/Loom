@@ -14,12 +14,12 @@ const _accounts = <LoomAccount>[
   LoomAccount(
     accountId: _homeownerAccountId,
     displayName: 'Avery Brooks',
-    roleId: 'hoa-homeowner',
+    roleId: 'hoa-member',
   ),
   LoomAccount(
     accountId: _peerAccountId,
     displayName: 'Casey Homeowner',
-    roleId: 'hoa-homeowner',
+    roleId: 'hoa-member',
   ),
   LoomAccount(
     accountId: _boardAccountId,
@@ -500,7 +500,7 @@ _writeFixture() {
       'theme': <String, Object?>{'accent': '#3E6B8F'},
       'roles': const <Object?>[
         <String, Object?>{
-          'roleId': 'hoa-homeowner',
+          'roleId': 'hoa-member',
           'label': 'Homeowner',
           'roleLabel': 'Homeowner',
           'description': 'Submits architectural requests.',
@@ -538,7 +538,7 @@ _writeFixture() {
           'tabId': 'requests',
           'label': 'Requests',
           'iconKey': 'home',
-          'visibleRoleIds': <String>['hoa-homeowner'],
+          'visibleRoleIds': <String>['hoa-member'],
         },
         <String, Object?>{
           'tabId': 'admin',
@@ -579,7 +579,7 @@ Map<String, Object?> _homeownerTransition({
   'from': from,
   'to': to,
   'guard': <String, Object?>{
-    'allowedRoleIds': <String>['hoa-homeowner'],
+    'allowedRoleIds': <String>['hoa-member'],
     'actorEqualsField': <String, Object?>{'key': 'requesterFanId'},
   },
   'effects': <Object?>[

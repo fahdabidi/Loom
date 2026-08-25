@@ -1,7 +1,26 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
 
+import 'workflow_ui_test_harness.dart';
+
 void main() {
+  test('fallback actor identities mirror shipped package roles', () async {
+    for (final target in loomEvidenceTargets) {
+      final package = await readShippedEvidencePackage(target);
+      expect(
+        actorIdentitiesForExtensionId(
+          target.extensionId,
+        ).map((identity) => identity.roleId).toSet(),
+        package.experience.actorIdentities!
+            .map((identity) => identity.roleId)
+            .toSet(),
+        reason:
+            '${target.extensionId} fallback actor identities must mirror the '
+            'roles declared by its shipped package.',
+      );
+    }
+  });
+
   test('wf_actor-identity-inventory-capability-matrix', () {
     for (final target in loomEvidenceTargets) {
       final experience = experienceForExtensionId(
@@ -62,7 +81,7 @@ void main() {
       roleWorkflowStateFor(
         extensionId: 'ext_mosque',
         workflowId: 'mosque-announcement',
-        roleId: 'mosque-admin',
+        roleId: 'masjid-admin',
       ),
       LoomRoleWorkflowState.actor,
     );
@@ -70,7 +89,7 @@ void main() {
       roleWorkflowStateFor(
         extensionId: 'ext_mosque',
         workflowId: 'mosque-announcement',
-        roleId: 'mosque-member',
+        roleId: 'community-member',
       ),
       LoomRoleWorkflowState.receiver,
     );

@@ -902,7 +902,7 @@ void main() {
 
         if (includeHoaCapability) {
           await ensureTargetOpen(hoaTarget);
-          await selectActorIdentity(tester, 'hoa-homeowner');
+          await selectActorIdentity(tester, 'hoa-member');
           await _selectCommunityTab(tester, 'documents');
           await capture('B20_app_shell_hoa_documents_pinning_policy');
           capabilityScreenshots.add(
