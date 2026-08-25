@@ -573,6 +573,43 @@ class _EquipmentLoanArchetypeCardState
     return schema;
   }
 
+  /// A detail-only list with a declared count label is safe to summarize on a
+  /// marketplace tile after it becomes non-empty. The count confirms a
+  /// completed action without exposing the detail-only list entries themselves.
+  Map<String, WorkflowFactPillFieldSchema> _tileOutcomeFactSchema() {
+    if (widget.displayContext != 'tile') return const {};
+    final schema = <String, WorkflowFactPillFieldSchema>{};
+    for (final entry in widget.resolved.machine.instanceDataSchema.entries) {
+      final key = entry.key;
+      final field = entry.value;
+      final contexts = field.displayContexts;
+      if (widget.visibleFieldKeys != null &&
+          !widget.visibleFieldKeys!.contains(key)) {
+        continue;
+      }
+      if (field.type != 'list' ||
+          !field.hideWhenEmpty ||
+          contexts == null ||
+          !contexts.contains('detail') ||
+          contexts.contains('tile') ||
+          !(field.labelTemplate?.contains('{value.length}') ?? false)) {
+        continue;
+      }
+      final value = _instance.instanceData[key];
+      if (_isEmpty(value)) continue;
+      schema[key] = WorkflowFactPillFieldSchema(
+        type: field.type,
+        maxLength: field.maxLength,
+        maxLines: 2,
+        displayIcon: field.displayIcon,
+        labelTemplate: field.labelTemplate,
+        hideWhenEmpty: true,
+        displayContexts: const ['tile'],
+      );
+    }
+    return schema;
+  }
+
   WorkflowActionTone _toneFor(String? tone) => switch (tone) {
     'secondary' => WorkflowActionTone.secondary,
     'destructive' => WorkflowActionTone.destructive,
@@ -662,6 +699,7 @@ class _EquipmentLoanArchetypeCardState
     final foreground =
         widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
     final facts = _factSchema();
+    final tileOutcomeFacts = _tileOutcomeFactSchema();
     final contextualBorrow = _contextualBorrow;
     final buttons = _buttonTransitions();
     return Card(
@@ -681,6 +719,19 @@ class _EquipmentLoanArchetypeCardState
                 foreground: foreground,
                 accent: widget.accent,
               ),
+              if (tileOutcomeFacts.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                WorkflowFactPillRow(
+                  key: ValueKey(
+                    'equipment-loan-tile-outcome-${_instance.instanceId}-${tileOutcomeFacts.keys.join('-')}',
+                  ),
+                  instanceData: _instance.instanceData,
+                  instanceDataSchema: tileOutcomeFacts,
+                  displayContext: 'tile',
+                  foreground: foreground,
+                  accent: widget.accent,
+                ),
+              ],
               if (_loadingActions || _mutating)
                 Padding(
                   padding: const EdgeInsets.only(top: 10),

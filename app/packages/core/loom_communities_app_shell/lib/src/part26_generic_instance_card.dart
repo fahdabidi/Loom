@@ -358,6 +358,25 @@ class _GenericWorkflowInstanceCardState
     _ => WorkflowActionTone.primary,
   };
 
+  Color _stateToneColor(BuildContext context, String? tone) => switch (tone) {
+    'positive' => Colors.green.shade700,
+    'warning' => Colors.orange.shade800,
+    'negative' => Theme.of(context).colorScheme.error,
+    'info' => Theme.of(context).colorScheme.primary,
+    _ =>
+      widget.modernTheme?.accent ??
+          widget.accent ??
+          Theme.of(context).colorScheme.primary,
+  };
+
+  IconData _stateToneIcon(String? tone) => switch (tone) {
+    'positive' => Icons.check_circle_outline,
+    'warning' => Icons.warning_amber_outlined,
+    'negative' => Icons.cancel_outlined,
+    'info' => Icons.info_outline,
+    _ => Icons.pending_outlined,
+  };
+
   String _fieldLabel(String key, InstanceDataField schema) =>
       _editorLabel(key, schema.labelTemplate);
 
@@ -433,6 +452,7 @@ class _GenericWorkflowInstanceCardState
   @override
   Widget build(BuildContext context) {
     final editable = _editableKeys;
+    final currentState = widget.machine.states[_instance.currentState]!;
     final modernTheme = widget.modernTheme;
     final factForeground = modernTheme?.resolvedBody ?? widget.foreground;
     final actionForeground = modernTheme?.resolvedHeading ?? widget.foreground;
@@ -464,6 +484,19 @@ class _GenericWorkflowInstanceCardState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: _StateBadge(
+                  key: ValueKey(
+                    'generic-instance-state-${_instance.instanceId}',
+                  ),
+                  icon: _stateToneIcon(currentState.tone),
+                  label: currentState.label,
+                  foreground: _stateToneColor(context, currentState.tone),
+                  accent: _stateToneColor(context, currentState.tone),
+                ),
+              ),
+              const SizedBox(height: 12),
               for (final entry in widget.machine.instanceDataSchema.entries)
                 if (_shouldRenderNestedList(entry.key, entry.value))
                   _GenericInstanceListField(

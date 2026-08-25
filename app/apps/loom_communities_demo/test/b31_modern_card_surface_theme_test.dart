@@ -79,13 +79,15 @@ void main() {
           await scrollFinderIntoViewport(tester, reserveButton);
           await tester.tap(reserveButton);
           await tester.pumpAndSettle();
-          final reserved = find.textContaining('Reserved');
+          final reservedState = find.text('Reserved');
+          final reservedFact = find.text('Status: Reserved');
           await waitForEngineNativeWidget(
             tester,
-            reserved,
+            reservedState,
             description: 'persisted Reserved workflow state',
           );
-          expect(reserved, findsOneWidget);
+          expect(reservedState, findsOneWidget);
+          expect(reservedFact, findsOneWidget);
           final completedCard = tester.widget<Card>(
             find.byKey(const ValueKey('generic-instance-card-$instanceId')),
           );
