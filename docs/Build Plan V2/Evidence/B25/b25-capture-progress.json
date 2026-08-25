@@ -1,34 +1,18 @@
 {
   "schemaVersion": 1,
   "toolId": "b25_capture_workflow_screenshots",
-  "updatedAt": "2026-08-25T00:11:25.034906Z",
-  "status": "running",
+  "updatedAt": "2026-08-25T00:57:38.335274Z",
+  "status": "complete",
   "mode": "targeted-precheck",
   "phases": [
     "B12"
   ],
   "phaseCount": 1,
-  "completedPhases": 0,
-  "currentPhase": "B12",
-  "currentPhaseIndex": 1,
-  "currentShardIndex": 0,
-  "shardCount": 1,
-  "currentWorkflowId": "workflow-ui-evidence-harness",
-  "currentCommunityName": null,
-  "currentScreenshotName": null,
-  "workflowStatus": "workflow-start",
-  "completedWorkflowsInCurrentPhase": 0,
-  "totalWorkflowsInCurrentPhase": 1,
+  "completedPhases": 1,
+  "screenshotCount": 3,
+  "aggregatePath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B25/targeted-workflow-ui-evidence-b12.json",
+  "commitEligible": false,
   "device": "emulator-5554",
   "evidenceRoot": "C:\\LoomWin/docs/Build Plan V2/Evidence",
-  "logPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-  "command": "flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B12 --dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=ext_camera_club",
-  "lastProgressEvent": {
-    "emittedAt": "2026-08-25T00:11:25.142385Z",
-    "status": "workflow-start",
-    "phase": "B12",
-    "workflowId": "workflow-ui-evidence-harness",
-    "completedWorkflows": 0,
-    "totalWorkflows": 1
-  }
+  "logPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log"
 }

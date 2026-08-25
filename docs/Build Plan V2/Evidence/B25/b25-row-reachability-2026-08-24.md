@@ -79,3 +79,40 @@ NO-WF MemberSocialSpace platform-connections-entry
 NO-WF MemberSocialSpace platform-message-stream
 NO-WF MemberSocialSpace platform-messages-entry
 ```
+
+---
+
+## CORRECTION, same day — the role half of this measurement was wrong
+
+**The "13 rows naming a missing role" figure above is incorrect, and so is the "20 distinct rows"**
+**total that depends on it. The real number blocked on role is 5.**
+
+This check compared each B25 `role` against the `roleId` values in the shipped `.jsonc`. That is
+not what the walkthrough does. `_roleIdsForB25Role` in `workflow_ui_evidence_test.dart` matches a
+B25 role against `roleId + label + roleLabel` of each entry in the Dart evidence catalog, with
+explicit synonym fallbacks:
+
+```dart
+'owner' => contains('owner') || contains('admin') || contains('board') || contains('coordinator')
+'donor' => contains('member')
+'admin' => contains('admin') || contains('owner')
+'organizer' => contains('organizer') || contains('coordinator') || contains('admin') || contains('owner')
+```
+
+So Cedar (`hoa-board`), Garden (`garden-coordinator`) and Masjid (`mosque-admin`) resolve `owner`
+today, and Masjid resolves `donor` via member. None were ever blocked. Only Chess and Book Club
+genuinely fail, because Organizer + Member contains none of the four owner synonyms:
+
+| Community | Blocked rows |
+|---|---|
+| Chess Club | `chess-export-package`, `chess-pairing-queue`, `chess-rankings-table` |
+| Neighborhood Book Club | `book-selection-publish`, `book-export-metadata` |
+
+**The workflow half of this measurement stands** — 7 rows name a workflow their package does not
+ship. That half was validated against three ground truths. The role half never was: all three
+were workflow-missing cases, so the synonym logic was never exercised against a known answer.
+
+**A second finding fell out of the correction.** There are two disagreeing sources of role truth.
+The evidence catalog says Ad-Free has `ad-off-admin` and Soccer a bare `owner`; the shipped JSON
+says `ad-off-owner` and `soccer-owner`. The walkthrough reads the catalog, the validator reads the
+JSON, and nothing keeps them in sync.
