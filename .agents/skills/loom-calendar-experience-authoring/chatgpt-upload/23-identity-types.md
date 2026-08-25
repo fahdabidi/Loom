@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: current
-last_verified: 2026-08-17
+last_verified: 2026-08-24
 audience: llm-agent
 derived_from:
   - docs/Build Plan V2/CJM.16 Identity Architecture Proposal.md
@@ -57,6 +57,51 @@ The dividing line, stated once: **a `roleId` says what someone is allowed to be;
 someone is.** Roles never appear as instance data values. People never appear in `roles[]`.
 
 Nullable and array forms follow the existing convention: `fanId?`, `fanId[]`, `fanId[]?`.
+
+## 2a. `owner` — the one reserved role
+
+Every other `roleId` is a community's own invention. **`owner` is reserved**, and it means the same
+thing in every community: the person who **sets the community up** and who **approves who is allowed
+in**. Ratified 2026-08-24.
+
+Before this, there was no standard role vocabulary at all — each package named its leadership role
+whatever suited it (`hoa-board`, `chess-organizer`, `garden-coordinator`, `masjid-admin`), and two
+packages independently invented an owner (`ad-off-owner`, `soccer-owner`) without anything saying
+what one was. This section is what those two were reaching for.
+
+**A community SHOULD declare exactly one owner role.** Name it `<prefix>-owner`, matching the
+package's own prefix convention, and give it `roleLabel: "Owner"`. Do not declare two.
+
+**The owner is not merely the most senior member.** A community may well have a leadership role that
+is *also* the owner — a one-person club where the organizer set it up and admits members is exactly
+that, and should declare a single owner role rather than both. But a role is only the owner if it
+carries setup and admission authority. `hoa-board` reviews architectural requests; that is committee
+work, not community setup, and Cedar's B25 rows using the word "owner" mean **homeowner**, which is a
+member. Read the product doc before assuming the word maps.
+
+### What the package may and may not say about it
+
+The package declares that the role **exists**. It must not declare what the role is **allowed to do**
+about membership.
+
+| Belongs in the package | Belongs to App Access |
+|---|---|
+| `roles[]` contains the owner role | who currently holds it |
+| guards naming it, as with any role | approving or rejecting a join request |
+| workflows an owner drives (funding, export, data portability) | granting and revoking community access |
+
+This is not a new restriction: hard rule 13 already forbids the Skill from authoring a permission, a
+user, or a membership, and App Access already owns join requests. It is written here because "the
+owner approves who gets in" reads like something to encode in JSON, and it is not. A package that
+tries to express admission authority is expressing something the engine will not enforce and the
+backend will contradict.
+
+### Why this is worth reserving
+
+Data portability and export consistently land on this role — `soccer-export-metadata`,
+`chess-export-package`, `book-export-metadata`, `hoa-export-evidence`, `garden-export-custom-schemas`
+are all owner-facing in their product docs. Without a reserved name, every community spells that
+person differently and nothing can be said about them across the corpus.
 
 ## 3. What changes from v2
 
