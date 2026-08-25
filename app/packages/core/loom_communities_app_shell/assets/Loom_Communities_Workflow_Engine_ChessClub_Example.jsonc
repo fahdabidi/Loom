@@ -9,7 +9,7 @@
     "accentColor": "#6B4F2A"
   },
   "seedDataFiles": [],
-  "idempotencyKey": "chess-club-spec-v4-2026-08-19",
+  "idempotencyKey": "chess-club-spec-v4-owner-convergence-2026-08-24",
   "experience": {
     "displayName": "Chess Club",
     "tagline": "Ladder matches, club nights, pairings, standings, and rules for local chess players.",
@@ -34,13 +34,19 @@
         "roleId": "chess-organizer",
         "label": "Organizer",
         "roleLabel": "Organizer",
-        "description": "Schedules club activity, manages pairings, publishes rankings, exports data, and maintains rules."
+        "description": "Schedules club activity, manages pairings, publishes rankings, and maintains rules."
       },
       {
         "roleId": "chess-member",
         "label": "Player",
         "roleLabel": "Member",
         "description": "Schedules and plays matches, reports results, joins club nights, and participates in discussions."
+      },
+      {
+        "roleId": "chess-owner",
+        "label": "Owner",
+        "roleLabel": "Owner",
+        "description": "Sets up the community and owns its data-export responsibilities; admission authority remains in App Access and is not modeled as a workflow."
       }
     ],
     "workflowDefinitions": {
@@ -1668,7 +1674,7 @@
             ],
             "editGuard": {
               "allowedRoleIds": [
-                "chess-organizer"
+                "chess-owner"
               ]
             }
           },
@@ -1700,7 +1706,7 @@
             "to": null,
             "guard": {
               "allowedRoleIds": [
-                "chess-organizer"
+                "chess-owner"
               ]
             },
             "inputs": {
@@ -1743,7 +1749,7 @@
             "to": "generated",
             "guard": {
               "allowedRoleIds": [
-                "chess-organizer"
+                "chess-owner"
               ],
               "formula": "size(exportScope) > 0"
             },
@@ -1781,7 +1787,7 @@
             "to": null,
             "guard": {
               "allowedRoleIds": [
-                "chess-organizer"
+                "chess-owner"
               ]
             },
             "effects": [
@@ -1813,7 +1819,7 @@
             "to": "rolled-back",
             "guard": {
               "allowedRoleIds": [
-                "chess-organizer"
+                "chess-owner"
               ]
             },
             "effects": [
@@ -1850,7 +1856,7 @@
             "to": "ready",
             "guard": {
               "allowedRoleIds": [
-                "chess-organizer"
+                "chess-owner"
               ]
             },
             "effects": [
@@ -1883,7 +1889,7 @@
             "to": "cancelled",
             "guard": {
               "allowedRoleIds": [
-                "chess-organizer"
+                "chess-owner"
               ]
             },
             "effects": [
@@ -1920,7 +1926,7 @@
                 "kind": "create",
                 "label": "New export",
                 "byRoleIds": [
-                  "chess-organizer"
+                  "chess-owner"
                 ],
                 "scope": "tab",
                 "presentation": "fab",
@@ -2034,7 +2040,7 @@
           "default": "guarded",
           "readGuard": {
             "allowedRoleIds": [
-              "chess-organizer",
+              "chess-owner",
               "chess-member"
             ]
           }
@@ -2891,7 +2897,7 @@
         "instanceId": "chess-export-august",
         "workflowType": "chess-export-package",
         "currentState": "ready",
-        "createdByFanId": "chess-organizer",
+        "createdByFanId": "chess-owner",
         "instanceData": {
           "exportLabel": "August ladder and match archive",
           "exportScope": [
@@ -2899,7 +2905,7 @@
             "ranking rows",
             "pairing history"
           ],
-          "ownerFanId": "chess-organizer",
+          "ownerFanId": "chess-owner",
           "statusMessage": "Ready to generate",
           "exportHistory": []
         }

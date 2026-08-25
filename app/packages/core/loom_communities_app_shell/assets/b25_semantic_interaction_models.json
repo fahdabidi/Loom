@@ -575,16 +575,18 @@
       "productDocPath": "docs/references/communities/chess-club-product-experience.md",
       "workflowId": "chess-export-package",
       "role": "owner",
-      "expectedDecision": "Admin selects export scope, reviews status, and can roll back.",
+      "expectedDecision": "Owner selects a concrete export scope and decides whether to generate and download the package.",
       "requiredPrimaryActions": [
-        "export",
-        "generate export"
+        "generate export",
+        "download export"
       ],
       "requiredAlternateActions": [
+        "change scope",
         "rollback",
-        "change scope"
+        "generate again",
+        "cancel export"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Fresh screenshots must show selected scope, generated/downloaded status or rollback/cancel status, and that checksum remains pending rather than fabricated."
     },
     {
       "communityId": "community_chess_club",
@@ -592,15 +594,15 @@
       "extensionId": "ext_chess_club",
       "productDocPath": "docs/references/communities/chess-club-product-experience.md",
       "workflowId": "chess-pairing-queue",
-      "role": "owner",
-      "expectedDecision": "Organizer reviews the waiting list, assigns a concrete pairing, and closes the queue once play begins.",
+      "role": "organizer",
+      "expectedDecision": "Organizer reviews an ordered waiting list, assigns a concrete board pairing, and decides when to close the queue.",
       "requiredPrimaryActions": [
         "assign pairing"
       ],
       "requiredAlternateActions": [
         "close queue"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show queue state, assignment result, the closed-queue state, and waiting-player receiver state."
+      "resultAndReceiverState": "Fresh screenshots must show queue order, assignment history, the assigned state, the closed-queue state, and the waiting-player receiver view."
     },
     {
       "communityId": "community_chess_club",
@@ -608,8 +610,8 @@
       "extensionId": "ext_chess_club",
       "productDocPath": "docs/references/communities/chess-club-product-experience.md",
       "workflowId": "chess-rankings-table",
-      "role": "owner",
-      "expectedDecision": "Organizer publishes updated ladder standings, and can correct a wrong entry or retire a row that should no longer stand.",
+      "role": "organizer",
+      "expectedDecision": "Organizer reviews evidence for a real ladder change and decides whether to publish it.",
       "requiredPrimaryActions": [
         "publish rankings"
       ],
@@ -617,7 +619,7 @@
         "revise ranking",
         "retire ranking row"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show rank, player, score, delta, last-updated state, and the revised or retired row members then see."
+      "resultAndReceiverState": "Fresh screenshots must show rank, player, score, delta, evidence, last-updated state, and the revised or retired row players then see."
     },
     {
       "communityId": "community_chess_club",

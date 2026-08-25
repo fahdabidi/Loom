@@ -66,8 +66,9 @@ doc never documented at all follow immediately after them in every table (`chess
 
 | Persona | Role/capabilities | Primary jobs-to-be-done | Sensitive constraints | Success state |
 | --- | --- | --- | --- | --- |
-| Organizer | Loads package and reviews home | Confirm arbitrary package content renders as a product. | Local package data must remain deterministic. | Chess Club card and home use parsed package identity/content. |
-| Player | Opens club home | See match/event context and next action. | No sensitive data expected. | Player sees club activity rather than metadata. |
+| Owner | Sets up the community and owns export custody. | Confirm the community is configured and generate, download, roll back, retry, or cancel club-data exports. | Admission authority is App Access-only and must never be encoded as a workflow, permission, user, or membership in package JSON. | The owner can manage export scope and lifecycle without fabricated checksum data. |
+| Organizer | Runs club operations. | Schedule club nights, send reminders, resolve result disputes, assign pairings, publish rankings, and maintain rules. | Operational authority does not include package-authored membership admission. | Club nights, pairings, standings, disputes, and rules remain current and visible to players. |
+| Player | Participates in chess activity. | Schedule matches, respond to opponents, record/correct/dispute results, RSVP, discuss games, and read rules. | Private match and discussion data remains member-only; public standings remain readable. | The player sees concrete club activity and can complete or reverse every supported interaction. |
 
 ## 3. Information Architecture
 
@@ -80,7 +81,7 @@ doc never documented at all follow immediately after them in every table (`chess
 | Pairing queue | Assign board pairings from a waiting list. | Organizer | queue title, waiting players, assignment history. | Assign pairing |
 | Rankings table | Show current ladder standings. | Player/organizer | rank, player, score, delta, last-updated. | Publish rankings |
 | Rules documents | Read, open externally, or download club rules. | Player/organizer | document title, embedded/external open choice, download state. | Open rules |
-| Export package | Export club match/ranking data. | Organizer | export scope, checksum, status, rollback path. | Generate export / rollback |
+| Export package | Export club match/ranking data. | Owner | export scope, checksum gap, status, download history, rollback/retry/cancel paths | Generate export / download / rollback |
 | Club discussion | Member conversation about matches and club nights. | Player | thread title, message history, archive state. | Reply |
 
 ## 3.1 Persona Tabs, Pins, And Customization
@@ -119,9 +120,9 @@ or metadata-only route.
 | chess-match-result | member | Match result surface | players, round, result, next action, correction path | Runtime bridge/events | B9/B25 |
 | chess-club-night | organizer | Club night reminder | event title/time/location/pairing, reminder-sent state | Calendar/notifications | B25 |
 | chess-discussion-thread | member | Club discussion thread | thread title, message history, archive state | Messaging/events | B25 |
-| chess-export-package | owner | Export package review | export scope, checksum, status, rollback path | Export/documents/audit | B25 |
-| chess-pairing-queue | owner | Pairing queue | queue title, waiting players, assignment history | Roster/assignment/audit | B25 |
-| chess-rankings-table | member | Rankings table | rank, player, score, delta, last-updated | Standings/events | B25 |
+| `chess-export-package` | owner | Export package review | export scope, checksum gap, status, download history, rollback/retry/cancel paths | Export/audit state machine; checksum generation remains a platform-service gap | B25 |
+| `chess-pairing-queue` | organizer | Pairing queue | ordered waiting players, queue length, assignment history, close path | Roster/assignment/audit | B25 |
+| `chess-rankings-table` | organizer | Rankings table | rank, player, score, delta, evidence, last-updated, revise/retire paths | Standings/events | B25 |
 | chess-rules-documents | member | Rules documents | document title, embedded/external open choice, download state | Documents/external documents/audit | B25 |
 
 ## 7. Persona And State Matrix
@@ -134,9 +135,9 @@ or metadata-only route.
 | chess-match-result | member records match result with players, round, score, and correction path | opponent/standings view receives updated result | members can read saved result and standings impact | save disabled without opponent/score/result | non-members cannot record match result |
 | chess-club-night | organizer schedules club night and sends a reminder | players receive reminder notification | non-actor players can read event title/time/location | reminder disabled once already sent | non-members cannot see private club-night details |
 | chess-discussion-thread | player or organizer posts/replies in club discussion | members see message history and archive state | organizer can archive/moderate thread | reply disabled once archived | non-members cannot post or read private discussion |
-| chess-export-package | owner generates or rolls back a club data export | provider/import reviewer sees status and a real (non-fabricated) verification value | members see export status without protected fields | rollback disabled until export is generated | non-owners cannot export or roll back |
-| chess-pairing-queue | organizer assigns a board pairing from the waiting queue | waiting players see queue position and assignment result | members can read the open queue and current waiting list | assign disabled once queue is empty | non-organizers cannot assign pairings |
-| chess-rankings-table | organizer publishes updated ladder rankings | players see rank/score/delta for themselves and others | non-members can read public current standings | publish disabled without a real rank change | non-organizers cannot publish rankings |
+| `chess-export-package` | owner creates an export, changes its scope, generates it, downloads it, rolls it back, retries it, or cancels it | players may read the guarded status summary while the owner retains export controls | players see export status without protected platform-generated values | rollback and download are unavailable until generated; retry is available after rollback | non-owners cannot create, configure, generate, download, roll back, retry, or cancel exports; membership admission is not a workflow |
+| `chess-pairing-queue` | organizer assigns a board pairing from the ordered waiting queue | waiting players see their order and assignment history | members can read the open queue and current waiting list | assign is disabled until at least two waiting names exist | non-organizers cannot assign pairings or close the queue |
+| `chess-rankings-table` | organizer publishes an evidence-backed ladder row | players see rank, score, delta, evidence, and last update | non-members can read public current standings | publish is disabled until a real rank change is confirmed | non-organizers cannot publish, revise, or retire ranking rows |
 | chess-rules-documents | member opens or downloads club rules | organizer can see which materials were opened, if tracked | source/version readable by all members | download disabled while offline (not modeled) | non-members cannot open private club-only rules variants |
 
 ## 8. Content And Seed Data Requirements
@@ -161,9 +162,9 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | chess-match-result | member | Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths. | record match, submit score, save result | edit score, undo result, correct result, dispute result | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 | chess-club-night | organizer | Organizer schedules a concrete club night and reminds players; a player who can no longer attend withdraws, and the organizer can call the whole night off. | rsvp, add reminder, send reminder | withdraw rsvp, cancel club night | Fresh screenshots must show event details, reminder-sent state, the withdrawn-RSVP state, and the cancelled-night state players receive. |
 | chess-discussion-thread | member | Member evaluates a concrete discussion thread with sender/message context and reply/archive paths. | reply, send message | archive, mute | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
-| chess-export-package | owner | Admin selects export scope, reviews status, and can roll back. | export, generate export | rollback, change scope | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
-| chess-pairing-queue | owner | Organizer reviews the waiting list, assigns a concrete pairing, and closes the queue once play begins. | assign pairing | close queue | Fresh screenshots must show queue state, assignment result, the closed-queue state, and waiting-player receiver state. |
-| chess-rankings-table | owner | Organizer publishes updated ladder standings, and can correct a wrong entry or retire a row that should no longer stand. | publish rankings | revise ranking, retire ranking row | Fresh screenshots must show rank, player, score, delta, last-updated state, and the revised or retired row members then see. |
+| chess-export-package | owner | Owner selects a concrete export scope and decides whether to generate and download the package. | generate export, download export | change scope, rollback, generate again, cancel export | Fresh screenshots must show selected scope, generated/downloaded status or rollback/cancel status, and that checksum remains pending rather than fabricated. |
+| chess-pairing-queue | organizer | Organizer reviews an ordered waiting list, assigns a concrete board pairing, and decides when to close the queue. | assign pairing | close queue | Fresh screenshots must show queue order, assignment history, the assigned state, the closed-queue state, and the waiting-player receiver view. |
+| chess-rankings-table | organizer | Organizer reviews evidence for a real ladder change and decides whether to publish it. | publish rankings | revise ranking, retire ranking row | Fresh screenshots must show rank, player, score, delta, evidence, last-updated state, and the revised or retired row players then see. |
 | chess-rules-documents | member | Member opens a concrete rules document, chooses embedded or external, downloads it, and the organizer archives a superseded version. | open document, download | launch external, archive document | Fresh screenshots must show title, open history, download state, and the archived-document state. |
 
 
