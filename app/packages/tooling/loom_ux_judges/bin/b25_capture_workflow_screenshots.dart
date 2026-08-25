@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:loom_ux_judges/b25_capture_integrity.dart';
 import 'package:loom_ux_judges/b25_device_dialog_guard.dart';
 import 'package:loom_ux_judges/b25_product_doc_interaction_models.dart';
 
@@ -438,6 +439,37 @@ void main(List<String> args) async {
   );
 
   final screenshotCount = combinedSummary.screenshotCount;
+  if (combinedSummary.hasDuplicateFrames) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: byte-identical workflow frames '
+      'make this capture invalid. The files are retained for review; no frame '
+      'was dropped or retaken.',
+    );
+    for (final finding in combinedSummary.duplicateFrameFindings) {
+      stderr.writeln(
+        'b25_capture_workflow_screenshots: duplicate frame '
+        '${finding['firstScreenshotPath']} == '
+        '${finding['duplicateScreenshotPath']} '
+        '(phase=${finding['phase']} workflow=${finding['workflowId']}).',
+      );
+    }
+    _writeProgressReport(progressReportPath, {
+      'status': 'failed',
+      'failure': 'byte-identical-workflow-frame',
+      'mode': mode,
+      'phases': phases,
+      'phaseCount': phases.length,
+      'completedPhases': phases.length,
+      'screenshotCount': screenshotCount,
+      'aggregatePath': combinedSummary.aggregatePath,
+      'captureIntegrityFindings': combinedSummary.duplicateFrameFindings,
+      'commitEligible': false,
+      'device': device,
+      'evidenceRoot': evidenceRoot.path,
+      'logPath': logPath,
+    });
+    exit(65);
+  }
   if (mode == 'full-b25' && screenshotCount < 180) {
     stderr.writeln(
       'b25_capture_workflow_screenshots: expected at least 180 screenshots, found $screenshotCount.',
@@ -530,7 +562,7 @@ GuardedFrameCapture _captureAndroidScreenshot({
     probe: adbDeviceWindowStateProbe(device),
     grabFrame: () {
       final result = Process.runSync(
-        'adb',
+        adbExecutableForEnvironment(Platform.environment),
         ['-s', device, 'exec-out', 'screencap', '-p'],
         stdoutEncoding: null,
         stderrEncoding: utf8,
@@ -685,6 +717,7 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
   var workflowCount = 0;
   var screenshotCount = 0;
   final manifestPaths = <String>[];
+  final duplicateFrameFindings = <Map<String, Object?>>[];
 
   for (final phase in phases) {
     final manifestPath =
@@ -719,10 +752,11 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
       exit(65);
     }
     workflowCount += workflows.length;
+    var phaseScreenshotCount = 0;
+    final phaseDuplicateFrameFindings = <Map<String, Object?>>[];
     for (final workflow in workflows.whereType<Map<String, dynamic>>()) {
       final paths = workflow['screenshotPaths'];
       if (paths is List) {
-        screenshotCount += paths.length;
         for (final path in paths.whereType<String>()) {
           final screenshot = File(path);
           if (!screenshot.existsSync()) {
@@ -740,7 +774,40 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
             exit(65);
           }
         }
+        final integrity = await applyWorkflowScreenshotFrameIntegrity(workflow);
+        phaseScreenshotCount += integrity.verifiedScreenshotCount;
+        for (final duplicate in integrity.duplicateFrames) {
+          final finding = <String, Object?>{
+            'phase': phase,
+            'workflowId': workflow['workflowId'],
+            ...duplicate.toJson(),
+          };
+          phaseDuplicateFrameFindings.add(finding);
+          duplicateFrameFindings.add(finding);
+        }
       }
+    }
+    screenshotCount += phaseScreenshotCount;
+    if (phaseDuplicateFrameFindings.isNotEmpty) {
+      manifest['status'] = 'fail';
+      manifest['screenshotStatus'] = 'failed-duplicate-frame';
+      manifest['completionGateEligible'] = false;
+      manifest['screenshotCount'] = phaseScreenshotCount;
+      manifest['invalidScreenshotCount'] = phaseDuplicateFrameFindings.length;
+      manifest['captureIntegrityFindings'] = phaseDuplicateFrameFindings;
+      manifest['failureReason'] =
+          'Byte-identical frames were captured within a workflow; the capture '
+          'cannot distinguish an unchanged screen from a duplicate write.';
+      await manifestFile.writeAsString(
+        const JsonEncoder.withIndent('  ').convert(manifest),
+        flush: true,
+      );
+      await _markPhaseAuditFailedForDuplicateFrames(
+        evidenceRoot: evidenceRoot,
+        phase: phase,
+        screenshotCount: phaseScreenshotCount,
+        duplicateFrameFindings: phaseDuplicateFrameFindings,
+      );
     }
     manifestPaths.add(manifestPath);
   }
@@ -753,10 +820,14 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
   final aggregatePath = mode == 'full-b25'
       ? '${finalDirectory.path}/all-workflow-ui-evidence.json'
       : '${finalDirectory.path}/targeted-workflow-ui-evidence-${_slug(phases.join('-'))}.json';
+  final hasDuplicateFrames = duplicateFrameFindings.isNotEmpty;
   await File(aggregatePath).writeAsString(
     const JsonEncoder.withIndent('  ').convert({
       'schemaVersion': 1,
-      'status': 'pass',
+      'status': hasDuplicateFrames ? 'fail' : 'pass',
+      'screenshotStatus': hasDuplicateFrames
+          ? 'failed-duplicate-frame'
+          : 'complete',
       'phases': phases,
       'expectedPhases': _fullB25Phases,
       'missingPhases': _fullB25Phases
@@ -764,17 +835,52 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
           .toList(growable: false),
       'workflowCount': workflowCount,
       'screenshotCount': screenshotCount,
+      'invalidScreenshotCount': duplicateFrameFindings.length,
+      if (hasDuplicateFrames)
+        'captureIntegrityFindings': duplicateFrameFindings,
       'workflowEvidenceManifestPaths': manifestPaths,
       'commandOutputPath': commandOutputPath,
       'captureMode': mode,
       'fullB25Coverage': fullCoverage,
-      'commitEligible': mode == 'full-b25' && fullCoverage,
+      'commitEligible':
+          mode == 'full-b25' && fullCoverage && !hasDuplicateFrames,
     }),
     flush: true,
   );
   return _CombinedManifestSummary(
     aggregatePath: aggregatePath,
     screenshotCount: screenshotCount,
+    duplicateFrameFindings: duplicateFrameFindings,
+  );
+}
+
+Future<void> _markPhaseAuditFailedForDuplicateFrames({
+  required Directory evidenceRoot,
+  required String phase,
+  required int screenshotCount,
+  required List<Map<String, Object?>> duplicateFrameFindings,
+}) async {
+  final auditFile = File('${evidenceRoot.path}/$phase/evidence-audit.json');
+  if (!auditFile.existsSync()) {
+    return;
+  }
+  final decoded = jsonDecode(await auditFile.readAsString());
+  if (decoded is! Map<String, dynamic>) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: invalid phase audit ${auditFile.path}; '
+      'the duplicate frame failure is recorded in the phase manifest.',
+    );
+    return;
+  }
+  decoded['status'] = 'fail';
+  decoded['screenshotStatus'] = 'failed-duplicate-frame';
+  decoded['completionGateEligible'] = false;
+  decoded['screenshotsAudited'] = screenshotCount;
+  decoded['invalidScreenshotCount'] = duplicateFrameFindings.length;
+  decoded['captureIntegrityFindings'] = duplicateFrameFindings;
+  await auditFile.writeAsString(
+    const JsonEncoder.withIndent('  ').convert(decoded),
+    flush: true,
   );
 }
 
@@ -794,8 +900,12 @@ class _CombinedManifestSummary {
   const _CombinedManifestSummary({
     required this.aggregatePath,
     required this.screenshotCount,
+    required this.duplicateFrameFindings,
   });
 
   final String aggregatePath;
   final int screenshotCount;
+  final List<Map<String, Object?>> duplicateFrameFindings;
+
+  bool get hasDuplicateFrames => duplicateFrameFindings.isNotEmpty;
 }
