@@ -196,19 +196,58 @@ List<String> deviceWindowTitles(String dump) => RegExp(
   r'Window\{\S+\s+\S+\s+([^}]*)\}',
 ).allMatches(dump).map((match) => match.group(1)!.trim()).toList();
 
+({String root, String variable})? _androidSdkLocationForEnvironment(
+  Map<String, String> environment,
+) {
+  for (final variable in <String>['ANDROID_SDK_ROOT', 'ANDROID_HOME']) {
+    final root = environment[variable]?.trim();
+    if (root != null && root.isNotEmpty) {
+      return (root: root, variable: variable);
+    }
+  }
+  return null;
+}
+
+String adbExecutableForEnvironment(Map<String, String> environment) {
+  final location = _androidSdkLocationForEnvironment(environment);
+  if (location == null) {
+    return 'adb';
+  }
+  final root = location.root.replaceFirst(RegExp(r'[\\/]+$'), '');
+  final sdkRoot = root.isEmpty ? location.root : root;
+  return '$sdkRoot${Platform.pathSeparator}platform-tools'
+      '${Platform.pathSeparator}adb${Platform.isWindows ? '.exe' : ''}';
+}
+
 /// The real probe: ask the attached device.
 DeviceWindowStateProbe adbDeviceWindowStateProbe(String device) => () {
-  final result = Process.runSync('adb', <String>[
-    '-s',
-    device,
-    'shell',
-    ...deviceWindowStateCommand,
-  ]);
-  return DeviceWindowState(
-    exitCode: result.exitCode,
-    stdout: result.stdout?.toString() ?? '',
-    stderr: result.stderr?.toString() ?? '',
-  );
+  final environment = Platform.environment;
+  final location = _androidSdkLocationForEnvironment(environment);
+  final executable = adbExecutableForEnvironment(environment);
+  try {
+    final result = Process.runSync(executable, <String>[
+      '-s',
+      device,
+      'shell',
+      ...deviceWindowStateCommand,
+    ]);
+    return DeviceWindowState(
+      exitCode: result.exitCode,
+      stdout: result.stdout?.toString() ?? '',
+      stderr: result.stderr?.toString() ?? '',
+    );
+  } on ProcessException catch (error) {
+    final lookup = location == null
+        ? 'bare "adb" on PATH because ANDROID_SDK_ROOT and ANDROID_HOME are '
+              'unset'
+        : '"$executable" from ${location.variable}="${location.root}"';
+    throw StateError(
+      'Unable to start Android Debug Bridge (adb) for device "$device"; '
+      'the executable was not found or could not be started while looking for '
+      '$lookup. Set ANDROID_SDK_ROOT or ANDROID_HOME to the Android SDK root, '
+      'or add adb to PATH. Underlying OS error: ${error.message}',
+    );
+  }
 };
 
 /// Outcome of one guarded frame capture.

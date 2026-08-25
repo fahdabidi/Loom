@@ -51,6 +51,10 @@ DeviceWindowStateProbe _scriptedProbe(List<DeviceWindowState> answers) {
   return () => answers[index++ < answers.length ? index - 1 : answers.length - 1];
 }
 
+String _adbPathUnder(String sdkRoot) =>
+    '$sdkRoot${Platform.pathSeparator}platform-tools'
+    '${Platform.pathSeparator}adb${Platform.isWindows ? '.exe' : ''}';
+
 void main() {
   group('detectDeviceSystemDialog', () {
     test('passes when the app under test owns the focused window', () {
@@ -197,6 +201,34 @@ void main() {
         isNull,
       );
     });
+  });
+
+  group('adbDeviceWindowStateProbe executable resolution', () {
+    late Directory sdkRoot;
+
+    setUp(() async {
+      sdkRoot = await Directory.systemTemp.createTemp('loom-android-sdk-root-');
+    });
+
+    tearDown(() async {
+      await sdkRoot.delete(recursive: true);
+    });
+
+    test('resolves adb from ANDROID_SDK_ROOT before invoking it', () {
+      expect(
+        adbExecutableForEnvironment(<String, String>{
+          'ANDROID_SDK_ROOT': sdkRoot.path,
+        }),
+        _adbPathUnder(sdkRoot.path),
+      );
+    });
+
+    test(
+      'falls back to bare adb on PATH when Android SDK variables are unset',
+      () {
+        expect(adbExecutableForEnvironment(const <String, String>{}), 'adb');
+      },
+    );
   });
 
   group('captureGuardedAndroidFrame', () {
