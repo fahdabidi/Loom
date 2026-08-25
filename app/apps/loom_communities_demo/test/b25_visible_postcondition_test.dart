@@ -41,6 +41,39 @@ void main() {
       },
     );
 
+    test('uses the card display casing for identifier-like changed values', () {
+      final visibility = b25DataChangeVisibility(
+        sourceInstanceData: <String, dynamic>{'availabilityState': 'available'},
+        resultInstanceData: <String, dynamic>{'availabilityState': 'requested'},
+        instanceDataSchema: <String, InstanceDataField>{
+          'availabilityState': const InstanceDataField(
+            type: 'string',
+            labelTemplate: 'Status: {value}',
+            displayContexts: <String>['tile', 'detail'],
+          ),
+        },
+        displayContext: 'tile',
+      );
+      final postcondition = B25VisiblePostcondition.sourceInstanceEffect(
+        visibility,
+      );
+
+      expect(
+        visibility.renderedTextCandidatesByKey['availabilityState'],
+        <String>['Status: Requested'],
+      );
+      expect(
+        postcondition.isSatisfiedBy(const <String>['Status: Requested']),
+        isTrue,
+      );
+      expect(
+        postcondition.isSatisfiedBy(const <String>[
+          'Previously Status: Requested',
+        ]),
+        isFalse,
+      );
+    });
+
     test(
       'fails loudly when every changed key is excluded by display context',
       () {

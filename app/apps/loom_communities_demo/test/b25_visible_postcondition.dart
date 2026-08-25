@@ -1,3 +1,5 @@
+import 'package:loom_communities_app_shell/loom_communities_app_shell.dart'
+    show renderWorkflowFactLabel, renderWorkflowFactValue;
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 /// Describes the declared visibility of source-instance data changed by a
@@ -105,7 +107,7 @@ class B25VisiblePostcondition {
     }
     for (final candidates in changedData.renderedTextCandidatesByKey.values) {
       for (final candidate in candidates) {
-        if (viewportTexts.any((text) => text.contains(candidate))) {
+        if (viewportTexts.any((text) => text.trim() == candidate)) {
           return true;
         }
       }
@@ -142,36 +144,14 @@ bool _isEmpty(Object? value) =>
 
 String _renderedValueCandidate(InstanceDataField field, Object? value) {
   final template = field.labelTemplate?.trim();
-  final valueText = _valueText(value);
+  final valueText = renderWorkflowFactValue(value);
   if (template == null || template.isEmpty) return valueText;
   if (template.contains('{value.length}')) {
-    return template
-        .replaceAll('{value.length}', '${_valueLength(value)}')
-        .replaceAll('{value}', valueText)
-        .trim();
+    return renderWorkflowFactLabel(template, value);
   }
   if (template.contains('{value}')) {
-    return template.replaceAll('{value}', valueText).trim();
+    return renderWorkflowFactLabel(template, value);
   }
   // A label without a value placeholder cannot prove that the value changed.
   return valueText;
-}
-
-int _valueLength(Object? value) => switch (value) {
-  Iterable() => value.length,
-  Map() => value.length,
-  null => 0,
-  _ => 1,
-};
-
-String _valueText(Object? value) {
-  if (value == null) return '';
-  if (value is Iterable) {
-    return value
-        .map((item) => item.toString())
-        .where((item) => item.trim().isNotEmpty)
-        .join(', ');
-  }
-  if (value is bool) return value ? 'Yes' : 'No';
-  return '$value';
 }

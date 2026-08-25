@@ -1196,12 +1196,20 @@ bool _isEmpty(Object? value) {
 
 String _renderLabel(String template, Object? rawValue) {
   final valueLength = _valueLength(rawValue);
-  final valueText = _valueText(rawValue);
+  final valueText = renderWorkflowFactValue(rawValue);
   return template
       .replaceAll('{value.length}', '$valueLength')
       .replaceAll('{value}', valueText)
       .trim();
 }
+
+/// Renders a workflow fact's stored value exactly as [WorkflowFactPillRow]
+/// presents it to a person.
+String renderWorkflowFactValue(Object? rawValue) => _valueText(rawValue);
+
+/// Renders a workflow fact label exactly as [WorkflowFactPillRow] presents it.
+String renderWorkflowFactLabel(String template, Object? rawValue) =>
+    _renderLabel(template, rawValue);
 
 String _valueText(Object? rawValue) {
   if (rawValue == null) return '';

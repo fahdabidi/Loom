@@ -1782,7 +1782,7 @@ Future<void> _positionShippedDataResultForCapture({
         for (final candidate in candidates) {
           final renderedValue = find.descendant(
             of: cardFinder,
-            matching: find.textContaining(candidate),
+            matching: find.text(candidate),
           );
           if (renderedValue.evaluate().isEmpty) continue;
           await tester.ensureVisible(renderedValue.first);
