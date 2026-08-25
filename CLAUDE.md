@@ -30,6 +30,17 @@ After a VM reboot `/tmp` is cleared and the **validator service on :8787 does no
 itself**. Bring it back with
 `cd ~/Loom/app && dart run packages/tooling/loom_ux_judges/bin/validator_server.dart`.
 
+**`k3s` is `disabled`, so the whole backend stack is down after any VM restart.** All five
+services — app-access, fan-passport, keycloak, postgres, workflow-service — are deployed in the
+`loom` namespace and come straight back, but nothing starts them. `sudo systemctl start k3s`, then
+wait for `kubectl get pods -n loom` to reach `1/1`; readiness probes take a couple of minutes after
+a cold start. This is why the backend looked unbuilt: it was deployed and simply not running.
+
+Tests that need Postgres want `127.0.0.1:15432`, so they also need
+`kubectl port-forward -n loom svc/postgres 15432:5432`, and credentials from the
+`postgres-credentials` secret. Those tests **skip silently** without them, which is worse than
+failing — a green suite that skipped its only real integration test proves nothing.
+
 Windows has **WHPX** hardware acceleration (`emulator -accel-check` reports "WHPX is installed
 and usable"), because the host hypervisor is enabled. That same hypervisor is why the VM cannot
 have KVM. Measured 2026-08-24: **72 seconds to boot on Windows** versus 10–20 minutes in the VM,
