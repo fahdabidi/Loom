@@ -1,6 +1,6 @@
 // Ad-Free Community — specVersion 4 package.
 //
-// The role-like legacy personas are migrated 1:1, preserving their ids.
+// The role-like legacy declarations are migrated 1:1, preserving their ids.
 // "Ad-Free Viewer" remains a runtime entitlement condition rather than a role:
 // a member becomes ad-free when their entitlement row is active.
 {
@@ -651,7 +651,7 @@
               "allocationDetails"
             ],
             "editGuard": {
-              "allowedRoleIds": ["ad-off-member", "ad-off-owner"]
+              "allowedRoleIds": ["ad-off-owner"]
             }
           },
           "reviewing": {
@@ -693,7 +693,7 @@
             "from": ["unfunded"],
             "to": "reviewing",
             "guard": {
-              "allowedRoleIds": ["ad-off-member", "ad-off-owner"]
+              "allowedRoleIds": ["ad-off-owner"]
             },
             "effects": [
               { "op": "set", "key": "payerFanId", "value": "$actor" }
@@ -707,7 +707,7 @@
             "from": ["reviewing"],
             "to": "unfunded",
             "guard": {
-              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "allowedRoleIds": ["ad-off-owner"],
               "actorEqualsField": { "key": "payerFanId" }
             }
           },
@@ -719,7 +719,7 @@
             "from": ["reviewing"],
             "to": "funding-pending",
             "guard": {
-              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "allowedRoleIds": ["ad-off-owner"],
               "actorEqualsField": { "key": "payerFanId" }
             },
             "effects": [
@@ -784,7 +784,7 @@
             "from": ["funding-failed"],
             "to": "reviewing",
             "guard": {
-              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "allowedRoleIds": ["ad-off-owner"],
               "actorEqualsField": { "key": "payerFanId" }
             },
             "effects": [
@@ -799,7 +799,7 @@
             "from": ["reviewing", "funding-pending", "funding-failed"],
             "to": "cancelled",
             "guard": {
-              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "allowedRoleIds": ["ad-off-owner"],
               "actorEqualsField": { "key": "payerFanId" }
             },
             "effects": [
@@ -814,7 +814,7 @@
             "from": ["cancelled"],
             "to": "unfunded",
             "guard": {
-              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "allowedRoleIds": ["ad-off-owner"],
               "actorEqualsField": { "key": "payerFanId" }
             },
             "effects": [
@@ -831,7 +831,7 @@
             "from": ["funded"],
             "to": "refund-requested",
             "guard": {
-              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "allowedRoleIds": ["ad-off-owner"],
               "actorEqualsField": { "key": "payerFanId" }
             },
             "effects": [
@@ -846,7 +846,7 @@
             "from": ["refund-requested"],
             "to": "funded",
             "guard": {
-              "allowedRoleIds": ["ad-off-member", "ad-off-owner"],
+              "allowedRoleIds": ["ad-off-owner"],
               "actorEqualsField": { "key": "payerFanId" }
             }
           },
@@ -940,7 +940,7 @@
               {
                 "kind": "create",
                 "label": "Fund community ad-off",
-                "byRoleIds": ["ad-off-member", "ad-off-owner"],
+                "byRoleIds": ["ad-off-owner"],
                 "scope": "tab",
                 "presentation": "fab"
               }

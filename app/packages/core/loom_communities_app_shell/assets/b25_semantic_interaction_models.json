@@ -72,23 +72,21 @@
       "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
       "workflowId": "ad-off-member-checkout",
       "role": "member",
-      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "expectedDecision": "Member decides whether and how to buy personal ad-off after reviewing price, plan, coverage, payment method, and disclosure.",
       "requiredPrimaryActions": [
-        "pay",
-        "donate",
-        "give",
+        "turn off ads",
         "checkout",
-        "subscribe"
-      ],
-      "requiredAlternateActions": [
-        "change amount",
-        "edit payment",
-        "manage",
-        "cancel subscription",
-        "refund",
         "retry payment"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "requiredAlternateActions": [
+        "edit payment",
+        "cancel checkout",
+        "cancel subscription",
+        "request refund",
+        "withdraw refund request",
+        "subscribe again"
+      ],
+      "resultAndReceiverState": "Screenshots show review/pending/failure/active/refund/cancel states and the resulting private entitlement, receipt, and suppression evidence; Owner-only buttons record external outcomes."
     },
     {
       "communityId": "community_ad_off",
@@ -96,24 +94,21 @@
       "extensionId": "ext_ad_free_community",
       "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
       "workflowId": "ad-off-community-checkout",
-      "role": "member",
-      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "role": "owner",
+      "expectedDecision": "Owner decides whether and how much to fund for community-wide ad-off after reviewing coverage, utility impact, allocation, and payment method.",
       "requiredPrimaryActions": [
-        "pay",
-        "donate",
-        "give",
-        "checkout",
-        "subscribe"
-      ],
-      "requiredAlternateActions": [
-        "change amount",
-        "edit payment",
-        "manage",
-        "cancel subscription",
-        "refund",
+        "give community ad-off",
+        "checkout funding",
         "retry payment"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "requiredAlternateActions": [
+        "change amount or payment",
+        "cancel funding",
+        "request funding refund",
+        "withdraw refund request",
+        "try community funding again"
+      ],
+      "resultAndReceiverState": "Screenshots show pending/failure/funded/refund/cancel states and the resulting settlement/utility record; members have no actionable community-funding instance."
     },
     {
       "communityId": "community_ad_off",
@@ -122,23 +117,17 @@
       "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
       "workflowId": "ad-off-entitlement-status",
       "role": "member",
-      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "expectedDecision": "Member decides whether to manage, deactivate, or restore personal ad-off while seeing plan, renewal/expiry, and affected surfaces.",
       "requiredPrimaryActions": [
-        "pay",
-        "donate",
-        "give",
-        "checkout",
-        "subscribe"
+        "manage subscription",
+        "restore ad-off",
+        "keep current plan"
       ],
       "requiredAlternateActions": [
-        "change amount",
-        "edit payment",
-        "manage",
-        "cancel subscription",
-        "refund",
-        "retry payment"
+        "deactivate ad-off",
+        "cancel restore request"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Screenshots show active/change-requested/change-declined/inactive/restoration-pending states; Owner records apply/decline/restore outcomes without exposing another member’s private row."
     },
     {
       "communityId": "community_ad_off",
@@ -147,23 +136,16 @@
       "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
       "workflowId": "ad-off-receipt-evidence",
       "role": "member",
-      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "expectedDecision": "Member decides whether to view/export receipt evidence or request a refund within the visible eligibility window.",
       "requiredPrimaryActions": [
-        "pay",
-        "donate",
-        "give",
-        "checkout",
-        "subscribe"
+        "view receipt",
+        "export receipt",
+        "request refund"
       ],
       "requiredAlternateActions": [
-        "change amount",
-        "edit payment",
-        "manage",
-        "cancel subscription",
-        "refund",
-        "retry payment"
+        "withdraw refund request"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Screenshots show issued/refund-requested/refunded evidence, amount/date/payer/entitlement link, and an openable verified receipt link when externally supplied; opaque receipt ID remains empty without its service."
     },
     {
       "communityId": "community_ad_off",
@@ -172,23 +154,15 @@
       "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
       "workflowId": "ad-off-ad-suppression",
       "role": "member",
-      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "expectedDecision": "Member confirms which surfaces are suppressed and whether to acknowledge the proof or request restoration when entitlement is inactive.",
       "requiredPrimaryActions": [
-        "pay",
-        "donate",
-        "give",
-        "checkout",
-        "subscribe"
+        "mark reviewed",
+        "restore ad-off"
       ],
       "requiredAlternateActions": [
-        "change amount",
-        "edit payment",
-        "manage",
-        "cancel subscription",
-        "refund",
-        "retry payment"
+        "review later"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Screenshots show suppressed surfaces, the no-fill reason, and entitlement-derived active/inactive suppression proof; no ad-click action appears while suppressed."
     },
     {
       "communityId": "community_ad_off",
@@ -196,24 +170,19 @@
       "extensionId": "ext_ad_free_community",
       "productDocPath": "docs/references/communities/ad-free-community-product-experience.md",
       "workflowId": "ad-off-settlement-utility",
-      "role": "member",
-      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "role": "owner",
+      "expectedDecision": "Owner decides whether allocation is correct and whether to settle, audit, refund, or export the funding record.",
       "requiredPrimaryActions": [
-        "pay",
-        "donate",
-        "give",
-        "checkout",
-        "subscribe"
+        "record settlement",
+        "mark audited",
+        "export audit"
       ],
       "requiredAlternateActions": [
-        "change amount",
-        "edit payment",
-        "manage",
-        "cancel subscription",
-        "refund",
-        "retry payment"
+        "request correction",
+        "apply correction",
+        "record refunded allocation"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Screenshots show allocated/correction-requested/settled/audited/refunded states, funded amount, coverage, utility impact, allocation, and verified audit link when supplied; opaque settlement ID remains empty without its service."
     },
     {
       "communityId": "community_camera_club",

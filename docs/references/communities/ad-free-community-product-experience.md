@@ -42,9 +42,10 @@
 
 | Persona | Role/capabilities | Primary jobs-to-be-done | Sensitive constraints | Success state |
 | --- | --- | --- | --- | --- |
-| Member | Buy/view ad-off | Remove ads and see receipt/entitlement state. | Payment and receipt must be explicit. | Ads are suppressed according to entitlement and receipt is visible. |
-| Owner | Fund/sponsor community ad-off | Understand cost, settlement, and utility allocation. | Settlement/utility records need audit clarity. | Community ad-off state and funding record are clear. |
-| Ad-Free Viewer | A member with active ad-off entitlement | Experience the community with ads suppressed and confirm entitlement/receipt state. | Entitlement/receipt details are personal, not shared with other members. | Ads stay suppressed while entitlement is active; receipt/renewal state is visible only to this member. |
+| Member | Buy and manage personal ad-off | Remove ads; review private entitlement, receipt, refund, restoration, and suppression state. | Personal payment, entitlement, receipt, and suppression details are private to the payer, with Owner access for verified outcome handling. | Eligible ads are suppressed while entitlement is active, and the member can see and manage the linked evidence. |
+| Owner | Set up the community; fund and audit community ad-off | Fund community-wide ad-off; record externally verified outcomes; review settlement, correction, refund, and utility-allocation evidence. | Community admission authority remains entirely in App Access and is never encoded as a workflow. Payment processing and opaque identifiers are platform-service gaps. | Community funding, coverage, settlement, correction, refund, and audit states are clear. |
+
+“Ad-Free Viewer” is a runtime condition, not a role: a person holding `ad-off-member` becomes an ad-free viewer while their entitlement is active. It is represented by `ad-off-entitlement-status` and `ad-off-ad-suppression`, never by a third `roles[]` entry.
 
 ## 3. Information Architecture
 
@@ -58,8 +59,8 @@
 
 | Persona | Required tabs | Pinned surfaces | Customization notes |
 | --- | --- | --- | --- |
-| Member | Home, Ad-Free, Receipts, Messages | entitlement status, renewal date, suppressed ad slots | Account-style palette, receipt clarity, restore/manage actions. |
-| Owner/operator | Home, Ad-Free, Settlement, Documents, Messages | settlement review, allocation corrections, audit export | Operator tabs expose settlement and correction surfaces hidden from members. |
+| Member | Home, Giving, Messages | entitlement status, renewal date, suppressed ad surfaces | Giving contains personal checkout, receipt, and entitlement evidence; Home carries concise entitlement and suppression summaries. Per-person pinning remains an App Shell requirement outside community JSON. |
+| Owner/operator | Home, Giving, Admin, Messages | community funding, settlement review, allocation corrections, audit export | Admin contains settlement and correction operations; Giving contains community-funding checkout. Per-role tab ordering and pinning remain App Shell requirements outside community JSON. |
 
 ## 4. Home Screen Requirements
 
@@ -78,23 +79,23 @@ without reading implementation terms.
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
-| ad-off-member-checkout | member | Member checkout | price, payer, payment method, review step, receipt, active entitlement | Wallet/ads/receipts | B16/B25 |
-| ad-off-community-checkout | member | Community ad-off funding | funded coverage, community payer context, review step, settlement status | Wallet/settlement/ads | B16/B25 |
-| ad-off-entitlement-status | member | Entitlement status | active/inactive state, renewal/expiry, managed subscription, affected ad surfaces | Ads/entitlements | B16/B25 |
-| ad-off-receipt-evidence | member | Receipt evidence | receipt ID, amount, payer, date, entitlement link, export/view action | Receipts/audit | B16/B25 |
-| ad-off-ad-suppression | member | Ad suppression proof | suppressed surface, no-fill/ad-off reason, restoration/manage path | Ads/ad decision | B16/B25 |
-| ad-off-settlement-utility | member | Utility allocation | funded amount, settlement ID, utility impact, audit status | Settlement/utility | B16/B25 |
+| ad-off-member-checkout | member | Personal ad-off checkout | price, payer, payment method, disclosure, review/pending/failure/active/refund/cancel states, linked entitlement continuation | Workflow guards/effects plus external Wallet processing and receipt services | B16/B25 |
+| ad-off-community-checkout | owner | Community ad-off funding | funded amount, payer, payment method, coverage, utility allocation, review/pending/failure/funded/refund/cancel states | Workflow guards/effects plus external Wallet/settlement processing | B16/B25 |
+| ad-off-entitlement-status | member | Private entitlement status | active/inactive state, renewal/expiry, plan change/restoration decisions, affected ad surfaces | Workflow guards/effects; shell suppression consumes active entitlement | B16/B25 |
+| ad-off-receipt-evidence | member | Private receipt evidence | amount, payer, issued/refunded state, entitlement link, view/export/refund actions; opaque receipt ID only when supplied by a real service | Workflow guards/effects plus external receipt/ID generation | B16/B25 |
+| ad-off-ad-suppression | member | Private ad-suppression proof | suppressed surfaces, no-fill/ad-off reason, live entitlement-derived suppression state, review/restoration path | Query-backed entitlement state plus workflow guards/effects | B16/B25 |
+| ad-off-settlement-utility | owner | Utility allocation and settlement audit | funded amount, coverage, utility impact, allocation, correction/settlement/audit/refund state; opaque settlement ID only when supplied by a real service | Workflow guards/effects plus external settlement/ID generation | B16/B25 |
 
 ## 7. Persona And State Matrix
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| ad-off-member-checkout | member pays for personal ad-off | shell suppresses eligible ads after confirmation | receipt remains readable/exportable | checkout disabled when active until manage path | non-payer cannot manage receipt |
-| ad-off-community-checkout | member funds community ad-off | members see funded ad-off status where eligible | funding record readable | duplicate funding disabled during active period | non-owner cannot alter settlement record |
-| ad-off-entitlement-status | member manages entitlement | shell/ad slots honor active state | entitlement status readable | manage disabled when no entitlement | other members cannot view private payment details |
-| ad-off-receipt-evidence | member views receipt | receipt can be exported/shared as allowed | issued receipt read-only | refund/manage disabled unless eligible | non-payer cannot view receipt |
-| ad-off-ad-suppression | member sees suppressed ad surface | ad decision records suppression | no-fill/ad-off reason readable | ad click hidden while suppressed | extension cannot bypass entitlement |
-| ad-off-settlement-utility | member reviews utility allocation | owner/settlement records show funded utility | allocation audit readable | edit disabled after settlement | non-owner cannot mutate settlement |
+| ad-off-member-checkout | member starts, edits, submits, retries, cancels, requests/withdraws refund, and can subscribe again | owner records externally verified payment/failure/refund outcomes; confirmation creates entitlement, receipt, and suppression rows | active/refunded history remains privately readable | checkout path is gated by state; disclosure is required before submission | non-payer cannot act on or read the private checkout; non-owner cannot record external outcomes |
+| ad-off-community-checkout | owner starts, edits, submits, retries, cancels, and requests/withdraws refund | owner records externally verified funding/refund decisions and creates settlement evidence | funded/refunded history remains readable to the Owner | duplicate paths are state-gated during pending or funded periods | members cannot create or mutate community-funding or settlement records |
+| ad-off-entitlement-status | member requests/withdraws plan changes, deactivates, requests/cancels restoration | owner applies/declines plan changes and records/declines restoration | entitlement, renewal/expiry, plan, and affected surfaces remain privately readable | each management action is available only in its matching lifecycle state | other members cannot read or mutate another payer’s entitlement |
+| ad-off-receipt-evidence | member views/exports receipt evidence and requests/withdraws a refund | owner attaches a verified receipt link and records/declines verified refund outcomes | issued/refunded evidence remains privately readable | refund action is formula-gated by the declared refund window | non-payer cannot read or act; no role can fabricate a receipt ID |
+| ad-off-ad-suppression | member marks proof reviewed, revisits it, and requests restoration when suppression is inactive | entitlement workflow records whether eligible ad surfaces are actively suppressed | no-fill/ad-off reason and affected surfaces remain privately readable | restoration is hidden while entitlement-derived suppression is active; ad click remains absent | extension cannot bypass entitlement; other members cannot read the proof |
+| ad-off-settlement-utility | owner requests/applies allocation corrections, records settlement/audit/refund, requests export, and attaches a verified audit link | owner/operator sees the same durable settlement and audit state | settled, audited, and refunded evidence remains readable | correction/settlement paths are lifecycle-gated; identifiers stay empty without a real service | members cannot mutate settlement; no role can fabricate settlement IDs |
 
 ## 8. Content And Seed Data Requirements
 
@@ -112,12 +113,12 @@ This B25 addendum defines the production interaction model the UI must prove fro
 
 | Workflow | Persona | Expected decision | Required primary actions | Required alternate/change/reject actions | Result and receiver state |
 | --- | --- | --- | --- | --- | --- |
-| ad-off-member-checkout | member | Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment. | pay, donate, give, checkout, subscribe | change amount, edit payment, manage, cancel subscription, refund, retry payment | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
-| ad-off-community-checkout | member | Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment. | pay, donate, give, checkout, subscribe | change amount, edit payment, manage, cancel subscription, refund, retry payment | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
-| ad-off-entitlement-status | member | Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment. | pay, donate, give, checkout, subscribe | change amount, edit payment, manage, cancel subscription, refund, retry payment | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
-| ad-off-receipt-evidence | member | Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment. | pay, donate, give, checkout, subscribe | change amount, edit payment, manage, cancel subscription, refund, retry payment | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
-| ad-off-ad-suppression | member | Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment. | pay, donate, give, checkout, subscribe | change amount, edit payment, manage, cancel subscription, refund, retry payment | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
-| ad-off-settlement-utility | member | Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment. | pay, donate, give, checkout, subscribe | change amount, edit payment, manage, cancel subscription, refund, retry payment | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| ad-off-member-checkout | member | Member decides whether and how to buy personal ad-off after reviewing price, plan, coverage, payment method, and disclosure. | turn off ads, checkout, retry payment | edit payment, cancel checkout, cancel subscription, request refund, withdraw refund request, subscribe again | Screenshots show review/pending/failure/active/refund/cancel states and the resulting private entitlement, receipt, and suppression evidence; Owner-only buttons record external outcomes. |
+| ad-off-community-checkout | owner | Owner decides whether and how much to fund for community-wide ad-off after reviewing coverage, utility impact, allocation, and payment method. | give community ad-off, checkout funding, retry payment | change amount or payment, cancel funding, request funding refund, withdraw refund request, try community funding again | Screenshots show pending/failure/funded/refund/cancel states and the resulting settlement/utility record; members have no actionable community-funding instance. |
+| ad-off-entitlement-status | member | Member decides whether to manage, deactivate, or restore personal ad-off while seeing plan, renewal/expiry, and affected surfaces. | manage subscription, restore ad-off, keep current plan | deactivate ad-off, cancel restore request | Screenshots show active/change-requested/change-declined/inactive/restoration-pending states; Owner records apply/decline/restore outcomes without exposing another member’s private row. |
+| ad-off-receipt-evidence | member | Member decides whether to view/export receipt evidence or request a refund within the visible eligibility window. | view receipt, export receipt, request refund | withdraw refund request | Screenshots show issued/refund-requested/refunded evidence, amount/date/payer/entitlement link, and an openable verified receipt link when externally supplied; opaque receipt ID remains empty without its service. |
+| ad-off-ad-suppression | member | Member confirms which surfaces are suppressed and whether to acknowledge the proof or request restoration when entitlement is inactive. | mark reviewed, restore ad-off | review later | Screenshots show suppressed surfaces, the no-fill reason, and entitlement-derived active/inactive suppression proof; no ad-click action appears while suppressed. |
+| ad-off-settlement-utility | owner | Owner decides whether allocation is correct and whether to settle, audit, refund, or export the funding record. | record settlement, mark audited, export audit | request correction, apply correction, record refunded allocation | Screenshots show allocated/correction-requested/settled/audited/refunded states, funded amount, coverage, utility impact, allocation, and verified audit link when supplied; opaque settlement ID remains empty without its service. |
 
 
 ### B25 Card Surface Registry Mapping
