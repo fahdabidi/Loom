@@ -27,6 +27,7 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart'
         workflowEffectSet,
         workflowEffectTransitionRelated;
 
+import '../test/b25_visible_postcondition.dart';
 import '../test/workflow_ui_test_harness.dart';
 import '../test/walkthrough_wait.dart';
 
@@ -1630,6 +1631,176 @@ Future<void> _pumpB25Frames(WidgetTester tester) async {
   }
 }
 
+/// Waits for a rendered, on-screen state label rather than accepting the
+/// persisted engine state as evidence of a visible result.
+Future<void> _expectVisibleShippedAlternateStatePostcondition({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition transition,
+  required String targetState,
+}) async {
+  final stateLabel = selector.machine.states[targetState]?.label;
+  if (stateLabel == null) {
+    fail(
+      'Shipped workflow ${selector.machine.workflowType} transitioned '
+      '${selector.instance.instanceId} with ${transition.id} to undeclared '
+      'state $targetState, so B25 cannot verify a visible state result.',
+    );
+  }
+  final postcondition = B25VisiblePostcondition.stateChange(stateLabel);
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    for (final surface in _visibleShippedResultSurfaces(tester, selector)) {
+      if (postcondition.isSatisfiedBy(surface.viewportTexts)) return;
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail(
+    'Shipped workflow ${selector.machine.workflowType} persisted target '
+    'state $targetState after ${transition.id}, but its declared state label '
+    '"$stateLabel" was not visible in the captured viewport for source '
+    'instance ${selector.instance.instanceId}.',
+  );
+}
+
+/// Waits for a changed value or an explicitly keyed success acknowledgement
+/// in the rendered viewport after the engine has persisted a source effect.
+Future<void> _expectVisibleShippedAlternateDataPostcondition({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition transition,
+  required WorkflowInstance sourceInstance,
+  required WorkflowInstance persistedInstance,
+}) async {
+  B25DataChangeVisibility? latestVisibility;
+  String? latestDisplayContext;
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    final explicitSuccessAcknowledgement =
+        _hasVisibleShippedSuccessAcknowledgement(
+          selector: selector,
+          transition: transition,
+        );
+    for (final surface in _visibleShippedResultSurfaces(tester, selector)) {
+      final visibility = b25DataChangeVisibility(
+        sourceInstanceData: sourceInstance.instanceData,
+        resultInstanceData: persistedInstance.instanceData,
+        instanceDataSchema: selector.machine.instanceDataSchema,
+        displayContext: surface.displayContext,
+      );
+      latestVisibility = visibility;
+      latestDisplayContext = surface.displayContext;
+      if (visibility.everyChangedKeyIsExcludedByDisplayContext) {
+        final excluded = visibility.excludedDisplayContextsByKey.entries
+            .map((entry) => '${entry.key} displayContexts=${entry.value}')
+            .join(', ');
+        fail(
+          'Shipped workflow ${selector.machine.workflowType} changed source '
+          'instance data keys ${visibility.changedKeys} after '
+          '${transition.id}, but every changed key is excluded from active '
+          '${surface.displayContext} display context: $excluded. Render a '
+          'changed value or an explicit success acknowledgement on this '
+          'captured surface.',
+        );
+      }
+      final postcondition = B25VisiblePostcondition.sourceInstanceEffect(
+        visibility,
+      );
+      if (postcondition.isSatisfiedBy(
+        surface.viewportTexts,
+        explicitSuccessAcknowledgement: explicitSuccessAcknowledgement,
+      )) {
+        return;
+      }
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  final changedKeys = latestVisibility?.changedKeys ?? const <String>[];
+  final displayContext = latestDisplayContext ?? 'no visible source surface';
+  final detail = latestVisibility == null
+      ? 'The source instance was not rendered in the captured viewport.'
+      : 'renderable=${latestVisibility.renderableKeys}, '
+            'excluded=${latestVisibility.excludedDisplayContextsByKey}, '
+            'undeclared=${latestVisibility.undeclaredKeys}, '
+            'emptyResult=${latestVisibility.emptyResultKeys}.';
+  fail(
+    'Shipped workflow ${selector.machine.workflowType} changed source '
+    'instance data keys $changedKeys after ${transition.id}, but no changed '
+    'value or explicit success acknowledgement was visible in the active '
+    '$displayContext viewport. $detail',
+  );
+}
+
+class _VisibleShippedResultSurface {
+  const _VisibleShippedResultSurface({
+    required this.displayContext,
+    required this.viewportTexts,
+  });
+
+  final String displayContext;
+  final List<String> viewportTexts;
+}
+
+List<_VisibleShippedResultSurface> _visibleShippedResultSurfaces(
+  WidgetTester tester,
+  _ShippedWorkflowSelector selector,
+) {
+  final cards = find.byWidgetPredicate(
+    (widget) =>
+        widget is EngineNativeArchetypeCard &&
+        widget.resolved.instance.instanceId == selector.instance.instanceId,
+    description: 'rendered result surface for ${selector.instance.instanceId}',
+  );
+  final surfaces = <_VisibleShippedResultSurface>[];
+  for (final card in cards.evaluate()) {
+    final cardWidget = card.widget as EngineNativeArchetypeCard;
+    final cardFinder = find.byElementPredicate(
+      (candidate) => identical(candidate, card),
+      description:
+          'rendered ${cardWidget.displayContext} surface for '
+          '${selector.instance.instanceId}',
+    );
+    final viewportTexts = _visibleTextValuesWithin(cardFinder);
+    if (viewportTexts.isEmpty) continue;
+    surfaces.add(
+      _VisibleShippedResultSurface(
+        displayContext: cardWidget.displayContext,
+        viewportTexts: viewportTexts,
+      ),
+    );
+  }
+  return surfaces;
+}
+
+List<String> _visibleTextValuesWithin(Finder scope) {
+  return find
+      .descendant(of: scope, matching: find.byType(Text))
+      .hitTestable()
+      .evaluate()
+      .map((element) {
+        final text = element.widget as Text;
+        return text.data ?? text.textSpan?.toPlainText() ?? '';
+      })
+      .where((text) => text.trim().isNotEmpty)
+      .toList(growable: false);
+}
+
+bool _hasVisibleShippedSuccessAcknowledgement({
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition transition,
+}) {
+  // This is intentionally a semantic result key, not the action key: a
+  // still-visible action must never be mistaken for proof that it succeeded.
+  final acknowledgement = find.byKey(
+    ValueKey('b25-success-${selector.instance.instanceId}-${transition.id}'),
+  );
+  return acknowledgement.hitTestable().evaluate().isNotEmpty;
+}
+
 Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
   required WidgetTester tester,
   required LoomEvidenceTarget target,
@@ -1710,13 +1881,26 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
         selector: selector,
         targetState: targetState,
       );
+      await _expectVisibleShippedAlternateStatePostcondition(
+        tester: tester,
+        selector: selector,
+        transition: alternate.transition,
+        targetState: targetState,
+      );
     } else if (category.requiresSourceInstanceDataChange) {
-      await _expectShippedInstanceDataChanged(
+      final persisted = await _expectShippedInstanceDataChanged(
         tester: tester,
         target: target,
         package: package,
         selector: selector,
         sourceInstance: sourceInstance,
+      );
+      await _expectVisibleShippedAlternateDataPostcondition(
+        tester: tester,
+        selector: selector,
+        transition: alternate.transition,
+        sourceInstance: sourceInstance,
+        persistedInstance: persisted,
       );
     }
   }
@@ -1952,7 +2136,7 @@ Future<WorkflowInstance?> _readShippedInstance({
   return null;
 }
 
-Future<void> _expectShippedInstanceDataChanged({
+Future<WorkflowInstance> _expectShippedInstanceDataChanged({
   required WidgetTester tester,
   required LoomEvidenceTarget target,
   required ShippedEvidencePackage package,
@@ -1970,7 +2154,7 @@ Future<void> _expectShippedInstanceDataChanged({
     if (persisted != null &&
         jsonEncode(persisted.instanceData) !=
             jsonEncode(sourceInstance.instanceData)) {
-      return;
+      return persisted;
     }
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 5)),

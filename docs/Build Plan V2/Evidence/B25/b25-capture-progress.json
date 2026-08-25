@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "toolId": "b25_capture_workflow_screenshots",
-  "updatedAt": "2026-08-25T09:53:49.937087Z",
+  "updatedAt": "2026-08-25T10:22:49.041927Z",
   "status": "failed",
   "mode": "targeted-precheck",
   "phases": [
     "B12",
-    "B16"
+    "B15"
   ],
   "phaseCount": 2,
   "completedPhases": 1,
-  "currentPhase": "B16",
+  "currentPhase": "B15",
   "currentPhaseIndex": 2,
-  "currentShardIndex": 4,
-  "shardCount": 12,
+  "currentShardIndex": 1,
+  "shardCount": 7,
   "exitCode": 1,
   "device": "emulator-5554",
   "evidenceRoot": "C:\\LoomWin/docs/Build Plan V2/Evidence",
