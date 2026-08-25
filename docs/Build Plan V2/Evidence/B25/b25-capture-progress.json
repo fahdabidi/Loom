@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "toolId": "b25_capture_workflow_screenshots",
-  "updatedAt": "2026-08-25T10:22:49.041927Z",
+  "updatedAt": "2026-08-25T13:54:33.707417Z",
   "status": "failed",
   "mode": "targeted-precheck",
   "phases": [
@@ -12,7 +12,7 @@
   "completedPhases": 1,
   "currentPhase": "B15",
   "currentPhaseIndex": 2,
-  "currentShardIndex": 1,
+  "currentShardIndex": 2,
   "shardCount": 7,
   "exitCode": 1,
   "device": "emulator-5554",
