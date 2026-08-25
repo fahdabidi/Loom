@@ -1,0 +1,497 @@
+diff --git a/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart b/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart
+index 68341fee..5c3bcfd6 100644
+--- a/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart
++++ b/app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart
+@@ -1361,6 +1361,28 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
+       account: displayName,
+     );
+     await signInEvidenceAccount(tester, displayName);
++    // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++    if (selector.machine.workflowType == 'ad-off-ad-suppression' &&
++        selector.instance.instanceId == 'ad-off-suppression-proof') {
++      final screen = tester.widget<LocalExtensionScreen>(
++        find.byType(LocalExtensionScreen),
++      );
++      final account = screen.authApi?.currentSession?.account;
++      print(
++        'B25_ACK_SIGNED_IN '
++        'correlationId=ad-off-suppression-proof/acknowledge-proof '
++        'part=selector selectorAccountId=${selector.accountId} '
++        'selectorRoleId=${selector.roleId}',
++      );
++      print(
++        'B25_ACK_SIGNED_IN '
++        'correlationId=ad-off-suppression-proof/acknowledge-proof '
++        'part=session sessionAccountId=${account?.accountId} '
++        'sessionRoleId=${account?.roleId} '
++        'memberFanId=${selector.instance.instanceData['memberFanId']}',
++      );
++    }
++    // TEMP_B25_ACK_END
+   } else {
+     beatSubstep(
+       WalkthroughSubstep.selectingActorIdentity,
+@@ -1491,7 +1513,47 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
+   await _pumpB25Frames(tester);
+   await capture(action);
+ 
++  // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++  if (selector.machine.workflowType == 'ad-off-ad-suppression' &&
++      selector.instance.instanceId == 'ad-off-suppression-proof' &&
++      visibleAction.candidate.transition.id == 'acknowledge-proof') {
++    print(
++      'B25_ACK_TAP_TARGET '
++      'correlationId=ad-off-suppression-proof/acknowledge-proof '
++      'part=finder instanceId=${selector.instance.instanceId} '
++      'transitionId=${visibleAction.candidate.transition.id} '
++      'finderMatchCount=${visibleAction.finder.evaluate().length} '
++      'hitTestableMatchCount=${visibleAction.finder.hitTestable().evaluate().length}',
++    );
++    print(
++      'B25_ACK_TAP_TARGET '
++      'correlationId=ad-off-suppression-proof/acknowledge-proof '
++      'part=target targetWidgetKey='
++      '${tester.widget<Widget>(visibleAction.finder.first).key} '
++      'targetRect=${tester.getRect(visibleAction.finder.first)}',
++    );
++    print(
++      'B25_ACK_TAP_TARGET '
++      'correlationId=ad-off-suppression-proof/acknowledge-proof '
++      'part=view physicalTestViewSize=${tester.view.physicalSize} '
++      'logicalTestViewSize='
++      '${Size(tester.view.physicalSize.width / tester.view.devicePixelRatio, tester.view.physicalSize.height / tester.view.devicePixelRatio)}',
++    );
++  }
++  // TEMP_B25_ACK_END
+   await tester.tap(visibleAction.finder.first, warnIfMissed: false);
++  // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++  if (selector.machine.workflowType == 'ad-off-ad-suppression' &&
++      selector.instance.instanceId == 'ad-off-suppression-proof' &&
++      visibleAction.candidate.transition.id == 'acknowledge-proof') {
++    print(
++      'B25_ACK_TAP_RETURNED '
++      'correlationId=ad-off-suppression-proof/acknowledge-proof '
++      'instanceId=${selector.instance.instanceId} '
++      'transitionId=${visibleAction.candidate.transition.id}',
++    );
++  }
++  // TEMP_B25_ACK_END
+   await tester.pump();
+   await _completeShippedTransitionInputs(
+     tester: tester,
+@@ -1519,6 +1581,71 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
+       : visibleAction.candidate.category;
+   if (identical(selector.actionMachine, selector.machine) &&
+       transitionCategory == _ShippedTransitionCategory.stateChanging) {
++    // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++    if (selector.machine.workflowType == 'ad-off-ad-suppression' &&
++        selector.instance.instanceId == 'ad-off-suppression-proof' &&
++        transition.id == 'acknowledge-proof') {
++      final survivingActions = visibleAction.finder
++          .evaluate()
++          .map((element) {
++            final match = find.byElementPredicate(
++              (candidate) => identical(candidate, element),
++              description: 'surviving acknowledge-proof action',
++            );
++            final genericCard = element
++                .findAncestorWidgetOfExactType<GenericWorkflowInstanceCard>();
++            final bindingSurface = element
++                .findAncestorWidgetOfExactType<EngineNativeBindingDispatcher>();
++            return <String, Object?>{
++              'widgetKey': element.widget.key.toString(),
++              'hitTestable': match.hitTestable().evaluate().isNotEmpty,
++              'genericInstanceCardKey': genericCard?.key.toString(),
++              'engineNativeTabBindingSurfaceKey': bindingSurface?.key
++                  .toString(),
++              'engineNativeTabBindingSurfaceTabId': bindingSurface?.tabId,
++              'hasOffstageAncestor':
++                  element.findAncestorWidgetOfExactType<Offstage>() != null,
++            };
++          })
++          .toList(growable: false);
++      print(
++        'B25_ACK_POST_TAP_STATE '
++        'correlationId=ad-off-suppression-proof/acknowledge-proof '
++        'instanceId=${selector.instance.instanceId} '
++        'transitionId=${transition.id} '
++        'persistedCurrentState=unavailable-without-new-await '
++        'acknowledgedAt=unavailable-without-new-await',
++      );
++      print(
++        'B25_ACK_SURVIVING_ACTIONS '
++        'correlationId=ad-off-suppression-proof/acknowledge-proof '
++        'instanceId=${selector.instance.instanceId} '
++        'transitionId=${transition.id} '
++        'matchCount=${survivingActions.length}',
++      );
++      for (var index = 0; index < survivingActions.length; index += 1) {
++        final action = survivingActions[index];
++        print(
++          'B25_ACK_SURVIVING_ACTIONS '
++          'correlationId=ad-off-suppression-proof/acknowledge-proof '
++          'part=action index=$index '
++          'widgetKey=${action['widgetKey']} '
++          'hitTestable=${action['hitTestable']} '
++          'hasOffstageAncestor=${action['hasOffstageAncestor']}',
++        );
++        print(
++          'B25_ACK_SURVIVING_ACTIONS '
++          'correlationId=ad-off-suppression-proof/acknowledge-proof '
++          'part=ancestors index=$index '
++          'genericInstanceCardKey=${action['genericInstanceCardKey']} '
++          'engineNativeTabBindingSurfaceKey='
++          '${action['engineNativeTabBindingSurfaceKey']} '
++          'engineNativeTabBindingSurfaceTabId='
++          '${action['engineNativeTabBindingSurfaceTabId']}',
++        );
++      }
++    }
++    // TEMP_B25_ACK_END
+     expect(
+       visibleAction.finder,
+       findsNothing,
+@@ -2725,6 +2852,48 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
+           accountId: accountId,
+           transitions: accountTransitions,
+         );
++        // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++        if (workflowType == 'ad-off-ad-suppression' &&
++            instance.instanceId == 'ad-off-suppression-proof') {
++          final acknowledgeProof = accountTransitions
++              .where(
++                (candidate) => candidate.transition.id == 'acknowledge-proof',
++              )
++              .firstOrNull;
++          final actorEqualsField =
++              acknowledgeProof?.transition.guard.actorEqualsField;
++          print(
++            'B25_ACK_SELECTOR '
++            'correlationId=ad-off-suppression-proof/acknowledge-proof '
++            'part=identity workflowType=${selector.machine.workflowType} '
++            'instanceId=${selector.instance.instanceId} '
++            'seedCurrentState=${selector.instance.currentState} '
++            'roleId=${selector.roleId} '
++            'selectorAccountId=${selector.accountId}',
++          );
++          print(
++            'B25_ACK_SELECTOR '
++            'correlationId=ad-off-suppression-proof/acknowledge-proof '
++            'part=instance memberFanId='
++            '${selector.instance.instanceData['memberFanId']} '
++            'createdByFanId=${selector.instance.createdByFanId} '
++            'bindingTabId=${selector.binding.tabId}',
++          );
++          print(
++            'B25_ACK_SELECTOR '
++            'correlationId=ad-off-suppression-proof/acknowledge-proof '
++            'part=transitions selectedTransitionIds='
++            '${selector.transitions.map((candidate) => candidate.transition.id).toList(growable: false)} '
++            'allowedRoleIds=${acknowledgeProof?.transition.guard.allowedRoleIds}',
++          );
++          print(
++            'B25_ACK_SELECTOR '
++            'correlationId=ad-off-suppression-proof/acknowledge-proof '
++            'part=actorEquals actorEqualsFieldKey=${actorEqualsField?.key} '
++            'actorEqualsFieldValue=${actorEqualsField == null ? null : selector.instance.instanceData[actorEqualsField.key]}',
++          );
++        }
++        // TEMP_B25_ACK_END
+         if (b25Model != null &&
+             !accountTransitions.any(
+               (candidate) => matchB25TransitionAgainstTerms(
+diff --git a/app/packages/core/loom_communities_app_shell/lib/loom_communities_app_shell.dart b/app/packages/core/loom_communities_app_shell/lib/loom_communities_app_shell.dart
+index 0ba169f4..36b75ab8 100644
+--- a/app/packages/core/loom_communities_app_shell/lib/loom_communities_app_shell.dart
++++ b/app/packages/core/loom_communities_app_shell/lib/loom_communities_app_shell.dart
+@@ -1,6 +1,7 @@
+ library loom_communities_app_shell;
+ 
+ import 'dart:async';
++import 'dart:convert'; // TEMP_B25_ACK: remove after acknowledge-proof trace capture.
+ 
+ import 'package:animations/animations.dart';
+ import 'package:flutter/material.dart';
+diff --git a/app/packages/core/loom_communities_app_shell/lib/src/part18_marketplace_rendering.dart b/app/packages/core/loom_communities_app_shell/lib/src/part18_marketplace_rendering.dart
+index 0e259265..da8b3338 100644
+--- a/app/packages/core/loom_communities_app_shell/lib/src/part18_marketplace_rendering.dart
++++ b/app/packages/core/loom_communities_app_shell/lib/src/part18_marketplace_rendering.dart
+@@ -468,7 +468,22 @@ class WorkflowActionButtonRow extends StatelessWidget {
+             waitingText: waitingText,
+             onPressed: onTransitionPressed == null
+                 ? null
+-                : () => onTransitionPressed!(transition.id),
++                : () {
++                    // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++                    if (surface ==
++                            'generic-instance-ad-off-suppression-proof' &&
++                        transition.id == 'acknowledge-proof') {
++                      print(
++                        'B25_ACK_BUTTON_ON_PRESSED '
++                        'correlationId=ad-off-suppression-proof/acknowledge-proof '
++                        'instanceId=ad-off-suppression-proof '
++                        'transitionId=acknowledge-proof '
++                        'surface=$surface',
++                      );
++                    }
++                    // TEMP_B25_ACK_END
++                    onTransitionPressed!(transition.id);
++                  },
+           ),
+         ],
+       ],
+diff --git a/app/packages/core/loom_communities_app_shell/lib/src/part26_generic_instance_card.dart b/app/packages/core/loom_communities_app_shell/lib/src/part26_generic_instance_card.dart
+index b31f9b63..07a470c7 100644
+--- a/app/packages/core/loom_communities_app_shell/lib/src/part26_generic_instance_card.dart
++++ b/app/packages/core/loom_communities_app_shell/lib/src/part26_generic_instance_card.dart
+@@ -197,6 +197,19 @@ class _GenericWorkflowInstanceCardState
+         instanceData: instance.instanceData,
+         fanId: fanId,
+       );
++      // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++      if (instance.instanceId == 'ad-off-suppression-proof') {
++        print(
++          'B25_ACK_CARD_AVAILABILITY '
++          'correlationId=ad-off-suppression-proof/acknowledge-proof '
++          'instanceId=${instance.instanceId} '
++          'currentState=${instance.currentState} fanId=$fanId '
++          'memberFanId=${instance.instanceData['memberFanId']} '
++          'generation=$generation request=$request '
++          'transitionIds=${result.map((transition) => transition.id).toList(growable: false)}',
++        );
++      }
++      // TEMP_B25_ACK_END
+       if (!_isCurrent(generation, instance, machine, engine, fanId) ||
+           request != _actionRequest) {
+         return;
+@@ -276,6 +289,18 @@ class _GenericWorkflowInstanceCardState
+   }
+ 
+   Future<void> _applyTransition(String transitionId) async {
++    // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++    if (_instance.instanceId == 'ad-off-suppression-proof') {
++      print(
++        'B25_ACK_BUTTON_CALLBACK '
++        'correlationId=ad-off-suppression-proof/acknowledge-proof '
++        'instanceId=${_instance.instanceId} transitionId=$transitionId '
++        'currentState=${_instance.currentState} fanId=${widget.fanId} '
++        'memberFanId=${_instance.instanceData['memberFanId']} '
++        'mutating=$_mutating mounted=$mounted',
++      );
++    }
++    // TEMP_B25_ACK_END
+     final transition = widget.machine.transitions
+         .where((candidate) => candidate.id == transitionId)
+         .firstOrNull;
+@@ -298,6 +323,17 @@ class _GenericWorkflowInstanceCardState
+       engine: engine,
+       fanId: fanId,
+       operation: () async {
++        // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++        if (instance.instanceId == 'ad-off-suppression-proof') {
++          print(
++            'B25_ACK_CARD_DISPATCH '
++            'correlationId=ad-off-suppression-proof/acknowledge-proof '
++            'instanceId=${instance.instanceId} transitionId=$transitionId '
++            'currentState=${instance.currentState} fanId=$fanId '
++            'memberFanId=${instance.instanceData['memberFanId']}',
++          );
++        }
++        // TEMP_B25_ACK_END
+         final result = await engine.applyTransition(
+           workflowType: instance.workflowType,
+           instanceId: instance.instanceId,
+@@ -305,6 +341,17 @@ class _GenericWorkflowInstanceCardState
+           fanId: fanId,
+           inputs: inputs,
+         );
++        // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++        if (instance.instanceId == 'ad-off-suppression-proof') {
++          print(
++            'B25_ACK_CARD_RESULT '
++            'correlationId=ad-off-suppression-proof/acknowledge-proof '
++            'instanceId=${instance.instanceId} transitionId=$transitionId '
++            'newState=${result.newState} '
++            'acknowledgedAt=${result.newInstanceData['acknowledgedAt']}',
++          );
++        }
++        // TEMP_B25_ACK_END
+         return WorkflowInstance(
+           instanceId: instance.instanceId,
+           workflowType: instance.workflowType,
+@@ -342,7 +389,25 @@ class _GenericWorkflowInstanceCardState
+       if (!_isCurrent(generation, next, machine, engine, fanId)) return;
+       setState(() => _mutating = false);
+       await _loadActions();
+-    } catch (_) {
++    } catch (error, stackTrace) {
++      // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++      if (instance.instanceId == 'ad-off-suppression-proof') {
++        print(
++          'B25_ACK_CARD_ERROR '
++          'correlationId=ad-off-suppression-proof/acknowledge-proof '
++          'instanceId=${instance.instanceId} '
++          'errorType=${error.runtimeType} message=$error',
++        );
++        final stackLines = stackTrace.toString().split('\n');
++        for (var index = 0; index < stackLines.length; index += 1) {
++          print(
++            'B25_ACK_CARD_ERROR '
++            'correlationId=ad-off-suppression-proof/acknowledge-proof '
++            'part=stack index=$index value=${stackLines[index]}',
++          );
++        }
++      }
++      // TEMP_B25_ACK_END
+       if (!_isCurrent(generation, instance, machine, engine, fanId)) return;
+       setState(() {
+         _mutating = false;
+diff --git a/app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart b/app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart
+index 5d139540..93e472b3 100644
+--- a/app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart
++++ b/app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart
+@@ -868,6 +868,20 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
+       }
+       result.add(transition);
+     }
++    // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++    if (workflowType == 'ad-off-ad-suppression' &&
++        instanceId == 'ad-off-suppression-proof') {
++      final declaredTransition = machine.transitions.firstWhere(
++        (transition) => transition.id == 'acknowledge-proof',
++      );
++      final guard = declaredTransition.guard;
++      final allowedRoleIds = guard.allowedRoleIds ?? const <String>[];
++      final actorEqualsField = guard.actorEqualsField;
++      print(
++        'B25_ACK_ENGINE_AVAILABLE ${jsonEncode(<String, Object?>{'fanId': fanId, 'roleId': _roleIdByFanId[fanId], 'currentState': currentState, 'memberFanId': instanceData['memberFanId'], 'allowedRoleIds': allowedRoleIds, 'actorEqualsFieldKey': actorEqualsField?.key, 'actorEqualsFieldValue': actorEqualsField == null ? null : instanceData[actorEqualsField.key], 'roleClausePass': allowedRoleIds.contains(_roleIdByFanId[fanId]), 'actorEqualsClausePass': actorEqualsField == null ? true : fanId == instanceData[actorEqualsField.key], 'evaluatorCandidateIds': candidates.map((transition) => transition.id).toList(growable: false), 'finalResultIds': result.map((transition) => transition.id).toList(growable: false)})}',
++      );
++    }
++    // TEMP_B25_ACK_END
+     return result;
+   }
+ 
+@@ -904,8 +918,30 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
+     required String fanId,
+     Map<String, dynamic>? inputs,
+   }) async {
++    // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++    if (workflowType == 'ad-off-ad-suppression' &&
++        instanceId == 'ad-off-suppression-proof') {
++      print(
++        'B25_ACK_ENGINE_APPLY_ENTER '
++        'correlationId=ad-off-suppression-proof/acknowledge-proof '
++        'workflowType=$workflowType instanceId=$instanceId '
++        'transitionId=$transitionId fanId=$fanId',
++      );
++    }
++    // TEMP_B25_ACK_END
+     try {
+       await _requireSurfacePermission(fanId: fanId, workflowType: workflowType);
++      // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++      if (workflowType == 'ad-off-ad-suppression' &&
++          instanceId == 'ad-off-suppression-proof') {
++        print(
++          'B25_ACK_ENGINE_PERMISSION_PASS '
++          'correlationId=ad-off-suppression-proof/acknowledge-proof '
++          'workflowType=$workflowType instanceId=$instanceId '
++          'transitionId=$transitionId fanId=$fanId',
++        );
++      }
++      // TEMP_B25_ACK_END
+       // Resolve guards and GAP-1 inputs before opening a transaction. Besides
+       // preserving the public validation contract, this means an expected
+       // StateError never enters the database transaction machinery.
+@@ -925,7 +961,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
+         );
+       });
+       final machine = await _getDefinition(workflowType);
+-      return WorkflowTransitionResult(
++      final returnedResult = WorkflowTransitionResult(
+         newState: result.newState,
+         newInstanceData: await _hydrateSourceFields(
+           result.newInstanceData,
+@@ -933,8 +969,64 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
+           instanceId,
+         ),
+       );
+-    } on _TransitionGuardFailure catch (error) {
++      // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++      if (workflowType == 'ad-off-ad-suppression' &&
++          instanceId == 'ad-off-suppression-proof') {
++        print(
++          'B25_ACK_ENGINE_APPLY_RESULT '
++          'correlationId=ad-off-suppression-proof/acknowledge-proof '
++          'workflowType=$workflowType instanceId=$instanceId '
++          'transitionId=$transitionId fanId=$fanId '
++          'newState=${returnedResult.newState} '
++          'acknowledgedAt=${returnedResult.newInstanceData['acknowledgedAt']}',
++        );
++      }
++      // TEMP_B25_ACK_END
++      return returnedResult;
++    } on _TransitionGuardFailure catch (error, stackTrace) {
++      // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++      if (workflowType == 'ad-off-ad-suppression' &&
++          instanceId == 'ad-off-suppression-proof') {
++        print(
++          'B25_ACK_ENGINE_APPLY_ERROR '
++          'correlationId=ad-off-suppression-proof/acknowledge-proof '
++          'workflowType=$workflowType instanceId=$instanceId '
++          'transitionId=$transitionId fanId=$fanId '
++          'errorType=${error.runtimeType} message=${error.message}',
++        );
++        final stackLines = stackTrace.toString().split('\n');
++        for (var index = 0; index < stackLines.length; index += 1) {
++          print(
++            'B25_ACK_ENGINE_APPLY_ERROR '
++            'correlationId=ad-off-suppression-proof/acknowledge-proof '
++            'part=stack index=$index value=${stackLines[index]}',
++          );
++        }
++      }
++      // TEMP_B25_ACK_END
+       throw StateError(error.message);
++    } catch (error, stackTrace) {
++      // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++      if (workflowType == 'ad-off-ad-suppression' &&
++          instanceId == 'ad-off-suppression-proof') {
++        print(
++          'B25_ACK_ENGINE_APPLY_ERROR '
++          'correlationId=ad-off-suppression-proof/acknowledge-proof '
++          'workflowType=$workflowType instanceId=$instanceId '
++          'transitionId=$transitionId fanId=$fanId '
++          'errorType=${error.runtimeType} message=$error',
++        );
++        final stackLines = stackTrace.toString().split('\n');
++        for (var index = 0; index < stackLines.length; index += 1) {
++          print(
++            'B25_ACK_ENGINE_APPLY_ERROR '
++            'correlationId=ad-off-suppression-proof/acknowledge-proof '
++            'part=stack index=$index value=${stackLines[index]}',
++          );
++        }
++      }
++      // TEMP_B25_ACK_END
++      rethrow;
+     }
+   }
+ 
+@@ -981,6 +1073,17 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
+       (t) => t.id == transitionId,
+       orElse: () => throw StateError('Unknown transition $transitionId'),
+     );
++    // TEMP_B25_ACK_START: remove after acknowledge-proof trace capture.
++    if (workflowType == 'ad-off-ad-suppression' &&
++        instanceId == 'ad-off-suppression-proof') {
++      final guard = declaredTransition.guard;
++      final allowedRoleIds = guard.allowedRoleIds ?? const <String>[];
++      final actorEqualsField = guard.actorEqualsField;
++      print(
++        'B25_ACK_ENGINE_RESOLVE ${jsonEncode(<String, Object?>{'rowCurrentState': row.currentState, 'fanId': fanId, 'roleId': _roleIdByFanId[fanId], 'memberFanId': data['memberFanId'], 'allowedRoleIds': allowedRoleIds, 'actorEqualsFieldKey': actorEqualsField?.key, 'actorEqualsFieldValue': actorEqualsField == null ? null : data[actorEqualsField.key], 'roleClausePass': allowedRoleIds.contains(_roleIdByFanId[fanId]), 'actorEqualsClausePass': actorEqualsField == null ? true : fanId == data[actorEqualsField.key], 'evaluatorCandidateIds': transitions.map((candidate) => candidate.id).toList(growable: false)})}',
++      );
++    }
++    // TEMP_B25_ACK_END
+     if (!declaredTransition.from.contains(row.currentState)) {
+       throw StateError(
+         'Transition $transitionId not available from state ${row.currentState}',
