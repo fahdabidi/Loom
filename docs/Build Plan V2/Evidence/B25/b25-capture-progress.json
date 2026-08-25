@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "toolId": "b25_capture_workflow_screenshots",
-  "updatedAt": "2026-08-25T07:51:20.426087Z",
+  "updatedAt": "2026-08-25T09:22:21.406681Z",
   "status": "failed",
   "failure": "byte-identical-workflow-frame",
   "mode": "targeted-precheck",
