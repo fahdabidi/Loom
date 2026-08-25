@@ -28,7 +28,27 @@ known answer for every kind of thing it claims to find, not just one.**
 
 ## Open
 
-### The production bar — this is what GA means
+### RESEQUENCED 2026-08-25 — backend migration comes BEFORE the production bar
+
+**User decision.** The live walkthrough and UX judge now run only **after** the app is fully migrated
+to the real backends. Every B25 row proven so far was proven against `LocalWorkflowEngineApi`
+in-process; switching the app to remote authority afterwards would change the thing those rows were
+proven against, so proving them first is wasted work.
+
+Order: **bring k3s up → verify the deployed services → wire the app to the real backends → retire the
+fakes in that path → THEN capture and judge.**
+
+- [ ] `new-milestone` — **1. Bring the cluster up and verify it.** `k3s` is installed but `inactive`; no pods, no containers. Six manifests exist at `loom-backend/deploy/k8s/`. Done when the three engine integration tests stop skipping — 2 need `LOOM_POSTGRES_PASSWORD` against a live k3s Postgres, 1 needs a real fan JWT. Those tests are the acceptance gate; a green deploy that leaves them skipped proves nothing
+- [ ] `new-milestone` — **2. Wire the app to the real backends.** `RemoteWorkflowEngineApi` exists (613 lines, tested) and is **not wired in** — only `part37_remote_auth_session.dart` references it outside tests. Fan Passport and App Access Dart clients already exist in `loom_api_contracts`. This is the largest genuinely-unstarted piece
+- [ ] `new-milestone` — **3. Retire the local backends in that path.** `LocalWorkflowEngineApi`, `LocalAuthApi`, `LocalInAppBackend`, plus the `loom_fake_backend` fakes the ten communities actually exercise. **Scope question still open:** that package has 37 fakes and several look unrelated to these communities (`cross_posting_fake`, `sponsor_campaign_fake`, `creator_channel_registry_fake`) — retire only those in the B25 path, or all 37?
+- [ ] `new-ticket` — **4. Four platform services stay FAKE, by user decision 2026-08-25**: payment processing, ID generation, external search/AI answer, checksum/integrity hash. None exist in any form. They back `paymentCheckout` (5 communities), `exportWizard` (6) and `searchAiAnswer` (2), and ~22 of the 79 rows name export/payment/checkout/receipt/search/digest workflows. Those rows will be proven against fakes and must be recorded as such rather than counted as fully real
+- [ ] `needs-verification` — **5. Only then** capture and judge the 79 rows against the real stack
+
+**Standing rule, user instruction 2026-08-25:** after each implementation cycle, commit and push to
+GitHub, then sync the Windows repo. Applies to `loom-backend` as well as `Loom` — backend work lives
+in a separate repository this tracker cannot see.
+
+### The production bar — deferred until the migration above completes
 
 - [ ] `needs-skill-dispatch` — **5 rows blocked on a missing owner/admin identity: Chess (`chess-export-package`, `chess-pairing-queue`, `chess-rankings-table`) and Book Club (`book-selection-publish`, `book-export-metadata`).** Both ship only Organizer + Member. **CORRECTED 2026-08-24 — the earlier "11 rows" in this row was wrong**: the walkthrough's `_roleIdsForB25Role` already maps `owner` → any identity containing owner/admin/board/coordinator, and `donor` → member, so Cedar (`hoa-board`), Garden (`garden-coordinator`) and Masjid (`mosque-admin`) resolve today and were never blocked. The original cross-check used a naive regex that did not model that mapper — it validated against three *workflow*-missing ground truths and none for roles, so the role half was never checked. `owner` is ratified by the user as a standard platform persona: sets up the community, approves who has access. Note its approval authority is App Access's to enforce, not something package JSON may declare (hard rule 13)
 - [ ] `needs-skill-dispatch` — **Ad-Free `ad-off-community-checkout` names the wrong persona.** Its B25 row says `member`, but the doc's own persona table assigns "Fund/sponsor community ad-off" to **Owner**, and the package ships `ad-off-owner`. The walkthrough fails with "could not derive an actionable instance, actorIdentity, and tab ... for B25 product-doc role `member`" — the role exists, it simply cannot act on that workflow. Doc-internal contradiction, same class as Chess; converge through the Skill

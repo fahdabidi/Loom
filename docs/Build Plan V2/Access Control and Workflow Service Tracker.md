@@ -73,11 +73,38 @@ with the WSL-era commands replaced: the pipeline moved to the VirtualBox VM (`ss
 | Fan Passport identity linking | ✅ built, 13 tests |
 | App Access join requests | ✅ built, 18 tests |
 | App Access derivation endpoint | ❌ specified only |
-| Workflow service | ⏳ all 5 operations built and verified live; k3s deployment remains |
-| Auth / token issuer | ❌ decided (Keycloak-as-broker), not built |
+| Workflow service | ✅ built; **deployed to k3s** (`e282fbc`) and authenticated to App Access (`ffb6ff9`) |
+| Auth / token issuer | ✅ **built** — Keycloak broker + JWT validation live in both Java services (see backend block below) |
 | Community fixtures on specVersion 4 | ✅ all 11 on `specVersion: 4`, zero legacy triple fields, `pendingMigration` empty, and all 11 validate at 0 errors through the validator API (re-measured 2026-08-24) |
 | Corpus validation gate | ✅ `shipped_corpus_validation_test.dart` — every shipped package must validate clean through `POST /validate` |
 | B25 production bar | ❌ **0 of 79 rows durably proven** — `screenshotCount` is 0 in every evidence record, so the UX Review judge has never run |
+
+### 4a. Backend state — lives in a DIFFERENT repository, verify there
+
+**This tracker cannot see the backend, and that is how an eleven-day-old claim survived unchallenged.**
+Phase C was recorded here on 2026-08-14 as *"zero JWT/OAuth2 code exists in either Java service"*. That
+was false by 2026-08-18. Nothing in this repository could contradict it, because the services are not
+in this repository.
+
+The backend is `github.com/fahdabidi/loom-backend`, checked out on the Loom VM at `~/loom-backend`.
+**Never restate a backend row from memory or from an older row here — verify against that checkout.**
+
+Verified 2026-08-25 against `loom-backend` @ `2646c91` (committed 2026-08-18, clean tree, `0 0` against
+`origin/main`):
+
+| Backend area | State | Evidence |
+|---|---|---|
+| Services | 3 | `services/{app-access,fan-passport,keycloak-broker-authenticator}` |
+| JWT validation | ✅ both services | `JwtSecurityConfiguration.java`, 63 lines each; rolled out at `75b771c` |
+| Keycloak broker | ✅ phase-c3 | `1bf3071` fail-closed fanId authenticator, baked in at `70df1c0`, rolled at `2646c91` |
+| App Access grants | ✅ derived | `a96c184` derive community package grants |
+| Workflow service in k3s | ✅ deployed | `e282fbc`, authenticated to App Access at `ffb6ff9` |
+| k8s manifests | 6 | `deploy/k8s/{app-access,fan-passport,ingress,keycloak,postgres,workflow-service}.yaml` |
+| **Cluster running?** | ❌ **k3s inactive** | `systemctl is-active k3s` → `inactive`; no pods, no containers |
+
+So Phases C and D are substantially BUILT but nothing is currently RUNNING. That is also why the three
+engine integration tests skip — they need a live k3s Postgres and a real fan JWT, and those three
+un-skipping is the honest acceptance gate for B/C/D rather than any row above.
 
 **Suite baselines, measured on Windows 2026-08-24** — quote these rather than any number inside a §8 entry,
 which is a snapshot from the day it was written: judges **428**, app shell **271**, engine **281 (+3
