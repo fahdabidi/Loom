@@ -290,3 +290,79 @@ and never a per-transition permission. Recorded because it is a live trap: if pe
 enforcement is ever extended to transitions, AdFree and MemberSocialSpace have no
 derivable permissions at all and would fail closed on every action, which would read as a
 product bug rather than a missing `action` field.
+
+## Addendum 4 — CORRECTION: this was built in the wrong place, and 1g was wrong
+
+Two dispatches produced a client-side deriver and applier that read the packages, derived
+role permissions, and wrote groups, roles and catalog entries to App Access. That was the
+wrong design, and `docs/references/reference/permissions.md` says so explicitly:
+
+> **Where this runs.** In the **App Access service**, via
+> `POST /v1/apps/{appId}/community-installations`. **Not in the client, and not in the
+> authoring toolchain.**
+
+That endpoint exists and is implemented on the deployed service
+(`AppAccessController.installCommunityPackage`). One call per community performs the whole
+operation: create the group, register the roles, derive the permissions, grant them.
+
+I found this only after the applier failed three times in a row. Each failure was diagnosed
+correctly and each fix was locally reasonable, but the sequence should have prompted the
+question earlier: **when a component keeps hitting walls that a service-side API would not
+have, check whether the work belongs on the other side of the boundary.** The spec had said
+so all along, in a file already sitting in the repo.
+
+### What was wrong, precisely
+
+1. **The permission catalog cannot be written the way the applier tried.**
+   `/v1/apps/{appId}/permissions` supports **GET and PUT only** — PUT being
+   `replacePermissionCatalog`, which replaces the *whole* catalog. The deployed service
+   answers POST with a 500 (`HttpRequestMethodNotSupportedException`) rather than a 405,
+   which is a server bug in its own right but not the cause.
+
+2. **The derived plan contained 4 permission ids that do not exist in the vocabulary**:
+   `document_library.create`, `equipment_loan.create`, `export_wizard.create`,
+   `search_ai_answer.create`. All four are **bespoke** archetypes, and bespoke archetypes
+   carry a fixed action list with no `create` in it. The client-side rule invented them.
+
+3. **The create-permission rule I specified was wrong.** permissions.md step 6 is:
+   "For each `create` action's `byRoleIds`, add the archetype's `create` permission."
+   I had specified "the roles guarding transitions out of `initialState`" — a plausible
+   inference, measured carefully across all 95 workflows, and still wrong, because it
+   measured the wrong field.
+
+4. **Item 1g is RETRACTED.** It claimed four workflows "never say who may create them."
+   They do: creation authority is `byRoleIds` on create actions, and every shipped package
+   declares them — 2 to 11 per package, 70 across the corpus, including all four workflows
+   I named. The finding was an artifact of looking at transition guards.
+
+   Worth being precise about why that one slipped through: the sweep behind 1g *was*
+   validated across all 11 packages and all 95 workflows, which is the discipline this
+   project keeps insisting on. Breadth did not help, because every reading looked at the
+   same wrong field. **Validating a sweep against many cases does not validate the sweep's
+   premise** — for that, the spec has to be read.
+
+### The authoritative permission set
+
+`docs/references/generated/permissions-vocabulary.json` defines **97** permission ids and
+is GENERATED from `archetype_resolver.dart` by
+`app/packages/tooling/loom_ux_judges/bin/generate_permissions_vocabulary.dart`, explicitly
+so that "the derivation rules defined in permissions.md exist in exactly one place." It is
+consumed by both the Dart validator and the Java App Access installer.
+
+The deployed catalog holds 69, of which 26 are not in the vocabulary and **54 vocabulary
+ids are missing**. The backend's own copy of the vocabulary file differs from the Loom
+repo's by exactly one id (`event_rsvp.deliver_reminder`), so a stale file is not the
+explanation — the deployed catalog was seeded from something older than either. Left
+alone deliberately: catalog reconciliation is its own decision, and a partial PUT would
+silently delete the 26 entries the packages do not use.
+
+### What survives
+
+The group creation from the first run stands — 11 groups exist with the right ids, and
+installation is idempotent over them. The package loading and archetype resolution survive.
+The error-body surfacing added by the second dispatch earned its keep immediately: it is
+the only reason the 500 above was diagnosable at all.
+
+Items 1d and 1e are unaffected in substance — the group map is still empty and the role id
+spaces still differ. What changed is the mechanism that closes them: one install call per
+community, not a client-side reimplementation.
