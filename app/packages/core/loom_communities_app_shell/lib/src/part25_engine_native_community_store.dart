@@ -142,8 +142,29 @@ WorkflowEngineApi _createLocalEngineNativeCommunityEngine({
   notificationDeliveryService: LocalNotificationDeliveryService(),
 );
 
-EngineNativeCommunityEngineFactory _engineNativeCommunityEngineFactory =
+/// The factory selected by the production host at app startup.
+///
+/// It intentionally defaults to the exact local factory used before the
+/// production seam existed. Stores capture the selected factory when they are
+/// installed, so hosts should configure this before resolving any community
+/// experience.
+EngineNativeCommunityEngineFactory
+_productionEngineNativeCommunityEngineFactory =
     _createLocalEngineNativeCommunityEngine;
+
+/// Selects the engine factory for newly installed community stores.
+///
+/// This is the production configuration surface. It is deliberately distinct
+/// from [overrideEngineNativeCommunityEngineFactoryForTesting], whose only
+/// purpose is to replace the normal production selection inside tests.
+void configureEngineNativeCommunityEngineFactoryForProduction(
+  EngineNativeCommunityEngineFactory factory,
+) {
+  _productionEngineNativeCommunityEngineFactory = factory;
+}
+
+EngineNativeCommunityEngineFactory?
+_engineNativeCommunityEngineFactoryOverrideForTesting;
 
 final Map<String, EngineNativeCommunityEngineFactory>
 _engineNativeCommunityEngineFactoriesByExtensionId =
@@ -153,12 +174,18 @@ _engineNativeCommunityEngineFactoriesByExtensionId =
 void overrideEngineNativeCommunityEngineFactoryForTesting(
   EngineNativeCommunityEngineFactory factory,
 ) {
-  _engineNativeCommunityEngineFactory = factory;
+  _engineNativeCommunityEngineFactoryOverrideForTesting = factory;
 }
 
 @visibleForTesting
 void resetEngineNativeCommunityEngineFactoryForTesting() {
-  _engineNativeCommunityEngineFactory = _createLocalEngineNativeCommunityEngine;
+  _engineNativeCommunityEngineFactoryOverrideForTesting = null;
+}
+
+@visibleForTesting
+void resetProductionEngineNativeCommunityEngineFactoryForTesting() {
+  _productionEngineNativeCommunityEngineFactory =
+      _createLocalEngineNativeCommunityEngine;
 }
 
 void _registerEngineNativeCommunityEngineFactory({
@@ -200,7 +227,8 @@ class _EngineNativeCommunityStore {
   late final WorkflowDatabase _database = WorkflowDatabase.memory();
   late final WorkflowEngineApi engine =
       (_engineNativeCommunityEngineFactoriesByExtensionId[extensionId] ??
-      _engineNativeCommunityEngineFactory)(
+      _engineNativeCommunityEngineFactoryOverrideForTesting ??
+      _productionEngineNativeCommunityEngineFactory)(
         database: _database,
         extensionId: extensionId,
       );

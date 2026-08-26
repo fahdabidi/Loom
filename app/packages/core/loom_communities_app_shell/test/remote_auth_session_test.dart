@@ -74,6 +74,7 @@ void main() {
     resetLoomAuthSessionForTesting();
     resetEngineNativeCommunityFactoryRegistrationsForTesting();
     resetEngineNativeCommunityEngineFactoryForTesting();
+    resetProductionEngineNativeCommunityEngineFactoryForTesting();
   });
 
   test('session seam defaults to null and reset restores that default', () {
@@ -88,30 +89,91 @@ void main() {
   });
 
   test(
-    'remote factory exposes the session access-token provider tear-off',
+    'configured production factory returns the configured remote engine',
     () async {
       const expectedToken = 'known-remote-bearer-token';
       final session = _TokenLoomAuthSession(expectedToken);
       final httpClient = MockClient(
         (_) async => throw StateError('No HTTP request expected in this test.'),
       );
-      final database = WorkflowDatabase.memory();
-      addTearDown(database.close);
       addTearDown(httpClient.close);
 
-      final factory = createRemoteEngineNativeCommunityEngineFactory(
-        session: session,
-        workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
-        httpClient: httpClient,
+      configureEngineNativeCommunityEngineFactoryForProduction(
+        createRemoteEngineNativeCommunityEngineFactoryForConfiguration(
+          configuration: LoomRemoteServiceConfiguration(
+            session: session,
+            workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+          ),
+          httpClient: httpClient,
+        ),
       );
-      final engine = factory(
-        database: database,
-        extensionId: 'remote-factory-test-community',
-      );
+      const extensionId = 'remote-factory-test-community';
+      _installEngineNativeTestExperience(extensionId);
+      final engine = await workflowEngineForExtensionId(extensionId);
 
       expect(engine, isA<RemoteWorkflowEngineApi>());
       final remoteEngine = engine as RemoteWorkflowEngineApi;
+      expect(remoteEngine.communityId, extensionId);
+      expect(remoteEngine.baseUri, Uri.parse('https://workflow.test/api/'));
       expect(await remoteEngine.bearerTokenProvider(), expectedToken);
+    },
+  );
+
+  test('production factory defaults to the local engine', () async {
+    const firstExtensionId = 'production-default-local-first';
+    const secondExtensionId = 'production-default-local-second';
+    _installEngineNativeTestExperience(firstExtensionId);
+    _installEngineNativeTestExperience(secondExtensionId);
+
+    final engines = await Future.wait(<Future<WorkflowEngineApi>>[
+      workflowEngineForExtensionId(firstExtensionId),
+      workflowEngineForExtensionId(secondExtensionId),
+    ]);
+
+    expect(engines, everyElement(isA<LocalWorkflowEngineApi>()));
+  });
+
+  test(
+    'testing override takes precedence temporarily over production selection',
+    () async {
+      const overriddenExtensionId = 'production-seam-testing-override';
+      const productionExtensionId = 'production-seam-after-test-override';
+      final fake = _FakeWorkflowEngineApi();
+      final session = _TokenLoomAuthSession('override-token');
+      final httpClient = MockClient(
+        (_) async => throw StateError('No HTTP request expected in this test.'),
+      );
+      addTearDown(httpClient.close);
+
+      configureEngineNativeCommunityEngineFactoryForProduction(
+        createRemoteEngineNativeCommunityEngineFactoryForConfiguration(
+          configuration: LoomRemoteServiceConfiguration(
+            session: session,
+            workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+          ),
+          httpClient: httpClient,
+        ),
+      );
+      overrideEngineNativeCommunityEngineFactoryForTesting(({
+        required WorkflowDatabase database,
+        required String extensionId,
+      }) {
+        expect(extensionId, overriddenExtensionId);
+        return fake;
+      });
+      _installEngineNativeTestExperience(overriddenExtensionId);
+
+      expect(
+        await workflowEngineForExtensionId(overriddenExtensionId),
+        same(fake),
+      );
+
+      resetEngineNativeCommunityEngineFactoryForTesting();
+      _installEngineNativeTestExperience(productionExtensionId);
+      expect(
+        await workflowEngineForExtensionId(productionExtensionId),
+        isA<RemoteWorkflowEngineApi>(),
+      );
     },
   );
 
@@ -144,35 +206,6 @@ void main() {
       expect(engines[1], isA<LocalWorkflowEngineApi>());
     },
   );
-
-  test('resetting all registrations restores local routing for all', () async {
-    const firstExtensionId = 'per-community-reset-first';
-    const secondExtensionId = 'per-community-reset-second';
-    final session = _TokenLoomAuthSession('reset-token');
-    final httpClient = MockClient(
-      (_) async => throw StateError('No HTTP request expected in this test.'),
-    );
-    addTearDown(httpClient.close);
-
-    for (final extensionId in <String>[firstExtensionId, secondExtensionId]) {
-      enableRemoteEngineForCommunity(
-        extensionId: extensionId,
-        session: session,
-        workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
-        httpClient: httpClient,
-      );
-    }
-    resetEngineNativeCommunityFactoryRegistrationsForTesting();
-    _installEngineNativeTestExperience(firstExtensionId);
-    _installEngineNativeTestExperience(secondExtensionId);
-
-    final engines = await Future.wait(<Future<WorkflowEngineApi>>[
-      workflowEngineForExtensionId(firstExtensionId),
-      workflowEngineForExtensionId(secondExtensionId),
-    ]);
-
-    expect(engines, everyElement(isA<LocalWorkflowEngineApi>()));
-  });
 
   test('disable removes remote routing before store installation', () async {
     const extensionId = 'per-community-disable-before-install';
@@ -230,47 +263,6 @@ void main() {
     );
     expect(originalEngine, isA<LocalWorkflowEngineApi>());
   });
-
-  test(
-    'per-community registration precedes global override and global remains fallback',
-    () async {
-      const remoteExtensionId = 'per-community-precedence-remote';
-      const fallbackExtensionId = 'per-community-precedence-fallback';
-      final fakeGlobalEngine = _FakeWorkflowEngineApi();
-      final globalFactoryExtensionIds = <String>[];
-      overrideEngineNativeCommunityEngineFactoryForTesting(({
-        required WorkflowDatabase database,
-        required String extensionId,
-      }) {
-        globalFactoryExtensionIds.add(extensionId);
-        return fakeGlobalEngine;
-      });
-      final session = _TokenLoomAuthSession('precedence-token');
-      final httpClient = MockClient(
-        (_) async => throw StateError('No HTTP request expected in this test.'),
-      );
-      addTearDown(httpClient.close);
-      enableRemoteEngineForCommunity(
-        extensionId: remoteExtensionId,
-        session: session,
-        workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
-        httpClient: httpClient,
-      );
-
-      _installEngineNativeTestExperience(remoteExtensionId);
-      _installEngineNativeTestExperience(fallbackExtensionId);
-      final remoteEngine = await workflowEngineForExtensionId(
-        remoteExtensionId,
-      );
-      final fallbackEngine = await workflowEngineForExtensionId(
-        fallbackExtensionId,
-      );
-
-      expect(remoteEngine, isA<RemoteWorkflowEngineApi>());
-      expect(fallbackEngine, same(fakeGlobalEngine));
-      expect(globalFactoryExtensionIds, <String>[fallbackExtensionId]);
-    },
-  );
 
   test(
     'per-community remote engine passes through the store Local-only gates',

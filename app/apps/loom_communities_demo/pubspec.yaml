@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  http: ^1.6.0
   loom_app_shell:
     path: ../../packages/core/loom_app_shell
   loom_communities_app_shell:

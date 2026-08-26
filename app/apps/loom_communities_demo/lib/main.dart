@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 
@@ -9,6 +10,15 @@ const bool _preloadExampleCommunities = bool.fromEnvironment(
 );
 
 void main() {
+  final remoteServices = configureLoomRemoteServicesFromEnvironment();
+  if (remoteServices != null) {
+    configureEngineNativeCommunityEngineFactoryForProduction(
+      createRemoteEngineNativeCommunityEngineFactoryForConfiguration(
+        configuration: remoteServices,
+        httpClient: http.Client(),
+      ),
+    );
+  }
   runApp(const LoomCommunitiesDemoApp());
 }
 

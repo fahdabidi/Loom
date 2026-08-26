@@ -3,9 +3,8 @@ part of '../loom_communities_app_shell.dart';
 /// The app-level remote-service configuration built from compile-time values.
 ///
 /// [session] owns the persisted OAuth2 Authorization Code + PKCE session, and
-/// [workflowServiceBaseUri] is retained separately so a later per-community
-/// opt-in can build a remote workflow-engine factory without changing the
-/// local default.
+/// [workflowServiceBaseUri] identifies the workflow service used by the
+/// production community-engine factory.
 final class LoomRemoteServiceConfiguration {
   const LoomRemoteServiceConfiguration({
     required this.session,
@@ -39,9 +38,8 @@ LoomAuthSession? get loomAuthSession => _loomAuthSession;
 /// When none of the defines are present, this returns `null` and leaves the
 /// app shell unconfigured. A partially configured invocation throws a clear
 /// [StateError] only when this function is called; configuration is never read
-/// eagerly at library import time. The returned workflow-service URI can be
-/// passed to [createRemoteEngineNativeCommunityEngineFactory] in later,
-/// explicit per-community enablement work.
+/// eagerly at library import time. App startup supplies the returned
+/// configuration to its production community-engine selection.
 LoomRemoteServiceConfiguration? configureLoomRemoteServicesFromEnvironment({
   http.Client? authHttpClient,
   FlutterSecureStorage secureStorage = const FlutterSecureStorage(),
@@ -115,6 +113,21 @@ createRemoteEngineNativeCommunityEngineFactory({
           bearerTokenProvider: session.currentAccessToken,
           httpClient: httpClient,
         );
+
+/// Builds the remote community-engine factory from the app's remote-service
+/// configuration.
+///
+/// Keeping this adapter separate from the selection in part25 makes the
+/// remote configuration a production input, not a test override.
+EngineNativeCommunityEngineFactory
+createRemoteEngineNativeCommunityEngineFactoryForConfiguration({
+  required LoomRemoteServiceConfiguration configuration,
+  required http.Client httpClient,
+}) => createRemoteEngineNativeCommunityEngineFactory(
+  session: configuration.session,
+  workflowServiceBaseUri: configuration.workflowServiceBaseUri,
+  httpClient: httpClient,
+);
 
 /// Routes one community to the remote workflow engine.
 ///

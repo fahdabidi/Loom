@@ -82,6 +82,12 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
   final http.Client _httpClient;
   final Future<String> Function() bearerTokenProvider;
 
+  /// Normalized service URI used for remote workflow requests.
+  Uri get baseUri => _baseUri;
+
+  /// Community identifier included in every remote workflow request.
+  String get communityId => _communityId;
+
   static final Random _secureRandom = Random.secure();
 
   @override
