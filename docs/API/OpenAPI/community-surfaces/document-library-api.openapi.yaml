@@ -1,0 +1,455 @@
+openapi: 3.1.0
+info:
+  title: Loom Document Library API
+  version: 0.1.0
+  summary: Stored bytes for the `documentLibrary` archetype, governed by the community's own workflow.
+  description: >-
+    Holds the files behind the `documentLibrary` archetype: a member uploads a PDF, the library keeps
+    the bytes, and who may read them is decided by the community's workflow definition rather than by
+    this service.
+
+
+    **This is not a general file store.** Every document is bound to one workflow instance, and that
+    instance is what gives it meaning and access rules. There is no way to upload a file that belongs
+    to nothing -- an orphaned blob has no owner, no state, and therefore no answer to "who may read
+    this", and the only safe answer to an unanswerable access question is to refuse the write.
+
+
+    **Access is derived, never asserted.** A caller cannot state who may read a document. It says which
+    instance the document belongs to; this service resolves the rest from the workflow definition,
+    exactly as `../community-surfaces/workflow-engine-api.openapi.yaml` resolves transition guards.
+    That spec's rule applies verbatim here: identity comes from the token, never from the request, and
+    a client that could name its own roles has no access control at all. A client that could name its
+    own reader list would be the same hole with a different shape.
+
+
+    **Derivation, in full.** A document is readable by the union of
+
+      1. every fan whose roles satisfy the `readGuard` of the instance's **current** state -- falling
+         back to the workflow's `visibility.readGuard` when the state declares none, which is the
+         precedence the engine already applies;
+      2. the document's owner, being the fan whose upload created it;
+      3. every fan listed in the instance field named by `visibility.fields.sharedWith`.
+
+    An unset or empty shared-with list admits nobody, never everybody. Read guards fail closed: a
+    document whose instance carries no identity is visible to no one rather than to everyone.
+
+
+    **Resolved at access time, not frozen at upload.** Cedar Commons HOA keeps drafts readable only by
+    `hoa-board` and published documents readable by every `hoa-member`. Those are two different reader
+    sets for the same bytes, separated by one `publish` transition. A reader list captured when the
+    file was uploaded would still say "board only" after publication -- publishing would not publish.
+    So the list is recomputed on every request, and `GET /documents/{documentId}/access` exposes the
+    current answer rather than a stored one.
+
+
+    **Writing is a workflow action, not a file operation.** Uploading requires that the caller could
+    invoke a transition whose `action` is `upload` on that instance; deleting requires `delete`.
+    Neither permission is granted by this service or configured on it. Both come from
+    `action` + `allowedRoleIds` in the community's JSON, derived as `../../../references/reference/permissions.md`
+    describes. A community that grants only `archive` and never `delete` gets a document store where
+    nothing can be destroyed, without configuring anything here.
+servers:
+  - url: https://communities.loom.example
+security:
+  - LoomUserOAuth:
+      - community.workflow
+  - LoomServiceAuth: []
+x-loom-api-owner: community-surfaces/workflow-engine
+x-loom-archetype: documentLibrary
+x-loom-architecture-docs:
+  - ../../../references/archetypes/document-library.md
+  - ../../../references/reference/permissions.md
+x-loom-upstream-apis:
+  - ./workflow-engine-api.openapi.yaml
+  - ../identity/app-access-api.openapi.yaml
+
+tags:
+  - name: Documents
+    description: Upload, read and remove the bytes bound to a workflow instance.
+  - name: Access
+    description: The resolved reader and writer sets for a document.
+
+paths:
+  /v1/communities/{communityId}/instances/{instanceId}/documents:
+    post:
+      tags:
+        - Documents
+      operationId: uploadDocument
+      summary: Store a file against a workflow instance.
+      description: >-
+        Requires that the caller could invoke an `upload` transition on this instance. The check is the
+        engine's own guard evaluation, not a separate permission model, so a community that never
+        declares an `upload` transition has a library nobody can write to -- which is the honest
+        outcome of what it declared.
+
+
+        `fieldName` names the instance field this document fills, so the workflow keeps a reference
+        rather than a typed-in URL. The field must be declared by the workflow definition; an unknown
+        field is a 400 rather than a silently orphaned upload.
+
+
+        Uploading twice with the same `Idempotency-Key` returns the first document rather than storing
+        the bytes a second time.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/InstanceId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, fieldName]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The bytes. Rejected with 413 above `maxUploadBytes`.
+                fieldName:
+                  type: string
+                  description: >-
+                    The instance field this document fills, e.g. `attachmentUrl`. Must be declared by
+                    the workflow definition.
+                  examples: [attachmentUrl]
+                title:
+                  type: string
+                  description: Display title. Defaults to the uploaded filename.
+                contentType:
+                  type: string
+                  description: >-
+                    Overrides the part's own media type. Stored as given and echoed on download; it is
+                    never used to decide whether the bytes are safe to render.
+            encoding:
+              file:
+                contentType: application/octet-stream
+      responses:
+        '201':
+          description: Stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          description: >-
+            The caller could not invoke an `upload` transition on this instance. Deliberately
+            indistinguishable from the 403 an unreadable instance returns, so a probe cannot map which
+            instances exist.
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+        '413':
+          description: The file exceeds `maxUploadBytes`.
+    get:
+      tags:
+        - Documents
+      operationId: listInstanceDocuments
+      summary: List the documents on an instance that the caller may read.
+      description: >-
+        Filtered by the same derivation a single read applies, so a document the caller may not read is
+        absent rather than present-and-forbidden. An empty list and a list withheld are the same
+        response on purpose.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/InstanceId'
+      responses:
+        '200':
+          description: The readable documents.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [documents]
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  /v1/communities/{communityId}/documents/{documentId}:
+    get:
+      tags:
+        - Documents
+      operationId: getDocument
+      summary: Read a document's metadata.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: The document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '404':
+          description: >-
+            No such document, or the caller may not read it. One status for both: distinguishing them
+            would let an unauthorised caller enumerate document ids.
+    delete:
+      tags:
+        - Documents
+      operationId: deleteDocument
+      summary: Remove a document and its bytes.
+      description: >-
+        Requires that the caller could invoke a `delete` transition on the instance. `delete` and
+        `archive` are different actions: archiving retires a document that still exists, deleting
+        removes the bytes. A community that grants only `archive` cannot reach this endpoint at all.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '204':
+          description: Removed.
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          description: The caller could not invoke a `delete` transition on the owning instance.
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  /v1/communities/{communityId}/documents/{documentId}/content:
+    get:
+      tags:
+        - Documents
+      operationId: downloadDocumentContent
+      summary: Read the bytes.
+      description: >-
+        Streams the stored object. The read derivation is evaluated on this request, so a document that
+        became readable a second ago is readable now and one that was archived a second ago is not.
+
+
+        `Content-Disposition: attachment` is always set. These bytes were uploaded by a community
+        member and are served from a Loom origin; rendering them inline would let an uploaded HTML file
+        execute against that origin.
+
+
+        Recording that a download happened is a workflow transition (`download`), not a side effect of
+        this endpoint. This service does not mutate instance state -- a service that quietly wrote to
+        the instance on read would make `downloadedFanIds` disagree with the transition log.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: The bytes.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              description: Always `attachment`, with the stored filename.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '404':
+          description: No such document, or the caller may not read it.
+
+  /v1/communities/{communityId}/documents/{documentId}/access:
+    get:
+      tags:
+        - Access
+      operationId: getDocumentAccess
+      summary: The resolved reader and writer sets, and where each came from.
+      description: >-
+        The runtime answer to "who may read this", computed now from the workflow definition and the
+        instance's current state. This is what the client renders as a shared-with list; it is not a
+        stored field and cannot be written.
+
+
+        `derivation` reports which rule admitted each fan, so a member asking "why can they see this?"
+        gets an answer that names a role, an ownership, or a share, rather than an opaque list.
+
+
+        Requires that the caller may read the document. Who may read a document is itself information
+        about the community's membership.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/DocumentId'
+      responses:
+        '200':
+          description: The resolved access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentAccess'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '404':
+          description: No such document, or the caller may not read it.
+
+components:
+  parameters:
+    CommunityId:
+      name: communityId
+      in: path
+      required: true
+      schema:
+        type: string
+    InstanceId:
+      name: instanceId
+      in: path
+      required: true
+      schema:
+        type: string
+    DocumentId:
+      name: documentId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    Document:
+      type: object
+      required:
+        - documentId
+        - communityId
+        - instanceId
+        - workflowType
+        - fieldName
+        - title
+        - filename
+        - contentType
+        - byteSize
+        - ownerFanId
+        - uploadedAt
+      properties:
+        documentId:
+          type: string
+          description: Opaque. Not derived from the filename, which a member chose and may repeat.
+        communityId:
+          type: string
+        instanceId:
+          type: string
+          description: The workflow instance this document belongs to, and the source of its access rules.
+        workflowType:
+          type: string
+        fieldName:
+          type: string
+          description: The instance field this document fills.
+          examples: [attachmentUrl]
+        title:
+          type: string
+        filename:
+          type: string
+          description: >-
+            As uploaded, for display and for `Content-Disposition`. Never used to build a storage path:
+            a member-supplied name that reached the object key could traverse it.
+        contentType:
+          type: string
+        byteSize:
+          type: integer
+          format: int64
+        ownerFanId:
+          type: string
+          description: The fan whose upload created this document. Always a reader, whatever the state's guard says.
+        uploadedAt:
+          type: string
+          format: date-time
+        contentUrl:
+          type: string
+          format: uri
+          description: >-
+            Relative URL of the content endpoint. A convenience for the client, not a capability: it
+            carries no token and grants nothing on its own.
+
+    DocumentAccess:
+      type: object
+      required: [documentId, instanceState, readFanIds, writeFanIds, derivation]
+      properties:
+        documentId:
+          type: string
+        instanceState:
+          type: string
+          description: >-
+            The state the derivation was evaluated against. Included because the answer is only true
+            for this state -- a `publish` changes it.
+        readFanIds:
+          type: array
+          items:
+            type: string
+          description: Every fan who may read the document right now.
+        writeFanIds:
+          type: array
+          items:
+            type: string
+          description: >-
+            Every fan who could invoke an `upload` or `delete` transition on the owning instance right
+            now. Writers are not automatically readers, and are not merged into `readFanIds`: a
+            community may let a role file documents it cannot read back.
+        derivation:
+          $ref: '#/components/schemas/DocumentAccessDerivation'
+
+    DocumentAccessDerivation:
+      type: object
+      description: Why each fan is in the set. One entry per rule that admitted anybody.
+      required: [byRole, byOwner, byShare]
+      properties:
+        byRole:
+          type: array
+          description: Fans admitted by the current state's `readGuard`, grouped by the role that admitted them.
+          items:
+            type: object
+            required: [roleId, fanIds]
+            properties:
+              roleId:
+                type: string
+              fanIds:
+                type: array
+                items:
+                  type: string
+        byOwner:
+          type: array
+          description: The owner, when the guard did not already admit them. Zero or one entry.
+          items:
+            type: string
+        byShare:
+          type: object
+          description: Fans admitted by the instance's shared-with field.
+          required: [fieldName, fanIds]
+          properties:
+            fieldName:
+              type: string
+              description: >-
+                The field named by `visibility.fields.sharedWith`. Null when the community declared no
+                sharing, which is different from declaring it and sharing with nobody.
+            fanIds:
+              type: array
+              items:
+                type: string
+
+  securitySchemes:
+    LoomUserOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.loom.example/oauth2/authorize
+          tokenUrl: https://auth.loom.example/oauth2/token
+          scopes:
+            community.workflow: Act within a community's workflows.
+    LoomServiceAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
