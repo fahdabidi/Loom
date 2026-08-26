@@ -52,6 +52,45 @@ Future<void> main() async {
     clientId: appAccessClientId,
     clientSecret: appAccessClientSecret,
   );
+  // Document storage is optional. A deployment without MinIO configured still
+  // serves every workflow endpoint; only the document endpoints answer 503.
+  // Requiring it would make a service that has run for months refuse to start
+  // over a feature most of its traffic never touches.
+  DocumentRepository? documentRepository;
+  DocumentObjectStore? documentObjectStore;
+  final minioEndpoint = environment['LOOM_MINIO_ENDPOINT'];
+  final minioAccessKey = environment['LOOM_MINIO_ACCESS_KEY'];
+  final minioSecretKey = environment['LOOM_MINIO_SECRET_KEY'];
+  if (minioEndpoint != null &&
+      minioEndpoint.isNotEmpty &&
+      minioAccessKey != null &&
+      minioAccessKey.isNotEmpty &&
+      minioSecretKey != null &&
+      minioSecretKey.isNotEmpty) {
+    final store = MinioDocumentObjectStore.fromConfiguration(
+      // A host, never a URL: the client takes the scheme separately, so
+      // "http://minio" here becomes a literal hostname and a DNS failure.
+      endpoint: minioEndpoint,
+      port: int.parse(environment['LOOM_MINIO_PORT'] ?? '9000'),
+      accessKey: minioAccessKey,
+      secretKey: minioSecretKey,
+      bucket: environment['LOOM_MINIO_BUCKET'] ?? 'loom-documents',
+      useSsl: environment['LOOM_MINIO_USE_SSL'] == 'true',
+    );
+    // Both at startup, so a bad endpoint or a missing table fails the boot
+    // rather than the first member who tries to upload something.
+    await store.ensureBucket();
+    final repository = PostgresDocumentRepository(postgres.connection);
+    await repository.migrate();
+    documentObjectStore = store;
+    documentRepository = repository;
+    stdout.writeln('Document storage ready on $minioEndpoint.');
+  } else {
+    stdout.writeln(
+      'LOOM_MINIO_* not set: document endpoints will answer 503.',
+    );
+  }
+
   final identityExtractor = JwtWorkflowIdentityExtractor(
     jwksUri: Uri.parse(jwtJwksUri),
     expectedIssuer: jwtIssuer,
@@ -63,6 +102,8 @@ Future<void> main() async {
     communityGroupIdResolver: MapCommunityGroupIdResolver.fromJson(
       communityGroupIds,
     ),
+    documentRepository: documentRepository,
+    documentObjectStore: documentObjectStore,
   );
   final server = await shelf_io.serve(
     service.handler,

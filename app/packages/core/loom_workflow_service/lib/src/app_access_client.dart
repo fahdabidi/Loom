@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'document_access.dart';
+
 /// App Access operations required by the workflow service.
 abstract interface class AppAccessDecisionClient {
   Future<bool> checkAccess({
@@ -28,6 +30,17 @@ abstract interface class AppAccessDecisionClient {
   /// a role to.
   Future<bool> hasActiveMembership({
     required String fanId,
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  });
+
+  /// Every membership in [groupId], with the roles each member holds.
+  ///
+  /// Needed to answer "who may read this?" rather than "may this fan read it?".
+  /// The second question is one engine call; the first is the same call for
+  /// every member, and only App Access knows who those are.
+  Future<List<GroupMember>> listGroupMembers({
     required String appId,
     required String groupId,
     required String correlationId,
@@ -244,6 +257,74 @@ class HttpAppAccessDecisionClient implements AppAccessDecisionClient {
       );
     }
     return decoded['state'] == 'active';
+  }
+
+  @override
+  Future<List<GroupMember>> listGroupMembers({
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  }) async {
+    final accessToken = await _loadAccessToken();
+    final request = await _httpClient.getUrl(
+      _baseUri.resolve(
+        'v1/apps/${Uri.encodeComponent(appId)}/groups/'
+        '${Uri.encodeComponent(groupId)}/members',
+      ),
+    );
+    request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+    request.headers.set('x-loom-correlation-id', correlationId);
+
+    final response = await request.close();
+    final encoded = await utf8.decoder.bind(response).join();
+    if (response.statusCode != HttpStatus.ok) {
+      throw AppAccessDecisionException(
+        'App Access returned HTTP ${response.statusCode}.',
+        statusCode: response.statusCode,
+      );
+    }
+
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(encoded);
+    } on FormatException {
+      throw const AppAccessDecisionException(
+        'App Access returned a malformed member list.',
+      );
+    }
+    final items = decoded is Map<String, dynamic> ? decoded['items'] : decoded;
+    if (items is! List<dynamic>) {
+      throw const AppAccessDecisionException(
+        'App Access returned a malformed member list.',
+      );
+    }
+
+    final members = <GroupMember>[];
+    for (final item in items) {
+      if (item is! Map<String, dynamic>) {
+        throw const AppAccessDecisionException(
+          'App Access returned a malformed member list.',
+        );
+      }
+      final fanId = item['fanId'];
+      final state = item['state'];
+      if (fanId is! String || state is! String) {
+        throw const AppAccessDecisionException(
+          'App Access returned a malformed member list.',
+        );
+      }
+      final roleIds = <String>{};
+      final rawRoles = item['roleIds'];
+      if (rawRoles is List<dynamic>) {
+        for (final roleId in rawRoles) {
+          if (roleId is String) roleIds.add(roleId);
+        }
+      }
+      members.add(
+        GroupMember(fanId: fanId, roleIds: roleIds, state: state),
+      );
+    }
+    return members;
   }
 
   Future<String> _loadAccessToken() async {

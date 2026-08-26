@@ -1,5 +1,8 @@
 export 'src/app_access_client.dart';
 export 'src/community_group_id_resolver.dart';
+export 'src/document_access.dart';
+export 'src/document_object_store.dart';
+export 'src/document_repository.dart';
 export 'src/identity.dart';
 export 'src/jwt_identity_extractor.dart';
 export 'src/postgres_connection.dart';

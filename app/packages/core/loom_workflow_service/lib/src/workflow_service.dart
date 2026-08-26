@@ -2,13 +2,18 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:shelf/shelf.dart';
+import 'package:shelf_multipart/shelf_multipart.dart';
 
 import 'app_access_client.dart';
 import 'community_group_id_resolver.dart';
 import 'definition_validation.dart';
+import 'document_access.dart';
+import 'document_object_store.dart';
+import 'document_repository.dart';
 import 'identity.dart';
 
 /// Shelf HTTP adapter for the workflow-engine OpenAPI surface.
@@ -40,6 +45,15 @@ class WorkflowService {
   final void Function(String) _unexpectedErrorLogSink;
   final Map<String, LocalWorkflowEngineApi> _engines = {};
 
+  /// Document storage, absent when the deployment has none configured.
+  ///
+  /// Nullable rather than required so the service still starts, and every other
+  /// endpoint still works, when object storage is unreachable or simply not
+  /// deployed. The document endpoints then answer 503 instead of the whole
+  /// service failing to boot over a feature most requests never touch.
+  final DocumentRepository? _documentRepository;
+  final DocumentObjectStore? _documentObjectStore;
+
   // WorkflowDatabase's transaction boundary uses one externally-owned
   // PostgreSQL connection. Keep whole transitions sequential so statements
   // from two HTTP requests cannot interleave between BEGIN and COMMIT.
@@ -51,7 +65,11 @@ class WorkflowService {
     required AppAccessDecisionClient appAccessClient,
     required CommunityGroupIdResolver communityGroupIdResolver,
     void Function(String)? unexpectedErrorLogSink,
+    DocumentRepository? documentRepository,
+    DocumentObjectStore? documentObjectStore,
   }) : _database = database,
+       _documentRepository = documentRepository,
+       _documentObjectStore = documentObjectStore,
        _identityExtractor = identityExtractor,
        _appAccessClient = appAccessClient,
        _communityGroupIdResolver = communityGroupIdResolver,
@@ -91,6 +109,29 @@ class WorkflowService {
     if (_matchesInstanceAction(segments, 'fields') &&
         request.method == 'PATCH') {
       return _updateInstanceFields(request, segments[2], segments[4]);
+    }
+    if (_matchesInstanceDocuments(segments)) {
+      if (request.method == 'POST') {
+        return _uploadDocument(request, segments[2], segments[4]);
+      }
+      if (request.method == 'GET') {
+        return _listInstanceDocuments(request, segments[2], segments[4]);
+      }
+    }
+    if (_matchesDocument(segments)) {
+      if (request.method == 'GET') {
+        return _getDocument(request, segments[2], segments[4]);
+      }
+      if (request.method == 'DELETE') {
+        return _deleteDocument(request, segments[2], segments[4]);
+      }
+    }
+    if (_matchesDocumentAction(segments, 'content') &&
+        request.method == 'GET') {
+      return _downloadDocumentContent(request, segments[2], segments[4]);
+    }
+    if (_matchesDocumentAction(segments, 'access') && request.method == 'GET') {
+      return _getDocumentAccess(request, segments[2], segments[4]);
     }
 
     return _error(
@@ -1009,6 +1050,500 @@ class WorkflowService {
     }
   }
 
+  // --------------------------------------------------------------- documents
+  //
+  // Bytes for the `documentLibrary` archetype. Every access decision here is
+  // the engine's, made against the instance the document belongs to -- see
+  // docs/API/OpenAPI/community-surfaces/document-library-api.openapi.yaml.
+
+  /// Refused above this, before anything is read into memory.
+  static const _maxDocumentUploadBytes = 25 * 1024 * 1024;
+
+  bool _matchesInstanceDocuments(List<String> segments) =>
+      segments.length == 6 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'instances' &&
+      segments[4].isNotEmpty &&
+      segments[5] == 'documents';
+
+  bool _matchesDocument(List<String> segments) =>
+      segments.length == 5 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'documents' &&
+      segments[4].isNotEmpty;
+
+  bool _matchesDocumentAction(List<String> segments, String action) =>
+      segments.length == 6 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'documents' &&
+      segments[4].isNotEmpty &&
+      segments[5] == action;
+
+  Future<Response> _uploadDocument(
+    Request request,
+    String communityId,
+    String instanceId,
+  ) => _withDocumentRequest(request, communityId, (context) async {
+    final instance = await context.engine.readVisibleInstance(
+      instanceId: instanceId,
+      fanId: context.identity.fanId,
+    );
+    if (instance == null) return _documentNotFound(request);
+
+    if (!await _mayAct(
+      engine: context.engine,
+      instance: instance,
+      fanId: context.identity.fanId,
+      action: 'upload',
+    )) {
+      return _error(
+        request: request,
+        statusCode: 403,
+        code: 'document_upload_forbidden',
+        message: 'An upload transition is not available to this fan.',
+      );
+    }
+
+    final idempotencyKey = request.headers['idempotency-key'];
+    if (idempotencyKey != null && idempotencyKey.trim().isNotEmpty) {
+      final existing = await context.repository.findByIdempotencyKey(
+        communityId: communityId,
+        idempotencyKey: idempotencyKey,
+      );
+      if (existing != null) {
+        return _documentResponse(existing, context.correlationId, 200);
+      }
+    }
+
+    final form = request.formData();
+    if (form == null) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_document_upload',
+        message: 'A multipart/form-data body is required.',
+      );
+    }
+
+    List<int>? bytes;
+    String? filename;
+    String? fieldName;
+    String? title;
+    String? partContentType;
+    String? bodyContentType;
+    await for (final data in form.formData) {
+      switch (data.name) {
+        case 'file':
+          filename = data.filename;
+          partContentType = data.part.headers['content-type'];
+          final builder = BytesBuilder(copy: false);
+          await for (final chunk in data.part) {
+            builder.add(chunk);
+            if (builder.length > _maxDocumentUploadBytes) {
+              return _error(
+                request: request,
+                statusCode: 413,
+                code: 'document_too_large',
+                message:
+                    'The file exceeds $_maxDocumentUploadBytes bytes.',
+              );
+            }
+          }
+          bytes = builder.takeBytes();
+        case 'fieldName':
+          fieldName = (await data.part.readString()).trim();
+        case 'title':
+          title = (await data.part.readString()).trim();
+        case 'contentType':
+          bodyContentType = (await data.part.readString()).trim();
+        default:
+          // Drained rather than ignored: an unread part leaves the rest of the
+          // body unparsed, so a client sending an extra field would see its
+          // file silently truncated.
+          await data.part.drain<void>();
+      }
+    }
+
+    if (bytes == null || fieldName == null || fieldName.isEmpty) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_document_upload',
+        message: 'Both a file part and a fieldName part are required.',
+      );
+    }
+
+    if (!await _declaresField(communityId, instance.workflowType, fieldName)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'unknown_document_field',
+        message:
+            'The workflow does not declare an instance field "$fieldName".',
+      );
+    }
+
+    final documentId = 'doc_${_newDocumentId()}';
+    final objectKey = documentObjectKey(
+      communityId: communityId,
+      instanceId: instanceId,
+      documentId: documentId,
+    );
+    final document = StoredDocument(
+      documentId: documentId,
+      communityId: communityId,
+      instanceId: instanceId,
+      workflowType: instance.workflowType,
+      fieldName: fieldName,
+      title: (title == null || title.isEmpty)
+          ? (filename ?? documentId)
+          : title,
+      filename: filename ?? documentId,
+      contentType:
+          (bodyContentType != null && bodyContentType.isNotEmpty)
+          ? bodyContentType
+          : (partContentType ?? 'application/octet-stream'),
+      byteSize: bytes.length,
+      ownerFanId: context.identity.fanId,
+      objectKey: objectKey,
+      uploadedAt: DateTime.now().toUtc(),
+    );
+
+    // Bytes first. A metadata row whose object is missing is a document that
+    // lists but will not open; an object with no row is unreferenced storage,
+    // which is cheaper to reap than a broken document is to explain.
+    await context.objectStore.put(
+      key: objectKey,
+      bytes: bytes,
+      contentType: document.contentType,
+    );
+    await context.repository.insert(
+      document,
+      idempotencyKey: (idempotencyKey != null && idempotencyKey.trim().isNotEmpty)
+          ? idempotencyKey
+          : null,
+    );
+    return _documentResponse(document, context.correlationId, 201);
+  });
+
+  Future<Response> _listInstanceDocuments(
+    Request request,
+    String communityId,
+    String instanceId,
+  ) => _withDocumentRequest(request, communityId, (context) async {
+    final instance = await context.engine.readVisibleInstance(
+      instanceId: instanceId,
+      fanId: context.identity.fanId,
+    );
+    if (instance == null) return _documentNotFound(request);
+
+    final documents = await context.repository.listForInstance(
+      communityId: communityId,
+      instanceId: instanceId,
+    );
+    return Response.ok(
+      jsonEncode({
+        'documents': documents.map((d) => d.toJson()).toList(),
+      }),
+      headers: {
+        ..._jsonHeaders,
+        'x-loom-correlation-id': context.correlationId,
+      },
+    );
+  });
+
+  Future<Response> _getDocument(
+    Request request,
+    String communityId,
+    String documentId,
+  ) => _withDocumentRequest(request, communityId, (context) async {
+    final found = await _readableDocument(context, communityId, documentId);
+    if (found == null) return _documentNotFound(request);
+    return _documentResponse(found.document, context.correlationId, 200);
+  });
+
+  Future<Response> _downloadDocumentContent(
+    Request request,
+    String communityId,
+    String documentId,
+  ) => _withDocumentRequest(request, communityId, (context) async {
+    final found = await _readableDocument(context, communityId, documentId);
+    if (found == null) return _documentNotFound(request);
+
+    final bytes = await context.objectStore.get(found.document.objectKey);
+    if (bytes == null) {
+      // The row exists and the object does not. Reported as a server fault
+      // rather than a 404: the document is real, and telling the member it does
+      // not exist would hide a storage problem as a content problem.
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'document_content_missing',
+        message: 'The document metadata exists but its bytes do not.',
+      );
+    }
+    return Response.ok(
+      bytes,
+      headers: {
+        'content-type': found.document.contentType,
+        'content-length': '${bytes.length}',
+        // Always an attachment. These bytes came from a member, and serving
+        // them inline from a Loom origin would let an uploaded HTML file run
+        // against it.
+        'content-disposition':
+            'attachment; filename="${_sanitiseFilename(found.document.filename)}"',
+        'x-loom-correlation-id': context.correlationId,
+      },
+    );
+  });
+
+  Future<Response> _deleteDocument(
+    Request request,
+    String communityId,
+    String documentId,
+  ) => _withDocumentRequest(request, communityId, (context) async {
+    final found = await _readableDocument(context, communityId, documentId);
+    if (found == null) return _documentNotFound(request);
+
+    if (!await _mayAct(
+      engine: context.engine,
+      instance: found.instance,
+      fanId: context.identity.fanId,
+      action: 'delete',
+    )) {
+      return _error(
+        request: request,
+        statusCode: 403,
+        code: 'document_delete_forbidden',
+        message: 'A delete transition is not available to this fan.',
+      );
+    }
+
+    await context.repository.delete(
+      communityId: communityId,
+      documentId: documentId,
+    );
+    await context.objectStore.delete(found.document.objectKey);
+    return Response(
+      204,
+      headers: {'x-loom-correlation-id': context.correlationId},
+    );
+  });
+
+  Future<Response> _getDocumentAccess(
+    Request request,
+    String communityId,
+    String documentId,
+  ) => _withDocumentRequest(request, communityId, (context) async {
+    final found = await _readableDocument(context, communityId, documentId);
+    if (found == null) return _documentNotFound(request);
+
+    final List<GroupMember> members;
+    try {
+      members = await _appAccessClient.listGroupMembers(
+        appId: _appId,
+        groupId: context.groupId,
+        correlationId: context.correlationId,
+      );
+    } on AppAccessDecisionException catch (_) {
+      return _authorizationServiceUnavailable(request);
+    } on SocketException catch (_) {
+      return _authorizationServiceUnavailable(request);
+    }
+
+    final definitions = await _database.loadDefinitionsForCommunity(
+      communityId,
+    );
+    final resolver = DocumentAccessResolver(
+      engine: context.engine,
+      definition:
+          definitions[found.document.workflowType] ?? const <String, dynamic>{},
+    );
+    final access = await resolver.resolve(
+      documentId: documentId,
+      instance: found.instance,
+      ownerFanId: found.document.ownerFanId,
+      members: members,
+    );
+
+    return Response.ok(
+      jsonEncode(access.toJson()),
+      headers: {
+        ..._jsonHeaders,
+        'x-loom-correlation-id': context.correlationId,
+      },
+    );
+  });
+
+  /// Shared preamble: correlation id, identity, storage, roles and membership.
+  Future<Response> _withDocumentRequest(
+    Request request,
+    String communityId,
+    Future<Response> Function(_DocumentRequestContext context) body,
+  ) async {
+    final repository = _documentRepository;
+    final objectStore = _documentObjectStore;
+    if (repository == null || objectStore == null) {
+      return _error(
+        request: request,
+        statusCode: 503,
+        code: 'document_storage_unavailable',
+        message: 'This deployment has no document storage configured.',
+      );
+    }
+
+    final correlationId = request.headers['x-loom-correlation-id'];
+    if (correlationId == null || !_uuidPattern.hasMatch(correlationId)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_correlation_id',
+        message: 'X-Loom-Correlation-Id must be a UUID.',
+      );
+    }
+
+    final identity = await _identityExtractor.extract(request);
+    if (identity == null) {
+      return _error(
+        request: request,
+        statusCode: 401,
+        code: 'authentication_required',
+        message: 'An authenticated fan identity is required.',
+      );
+    }
+
+    final groupId = await _communityGroupIdResolver.resolveGroupId(communityId);
+    if (groupId == null || groupId.trim().isEmpty) {
+      return _authorizationServiceUnavailable(request);
+    }
+
+    try {
+      return await _databaseSerialExecutor.run(() async {
+        final engine = _authoritativeEngine(communityId);
+        final roleResolutionError = await _resolveRolesForRequest(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          engine: engine,
+        );
+        if (roleResolutionError != null) return roleResolutionError;
+
+        return body(
+          _DocumentRequestContext(
+            identity: identity,
+            correlationId: correlationId,
+            groupId: groupId,
+            engine: engine,
+            repository: repository,
+            objectStore: objectStore,
+          ),
+        );
+      });
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'The document request could not be completed.',
+      );
+    }
+  }
+
+  /// The document plus its instance, or null when either is unreadable.
+  ///
+  /// One 404 covers "no such document" and "not yours to read", so an
+  /// unauthorised caller cannot map which document ids exist.
+  Future<_ReadableDocument?> _readableDocument(
+    _DocumentRequestContext context,
+    String communityId,
+    String documentId,
+  ) async {
+    final document = await context.repository.findById(
+      communityId: communityId,
+      documentId: documentId,
+    );
+    if (document == null) return null;
+    final instance = await context.engine.readVisibleInstance(
+      instanceId: document.instanceId,
+      fanId: context.identity.fanId,
+    );
+    if (instance == null) return null;
+    return _ReadableDocument(document: document, instance: instance);
+  }
+
+  /// Whether [fanId] could invoke a transition declaring [action].
+  ///
+  /// The engine's own guard evaluation, not a permission checked here. A
+  /// community that declares no `upload` transition has a library nobody can
+  /// write to, which is what it asked for.
+  Future<bool> _mayAct({
+    required LocalWorkflowEngineApi engine,
+    required WorkflowInstance instance,
+    required String fanId,
+    required String action,
+  }) async {
+    final transitions = await engine.availableTransitionsAsync(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      currentState: instance.currentState,
+      instanceData: instance.instanceData,
+      fanId: fanId,
+    );
+    return transitions.any((transition) => transition.action == action);
+  }
+
+  Future<bool> _declaresField(
+    String communityId,
+    String workflowType,
+    String fieldName,
+  ) async {
+    final definitions = await _database.loadDefinitionsForCommunity(
+      communityId,
+    );
+    final schema = definitions[workflowType]?['instanceDataSchema'];
+    return schema is Map<String, dynamic> && schema.containsKey(fieldName);
+  }
+
+  Response _documentNotFound(Request request) => _error(
+    request: request,
+    statusCode: 404,
+    code: 'document_not_found',
+    message: 'The requested document was not found.',
+  );
+
+  Response _documentResponse(
+    StoredDocument document,
+    String correlationId,
+    int statusCode,
+  ) => Response(
+    statusCode,
+    body: jsonEncode(document.toJson()),
+    headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
+  );
+
+  static String _newDocumentId() {
+    final bytes = List<int>.generate(16, (_) => _secureRandom.nextInt(256));
+    return bytes
+        .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+        .join();
+  }
+
+  /// Strips what a filename must not carry into a header.
+  ///
+  /// Quotes and newlines would end the header value early, which is a response
+  /// splitting hole when the value came from a member's chosen filename.
+  static String _sanitiseFilename(String filename) => filename
+      .replaceAll(RegExp(r'[\r\n"\\]'), '')
+      .replaceAll(RegExp(r'[/\\]'), '_');
+
   LocalWorkflowEngineApi _authoritativeEngine(String communityId) {
     final engine = _engines.putIfAbsent(
       communityId,
@@ -1654,4 +2189,30 @@ class _SerialExecutor {
     });
     return completer.future;
   }
+}
+
+/// Everything a document handler needs, resolved once by the preamble.
+class _DocumentRequestContext {
+  const _DocumentRequestContext({
+    required this.identity,
+    required this.correlationId,
+    required this.groupId,
+    required this.engine,
+    required this.repository,
+    required this.objectStore,
+  });
+
+  final WorkflowRequestIdentity identity;
+  final String correlationId;
+  final String groupId;
+  final LocalWorkflowEngineApi engine;
+  final DocumentRepository repository;
+  final DocumentObjectStore objectStore;
+}
+
+class _ReadableDocument {
+  const _ReadableDocument({required this.document, required this.instance});
+
+  final StoredDocument document;
+  final WorkflowInstance instance;
 }

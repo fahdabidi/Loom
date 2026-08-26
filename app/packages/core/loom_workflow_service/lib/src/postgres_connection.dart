@@ -9,6 +9,13 @@ class WorkflowPostgresConnection {
 
   WorkflowPostgresConnection._(this._connection, this.database);
 
+  /// The raw connection, for tables the engine does not own.
+  ///
+  /// Document metadata lives beside the engine's tables in the same database so
+  /// a document and the instance it belongs to cannot end up in two databases
+  /// that disagree, but it is not the engine's schema and is not managed by it.
+  pg.Connection get connection => _connection;
+
   static Future<WorkflowPostgresConnection> open({
     required String host,
     required int port,

@@ -173,6 +173,15 @@ Map<String, String> _headers(String fanId) => {
 
 /// Answers role and membership questions from an explicit member set.
 class _MembershipAppAccessClient implements AppAccessDecisionClient {
+  @override
+  Future<List<GroupMember>> listGroupMembers({
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  }) async => [
+    for (final fanId in activeMembers)
+      GroupMember(fanId: fanId, roleIds: const {}, state: 'active'),
+  ];
   final Set<String> activeMembers = <String>{};
 
   @override

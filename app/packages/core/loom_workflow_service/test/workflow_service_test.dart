@@ -1680,6 +1680,12 @@ Request _getRequest(String path, String fanId) => Request(
 );
 
 class _RecordingAppAccessClient implements AppAccessDecisionClient {
+  @override
+  Future<List<GroupMember>> listGroupMembers({
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  }) async => const <GroupMember>[];
   bool allowed = true;
   // True by default so the tests written before membership was resolved
   // keep their original behaviour. None of them use `membersOnly`.

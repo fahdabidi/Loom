@@ -12,8 +12,10 @@ dependencies:
   jose: 0.3.5+1
   loom_workflow_engine:
     path: ../loom_workflow_engine
+  minio: ^3.5.0
   postgres: ^3.5.12
   shelf: ^1.4.2
+  shelf_multipart: ^2.0.0
 
 dev_dependencies:
   test: ^1.25.0
