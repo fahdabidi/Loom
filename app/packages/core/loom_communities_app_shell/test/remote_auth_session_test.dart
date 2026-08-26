@@ -133,6 +133,35 @@ void main() {
     expect(engines, everyElement(isA<LocalWorkflowEngineApi>()));
   });
 
+  test('resetting all registrations restores local routing for all', () async {
+    const firstExtensionId = 'per-community-reset-first';
+    const secondExtensionId = 'per-community-reset-second';
+    final session = _TokenLoomAuthSession('reset-token');
+    final httpClient = MockClient(
+      (_) async => throw StateError('No HTTP request expected in this test.'),
+    );
+    addTearDown(httpClient.close);
+
+    for (final extensionId in <String>[firstExtensionId, secondExtensionId]) {
+      enableRemoteEngineForCommunity(
+        extensionId: extensionId,
+        session: session,
+        workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+        httpClient: httpClient,
+      );
+    }
+    resetEngineNativeCommunityFactoryRegistrationsForTesting();
+    _installEngineNativeTestExperience(firstExtensionId);
+    _installEngineNativeTestExperience(secondExtensionId);
+
+    final engines = await Future.wait(<Future<WorkflowEngineApi>>[
+      workflowEngineForExtensionId(firstExtensionId),
+      workflowEngineForExtensionId(secondExtensionId),
+    ]);
+
+    expect(engines, everyElement(isA<LocalWorkflowEngineApi>()));
+  });
+
   test(
     'testing override takes precedence temporarily over production selection',
     () async {
