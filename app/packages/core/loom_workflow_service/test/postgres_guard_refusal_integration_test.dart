@@ -674,6 +674,14 @@ Request _getRequest(String path, String fanId) => Request(
 );
 
 class _DenyAppAccessClient implements AppAccessDecisionClient {
+  @override
+  Future<bool> hasActiveMembership({
+    required String fanId,
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  }) async => false;
+
   const _DenyAppAccessClient();
 
   @override

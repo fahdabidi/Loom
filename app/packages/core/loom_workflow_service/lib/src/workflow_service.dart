@@ -1031,6 +1031,22 @@ class WorkflowService {
       return _authorizationServiceUnavailable(request);
     }
 
+    // Membership is resolved for whichever fan the engine asks about, not only
+    // the caller: read filtering evaluates `membersOnly` per instance, and a
+    // lookup that answered only for the requester would be wrong for every
+    // other fan the visibility rules touch.
+    //
+    // Without this, the engine's `_isActiveMember` fell through to its
+    // no-lookup default of false, so every `membersOnly` instance was readable
+    // by its creator alone. The client engine has always installed a lookup;
+    // this service never did, which is why the same workflow behaved
+    // differently on the device and on the server.
+    _installActiveMembershipLookup(
+      engine: engine,
+      groupId: groupId,
+      correlationId: correlationId,
+    );
+
     try {
       final roleIds = await _appAccessClient.resolveRoleIds(
         fanId: identity.fanId,
@@ -1047,6 +1063,40 @@ class WorkflowService {
       engine.setRolesForFan(identity.fanId, <String>{});
       return _authorizationServiceUnavailable(request);
     }
+  }
+
+  /// Teaches [engine] to answer "is this fan an active member?" for this request.
+  ///
+  /// Memoised per call, because read filtering asks once per instance and a
+  /// twenty-instance page would otherwise make twenty identical calls to App
+  /// Access for the same fan. The cache lives no longer than the request: a
+  /// membership revoked between two requests must take effect on the second.
+  ///
+  /// An App Access failure resolves to false rather than propagating. The
+  /// alternative is a 500 on a read that is mostly cache-warm anyway, and
+  /// failing closed matches every other visibility decision in the engine.
+  void _installActiveMembershipLookup({
+    required LocalWorkflowEngineApi engine,
+    required String groupId,
+    required String correlationId,
+  }) {
+    final cache = <String, Future<bool>>{};
+    engine.setActiveMembershipLookup(
+      (fanId) => cache.putIfAbsent(fanId, () async {
+        try {
+          return await _appAccessClient.hasActiveMembership(
+            fanId: fanId,
+            appId: _appId,
+            groupId: groupId,
+            correlationId: correlationId,
+          );
+        } on AppAccessDecisionException catch (_) {
+          return false;
+        } on SocketException catch (_) {
+          return false;
+        }
+      }),
+    );
   }
 
   Response _authorizationServiceUnavailable(Request request) => _error(

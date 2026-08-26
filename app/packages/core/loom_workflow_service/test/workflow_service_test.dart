@@ -1681,6 +1681,9 @@ Request _getRequest(String path, String fanId) => Request(
 
 class _RecordingAppAccessClient implements AppAccessDecisionClient {
   bool allowed = true;
+  // True by default so the tests written before membership was resolved
+  // keep their original behaviour. None of them use `membersOnly`.
+  bool activeMembership = true;
   int callCount = 0;
   Set<String> roleIds = const {};
   Object? roleResolutionError;
@@ -1693,6 +1696,14 @@ class _RecordingAppAccessClient implements AppAccessDecisionClient {
   String? roleResolutionAppId;
   String? roleResolutionGroupId;
   String? roleResolutionCorrelationId;
+
+  @override
+  Future<bool> hasActiveMembership({
+    required String fanId,
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  }) async => activeMembership;
 
   @override
   Future<bool> checkAccess({

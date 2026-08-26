@@ -18,6 +18,20 @@ abstract interface class AppAccessDecisionClient {
     required String groupId,
     required String correlationId,
   });
+
+  /// Whether [fanId] holds an active membership in [groupId].
+  ///
+  /// Separate from [resolveRoleIds] because membership and roles are different
+  /// questions and a community may answer them differently. A `membersOnly`
+  /// workflow names no role at all, so inferring membership from a non-empty
+  /// role set would exclude exactly those members a community chose not to give
+  /// a role to.
+  Future<bool> hasActiveMembership({
+    required String fanId,
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  });
 }
 
 /// Failure to obtain a well-formed authorization decision from App Access.
@@ -181,6 +195,55 @@ class HttpAppAccessDecisionClient implements AppAccessDecisionClient {
       roleIds.add(roleId);
     }
     return roleIds;
+  }
+
+  @override
+  Future<bool> hasActiveMembership({
+    required String fanId,
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  }) async {
+    final accessToken = await _loadAccessToken();
+    final request = await _httpClient.getUrl(
+      _baseUri.resolve(
+        'v1/apps/${Uri.encodeComponent(appId)}/groups/'
+        '${Uri.encodeComponent(groupId)}/members/${Uri.encodeComponent(fanId)}',
+      ),
+    );
+    request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+    request.headers.set('x-loom-correlation-id', correlationId);
+
+    final response = await request.close();
+    final encoded = await utf8.decoder.bind(response).join();
+
+    // Not a member is an ordinary answer, not a failure. Letting the 404 throw
+    // would make every non-member read fail closed with a 503 instead of an
+    // empty list, which is the same visible outcome for the wrong reason.
+    if (response.statusCode == HttpStatus.notFound) return false;
+    if (response.statusCode != HttpStatus.ok) {
+      throw AppAccessDecisionException(
+        'App Access returned HTTP ${response.statusCode}.',
+        statusCode: response.statusCode,
+      );
+    }
+
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(encoded);
+    } on FormatException {
+      throw const AppAccessDecisionException(
+        'App Access returned a malformed group membership.',
+      );
+    }
+    if (decoded is! Map<String, dynamic> ||
+        decoded['fanId'] != fanId ||
+        decoded['groupId'] != groupId) {
+      throw const AppAccessDecisionException(
+        'App Access returned a malformed group membership.',
+      );
+    }
+    return decoded['state'] == 'active';
   }
 
   Future<String> _loadAccessToken() async {
