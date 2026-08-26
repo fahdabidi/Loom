@@ -154,3 +154,50 @@ App Access call added later forwards the request's id rather than inventing one.
 - Finding 2 tracked as TODO item **1e**
 - The engine's one-role-per-fan limit, found in the same pass, is item **1f** and is
   folded into the 1c implementation dispatch as Part 1
+
+## Addendum — who may create a workflow, measured across all 95 workflows
+
+The provisioning plan needs a `.create` permission per workflow, and the packages never
+state creation authority directly. The first rule I wrote down was an inference from
+reading **one** package (Cedar): "grant create to the roles guarding transitions out of
+`initialState`". That is the same shape of mistake this project has been caught by
+before — a sweep validated against one kind of case — so it was checked against all 11
+packages and all 95 workflows before being built on.
+
+It holds for **84 of 95**. The 11 exceptions are not noise, and classifying them turned
+the fallback from a guess into a derived rule:
+
+| case | count | rule |
+|---|---|---|
+| Role-guarded transition out of `initialState` | 84 | those roles get `.create` |
+| Only ever produced by a `createInstance` effect | 7 | **nobody** gets `.create` |
+| Neither | 4 | package never says — spec gap |
+
+**The 7 system-created ones** — `notification`, `book-notification`,
+`garden-notification`, `soccer-reminder-notification`, `mosque-neutral-notification`,
+`tournament-vote`, `mosque-donor-visibility` — are each produced by another workflow's
+`createInstance` effect. A person never calls the create endpoint for them; the engine
+creates them server-side while applying a transition, so no App Access create check ever
+runs. Granting a role permission to create one would be inventing an authority that
+nothing exercises.
+
+**The 4 remaining ones are a real gap in the packages:**
+
+| package | workflow |
+|---|---|
+| CameraClub | `critique-submission` |
+| GardenClub | `plant-exchange-submission` |
+| MasjidNur | `mosque-donation-payment` |
+| MasjidNur | `mosque-care-request` |
+
+A person creates each of these — nothing creates them by effect — but no package states
+who is allowed to. Worth noting that `critique-submission` is one of the three Camera
+Club rows already counted as proven against the local engine, which is exactly how a gap
+like this stays invisible: the local engine never consulted App Access, so creation
+authority was never asked for.
+
+Provisioning grants all declared roles for those four as a deliberate stopgap, marked
+`"creationAuthority": "unstated"` in the plan so it cannot be mistaken for a decision.
+The real fix is a spec decision about whether packages should state creation authority
+explicitly — escalated rather than silently resolved, since community JSON is authored
+only by the Skill.
