@@ -25,15 +25,188 @@ void main() {
     expect(out.toString(), contains('Dry run: 0 network calls made.'));
     expect(
       out.toString(),
-      contains('WOULD ENSURE group loom_communities_test'),
+      contains('WOULD POST installation for community_test'),
     );
+    expect(out.toString(), contains('"communityHandle": "test"'));
     expect(fake.requests, isEmpty);
   });
 
-  test('applier reconciles once, then reruns as a no-op', () async {
+  test('200 installation records its returned group id', () async {
     final fake = await _FakeAppAccessServer.start();
     addTearDown(fake.close);
-    final applier = HttpAppAccessProvisioningApplier(
+    final applier = _applierFor(fake);
+    addTearDown(applier.close);
+
+    final result = await applier.apply(_testPlan());
+
+    expect(result.hasFailures, isFalse);
+    expect(result.communityGroupIds, {'community_test': 'server-group-test'});
+    expect(result.installations.single.rolesWithNoPermissions, [
+      'test-observer',
+    ]);
+    final installationRequests = fake.requests
+        .where(
+          (request) =>
+              request.path ==
+                  '/v1/apps/loom_communities/community-installations' &&
+              request.method == 'POST',
+        )
+        .toList();
+    expect(installationRequests, hasLength(1));
+    final request = installationRequests.single;
+    expect(request.correlationId, matches(_uuidV4));
+    expect(request.idempotencyKey, startsWith('community-installation-'));
+    expect(request.body, _testPlan().communities.single.request.toJson());
+    expect(
+      fake.requests.where(
+        (request) =>
+            request.path.startsWith('/v1/apps/loom_communities/') &&
+            request.path != '/v1/apps/loom_communities/community-installations',
+      ),
+      isEmpty,
+    );
+  });
+
+  test('422 surfaces every server finding and fails that community', () async {
+    final fake = await _FakeAppAccessServer.start();
+    addTearDown(fake.close);
+    fake.installationResponses['test'] = const _FakeResponse(
+      HttpStatus.unprocessableEntity,
+      {
+        'appId': 'loom_communities',
+        'groupId': 'server-group-test',
+        'rolesRegistered': <String>[],
+        'permissionsGranted': 0,
+        'findings': [
+          {
+            'code': 'unknown_action_for_archetype',
+            'message': 'test-do is not allowed for event-rsvp',
+            'workflowType': 'test-workflow',
+            'transitionId': 'test-transition',
+          },
+          {
+            'code': 'undeclared_role_in_guard',
+            'message': 'missing-role is not declared',
+            'workflowType': 'test-workflow',
+            'transitionId': 'other-transition',
+          },
+        ],
+      },
+    );
+    final planFile = await _writePlanFile(_testPlan());
+    addTearDown(planFile.delete);
+    final out = StringBuffer();
+    final err = StringBuffer();
+
+    final exitCode = await runApplyAppAccessProvisioning(
+      [planFile.path, '--apply'],
+      environment: _environmentFor(fake),
+      stdoutSink: out,
+      stderrSink: err,
+    );
+
+    expect(exitCode, 1);
+    expect(out.toString(), contains('"communityGroupIds": {}'));
+    expect(err.toString(), contains('unknown_action_for_archetype'));
+    expect(err.toString(), contains('test-do is not allowed for event-rsvp'));
+    expect(err.toString(), contains('undeclared_role_in_guard'));
+    expect(err.toString(), contains('missing-role is not declared'));
+  });
+
+  test('HTTP failures retain their JSON error body', () async {
+    final fake = await _FakeAppAccessServer.start();
+    addTearDown(fake.close);
+    fake.installationResponses['test'] = const _FakeResponse(
+      HttpStatus.internalServerError,
+      {
+        'code': 'installation_unavailable',
+        'message': 'App Access is unavailable',
+      },
+    );
+    final applier = _applierFor(fake);
+    addTearDown(applier.close);
+
+    await expectLater(
+      applier.apply(_testPlan()),
+      throwsA(
+        isA<HttpException>().having(
+          (error) => error.message,
+          'message',
+          allOf(contains('installation_unavailable'), contains('HTTP 500')),
+        ),
+      ),
+    );
+  });
+
+  test(
+    'successful apply reports roles with no permissions prominently',
+    () async {
+      final fake = await _FakeAppAccessServer.start();
+      addTearDown(fake.close);
+      final planFile = await _writePlanFile(_testPlan());
+      addTearDown(planFile.delete);
+      final out = StringBuffer();
+      final err = StringBuffer();
+
+      final exitCode = await runApplyAppAccessProvisioning(
+        [planFile.path, '--apply'],
+        environment: _environmentFor(fake),
+        stdoutSink: out,
+        stderrSink: err,
+      );
+
+      expect(exitCode, 0);
+      expect(err.toString(), isEmpty);
+      expect(
+        out.toString(),
+        contains(
+          'WARNING: community_test rolesWithNoPermissions: test-observer',
+        ),
+      );
+      expect(out.toString(), contains('"community_test": "server-group-test"'));
+    },
+  );
+}
+
+final _uuidV4 = RegExp(
+  r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+);
+
+AppAccessProvisioningPlan _testPlan() => const AppAccessProvisioningPlan(
+  communities: [
+    CommunityInstallationPlanEntry(
+      communityId: 'community_test',
+      request: InstallCommunityPackageRequest(
+        communityHandle: 'test',
+        displayName: 'Test Community',
+        grammarVersion: 4,
+        roles: [
+          DerivedRoleInput(roleId: 'test-member', label: 'Member'),
+          DerivedRoleInput(roleId: 'test-observer', label: 'Observer'),
+        ],
+        workflows: [
+          DerivedWorkflowInput(
+            workflowType: 'test-workflow',
+            cardSurfaceFamily: 'event-rsvp',
+            createRoleIds: ['test-member'],
+            transitions: [
+              DerivedTransitionInput(
+                transitionId: 'test-transition',
+                action: null,
+                tone: 'primary',
+                isTerminal: false,
+                allowedRoleIds: ['test-member'],
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  ],
+);
+
+HttpAppAccessProvisioningApplier _applierFor(_FakeAppAccessServer fake) =>
+    HttpAppAccessProvisioningApplier(
       config: AppAccessProvisioningConfig(
         appAccessBaseUri: fake.baseUri,
         tokenUri: fake.baseUri.resolve('token'),
@@ -42,65 +215,14 @@ void main() {
         appId: 'loom_communities',
       ),
     );
-    addTearDown(applier.close);
 
-    final first = await applier.apply(_testPlan());
-    final second = await applier.apply(_testPlan());
-
-    expect(first.createdGroupIds, ['loom_communities_test']);
-    expect(first.createdRoleIds, ['test-admin', 'test-member']);
-    expect(first.updatedRolePermissionIds, isEmpty);
-    expect(second.createdGroupIds, isEmpty);
-    expect(second.createdRoleIds, isEmpty);
-    expect(second.updatedRolePermissionIds, isEmpty);
-    expect(second.unchangedGroupIds, ['loom_communities_test']);
-    expect(second.unchangedRoleIds, ['test-admin', 'test-member']);
-    expect(fake.groups.keys, ['loom_communities_test']);
-    expect(fake.roles.keys, ['test-member', 'test-admin']);
-
-    final appRequests = fake.requests.where(
-      (request) => request.path.startsWith('/v1/'),
-    );
-    for (final request in appRequests) {
-      expect(request.correlationId, matches(_uuidV4));
-      if (request.method == 'POST' || request.method == 'PUT') {
-        expect(request.idempotencyKey, startsWith('provisioning-'));
-      }
-    }
-    expect(
-      fake.requests.where((request) => request.method == 'DELETE'),
-      isEmpty,
-    );
-  });
-}
-
-final _uuidV4 = RegExp(
-  r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
-);
-
-AppAccessProvisioningPlan _testPlan() => const AppAccessProvisioningPlan(
-  communities: const [
-    CommunityProvisioningEntry(
-      communityId: 'community_test',
-      groupId: 'loom_communities_test',
-      displayName: 'Test Community',
-      roles: [
-        RoleProvisioningEntry(
-          roleId: 'test-member',
-          displayName: 'Member',
-          permissionIds: ['event_rsvp.create'],
-        ),
-        RoleProvisioningEntry(
-          roleId: 'test-admin',
-          displayName: 'Admin',
-          permissionIds: ['event_rsvp.create', 'event_rsvp.cancel'],
-        ),
-      ],
-      workflows: [],
-    ),
-  ],
-  communityGroupIds: {'community_test': 'loom_communities_test'},
-);
+Map<String, String> _environmentFor(_FakeAppAccessServer fake) => {
+  'LOOM_APP_ACCESS_BASE_URL': fake.baseUri.toString(),
+  'LOOM_KEYCLOAK_TOKEN_URL': fake.baseUri.resolve('token').toString(),
+  'LOOM_APP_ACCESS_CLIENT_ID': 'test-client',
+  'LOOM_APP_ACCESS_CLIENT_SECRET': 'test-secret',
+  'LOOM_APP_ID': 'loom_communities',
+};
 
 Future<File> _writePlanFile(AppAccessProvisioningPlan plan) async {
   final file = File(
@@ -118,8 +240,7 @@ class _FakeAppAccessServer {
 
   final HttpServer _server;
   late final StreamSubscription<HttpRequest> _subscription;
-  final Map<String, Map<String, Object?>> groups = {};
-  final Map<String, Map<String, Object?>> roles = {};
+  final Map<String, _FakeResponse> installationResponses = {};
   final List<_CapturedRequest> requests = [];
 
   Uri get baseUri =>
@@ -137,6 +258,9 @@ class _FakeAppAccessServer {
         path: request.uri.path,
         correlationId: request.headers.value('x-loom-correlation-id'),
         idempotencyKey: request.headers.value('idempotency-key'),
+        body: request.uri.path == '/token' || body.trim().isEmpty
+            ? null
+            : Map<String, Object?>.from(jsonDecode(body) as Map),
       ),
     );
     if (request.uri.path == '/token' && request.method == 'POST') {
@@ -146,50 +270,23 @@ class _FakeAppAccessServer {
       });
       return;
     }
-    if (request.uri.path == '/v1/apps/loom_communities/groups') {
-      if (request.method == 'GET') {
-        await _json(request.response, HttpStatus.ok, {
-          'items': groups.values.toList(),
-          'pageInfo': {'hasMore': false},
-        });
-        return;
-      }
-      if (request.method == 'POST') {
-        final value = Map<String, Object?>.from(jsonDecode(body) as Map);
-        groups[value['groupId'] as String] = <String, Object?>{
-          ...value,
-          'appId': 'loom_communities',
-        };
-        await _json(request.response, HttpStatus.created, value);
-        return;
-      }
-    }
-    if (request.uri.path == '/v1/apps/loom_communities/roles') {
-      if (request.method == 'GET') {
-        await _json(request.response, HttpStatus.ok, {
-          'items': roles.values.toList(),
-          'pageInfo': {'hasMore': false},
-        });
-        return;
-      }
-      if (request.method == 'POST') {
-        final value = Map<String, Object?>.from(jsonDecode(body) as Map);
-        roles[value['roleId'] as String] = <String, Object?>{
-          ...value,
-          'appId': 'loom_communities',
-        };
-        await _json(request.response, HttpStatus.created, value);
-        return;
-      }
-    }
-    final permissionMatch = RegExp(
-      r'^/v1/apps/loom_communities/roles/([^/]+)/permissions$',
-    ).firstMatch(request.uri.path);
-    if (permissionMatch != null && request.method == 'PUT') {
-      final roleId = Uri.decodeComponent(permissionMatch.group(1)!);
-      final value = Map<String, Object?>.from(jsonDecode(body) as Map);
-      roles[roleId]!['permissionIds'] = value['permissionIds'];
-      await _json(request.response, HttpStatus.ok, roles[roleId]!);
+    if (request.uri.path ==
+            '/v1/apps/loom_communities/community-installations' &&
+        request.method == 'POST') {
+      final payload = Map<String, Object?>.from(jsonDecode(body) as Map);
+      final communityHandle = payload['communityHandle'] as String;
+      final result =
+          installationResponses[communityHandle] ??
+          const _FakeResponse(HttpStatus.ok, {
+            'appId': 'loom_communities',
+            'groupId': 'server-group-test',
+            'rolesRegistered': ['test-member', 'test-observer'],
+            'removedRoleIds': <String>[],
+            'permissionsGranted': 3,
+            'rolesWithNoPermissions': ['test-observer'],
+            'findings': <Object>[],
+          });
+      await _json(request.response, result.statusCode, result.body);
       return;
     }
     await _json(request.response, HttpStatus.notFound, {'error': 'not found'});
@@ -199,6 +296,13 @@ class _FakeAppAccessServer {
     await _subscription.cancel();
     await _server.close(force: true);
   }
+}
+
+class _FakeResponse {
+  const _FakeResponse(this.statusCode, this.body);
+
+  final int statusCode;
+  final JsonMap body;
 }
 
 Future<void> _json(HttpResponse response, int status, Object value) async {
@@ -214,10 +318,12 @@ class _CapturedRequest {
     required this.path,
     required this.correlationId,
     required this.idempotencyKey,
+    required this.body,
   });
 
   final String method;
   final String path;
   final String? correlationId;
   final String? idempotencyKey;
+  final Map<String, Object?>? body;
 }

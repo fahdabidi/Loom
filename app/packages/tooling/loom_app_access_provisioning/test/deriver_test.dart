@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:loom_app_access_provisioning/loom_app_access_provisioning.dart';
 import 'package:loom_ux_judges/community_remote_migration.dart';
-import 'package:loom_workflow_service/loom_workflow_service.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -19,20 +17,24 @@ void main() {
 
   test('Cedar uses package role ids exactly and never the stale admin id', () {
     final cedar = _community(plan, 'community_cedar_commons_hoa');
-    expect(cedar.groupId, 'loom_communities_cedar_commons_hoa');
-    expect(cedar.roles.map((role) => role.roleId), ['hoa-member', 'hoa-board']);
+    expect(
+      cedar.request.roles.map((role) => (role.roleId, role.label)).toList(),
+      [('hoa-member', 'Homeowner'), ('hoa-board', 'Board')],
+    );
     expect(plan.encode(), isNot(contains('cedar_commons_hoa_admin')));
   });
 
   test(
-    'all 11 packages derive and every declared role appears in its plan',
+    'all 11 packages build one installation request with every declared role',
     () {
       expect(packages, hasLength(11));
       expect(plan.communities, hasLength(11));
       for (final package in packages) {
         final entry = _community(plan, package.communityId);
+        expect(entry.request.communityHandle, package.communityHandle);
+        expect(entry.request.grammarVersion, package.specVersion);
         expect(
-          entry.roles.map((role) => role.roleId).toSet(),
+          entry.request.roles.map((role) => role.roleId).toSet(),
           equals(package.roles.map((role) => role.roleId).toSet()),
           reason: package.sourcePath,
         );
@@ -40,76 +42,55 @@ void main() {
     },
   );
 
-  test('derived role ids are globally unique', () {
+  test('shipped role ids remain globally unique', () {
     final roleIds = [
       for (final community in plan.communities)
-        for (final role in community.roles) role.roleId,
+        for (final role in community.request.roles) role.roleId,
     ];
     expect(roleIds.toSet(), hasLength(roleIds.length));
   });
 
-  test(
-    'community-group mapping covers every community and parses in service',
-    () {
-      expect(
-        plan.communityGroupIds.keys.toSet(),
-        equals({for (final package in packages) package.communityId}),
-      );
-      final resolver = MapCommunityGroupIdResolver.fromJson(
-        jsonEncode(plan.communityGroupIds),
-      );
-      for (final community in plan.communities) {
-        expect(
-          resolver.resolveGroupId(community.communityId),
-          community.groupId,
-        );
-      }
-    },
-  );
-
-  test('Cedar event-RSVP workflow grants create to its expected roles', () {
+  test('Cedar facility reservation uses the union of create byRoleIds', () {
     final cedar = _community(plan, 'community_cedar_commons_hoa');
-    final reservation = cedar.workflows.singleWhere(
+    final reservation = cedar.request.workflows.singleWhere(
       (workflow) => workflow.workflowType == 'hoa-facility-reservation',
     );
-    expect(reservation.family, 'event-rsvp');
+    expect(reservation.cardSurfaceFamily, 'event-rsvp');
     expect(reservation.createRoleIds, ['hoa-board', 'hoa-member']);
-    for (final roleId in reservation.createRoleIds) {
-      final role = cedar.roles.singleWhere((entry) => entry.roleId == roleId);
-      expect(role.permissionIds, contains('event_rsvp.create'));
-    }
   });
 
-  test('creation classification keeps the exact provisional stopgap set', () {
-    final fallbacks = [
-      for (final community in plan.communities)
-        for (final workflow in community.workflows)
-          if (workflow.creationAuthority == 'unstated')
-            '${community.displayName}/${workflow.workflowType}',
-    ];
-    expect(fallbacks, [
-      'Camera Club/critique-submission',
-      'Garden Club/plant-exchange-submission',
-      'Masjid Nur/mosque-donation-payment',
-      'Masjid Nur/mosque-care-request',
-    ]);
-    expect([
-      for (final community in plan.communities)
-        for (final workflow in community.workflows)
-          if (workflow.creationAuthority == 'initial-state-transition')
-            workflow,
-    ], hasLength(84));
-    expect([
-      for (final community in plan.communities)
-        for (final workflow in community.workflows)
-          if (workflow.creationAuthority == 'system-created') workflow,
-    ], hasLength(7));
+  test('no generated installation request contains permissionIds', () {
+    expect(_containsKey(plan.toJson(), 'permissionIds'), isFalse);
   });
+
+  test(
+    'a transition with no declared action serializes without an action key',
+    () {
+      final transition = plan.communities
+          .expand((community) => community.request.workflows)
+          .expand((workflow) => workflow.transitions)
+          .firstWhere((transition) => transition.action == null);
+
+      final json = transition.toJson();
+      expect(json, isNot(contains('action')));
+      expect(json['tone'], transition.tone);
+      expect(json['isTerminal'], transition.isTerminal);
+    },
+  );
 }
 
-CommunityProvisioningEntry _community(
+CommunityInstallationPlanEntry _community(
   AppAccessProvisioningPlan plan,
   String communityId,
 ) => plan.communities.singleWhere(
   (community) => community.communityId == communityId,
 );
+
+bool _containsKey(Object? value, String key) {
+  if (value is Map) {
+    return value.containsKey(key) ||
+        value.values.any((child) => _containsKey(child, key));
+  }
+  if (value is List) return value.any((child) => _containsKey(child, key));
+  return false;
+}

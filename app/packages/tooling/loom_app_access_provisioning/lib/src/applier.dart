@@ -4,8 +4,6 @@ import 'dart:math';
 
 import 'plan.dart';
 
-/// Credentials and endpoints used only after the caller explicitly selects
-/// `--apply`. The client secret is deliberately never part of a plan/result.
 class AppAccessProvisioningConfig {
   AppAccessProvisioningConfig({
     required Uri appAccessBaseUri,
@@ -37,40 +35,129 @@ class AppAccessProvisioningConfig {
   final String appId;
 }
 
-/// State changes made by one reconciliation. Existing stale entries are
-/// reported but never removed.
+/// Results of posting every community request in a provisioning plan.
+///
+/// The `communityGroupIds` map is populated only by successful service
+/// responses. It is the value to pass as `LOOM_COMMUNITY_GROUP_IDS` after an
+/// all-successful run.
 class AppAccessProvisioningResult {
   const AppAccessProvisioningResult({
-    required this.createdGroupIds,
-    required this.createdRoleIds,
-    required this.updatedRolePermissionIds,
-    required this.unchangedGroupIds,
-    required this.unchangedRoleIds,
-    required this.extraGroupIds,
-    required this.extraRoleIds,
+    required this.installations,
+    required this.failures,
   });
 
-  final List<String> createdGroupIds;
-  final List<String> createdRoleIds;
-  final List<String> updatedRolePermissionIds;
-  final List<String> unchangedGroupIds;
-  final List<String> unchangedRoleIds;
-  final List<String> extraGroupIds;
-  final List<String> extraRoleIds;
+  final List<CommunityInstallationOutcome> installations;
+  final List<CommunityInstallationFailure> failures;
+
+  bool get hasFailures => failures.isNotEmpty;
+
+  Map<String, String> get communityGroupIds => Map.unmodifiable({
+    for (final installation in installations)
+      installation.communityId: installation.groupId,
+  });
 
   JsonMap toJson() => <String, Object?>{
-    'createdGroupIds': createdGroupIds,
-    'createdRoleIds': createdRoleIds,
-    'updatedRolePermissionIds': updatedRolePermissionIds,
-    'unchangedGroupIds': unchangedGroupIds,
-    'unchangedRoleIds': unchangedRoleIds,
-    'extraGroupIds': extraGroupIds,
-    'extraRoleIds': extraRoleIds,
+    'communityGroupIds': communityGroupIds,
+    'installations': [
+      for (final installation in installations) installation.toJson(),
+    ],
+    'failures': [for (final failure in failures) failure.toJson()],
   };
 }
 
-/// The only network-capable portion of this package. It deliberately performs
-/// no derivation and has no deletion method.
+/// The usable portion of a 200 `CommunityInstallationResult` response.
+class CommunityInstallationOutcome {
+  const CommunityInstallationOutcome({
+    required this.communityId,
+    required this.appId,
+    required this.groupId,
+    required this.rolesRegistered,
+    required this.removedRoleIds,
+    required this.permissionsGranted,
+    required this.rolesWithNoPermissions,
+  });
+
+  final String communityId;
+  final String appId;
+  final String groupId;
+  final List<String> rolesRegistered;
+  final List<String> removedRoleIds;
+  final int permissionsGranted;
+  final List<String> rolesWithNoPermissions;
+
+  JsonMap toJson() => <String, Object?>{
+    'communityId': communityId,
+    'appId': appId,
+    'groupId': groupId,
+    'rolesRegistered': rolesRegistered,
+    'removedRoleIds': removedRoleIds,
+    'permissionsGranted': permissionsGranted,
+    'rolesWithNoPermissions': rolesWithNoPermissions,
+  };
+
+  factory CommunityInstallationOutcome.fromResponse(
+    String communityId,
+    JsonMap response,
+  ) => CommunityInstallationOutcome(
+    communityId: communityId,
+    appId: _requiredResponseString(response, 'appId'),
+    groupId: _requiredResponseString(response, 'groupId'),
+    rolesRegistered: _responseStringList(response, 'rolesRegistered'),
+    removedRoleIds: _optionalResponseStringList(response, 'removedRoleIds'),
+    permissionsGranted: _requiredResponseInt(response, 'permissionsGranted'),
+    rolesWithNoPermissions: _optionalResponseStringList(
+      response,
+      'rolesWithNoPermissions',
+    ),
+  );
+}
+
+/// A 422 result. Findings are intentionally retained as raw JSON objects so
+/// the CLI can print every server diagnostic without rewording or dropping it.
+class CommunityInstallationFailure {
+  const CommunityInstallationFailure({
+    required this.communityId,
+    required this.findings,
+  });
+
+  final String communityId;
+  final List<JsonMap> findings;
+
+  JsonMap toJson() => <String, Object?>{
+    'communityId': communityId,
+    'findings': findings,
+  };
+
+  factory CommunityInstallationFailure.fromResponse(
+    String communityId,
+    JsonMap response,
+  ) {
+    final rawFindings = response['findings'];
+    if (rawFindings is! List || rawFindings.isEmpty) {
+      throw const FormatException(
+        'A 422 community-installation response must contain non-empty findings.',
+      );
+    }
+    final findings = <JsonMap>[];
+    for (final finding in rawFindings) {
+      if (finding is! Map) {
+        throw const FormatException(
+          'A community-installation finding must be an object.',
+        );
+      }
+      findings.add(Map<String, Object?>.from(finding));
+    }
+    return CommunityInstallationFailure(
+      communityId: communityId,
+      findings: List.unmodifiable(findings),
+    );
+  }
+}
+
+/// The only network-capable portion of this package.
+///
+/// It posts one request to App Access per community. It never writes the
+/// permission catalog, groups, or roles itself.
 class HttpAppAccessProvisioningApplier {
   HttpAppAccessProvisioningApplier({
     required this.config,
@@ -87,185 +174,67 @@ class HttpAppAccessProvisioningApplier {
   Future<AppAccessProvisioningResult> apply(
     AppAccessProvisioningPlan plan,
   ) async {
-    final desiredGroups = <String, CommunityProvisioningEntry>{
-      for (final community in plan.communities) community.groupId: community,
-    };
-    final desiredRoles = <String, _DesiredRole>{
-      for (final community in plan.communities)
-        for (final role in community.roles)
-          role.roleId: _DesiredRole(role, community.groupId),
-    };
-    if (desiredGroups.length != plan.communities.length) {
+    final communityIds = plan.communities.map(
+      (community) => community.communityId,
+    );
+    if (communityIds.toSet().length != plan.communities.length) {
       throw const FormatException(
-        'The provisioning plan contains duplicate group ids.',
-      );
-    }
-    if (desiredRoles.length !=
-        plan.communities.fold<int>(
-          0,
-          (count, community) => count + community.roles.length,
-        )) {
-      throw const FormatException(
-        'The provisioning plan contains duplicate role ids.',
+        'The provisioning plan contains duplicate community ids.',
       );
     }
 
-    final existingGroups = await _listById(
-      'v1/apps/${Uri.encodeComponent(config.appId)}/groups',
-      'groupId',
-    );
-    final existingRoles = await _listById(
-      'v1/apps/${Uri.encodeComponent(config.appId)}/roles',
-      'roleId',
-    );
-    final createdGroups = <String>[];
-    final unchangedGroups = <String>[];
-    for (final desired in desiredGroups.entries) {
-      final existing = existingGroups[desired.key];
-      if (existing == null) {
-        await _sendJson(
-          method: 'POST',
-          path: 'v1/apps/${Uri.encodeComponent(config.appId)}/groups',
-          body: <String, Object?>{
-            'groupId': desired.key,
-            'displayName': desired.value.displayName,
-          },
-          mutating: true,
-        );
-        createdGroups.add(desired.key);
-        continue;
-      }
-      _requireStringField(existing, 'displayName', 'group ${desired.key}');
-      if (existing['displayName'] != desired.value.displayName) {
-        throw StateError(
-          'Group ${desired.key} has displayName "${existing['displayName']}"; '
-          'the App Access API exposes no group update operation. Refusing to '
-          'silently accept mismatched provisioning state.',
-        );
-      }
-      unchangedGroups.add(desired.key);
-    }
-
-    final createdRoles = <String>[];
-    final updatedPermissions = <String>[];
-    final unchangedRoles = <String>[];
-    for (final desired in desiredRoles.entries) {
-      final existing = existingRoles[desired.key];
-      if (existing == null) {
-        await _sendJson(
-          method: 'POST',
-          path: 'v1/apps/${Uri.encodeComponent(config.appId)}/roles',
-          body: <String, Object?>{
-            'roleId': desired.key,
-            'groupId': desired.value.groupId,
-            'displayName': desired.value.role.displayName,
-            'permissionIds': desired.value.role.permissionIds,
-          },
-          mutating: true,
-        );
-        createdRoles.add(desired.key);
-        continue;
-      }
-      _verifyExistingRole(existing, desired.value);
-      final existingPermissionIds = _stringSet(
-        existing['permissionIds'],
-        'role ${desired.key} permissionIds',
-      );
-      final desiredPermissionIds = desired.value.role.permissionIds.toSet();
-      if (!_sameSet(existingPermissionIds, desiredPermissionIds)) {
-        await _sendJson(
-          method: 'PUT',
-          path:
-              'v1/apps/${Uri.encodeComponent(config.appId)}/roles/'
-              '${Uri.encodeComponent(desired.key)}/permissions',
-          body: <String, Object?>{
-            'permissionIds': desired.value.role.permissionIds,
-          },
-          mutating: true,
-        );
-        updatedPermissions.add(desired.key);
-      } else {
-        unchangedRoles.add(desired.key);
-      }
-    }
-
-    return AppAccessProvisioningResult(
-      createdGroupIds: _sorted(createdGroups),
-      createdRoleIds: _sorted(createdRoles),
-      updatedRolePermissionIds: _sorted(updatedPermissions),
-      unchangedGroupIds: _sorted(unchangedGroups),
-      unchangedRoleIds: _sorted(unchangedRoles),
-      extraGroupIds: _sorted(
-        existingGroups.keys.where(
-          (groupId) => !desiredGroups.containsKey(groupId),
-        ),
-      ),
-      extraRoleIds: _sorted(
-        existingRoles.keys.where((roleId) => !desiredRoles.containsKey(roleId)),
-      ),
-    );
-  }
-
-  Future<Map<String, JsonMap>> _listById(String path, String idField) async {
-    final itemsById = <String, JsonMap>{};
-    String? cursor;
-    do {
-      final query = <String, String>{'limit': '100'};
-      if (cursor != null) query['cursor'] = cursor;
+    final installations = <CommunityInstallationOutcome>[];
+    final failures = <CommunityInstallationFailure>[];
+    for (final community in plan.communities) {
       final response = await _sendJson(
-        method: 'GET',
-        path: path,
-        queryParameters: query,
+        method: 'POST',
+        path:
+            'v1/apps/${Uri.encodeComponent(config.appId)}/'
+            'community-installations',
+        body: community.request.toJson(),
+        mutating: true,
+        acceptedStatusCodes: const {HttpStatus.unprocessableEntity},
       );
-      if (response is! Map) {
-        throw FormatException('$path returned a non-object list response.');
+      final body = _responseObject(response, 'community-installations');
+      if (response.statusCode == HttpStatus.unprocessableEntity) {
+        failures.add(
+          CommunityInstallationFailure.fromResponse(
+            community.communityId,
+            body,
+          ),
+        );
+      } else {
+        installations.add(
+          CommunityInstallationOutcome.fromResponse(
+            community.communityId,
+            body,
+          ),
+        );
       }
-      final rawItems = response['items'];
-      if (rawItems is! List) {
-        throw FormatException('$path response must contain an items list.');
-      }
-      for (final item in rawItems) {
-        if (item is! Map) {
-          throw FormatException('$path items must be objects.');
-        }
-        final json = Map<String, Object?>.from(item);
-        final id = _requireStringField(json, idField, '$path item');
-        if (itemsById.containsKey(id)) {
-          throw FormatException('$path returned duplicate $idField $id.');
-        }
-        itemsById[id] = json;
-      }
-      final pageInfo = response['pageInfo'];
-      if (pageInfo == null) break;
-      if (pageInfo is! Map || pageInfo['hasMore'] is! bool) {
-        throw FormatException('$path pageInfo is malformed.');
-      }
-      if (pageInfo['hasMore'] == false) break;
-      final nextCursor = pageInfo['nextCursor'];
-      if (nextCursor is! String || nextCursor.isEmpty) {
-        throw FormatException('$path pageInfo hasMore requires nextCursor.');
-      }
-      cursor = nextCursor;
-    } while (true);
-    return itemsById;
+    }
+    return AppAccessProvisioningResult(
+      installations: List.unmodifiable(installations),
+      failures: List.unmodifiable(failures),
+    );
   }
 
-  Future<Object?> _sendJson({
+  Future<_HttpJsonResponse> _sendJson({
     required String method,
     required String path,
-    Map<String, String>? queryParameters,
     JsonMap? body,
     bool mutating = false,
+    Set<int> acceptedStatusCodes = const {},
   }) async {
     final token = await _loadAccessToken();
-    final uri = config.appAccessBaseUri
-        .resolve(path)
-        .replace(queryParameters: queryParameters);
+    final uri = config.appAccessBaseUri.resolve(path);
     final request = await _httpClient.openUrl(method, uri);
     request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
     request.headers.set('x-loom-correlation-id', _newUuidV4());
     if (mutating) {
-      request.headers.set('idempotency-key', 'provisioning-${_newUuidV4()}');
+      request.headers.set(
+        'idempotency-key',
+        'community-installation-${_newUuidV4()}',
+      );
     }
     if (body != null) {
       request.headers.contentType = ContentType.json;
@@ -273,17 +242,28 @@ class HttpAppAccessProvisioningApplier {
     }
     final response = await request.close();
     final encoded = await utf8.decoder.bind(response).join();
-    if (response.statusCode < 200 || response.statusCode >= 300) {
+    final success = response.statusCode >= 200 && response.statusCode < 300;
+    if (!success && !acceptedStatusCodes.contains(response.statusCode)) {
       throw HttpException(
-        '$method $uri returned HTTP ${response.statusCode}.',
+        '$method $uri returned HTTP ${response.statusCode}; response body: '
+        '${_truncatedResponseBody(encoded)}',
         uri: uri,
       );
     }
-    if (encoded.trim().isEmpty) return null;
+    if (encoded.trim().isEmpty) {
+      throw HttpException(
+        '$method $uri returned an empty response body.',
+        uri: uri,
+      );
+    }
     try {
-      return jsonDecode(encoded);
+      return _HttpJsonResponse(response.statusCode, jsonDecode(encoded));
     } on FormatException {
-      throw HttpException('$method $uri returned malformed JSON.', uri: uri);
+      throw HttpException(
+        '$method $uri returned malformed JSON; response body: '
+        '${_truncatedResponseBody(encoded)}',
+        uri: uri,
+      );
     }
   }
 
@@ -311,7 +291,8 @@ class HttpAppAccessProvisioningApplier {
     final encoded = await utf8.decoder.bind(response).join();
     if (response.statusCode != HttpStatus.ok) {
       throw HttpException(
-        'Token endpoint returned HTTP ${response.statusCode}.',
+        'Token endpoint returned HTTP ${response.statusCode}; response body: '
+        '${_truncatedResponseBody(encoded)}',
         uri: config.tokenUri,
       );
     }
@@ -319,7 +300,11 @@ class HttpAppAccessProvisioningApplier {
     try {
       decoded = jsonDecode(encoded);
     } on FormatException {
-      throw const FormatException('Token endpoint returned malformed JSON.');
+      throw HttpException(
+        'Token endpoint returned malformed JSON; response body: '
+        '${_truncatedResponseBody(encoded)}',
+        uri: config.tokenUri,
+      );
     }
     if (decoded is! Map ||
         decoded['access_token'] is! String ||
@@ -345,55 +330,64 @@ class HttpAppAccessProvisioningApplier {
   }
 }
 
-class _DesiredRole {
-  const _DesiredRole(this.role, this.groupId);
+class _HttpJsonResponse {
+  const _HttpJsonResponse(this.statusCode, this.body);
 
-  final RoleProvisioningEntry role;
-  final String groupId;
+  final int statusCode;
+  final Object? body;
 }
 
-void _verifyExistingRole(JsonMap existing, _DesiredRole desired) {
-  final roleId = desired.role.roleId;
-  final groupId = _requireStringField(existing, 'groupId', 'role $roleId');
-  if (groupId != desired.groupId) {
-    throw StateError(
-      'Role $roleId belongs to $groupId rather than ${desired.groupId}; '
-      'the App Access API exposes no role group update operation.',
+JsonMap _responseObject(_HttpJsonResponse response, String operation) {
+  final body = response.body;
+  if (body is! Map) {
+    throw FormatException('$operation returned a non-object JSON response.');
+  }
+  return Map<String, Object?>.from(body);
+}
+
+String _requiredResponseString(JsonMap response, String field) {
+  final value = response[field];
+  if (value is! String || value.isEmpty) {
+    throw FormatException(
+      'Community-installation response $field must be a non-empty string.',
     );
   }
-  final displayName = _requireStringField(
-    existing,
-    'displayName',
-    'role $roleId',
-  );
-  if (displayName != desired.role.displayName) {
-    throw StateError(
-      'Role $roleId has displayName "$displayName"; the App Access API '
-      'exposes no role display-name update operation.',
+  return value;
+}
+
+int _requiredResponseInt(JsonMap response, String field) {
+  final value = response[field];
+  if (value is! int) {
+    throw FormatException(
+      'Community-installation response $field must be an integer.',
     );
   }
+  return value;
 }
 
-String _requireStringField(JsonMap value, String field, String location) {
-  final fieldValue = value[field];
-  if (fieldValue is! String || fieldValue.isEmpty) {
-    throw FormatException('$location must contain non-empty $field.');
-  }
-  return fieldValue;
-}
-
-Set<String> _stringSet(Object? value, String location) {
+List<String> _responseStringList(JsonMap response, String field) {
+  final value = response[field];
   if (value is! List || value.any((item) => item is! String)) {
-    throw FormatException('$location must be a list of strings.');
+    throw FormatException(
+      'Community-installation response $field must be a list of strings.',
+    );
   }
-  return value.cast<String>().toSet();
+  return List.unmodifiable(value.cast<String>());
 }
 
-bool _sameSet(Set<String> left, Set<String> right) =>
-    left.length == right.length && left.containsAll(right);
+List<String> _optionalResponseStringList(JsonMap response, String field) {
+  if (!response.containsKey(field)) return const <String>[];
+  return _responseStringList(response, field);
+}
 
 Uri _normalizedBaseUri(Uri uri) {
-  _absoluteUri(uri, 'appAccessBaseUri');
+  if (!uri.hasScheme || uri.host.isEmpty) {
+    throw ArgumentError.value(
+      uri,
+      'appAccessBaseUri',
+      'must be an absolute URI',
+    );
+  }
   return uri.replace(
     path: uri.path.endsWith('/') ? uri.path : '${uri.path}/',
     query: null,
@@ -416,6 +410,13 @@ String _formEncode(Map<String, String> values) => values.entries
     )
     .join('&');
 
+String _truncatedResponseBody(String body) {
+  const maxLength = 4096;
+  if (body.length <= maxLength) return body;
+  return '${body.substring(0, maxLength)}… '
+      '[truncated ${body.length - maxLength} characters]';
+}
+
 String _newUuidV4() {
   final bytes = List<int>.generate(16, (_) => Random.secure().nextInt(256));
   bytes[6] = (bytes[6] & 0x0f) | 0x40;
@@ -427,6 +428,3 @@ String _newUuidV4() {
       '${hex.substring(12, 16)}-${hex.substring(16, 20)}-'
       '${hex.substring(20)}';
 }
-
-List<String> _sorted(Iterable<String> values) =>
-    values.toSet().toList()..sort();

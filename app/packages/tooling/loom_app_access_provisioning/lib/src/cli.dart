@@ -65,7 +65,12 @@ Future<int> runApplyAppAccessProvisioning(
     final applier = (applierFactory ?? _defaultApplierFactory)(config);
     try {
       final result = await applier.apply(plan);
+      _printRolesWithNoPermissions(out, result);
       out.writeln(const JsonEncoder.withIndent('  ').convert(result.toJson()));
+      if (result.hasFailures) {
+        _printInstallationFindings(err, result);
+        return 1;
+      }
     } finally {
       applier.close();
     }
@@ -129,18 +134,42 @@ AppAccessProvisioningConfig _configFromEnvironment(
 void _printDryRun(StringSink out, AppAccessProvisioningPlan plan) {
   out.writeln('Dry run: 0 network calls made.');
   out.writeln(
-    'State is intentionally not read; --apply will conditionally reconcile '
-    'the following desired records.',
+    '--apply will POST the following App Access community-installation '
+    'requests. No groups, roles, permissions, or catalog entries are written '
+    'by this client.',
   );
   for (final community in plan.communities) {
+    out.writeln('WOULD POST installation for ${community.communityId}:');
     out.writeln(
-      'WOULD ENSURE group ${community.groupId}: '
-      '${jsonEncode(<String, Object?>{'displayName': community.displayName})}',
+      const JsonEncoder.withIndent('  ').convert(community.request.toJson()),
     );
-    for (final role in community.roles) {
-      out.writeln(
-        'WOULD ENSURE role ${role.roleId}: ${jsonEncode(<String, Object?>{'groupId': community.groupId, 'displayName': role.displayName, 'permissionIds': role.permissionIds})}',
-      );
+  }
+}
+
+void _printRolesWithNoPermissions(
+  StringSink out,
+  AppAccessProvisioningResult result,
+) {
+  for (final installation in result.installations) {
+    if (installation.rolesWithNoPermissions.isEmpty) continue;
+    out.writeln(
+      'WARNING: ${installation.communityId} rolesWithNoPermissions: '
+      '${installation.rolesWithNoPermissions.join(', ')}',
+    );
+  }
+}
+
+void _printInstallationFindings(
+  StringSink err,
+  AppAccessProvisioningResult result,
+) {
+  for (final failure in result.failures) {
+    err.writeln(
+      'ERROR: App Access rejected installation for ${failure.communityId}:',
+    );
+    for (final finding in failure.findings) {
+      // Do not summarize, translate, or discard a server derivation finding.
+      err.writeln(jsonEncode(finding));
     }
   }
 }

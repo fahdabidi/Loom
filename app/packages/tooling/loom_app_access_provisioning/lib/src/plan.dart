@@ -2,34 +2,27 @@ import 'dart:convert';
 
 typedef JsonMap = Map<String, Object?>;
 
-/// A deterministic, serializable App Access reconciliation plan.
+/// A deterministic list of App Access community-installation requests.
+///
+/// It deliberately contains only the inputs that App Access needs to derive
+/// groups, roles, and permissions. The service, not this client, owns that
+/// derivation. Group ids therefore do not exist until an installation result
+/// supplies them.
 class AppAccessProvisioningPlan {
-  const AppAccessProvisioningPlan({
-    required this.communities,
-    required this.communityGroupIds,
-  });
+  const AppAccessProvisioningPlan({required this.communities});
 
-  static const schemaVersion = 1;
+  static const schemaVersion = 3;
 
-  final List<CommunityProvisioningEntry> communities;
-  final Map<String, String> communityGroupIds;
+  final List<CommunityInstallationPlanEntry> communities;
 
   JsonMap toJson() => <String, Object?>{
     'schemaVersion': schemaVersion,
     'communities': [for (final community in communities) community.toJson()],
-    'communityGroupIds': communityGroupIds,
   };
 
   String encode({bool pretty = true}) => pretty
       ? const JsonEncoder.withIndent('  ').convert(toJson())
       : jsonEncode(toJson());
-
-  List<WorkflowProvisioningEntry> get unstatedCreationWorkflows => [
-    for (final community in communities)
-      ...community.workflows.where(
-        (workflow) => workflow.creationAuthority == 'unstated',
-      ),
-  ];
 
   factory AppAccessProvisioningPlan.fromJsonString(String encoded) {
     final Object? decoded;
@@ -52,167 +45,194 @@ class AppAccessProvisioningPlan {
         'Unsupported provisioning plan schemaVersion "${json['schemaVersion']}".',
       );
     }
-    final rawCommunities = json['communities'];
-    if (rawCommunities is! List) {
+    final communities = _listOfMaps(
+      json['communities'],
+      'communities',
+    ).map(CommunityInstallationPlanEntry.fromJson).toList(growable: false);
+    if (communities.isEmpty) {
       throw const FormatException(
-        'Provisioning plan communities must be a list.',
+        'Provisioning plan communities must not be empty.',
       );
     }
-    final rawGroupIds = json['communityGroupIds'];
-    if (rawGroupIds is! Map) {
+    final communityIds = communities.map((community) => community.communityId);
+    if (communityIds.toSet().length != communities.length) {
       throw const FormatException(
-        'Provisioning plan communityGroupIds must be an object.',
+        'Provisioning plan communityIds must be unique.',
       );
-    }
-    final communities = <CommunityProvisioningEntry>[];
-    for (final entry in rawCommunities) {
-      if (entry is! Map) {
-        throw const FormatException('Each plan community must be an object.');
-      }
-      communities.add(
-        CommunityProvisioningEntry.fromJson(Map<String, Object?>.from(entry)),
-      );
-    }
-    final groupIds = <String, String>{};
-    for (final entry in rawGroupIds.entries) {
-      if (entry.key is! String || entry.value is! String) {
-        throw const FormatException(
-          'communityGroupIds must map strings to strings.',
-        );
-      }
-      groupIds[entry.key as String] = entry.value as String;
     }
     return AppAccessProvisioningPlan(
       communities: List.unmodifiable(communities),
-      communityGroupIds: Map.unmodifiable(groupIds),
     );
   }
 }
 
-class CommunityProvisioningEntry {
-  const CommunityProvisioningEntry({
+/// One local community identity paired with the exact App Access request.
+///
+/// [communityId] is not sent to App Access. It associates the returned group
+/// id with the workflow service's `LOOM_COMMUNITY_GROUP_IDS` map.
+class CommunityInstallationPlanEntry {
+  const CommunityInstallationPlanEntry({
     required this.communityId,
-    required this.groupId,
+    required this.request,
+  });
+
+  final String communityId;
+  final InstallCommunityPackageRequest request;
+
+  JsonMap toJson() => <String, Object?>{
+    'communityId': communityId,
+    'request': request.toJson(),
+  };
+
+  factory CommunityInstallationPlanEntry.fromJson(JsonMap json) {
+    final rawRequest = json['request'];
+    if (rawRequest is! Map) {
+      throw const FormatException('community request must be an object.');
+    }
+    return CommunityInstallationPlanEntry(
+      communityId: _requiredString(json, 'communityId'),
+      request: InstallCommunityPackageRequest.fromJson(
+        Map<String, Object?>.from(rawRequest),
+      ),
+    );
+  }
+}
+
+/// The generated-model contract for `POST /community-installations`.
+class InstallCommunityPackageRequest {
+  const InstallCommunityPackageRequest({
+    required this.communityHandle,
     required this.displayName,
+    required this.grammarVersion,
     required this.roles,
     required this.workflows,
   });
 
-  final String communityId;
-  final String groupId;
+  final String communityHandle;
   final String displayName;
-  final List<RoleProvisioningEntry> roles;
-  final List<WorkflowProvisioningEntry> workflows;
+  final int grammarVersion;
+  final List<DerivedRoleInput> roles;
+  final List<DerivedWorkflowInput> workflows;
 
   JsonMap toJson() => <String, Object?>{
-    'communityId': communityId,
-    'groupId': groupId,
+    'communityHandle': communityHandle,
     'displayName': displayName,
+    'grammarVersion': grammarVersion,
     'roles': [for (final role in roles) role.toJson()],
     'workflows': [for (final workflow in workflows) workflow.toJson()],
   };
 
-  factory CommunityProvisioningEntry.fromJson(JsonMap json) {
-    final roles = _listOfMaps(
-      json['roles'],
-      'roles',
-    ).map(RoleProvisioningEntry.fromJson).toList(growable: false);
-    final communityId = _requiredString(json, 'communityId');
-    final workflows = _listOfMaps(json['workflows'], 'workflows')
-        .map(WorkflowProvisioningEntry.fromJson)
-        .map((workflow) => workflow.withCommunityId(communityId))
-        .toList(growable: false);
-    return CommunityProvisioningEntry(
-      communityId: communityId,
-      groupId: _requiredString(json, 'groupId'),
+  factory InstallCommunityPackageRequest.fromJson(JsonMap json) {
+    final grammarVersion = json['grammarVersion'];
+    if (grammarVersion is! int) {
+      throw const FormatException('grammarVersion must be an integer.');
+    }
+    return InstallCommunityPackageRequest(
+      communityHandle: _requiredString(json, 'communityHandle'),
       displayName: _requiredString(json, 'displayName'),
-      roles: roles,
-      workflows: workflows,
+      grammarVersion: grammarVersion,
+      roles: List.unmodifiable(
+        _listOfMaps(json['roles'], 'roles').map(DerivedRoleInput.fromJson),
+      ),
+      workflows: List.unmodifiable(
+        _listOfMaps(
+          json['workflows'],
+          'workflows',
+        ).map(DerivedWorkflowInput.fromJson),
+      ),
     );
   }
 }
 
-class RoleProvisioningEntry {
-  const RoleProvisioningEntry({
-    required this.roleId,
-    required this.displayName,
-    required this.permissionIds,
-  });
+class DerivedRoleInput {
+  const DerivedRoleInput({required this.roleId, required this.label});
 
   final String roleId;
-  final String displayName;
-  final List<String> permissionIds;
+  final String label;
 
-  JsonMap toJson() => <String, Object?>{
-    'roleId': roleId,
-    'displayName': displayName,
-    'permissionIds': permissionIds,
-  };
+  JsonMap toJson() => <String, Object?>{'roleId': roleId, 'label': label};
 
-  factory RoleProvisioningEntry.fromJson(JsonMap json) => RoleProvisioningEntry(
+  factory DerivedRoleInput.fromJson(JsonMap json) => DerivedRoleInput(
     roleId: _requiredString(json, 'roleId'),
-    displayName: _requiredString(json, 'displayName'),
-    permissionIds: _stringList(json['permissionIds'], 'permissionIds'),
+    label: _requiredString(json, 'label'),
   );
 }
 
-class WorkflowProvisioningEntry {
-  const WorkflowProvisioningEntry({
-    required this.communityId,
+class DerivedWorkflowInput {
+  const DerivedWorkflowInput({
     required this.workflowType,
-    required this.family,
-    required this.permissionPrefix,
-    required this.creationAuthority,
+    required this.cardSurfaceFamily,
     required this.createRoleIds,
+    required this.transitions,
   });
 
-  final String communityId;
   final String workflowType;
-
-  /// Null only for an unrendered, system-created workflow. The existing
-  /// resolver intentionally returns no family for that shape, so it derives no
-  /// App Access permission.
-  final String? family;
-  final String? permissionPrefix;
-
-  /// `initial-state-transition`, `system-created`, or the temporary
-  /// `unstated` stopgap described by the package derivation requirements.
-  final String creationAuthority;
+  final String? cardSurfaceFamily;
   final List<String> createRoleIds;
+  final List<DerivedTransitionInput> transitions;
 
   JsonMap toJson() => <String, Object?>{
     'workflowType': workflowType,
-    'family': family,
-    'permissionPrefix': permissionPrefix,
-    'creationAuthority': creationAuthority,
+    'cardSurfaceFamily': cardSurfaceFamily,
     'createRoleIds': createRoleIds,
+    'transitions': [for (final transition in transitions) transition.toJson()],
   };
 
-  factory WorkflowProvisioningEntry.fromJson(
-    JsonMap json,
-  ) => WorkflowProvisioningEntry(
-    // The enclosing community owns this field. It is retained only in the
-    // in-memory model so status reporting can render package/workflow pairs.
-    communityId: '',
+  factory DerivedWorkflowInput.fromJson(JsonMap json) => DerivedWorkflowInput(
     workflowType: _requiredString(json, 'workflowType'),
-    family: _nullableString(json['family'], 'family'),
-    permissionPrefix: _nullableString(
-      json['permissionPrefix'],
-      'permissionPrefix',
+    cardSurfaceFamily: _nullableString(
+      json['cardSurfaceFamily'],
+      'cardSurfaceFamily',
     ),
-    creationAuthority: _requiredString(json, 'creationAuthority'),
     createRoleIds: _stringList(json['createRoleIds'], 'createRoleIds'),
+    transitions: List.unmodifiable(
+      _listOfMaps(
+        json['transitions'],
+        'transitions',
+      ).map(DerivedTransitionInput.fromJson),
+    ),
   );
+}
 
-  WorkflowProvisioningEntry withCommunityId(String value) =>
-      WorkflowProvisioningEntry(
-        communityId: value,
-        workflowType: workflowType,
-        family: family,
-        permissionPrefix: permissionPrefix,
-        creationAuthority: creationAuthority,
-        createRoleIds: createRoleIds,
-      );
+class DerivedTransitionInput {
+  const DerivedTransitionInput({
+    required this.transitionId,
+    required this.action,
+    required this.tone,
+    required this.isTerminal,
+    required this.allowedRoleIds,
+  });
+
+  final String transitionId;
+
+  /// Null is serialized as an absent key, because an absent action tells App
+  /// Access to use the generic-archetype structural rule.
+  final String? action;
+  final String? tone;
+  final bool isTerminal;
+  final List<String> allowedRoleIds;
+
+  JsonMap toJson() => <String, Object?>{
+    'transitionId': transitionId,
+    if (action != null) 'action': action,
+    'tone': tone,
+    'isTerminal': isTerminal,
+    'allowedRoleIds': allowedRoleIds,
+  };
+
+  factory DerivedTransitionInput.fromJson(JsonMap json) {
+    final isTerminal = json['isTerminal'];
+    if (isTerminal is! bool) {
+      throw const FormatException('isTerminal must be a boolean.');
+    }
+    return DerivedTransitionInput(
+      transitionId: _requiredString(json, 'transitionId'),
+      action: _nullableString(json['action'], 'action'),
+      tone: _nullableString(json['tone'], 'tone'),
+      isTerminal: isTerminal,
+      allowedRoleIds: _stringList(json['allowedRoleIds'], 'allowedRoleIds'),
+    );
+  }
 }
 
 List<JsonMap> _listOfMaps(Object? value, String field) {

@@ -3,7 +3,11 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 import 'plan.dart';
 
-/// Pure conversion from already-parsed shipped packages to App Access state.
+/// Pure conversion from already-parsed shipped packages to App Access's
+/// community-installation request contract.
+///
+/// This class extracts derivation *inputs*. It must not derive permissions,
+/// role grants, or group ids: App Access owns each of those operations.
 class AppAccessProvisioningDeriver {
   const AppAccessProvisioningDeriver({
     this.archetypeResolver = const ArchetypeResolver(),
@@ -14,297 +18,126 @@ class AppAccessProvisioningDeriver {
   AppAccessProvisioningPlan deriveAll(
     Iterable<ParsedCommunityPackage> packages,
   ) {
-    final entries = <CommunityProvisioningEntry>[];
-    final groupIds = <String, String>{};
-    final roleIds = <String>{};
+    final entries = <CommunityInstallationPlanEntry>[];
+    final communityIds = <String>{};
 
     for (final package in packages) {
-      final entry = _derivePackage(package);
-      if (groupIds.containsKey(entry.communityId)) {
-        throw FormatException('Duplicate communityId ${entry.communityId}.');
+      if (!communityIds.add(package.communityId)) {
+        throw FormatException('Duplicate communityId ${package.communityId}.');
       }
-      groupIds[entry.communityId] = entry.groupId;
-      for (final role in entry.roles) {
-        if (!roleIds.add(role.roleId)) {
-          throw FormatException(
-            'Role id ${role.roleId} appears in more than one package.',
-          );
-        }
-      }
-      entries.add(entry);
+      entries.add(_derivePackage(package));
     }
     if (entries.isEmpty) {
       throw const FormatException(
         'At least one community package is required.',
       );
     }
-    return AppAccessProvisioningPlan(
-      communities: List.unmodifiable(entries),
-      communityGroupIds: Map.unmodifiable(groupIds),
-    );
+    return AppAccessProvisioningPlan(communities: List.unmodifiable(entries));
   }
 
-  CommunityProvisioningEntry _derivePackage(ParsedCommunityPackage package) {
-    final declaredRoleIds = package.roles.map((role) => role.roleId).toSet();
-    if (declaredRoleIds.length != package.roles.length) {
-      throw FormatException(
-        '${package.sourcePath} declares duplicate role ids.',
-      );
-    }
-    final resolved = archetypeResolver.resolveAll(
+  CommunityInstallationPlanEntry _derivePackage(
+    ParsedCommunityPackage package,
+  ) {
+    final resolvedArchetypes = archetypeResolver.resolveAll(
       package.rawWorkflowDefinitions,
     );
-    final producedByEffect = _workflowTypesProducedByCreateInstanceEffects(
-      package.rawWorkflowDefinitions,
-    );
-    final rolePermissions = <String, Set<String>>{
-      for (final role in package.roles) role.roleId: <String>{},
-    };
-    final workflowEntries = <WorkflowProvisioningEntry>[];
+    final workflows = <DerivedWorkflowInput>[];
 
     for (final definitionEntry in package.rawWorkflowDefinitions.entries) {
       final workflowType = definitionEntry.key;
-      if (definitionEntry.value is! Map) {
+      final rawDefinition = definitionEntry.value;
+      if (rawDefinition is! Map) {
         throw FormatException(
           '$workflowType must be a workflow-definition object.',
         );
       }
-      final definition = Map<Object?, Object?>.from(
-        definitionEntry.value as Map,
-      );
-      final initialState = _requiredString(
-        definition['initialState'],
-        '$workflowType.initialState',
-      );
-      final transitions = _transitions(definition, workflowType);
-      final initialRoleIds = <String>{};
-      for (final transition in transitions) {
-        if (_fromStates(transition, workflowType).contains(initialState)) {
-          initialRoleIds.addAll(_allowedRoleIds(transition, workflowType));
-        }
+      final definition = package.workflowDefinitions[workflowType];
+      if (definition == null) {
+        throw StateError('Parsed definition is missing $workflowType.');
       }
-      _verifyDeclaredRoles(
-        initialRoleIds,
-        declaredRoleIds,
-        '$workflowType initial-state transition',
-      );
-
-      late final String creationAuthority;
-      late final Set<String> createRoleIds;
-      if (initialRoleIds.isNotEmpty) {
-        creationAuthority = 'initial-state-transition';
-        createRoleIds = initialRoleIds;
-      } else if (producedByEffect.contains(workflowType)) {
-        creationAuthority = 'system-created';
-        createRoleIds = <String>{};
-      } else {
-        creationAuthority = 'unstated';
-        createRoleIds = provisionalCreateRoleIdsForUnstatedAuthority(
-          declaredRoleIds,
+      final rawTransitions = rawDefinition['transitions'];
+      if (rawTransitions is! List) {
+        throw FormatException('$workflowType.transitions must be a list.');
+      }
+      if (rawTransitions.length != definition.transitions.length) {
+        throw StateError(
+          'Parsed transition count drifted for $workflowType: '
+          '${rawTransitions.length} raw, ${definition.transitions.length} parsed.',
         );
       }
-      final family = resolved[workflowType]?.family;
-      if (family == null) {
-        if (creationAuthority != 'system-created') {
+
+      final transitions = <DerivedTransitionInput>[];
+      for (var index = 0; index < definition.transitions.length; index++) {
+        final parsedTransition = definition.transitions[index];
+        final rawTransition = rawTransitions[index];
+        if (rawTransition is! Map) {
           throw FormatException(
-            '$workflowType has no resolvable archetype family; refusing to '
-            'invent App Access permissions.',
+            '$workflowType.transitions[$index] must be an object.',
           );
         }
-        // The existing resolver deliberately returns no family for an
-        // unrendered system-only workflow. With no person-facing creation
-        // authority, it correctly derives no App Access grant or prefix.
-        workflowEntries.add(
-          WorkflowProvisioningEntry(
-            communityId: package.communityId,
-            workflowType: workflowType,
-            family: null,
-            permissionPrefix: null,
-            creationAuthority: creationAuthority,
-            createRoleIds: const <String>[],
+        if (rawTransition['id'] != parsedTransition.id) {
+          throw StateError(
+            'Parsed transition order drifted for $workflowType at index $index.',
+          );
+        }
+        final rawAction = rawTransition['action'];
+        if (rawAction != null && (rawAction is! String || rawAction.isEmpty)) {
+          throw FormatException(
+            '$workflowType transition ${parsedTransition.id} action must be '
+            'a non-empty string when declared.',
+          );
+        }
+        final target = parsedTransition.to;
+        transitions.add(
+          DerivedTransitionInput(
+            transitionId: parsedTransition.id,
+            // Read the raw key so an action that is absent in the package is
+            // also absent in the request rather than serialized as null.
+            action: rawAction as String?,
+            tone: parsedTransition.tone,
+            isTerminal:
+                target != null &&
+                (definition.states[target]?.isTerminal ?? false),
+            allowedRoleIds: List.unmodifiable(
+              parsedTransition.guard.allowedRoleIds ?? const [],
+            ),
           ),
         );
-        continue;
-      }
-      final createPermissionId = archetypeResolver.permissionId(
-        family,
-        'create',
-      );
-      if (createPermissionId == null) {
-        throw FormatException('$workflowType resolved unknown family $family.');
-      }
-      final permissionPrefix = createPermissionId.substring(
-        0,
-        createPermissionId.length - '.create'.length,
-      );
-      for (final roleId in createRoleIds) {
-        rolePermissions[roleId]!.add(createPermissionId);
       }
 
-      for (final transition in transitions) {
-        final action = transition['action'];
-        if (action == null) continue;
-        if (action is! String || action.isEmpty) {
-          throw FormatException(
-            '$workflowType transition action must be a string.',
-          );
-        }
-        // Creation is handled above by the three explicit creation-authority
-        // cases, not by ordinary action grants.
-        if (action == 'create') continue;
-        final permissionId = archetypeResolver.permissionId(family, action);
-        if (permissionId == null) {
-          throw FormatException(
-            '$workflowType action $action has no permission prefix.',
-          );
-        }
-        final allowedRoleIds = _allowedRoleIds(transition, workflowType);
-        _verifyDeclaredRoles(
-          allowedRoleIds,
-          declaredRoleIds,
-          '$workflowType action $action',
-        );
-        for (final roleId in allowedRoleIds) {
-          rolePermissions[roleId]!.add(permissionId);
+      final createRoleIds = <String>{};
+      for (final binding in definition.renderBindings) {
+        for (final action in binding.actions) {
+          if (action.kind == 'create') {
+            createRoleIds.addAll(action.byRoleIds ?? const <String>[]);
+          }
         }
       }
 
-      workflowEntries.add(
-        WorkflowProvisioningEntry(
-          communityId: package.communityId,
+      workflows.add(
+        DerivedWorkflowInput(
           workflowType: workflowType,
-          family: family,
-          permissionPrefix: permissionPrefix,
-          creationAuthority: creationAuthority,
+          cardSurfaceFamily: resolvedArchetypes[workflowType]?.family,
           createRoleIds: _sorted(createRoleIds),
+          transitions: List.unmodifiable(transitions),
         ),
       );
     }
 
-    final suffix = _underscoredCommunitySuffix(package.communityId);
-    return CommunityProvisioningEntry(
+    return CommunityInstallationPlanEntry(
       communityId: package.communityId,
-      groupId: 'loom_communities_$suffix',
-      displayName: package.displayName,
-      roles: List.unmodifiable([
-        for (final role in package.roles)
-          RoleProvisioningEntry(
-            roleId: role.roleId,
-            displayName: role.label,
-            permissionIds: _sorted(rolePermissions[role.roleId]!),
-          ),
-      ]),
-      workflows: List.unmodifiable(workflowEntries),
+      request: InstallCommunityPackageRequest(
+        communityHandle: package.communityHandle,
+        displayName: package.displayName,
+        grammarVersion: package.specVersion,
+        roles: List.unmodifiable([
+          for (final role in package.roles)
+            DerivedRoleInput(roleId: role.roleId, label: role.label),
+        ]),
+        workflows: List.unmodifiable(workflows),
+      ),
     );
   }
-}
-
-/// Provisional policy pending a product decision: a person creates these
-/// workflows, but their packages state no creator role. Keeping this stopgap
-/// in one named function makes it removable without disturbing derivation.
-Set<String> provisionalCreateRoleIdsForUnstatedAuthority(
-  Set<String> declaredRoleIds,
-) => Set<String>.of(declaredRoleIds);
-
-Set<String> _workflowTypesProducedByCreateInstanceEffects(
-  Map<String, Object?> definitions,
-) {
-  final produced = <String>{};
-  for (final definition in definitions.values) {
-    _collectCreatedWorkflowTypes(definition, produced);
-  }
-  return produced;
-}
-
-void _collectCreatedWorkflowTypes(Object? value, Set<String> produced) {
-  if (value is Map) {
-    if (value['op'] == 'createInstance' && value['workflowType'] is String) {
-      produced.add(value['workflowType'] as String);
-    }
-    for (final child in value.values) {
-      _collectCreatedWorkflowTypes(child, produced);
-    }
-  } else if (value is List) {
-    for (final child in value) {
-      _collectCreatedWorkflowTypes(child, produced);
-    }
-  }
-}
-
-List<Map<Object?, Object?>> _transitions(
-  Map<Object?, Object?> definition,
-  String workflowType,
-) {
-  final raw = definition['transitions'];
-  if (raw is! List) {
-    throw FormatException('$workflowType.transitions must be a list.');
-  }
-  final transitions = <Map<Object?, Object?>>[];
-  for (final transition in raw) {
-    if (transition is! Map) {
-      throw FormatException('$workflowType.transitions must contain objects.');
-    }
-    transitions.add(Map<Object?, Object?>.from(transition));
-  }
-  return transitions;
-}
-
-Set<String> _fromStates(Map<Object?, Object?> transition, String workflowType) {
-  final from = transition['from'];
-  if (from is! List || from.any((state) => state is! String)) {
-    throw FormatException(
-      '$workflowType transition from must be a list of strings.',
-    );
-  }
-  return from.cast<String>().toSet();
-}
-
-Set<String> _allowedRoleIds(
-  Map<Object?, Object?> transition,
-  String workflowType,
-) {
-  final guard = transition['guard'];
-  if (guard == null) return <String>{};
-  if (guard is! Map) {
-    throw FormatException('$workflowType transition guard must be an object.');
-  }
-  final rawRoleIds = guard['allowedRoleIds'];
-  if (rawRoleIds == null) return <String>{};
-  if (rawRoleIds is! List || rawRoleIds.any((roleId) => roleId is! String)) {
-    throw FormatException(
-      '$workflowType guard.allowedRoleIds must be a list of strings.',
-    );
-  }
-  return rawRoleIds.cast<String>().toSet();
-}
-
-void _verifyDeclaredRoles(
-  Iterable<String> usedRoleIds,
-  Set<String> declaredRoleIds,
-  String location,
-) {
-  for (final roleId in usedRoleIds) {
-    if (!declaredRoleIds.contains(roleId)) {
-      throw FormatException('$location names undeclared role $roleId.');
-    }
-  }
-}
-
-String _requiredString(Object? value, String location) {
-  if (value is! String || value.isEmpty) {
-    throw FormatException('$location must be a non-empty string.');
-  }
-  return value;
-}
-
-String _underscoredCommunitySuffix(String communityId) {
-  const prefix = 'community_';
-  if (!communityId.startsWith(prefix) || communityId.length == prefix.length) {
-    throw FormatException(
-      'Community id $communityId must start with $prefix for group derivation.',
-    );
-  }
-  return communityId.substring(prefix.length).replaceAll('-', '_');
 }
 
 List<String> _sorted(Iterable<String> values) =>
