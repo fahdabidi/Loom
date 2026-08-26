@@ -23,13 +23,25 @@ info:
     own reader list would be the same hole with a different shape.
 
 
-    **Derivation, in full.** A document is readable by the union of
+    **Derivation, in full.** This mirrors the engine's own instance-visibility resolution, in its
+    order, because a document that is readable by a different set than the instance it belongs to is a
+    leak in one direction or a broken library in the other. A document is readable by the union of
 
-      1. every fan whose roles satisfy the `readGuard` of the instance's **current** state -- falling
-         back to the workflow's `visibility.readGuard` when the state declares none, which is the
-         precedence the engine already applies;
-      2. the document's owner, being the fan whose upload created it;
-      3. every fan listed in the instance field named by `visibility.fields.sharedWith`.
+      1. the instance's creator -- who is also the document's owner, since uploading is a transition on
+         the instance;
+      2. every fan listed in the instance field named by `visibility.fields.sharedWith`, which is the
+         `owner_and_shared` model the `documentLibrary` archetype declares;
+      3. whoever the workflow's `visibility.default` admits:
+         `public` -- everyone;
+         `membersOnly` -- every fan with an active membership in the community's group;
+         `guarded` -- every fan whose roles satisfy the `readGuard` of the **current** state, falling
+         back to the workflow-level `visibility.readGuard` when the state declares none.
+
+    Cedar Commons HOA uses two of these three at once and is worth following: its
+    `hoa-member-document` workflow defaults to `membersOnly`, so a `published` document is readable by
+    every member, while `draft` and `archived` each declare a `readGuard` of `["hoa-board"]` that
+    overrides the default for those states. The same workflow therefore resolves through the
+    membership branch in one state and the role branch in another.
 
     An unset or empty shared-with list admits nobody, never everybody. Read guards fail closed: a
     document whose instance carries no identity is visible to no one rather than to everyone.
@@ -390,7 +402,10 @@ components:
           type: array
           items:
             type: string
-          description: Every fan who may read the document right now.
+          description: >-
+            Every fan who may read the document right now. Empty when
+            `derivation.byDefault.model` is `public`, which means everyone rather than nobody -- read
+            `everyone` before reading this list, or a public document looks locked.
         writeFanIds:
           type: array
           items:
@@ -404,22 +419,53 @@ components:
 
     DocumentAccessDerivation:
       type: object
-      description: Why each fan is in the set. One entry per rule that admitted anybody.
-      required: [byRole, byOwner, byShare]
+      description: >-
+        Why each fan is in the set, following the engine's own visibility resolution. The branches are
+        not alternatives to choose between -- owner and shared-with always apply, and exactly one of
+        the three `visibility.default` branches applies on top, decided by the workflow and the
+        instance's current state.
+      required: [byOwner, byShare, byDefault]
       properties:
-        byRole:
-          type: array
-          description: Fans admitted by the current state's `readGuard`, grouped by the role that admitted them.
-          items:
-            type: object
-            required: [roleId, fanIds]
-            properties:
-              roleId:
+        byDefault:
+          type: object
+          description: The branch taken by `visibility.default`, and who it admitted.
+          required: [model]
+          properties:
+            model:
+              type: string
+              enum: [public, membersOnly, guarded]
+            everyone:
+              type: boolean
+              description: Set only for `public`. Then `readFanIds` is not an enumeration and is empty.
+            byMembership:
+              type: array
+              description: >-
+                Set only for `membersOnly`: every fan with an active membership in the community's
+                group, regardless of role.
+              items:
                 type: string
-              fanIds:
-                type: array
-                items:
-                  type: string
+            byRole:
+              type: array
+              description: >-
+                Set only for `guarded`: fans admitted by the effective `readGuard`, grouped by the role
+                that admitted them. The guard is the current state's, or the workflow's when the state
+                declares none.
+              items:
+                type: object
+                required: [roleId, fanIds]
+                properties:
+                  roleId:
+                    type: string
+                  fanIds:
+                    type: array
+                    items:
+                      type: string
+            guardState:
+              type: string
+              description: >-
+                Set only for `guarded`: which guard was used, `state` or `workflow`. A community
+                debugging "why can the whole board see this draft" needs to know which of the two
+                declarations is in force.
         byOwner:
           type: array
           description: The owner, when the guard did not already admit them. Zero or one entry.
