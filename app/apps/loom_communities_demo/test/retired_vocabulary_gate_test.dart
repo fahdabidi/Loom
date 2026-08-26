@@ -13,6 +13,8 @@ const _lockedLiterals = <String, String>{
       'docs/references/guide/05-validation.md', // Identifier: dangling_allowed_persona_id.
   'transition_action_cannot_set_by_persona_ids':
       'docs/references/guide/05-validation.md', // Identifier: transition_action_cannot_set_by_persona_ids.
+  'created_by_persona_id':
+      'docs/Build Plan V2/Evidence/backend/create-instance-500-root-cause.md', // Identifier: created_by_persona_id.
 };
 
 void main() {
@@ -41,9 +43,7 @@ void main() {
         }
         var inspected = line;
         for (final literal in _lockedLiterals.keys) {
-          inspected = inspected
-              .replaceAll("'$literal'", "''")
-              .replaceAll('"$literal"', '""');
+          inspected = _removeAllowedLiteral(inspected, literal);
         }
         if (retiredPattern.hasMatch(inspected)) {
           failures.add('$relativePath:${index + 1}: $line');
@@ -60,6 +60,39 @@ void main() {
           'exceptions.\n${failures.join('\n')}',
     );
   });
+}
+
+String _removeAllowedLiteral(String line, String literal) {
+  final result = StringBuffer();
+  var remainingStart = 0;
+  var matchStart = line.indexOf(literal);
+
+  while (matchStart >= 0) {
+    final matchEnd = matchStart + literal.length;
+    final hasIdentifierPrefix =
+        matchStart > 0 && _isIdentifierCharacter(line[matchStart - 1]);
+    final hasIdentifierSuffix =
+        matchEnd < line.length && _isIdentifierCharacter(line[matchEnd]);
+    if (hasIdentifierPrefix || hasIdentifierSuffix) {
+      result.write(line.substring(remainingStart, matchEnd));
+      remainingStart = matchEnd;
+    } else {
+      result.write(line.substring(remainingStart, matchStart));
+      remainingStart = matchEnd;
+    }
+    matchStart = line.indexOf(literal, remainingStart);
+  }
+
+  result.write(line.substring(remainingStart));
+  return result.toString();
+}
+
+bool _isIdentifierCharacter(String character) {
+  final codeUnit = character.codeUnitAt(0);
+  return codeUnit == 95 ||
+      (codeUnit >= 48 && codeUnit <= 57) ||
+      (codeUnit >= 65 && codeUnit <= 90) ||
+      (codeUnit >= 97 && codeUnit <= 122);
 }
 
 Directory _findAppDirectory(Directory start) {
