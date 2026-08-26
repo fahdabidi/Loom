@@ -212,6 +212,7 @@ void main() {
           db: workflowDatabase,
           communityId: communityId,
         );
+        api.setRoleForFan('member', 'member');
         final instanceId = await api.createInstance(
           workflowType: workflowType,
           initialInstanceData: {'title': 'PostgreSQL write probe'},
