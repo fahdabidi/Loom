@@ -366,3 +366,91 @@ the only reason the 500 above was diagnosable at all.
 Items 1d and 1e are unaffected in substance — the group map is still empty and the role id
 spaces still differ. What changed is the mechanism that closes them: one install call per
 community, not a client-side reimplementation.
+
+## Addendum 5 — it works: 9 of 11 communities installed, and why it took four attempts
+
+The stale image was the wall. `loom/app-access:0.2.0` predated the endpoint's
+implementation and answered `501 installCommunityPackage is not implemented yet`, while
+the source has implemented it since `a96c184` (2026-08-15) and contains no such string.
+Rebuilt as `loom/app-access:0.3.0`, imported into k3s containerd, manifest bumped, rolled
+out. That is the third time in this session I called something "implemented" after
+checking a proxy for it rather than the thing that runs — first a curl missing the real
+client's headers, then a controller instead of a running binary. **Verify against the
+artifact that actually executes.**
+
+With the real service running, three further gates fell in order, each one only visible
+after the previous cleared:
+
+1. **`payment_checkout.advance/create/terminate` unknown.** The server derives
+   paymentCheckout as a **generic** archetype (create/advance/terminate/view) while the
+   deployed catalog held a bespoke-era `pay`/`refund`/`view_receipt`. Resolved by
+   reconciling the catalog — see below.
+2. **`equipment_loan.create` unknown.** See "the vocabulary gap" below; this one is a real
+   inconsistency, not stale data.
+3. **`cardSurfaceFamily must not be null`** for `tournament-vote` and `notification`, the
+   only 2 of 95 workflows with no render bindings of their own. permissions.md step 3d
+   already covers them — "a workflow with no bindings and no responseTable owner derives
+   nothing at all" — so they must be omitted from the request rather than sent as null.
+   Fix dispatched.
+
+### The catalog was reconciled by UNION, not replace
+
+The only write is `PUT` = replace-the-whole-catalog, so this needed care. Replacing with
+the vocabulary's 97 would have **deleted 26 ids the packages do not use**, including
+`community.manage_members`, `community.invite`, `community.manage_roles` and
+`community.manage_settings` — app-level permissions not derived from any archetype, one of
+which the existing `cedar_commons_hoa_admin` role actually holds.
+
+So the PUT carried the **union**: 69 existing preserved byte-for-byte, 54 vocabulary ids
+added, **0 deleted**. Verified after the write: 127 present, `payment_checkout.create`
+present, `community.manage_members` still there. That answers item 1k, and the answer is
+union rather than replace, for a concrete reason rather than caution.
+
+### A real vocabulary gap, not stale data
+
+`permissions.md` step 6 says "For each `create` action's `byRoleIds`, add the archetype's
+**create** permission", and the server's deriver does exactly that. But the generated
+vocabulary defines `.create` for only some archetypes:
+
+| kind | has `.create` |
+|---|---|
+| all 7 generic archetypes | yes |
+| bespoke `event-rsvp`, `votePoll` | yes |
+| bespoke `documentLibrary`, `equipment-loan`, `exportWizard`, `searchAiAnswer` | **no** |
+
+Those four are exactly the ids flagged earlier as "invented by the client-side rule". They
+were not invented — the derivation rule genuinely requires them, and the shipped packages
+declare create actions for those families. **The generated vocabulary is missing them**,
+which means `archetype_resolver.dart`'s bespoke action lists are. Added to the catalog to
+unblock (127 total), and filed as **1l** to fix at the source, since the vocabulary exists
+precisely so these rules live in one place.
+
+### Result
+
+Nine communities installed with package-verbatim role ids and server-derived permissions:
+
+    hoa-board            34 permissions      hoa-member           20
+    masjid-admin         23                  community-member     21
+    garden-coordinator   21                  garden-member        11
+    camera-club-organizer 18                 camera-club-member   11
+    chess-organizer      16                  chess-member          8
+    chess-owner           7                  portability-owner    10
+    member                8                  moderator             4
+    ad-off-member         3                  ad-off-owner          3
+    portability-receiving-provider 5         portability-member    0
+
+`portability-member` at 0 is expected and already understood: it guards no transition and
+appears only in `visibility.readGuard`. It is what `rolesWithNoPermissions` is for.
+
+Remaining: Neighborhood Book Club, Riverside Youth Soccer and Tabletop Club, all behind
+the `cardSurfaceFamily` fix.
+
+### One piece of cruft to clean up
+
+The server derives `groupId` from `communityHandle`, so installation created
+`loom_communities_cedar-commons-hoa` (hyphens). My earlier client-side applier had created
+`loom_communities_cedar_commons_hoa` (underscores) from the community **id**. Those 11
+earlier groups are now orphaned duplicates holding no roles. They are inert, but they
+should be removed once installation is complete — and the `LOOM_COMMUNITY_GROUP_IDS` map
+must be built from the **server-returned** groupIds, not from the earlier plan, or every
+community will resolve to an empty group.
