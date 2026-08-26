@@ -1253,9 +1253,9 @@
           "reminderEnabled": { "type": "bool", "writableBy": "effect", "displayIcon": "notifications",
             "labelTemplate": "Reminder enabled: {value}", "displayContexts": ["detail"] },
           "dueAt": { "type": "date?",
-            "formula": "if(reminderEnabled, subtractHours(combineDateAndTime(eventDate, eventTime), 24), null)",
+            "formula": "if(reminderEnabled == true, subtractHours(combineDateAndTime(eventDate, eventTime), 24), null)",
             "displayIcon": "alarm", "labelTemplate": "Reminder due {value}", "displayContexts": ["detail"] },
-          "reminderState": { "type": "text", "formula": "if(reminderEnabled, 'on', 'off')",
+          "reminderState": { "type": "text", "formula": "if(reminderEnabled == true, 'on', 'off')",
             "displayIcon": "notifications_active", "labelTemplate": "Reminder: {value}",
             "displayContexts": ["tile", "detail"] }
         }
