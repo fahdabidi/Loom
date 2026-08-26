@@ -11,7 +11,7 @@ typedef JsonMap = Map<String, Object?>;
 class AppAccessProvisioningPlan {
   const AppAccessProvisioningPlan({required this.communities});
 
-  static const schemaVersion = 3;
+  static const schemaVersion = 4;
 
   final List<CommunityInstallationPlanEntry> communities;
 
@@ -74,13 +74,23 @@ class CommunityInstallationPlanEntry {
   const CommunityInstallationPlanEntry({
     required this.communityId,
     required this.request,
+    this.omittedWorkflowTypes = const [],
   });
 
   final String communityId;
   final InstallCommunityPackageRequest request;
 
+  /// Workflow types that derive no App Access installation input.
+  ///
+  /// This is local plan metadata only: it is deliberately never part of the
+  /// installation request sent to App Access. Keeping the omission in the plan
+  /// makes a workflow that derives nothing visible in both the saved plan and
+  /// the CLI dry run.
+  final List<String> omittedWorkflowTypes;
+
   JsonMap toJson() => <String, Object?>{
     'communityId': communityId,
+    'omittedWorkflowTypes': omittedWorkflowTypes,
     'request': request.toJson(),
   };
 
@@ -89,11 +99,22 @@ class CommunityInstallationPlanEntry {
     if (rawRequest is! Map) {
       throw const FormatException('community request must be an object.');
     }
+    final request = InstallCommunityPackageRequest.fromJson(
+      Map<String, Object?>.from(rawRequest),
+    );
+    final omittedWorkflowTypes = _omittedWorkflowTypes(json);
+    final requestWorkflowTypes = request.workflows
+        .map((workflow) => workflow.workflowType)
+        .toSet();
+    if (omittedWorkflowTypes.any(requestWorkflowTypes.contains)) {
+      throw const FormatException(
+        'omittedWorkflowTypes must not appear in request.workflows.',
+      );
+    }
     return CommunityInstallationPlanEntry(
       communityId: _requiredString(json, 'communityId'),
-      request: InstallCommunityPackageRequest.fromJson(
-        Map<String, Object?>.from(rawRequest),
-      ),
+      request: request,
+      omittedWorkflowTypes: omittedWorkflowTypes,
     );
   }
 }
@@ -167,7 +188,7 @@ class DerivedWorkflowInput {
   });
 
   final String workflowType;
-  final String? cardSurfaceFamily;
+  final String cardSurfaceFamily;
   final List<String> createRoleIds;
   final List<DerivedTransitionInput> transitions;
 
@@ -180,10 +201,7 @@ class DerivedWorkflowInput {
 
   factory DerivedWorkflowInput.fromJson(JsonMap json) => DerivedWorkflowInput(
     workflowType: _requiredString(json, 'workflowType'),
-    cardSurfaceFamily: _nullableString(
-      json['cardSurfaceFamily'],
-      'cardSurfaceFamily',
-    ),
+    cardSurfaceFamily: _requiredString(json, 'cardSurfaceFamily'),
     createRoleIds: _stringList(json['createRoleIds'], 'createRoleIds'),
     transitions: List.unmodifiable(
       _listOfMaps(
@@ -258,6 +276,22 @@ List<String> _stringList(Object? value, String field) {
     throw FormatException('$field must be a list of strings.');
   }
   return List.unmodifiable(value.cast<String>());
+}
+
+List<String> _omittedWorkflowTypes(JsonMap json) {
+  final omittedWorkflowTypes = _stringList(
+    json['omittedWorkflowTypes'],
+    'omittedWorkflowTypes',
+  );
+  if (omittedWorkflowTypes.any((workflowType) => workflowType.trim().isEmpty)) {
+    throw const FormatException(
+      'omittedWorkflowTypes must contain non-empty strings.',
+    );
+  }
+  if (omittedWorkflowTypes.toSet().length != omittedWorkflowTypes.length) {
+    throw const FormatException('omittedWorkflowTypes must be unique.');
+  }
+  return omittedWorkflowTypes;
 }
 
 String? _nullableString(Object? value, String field) {

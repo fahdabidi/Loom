@@ -59,6 +59,80 @@ void main() {
     expect(reservation.createRoleIds, ['hoa-board', 'hoa-member']);
   });
 
+  test(
+    'a workflow whose archetype does not resolve is absent from its request',
+    () {
+      final tabletop = _community(plan, 'community_verify_tabletop_club');
+      final workflowTypes = tabletop.request.workflows
+          .map((workflow) => workflow.workflowType)
+          .toList();
+
+      expect(workflowTypes, isNot(contains('tournament-vote')));
+      expect(
+        tabletop.request.toJson().toString(),
+        isNot(contains('tournament-vote')),
+      );
+    },
+  );
+
+  test('Tabletop omits only unrendered workflows and retains its other 11', () {
+    final tabletop = _community(plan, 'community_verify_tabletop_club');
+    final workflowTypes = tabletop.request.workflows
+        .map((workflow) => workflow.workflowType)
+        .toList();
+
+    expect(tabletop.omittedWorkflowTypes, ['tournament-vote', 'notification']);
+    expect(workflowTypes, [
+      'event-rsvp',
+      'event-rsvp-response',
+      'tournament-event',
+      'tournament-ballot',
+      'equipment-loan',
+      'equipment-giveaway',
+      'tabletop-game-loan',
+      'tabletop-club-dues-payment',
+      'game-purchase-proposal',
+      'tabletop-meetup-announcement',
+      'discussion-thread',
+    ]);
+  });
+
+  test('every generated request workflow has a card surface family', () {
+    for (final community in plan.communities) {
+      for (final workflow in community.request.workflows) {
+        expect(
+          workflow.cardSurfaceFamily,
+          isNotNull,
+          reason: workflow.workflowType,
+        );
+      }
+    }
+  });
+
+  test(
+    'the shipped corpus exposes exactly the two derived-nothing omissions',
+    () {
+      final sourceWorkflowCount = packages
+          .expand((package) => package.rawWorkflowDefinitions.keys)
+          .length;
+      final requestWorkflowCount = plan.communities
+          .expand((community) => community.request.workflows)
+          .length;
+      final omissionsByCommunity = <String, List<String>>{
+        for (final community in plan.communities)
+          if (community.omittedWorkflowTypes.isNotEmpty)
+            community.communityId: community.omittedWorkflowTypes,
+      };
+
+      expect(sourceWorkflowCount, 95);
+      expect(requestWorkflowCount, 93);
+      expect(sourceWorkflowCount - requestWorkflowCount, 2);
+      expect(omissionsByCommunity, {
+        'community_verify_tabletop_club': ['tournament-vote', 'notification'],
+      });
+    },
+  );
+
   test('no generated installation request contains permissionIds', () {
     expect(_containsKey(plan.toJson(), 'permissionIds'), isFalse);
   });

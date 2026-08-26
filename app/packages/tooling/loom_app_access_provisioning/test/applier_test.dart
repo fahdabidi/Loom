@@ -27,6 +27,13 @@ void main() {
       out.toString(),
       contains('WOULD POST installation for community_test'),
     );
+    expect(
+      out.toString(),
+      contains(
+        'OMITS workflows with no resolved cardSurfaceFamily for '
+        'community_test: test-derived-nothing',
+      ),
+    );
     expect(out.toString(), contains('"communityHandle": "test"'));
     expect(fake.requests, isEmpty);
   });
@@ -57,6 +64,7 @@ void main() {
     expect(request.correlationId, matches(_uuidV4));
     expect(request.idempotencyKey, startsWith('community-installation-'));
     expect(request.body, _testPlan().communities.single.request.toJson());
+    expect(request.body, isNot(contains('omittedWorkflowTypes')));
     expect(
       fake.requests.where(
         (request) =>
@@ -176,6 +184,7 @@ AppAccessProvisioningPlan _testPlan() => const AppAccessProvisioningPlan(
   communities: [
     CommunityInstallationPlanEntry(
       communityId: 'community_test',
+      omittedWorkflowTypes: ['test-derived-nothing'],
       request: InstallCommunityPackageRequest(
         communityHandle: 'test',
         displayName: 'Test Community',

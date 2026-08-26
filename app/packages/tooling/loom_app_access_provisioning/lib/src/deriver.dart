@@ -42,6 +42,7 @@ class AppAccessProvisioningDeriver {
       package.rawWorkflowDefinitions,
     );
     final workflows = <DerivedWorkflowInput>[];
+    final omittedWorkflowTypes = <String>[];
 
     for (final definitionEntry in package.rawWorkflowDefinitions.entries) {
       final workflowType = definitionEntry.key;
@@ -64,6 +65,15 @@ class AppAccessProvisioningDeriver {
           'Parsed transition count drifted for $workflowType: '
           '${rawTransitions.length} raw, ${definition.transitions.length} parsed.',
         );
+      }
+
+      final cardSurfaceFamily = resolvedArchetypes[workflowType]?.family;
+      if (cardSurfaceFamily == null) {
+        // permissions.md step 3d: a workflow with neither render bindings nor
+        // a responseTable owner derives nothing. It must not cross the App
+        // Access request boundary as a nullable workflow input.
+        omittedWorkflowTypes.add(workflowType);
+        continue;
       }
 
       final transitions = <DerivedTransitionInput>[];
@@ -117,7 +127,7 @@ class AppAccessProvisioningDeriver {
       workflows.add(
         DerivedWorkflowInput(
           workflowType: workflowType,
-          cardSurfaceFamily: resolvedArchetypes[workflowType]?.family,
+          cardSurfaceFamily: cardSurfaceFamily,
           createRoleIds: _sorted(createRoleIds),
           transitions: List.unmodifiable(transitions),
         ),
@@ -126,6 +136,7 @@ class AppAccessProvisioningDeriver {
 
     return CommunityInstallationPlanEntry(
       communityId: package.communityId,
+      omittedWorkflowTypes: List.unmodifiable(omittedWorkflowTypes),
       request: InstallCommunityPackageRequest(
         communityHandle: package.communityHandle,
         displayName: package.displayName,

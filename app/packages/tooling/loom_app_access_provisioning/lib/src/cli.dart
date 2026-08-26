@@ -139,6 +139,13 @@ void _printDryRun(StringSink out, AppAccessProvisioningPlan plan) {
     'by this client.',
   );
   for (final community in plan.communities) {
+    if (community.omittedWorkflowTypes.isNotEmpty) {
+      out.writeln(
+        'OMITS workflows with no resolved cardSurfaceFamily for '
+        '${community.communityId}: '
+        '${community.omittedWorkflowTypes.join(', ')}',
+      );
+    }
     out.writeln('WOULD POST installation for ${community.communityId}:');
     out.writeln(
       const JsonEncoder.withIndent('  ').convert(community.request.toJson()),
