@@ -74,7 +74,6 @@ class RemoteLoomAuthApi implements LoomAuthApi {
     http.Client? httpClient,
   }) : _session = session,
        _appAccessBaseUri = _normaliseBaseUri(appAccessBaseUri),
-       _fanPassportBaseUri = _normaliseBaseUri(fanPassportBaseUri),
        _appId = _requireNonEmptyRemoteValue(appId, 'appId'),
        _communityId = _requireNonEmptyRemoteValue(communityId, 'communityId'),
        _communityExtensionId = _requireNonEmptyRemoteValue(
@@ -83,11 +82,20 @@ class RemoteLoomAuthApi implements LoomAuthApi {
        ),
        _communityGroupId = communityGroupId,
        _actorIdentityResolver = actorIdentityResolver,
-       _httpClient = httpClient ?? http.Client();
+       _httpClient = httpClient ?? http.Client() {
+    // One HTTP client, shared. The passport client reuses this instance's
+    // connection pool rather than opening a second one to the same host, and
+    // a test that injects a mock client still sees every request.
+    _fanPassportClient = FanPassportClient(
+      baseUri: fanPassportBaseUri,
+      session: _session,
+      httpClient: _httpClient,
+    );
+  }
 
   final LoomAuthSession _session;
   final Uri _appAccessBaseUri;
-  final Uri _fanPassportBaseUri;
+  late final FanPassportClient _fanPassportClient;
   final String _appId;
   final String _communityId;
   final String _communityExtensionId;
@@ -453,36 +461,20 @@ class RemoteLoomAuthApi implements LoomAuthApi {
     );
   }
 
-  Future<_RemotePassport?> _getPassport(String fanId) async {
-    final response = await _request(
-      method: 'GET',
-      uri: _fanPassportUri(fanId),
-      acceptedStatusCodes: const {404},
-    );
-    if (response.statusCode == 404) return null;
-    return _parsePassport(
-      _requiredObject(response, 'Fan Passport response'),
-      'Fan Passport response',
-    );
-  }
+  // Passport access goes through FanPassportClient rather than being spelled
+  // out here. Two call paths to one service is one too many: this class used
+  // to build its own requests, parse its own responses, and carry its own
+  // passport type, so a change to the service meant finding every place that
+  // knew its shape.
+  Future<FanPassportRecord?> _getPassport(String fanId) =>
+      _fanPassportClient.getPassport(fanId);
 
-  Future<_RemotePassport> _createPassport(String displayName) async {
-    final response = await _request(
-      method: 'POST',
-      uri: _fanPassportUri(),
-      body: <String, Object?>{'displayName': displayName},
-      mutating: true,
-      expectedStatusCodes: const {201},
-    );
-    return _parsePassport(
-      _requiredObject(response, 'Fan Passport create response'),
-      'Fan Passport create response',
-    );
-  }
+  Future<FanPassportRecord> _createPassport(String displayName) =>
+      _fanPassportClient.createPassport(displayName: displayName);
 
   LoomAccount _accountFromMembership(
     _RemoteGroupMembership membership, {
-    required _RemotePassport passport,
+    required FanPassportRecord passport,
   }) {
     if (membership.appId != _appId || membership.groupId != _groupId) {
       throw StateError(
@@ -571,14 +563,6 @@ class RemoteLoomAuthApi implements LoomAuthApi {
     );
   }
 
-  _RemotePassport _parsePassport(Object value, String source) {
-    final object = Map<String, Object?>.from(value as Map);
-    return _RemotePassport(
-      fanId: _requiredString(object, 'fanId', source),
-      displayName: _requiredString(object, 'displayName', source),
-    );
-  }
-
   Uri _appAccessUri(
     String first,
     String second,
@@ -591,18 +575,6 @@ class RemoteLoomAuthApi implements LoomAuthApi {
     if (fifth != null) segments.add(fifth);
     return _uriFromSegments(_appAccessBaseUri, segments);
   }
-
-  Uri _fanPassportUri([String? fanId]) =>
-      _uriFromSegments(_fanPassportBaseUri, [
-        if (fanId == null) ...[
-          'v1',
-          'fan-passports',
-        ] else ...[
-          'v1',
-          'fan-passports',
-          fanId,
-        ],
-      ]);
 
   Future<_RemoteHttpResponse> _request({
     required String method,
@@ -679,13 +651,6 @@ class _RemoteGroupMembership {
   final String fanId;
   final List<String> roleIds;
   final String state;
-}
-
-class _RemotePassport {
-  const _RemotePassport({required this.fanId, required this.displayName});
-
-  final String fanId;
-  final String displayName;
 }
 
 Map<String, Object?> _requiredObject(
