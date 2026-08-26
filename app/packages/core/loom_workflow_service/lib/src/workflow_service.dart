@@ -24,7 +24,6 @@ class WorkflowService {
     r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$',
   );
   static final Random _secureRandom = Random.secure();
-  static const _unresolvedRoleId = '\u0000loom-role-resolution-pending';
   static const _supportedAggregateOperations = {
     'count',
     'sum',
@@ -767,9 +766,14 @@ class WorkflowService {
     try {
       return await _databaseSerialExecutor.run(() async {
         final engine = _authoritativeEngine(communityId);
-        // Phase B.3 replaces this fail-closed placeholder with roles resolved
-        // by App Access. A fan id must never be treated as a claimed role id.
-        engine.setRoleForFan(identity.fanId, _unresolvedRoleId);
+        final roleResolutionError = await _resolveRolesForRequest(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          engine: engine,
+        );
+        if (roleResolutionError != null) return roleResolutionError;
         final page = await engine.queryInstances(
           tabId: 'workflow-service',
           fanId: identity.fanId,
@@ -852,9 +856,14 @@ class WorkflowService {
     try {
       return await _databaseSerialExecutor.run(() async {
         final engine = _authoritativeEngine(communityId);
-        // Phase B.3 replaces this fail-closed placeholder with roles resolved
-        // by App Access. A fan id must never be treated as a claimed role id.
-        engine.setRoleForFan(identity.fanId, _unresolvedRoleId);
+        final roleResolutionError = await _resolveRolesForRequest(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          engine: engine,
+        );
+        if (roleResolutionError != null) return roleResolutionError;
         final result = await engine.aggregate(
           workflowType: body.workflowType,
           column: body.column,
@@ -941,7 +950,14 @@ class WorkflowService {
     try {
       return await _databaseSerialExecutor.run(() async {
         final engine = _authoritativeEngine(communityId);
-        engine.setRoleForFan(identity.fanId, _unresolvedRoleId);
+        final roleResolutionError = await _resolveRolesForRequest(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          engine: engine,
+        );
+        if (roleResolutionError != null) return roleResolutionError;
         final instance = await engine.readVisibleInstance(
           instanceId: instanceId,
           fanId: identity.fanId,
@@ -989,6 +1005,44 @@ class WorkflowService {
     engine.setFailClosedOnMissingDefinition(true);
     return engine;
   }
+
+  Future<Response?> _resolveRolesForRequest({
+    required Request request,
+    required String communityId,
+    required WorkflowRequestIdentity identity,
+    required String correlationId,
+    required LocalWorkflowEngineApi engine,
+  }) async {
+    final groupId = await _communityGroupIdResolver.resolveGroupId(communityId);
+    if (groupId == null || groupId.trim().isEmpty) {
+      engine.setRolesForFan(identity.fanId, <String>{});
+      return _authorizationServiceUnavailable(request);
+    }
+
+    try {
+      final roleIds = await _appAccessClient.resolveRoleIds(
+        fanId: identity.fanId,
+        appId: _appId,
+        groupId: groupId,
+        correlationId: correlationId,
+      );
+      engine.setRolesForFan(identity.fanId, roleIds);
+      return null;
+    } on AppAccessDecisionException catch (_) {
+      engine.setRolesForFan(identity.fanId, <String>{});
+      return _authorizationServiceUnavailable(request);
+    } on SocketException catch (_) {
+      engine.setRolesForFan(identity.fanId, <String>{});
+      return _authorizationServiceUnavailable(request);
+    }
+  }
+
+  Response _authorizationServiceUnavailable(Request request) => _error(
+    request: request,
+    statusCode: 503,
+    code: 'authorization_service_unavailable',
+    message: 'Workflow creation authorization is unavailable.',
+  );
 
   Map<String, dynamic> _workflowInstanceJson(WorkflowInstance instance) => {
     'instanceId': instance.instanceId,
@@ -1271,6 +1325,14 @@ class WorkflowService {
           communityId,
           () => LocalWorkflowEngineApi(db: _database, communityId: communityId),
         );
+        final roleResolutionError = await _resolveRolesForRequest(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          engine: engine,
+        );
+        if (roleResolutionError != null) return roleResolutionError;
         final result = await engine.applyTransition(
           workflowType: before.workflowType,
           instanceId: instanceId,

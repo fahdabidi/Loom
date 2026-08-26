@@ -1,12 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 
-/// The one App Access operation required by the workflow service.
+/// App Access operations required by the workflow service.
 abstract interface class AppAccessDecisionClient {
   Future<bool> checkAccess({
     required String fanId,
     required String appId,
     required String permissionId,
+    required String groupId,
+    required String correlationId,
+  });
+
+  /// Resolves every effective role held by a fan for an app and community.
+  Future<Set<String>> resolveRoleIds({
+    required String fanId,
+    required String appId,
     required String groupId,
     required String correlationId,
   });
@@ -23,7 +31,7 @@ class AppAccessDecisionException implements Exception {
   String toString() => message;
 }
 
-/// Minimal HTTP client for App Access's `POST /v1/access-decisions` operation.
+/// Minimal HTTP client for App Access decisions and effective permissions.
 class HttpAppAccessDecisionClient implements AppAccessDecisionClient {
   static const Duration defaultTokenRefreshSkew = Duration(seconds: 30);
 
@@ -116,6 +124,63 @@ class HttpAppAccessDecisionClient implements AppAccessDecisionClient {
       );
     }
     return decoded['allowed'] as bool;
+  }
+
+  @override
+  Future<Set<String>> resolveRoleIds({
+    required String fanId,
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  }) async {
+    final accessToken = await _loadAccessToken();
+    final request = await _httpClient.getUrl(
+      _baseUri
+          .resolve(
+            'v1/apps/${Uri.encodeComponent(appId)}/effective-permissions/'
+            '${Uri.encodeComponent(fanId)}',
+          )
+          .replace(queryParameters: {'groupId': groupId}),
+    );
+    request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $accessToken');
+    request.headers.set('x-loom-correlation-id', correlationId);
+
+    final response = await request.close();
+    final encoded = await utf8.decoder.bind(response).join();
+    if (response.statusCode != HttpStatus.ok) {
+      throw AppAccessDecisionException(
+        'App Access returned HTTP ${response.statusCode}.',
+        statusCode: response.statusCode,
+      );
+    }
+
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(encoded);
+    } on FormatException {
+      throw const AppAccessDecisionException(
+        'App Access returned malformed effective permissions.',
+      );
+    }
+    if (decoded is! Map<String, dynamic> ||
+        decoded['fanId'] != fanId ||
+        decoded['appId'] != appId ||
+        decoded['roleIds'] is! List<dynamic>) {
+      throw const AppAccessDecisionException(
+        'App Access returned malformed effective permissions.',
+      );
+    }
+
+    final roleIds = <String>{};
+    for (final roleId in decoded['roleIds'] as List<dynamic>) {
+      if (roleId is! String) {
+        throw const AppAccessDecisionException(
+          'App Access returned malformed effective permissions.',
+        );
+      }
+      roleIds.add(roleId);
+    }
+    return roleIds;
   }
 
   Future<String> _loadAccessToken() async {

@@ -4,9 +4,9 @@ import 'package:shelf/shelf.dart';
 
 /// The authenticated identity supplied to workflow guard evaluation.
 ///
-/// Phase B.1 carries only the fan id. App Access role resolution is deliberately
-/// left for B.3, where resolved role ids can be registered with the shared
-/// engine without accepting role claims from an HTTP request.
+/// This boundary carries only the authenticated fan id. The workflow service
+/// resolves role ids from App Access and never accepts a role claim from an
+/// HTTP request.
 class WorkflowRequestIdentity {
   final String fanId;
 

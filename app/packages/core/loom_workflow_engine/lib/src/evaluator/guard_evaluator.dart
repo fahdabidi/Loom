@@ -5,15 +5,19 @@ import 'formula_evaluator.dart';
 /// All conditions must pass (AND semantics). Empty/null guards always pass.
 ///
 /// [fanId] is the individual account id (e.g. `"tabletop-member-05"`).
-/// [roleId], when provided, is the declared role
-/// (e.g. `"tabletop-member"`) and is used **only** to evaluate
-/// [allowedRoleIds] guards. A role-gated check fails closed when it is
-/// omitted; an individual fan id is never treated as a role id.
+/// [roleIds], when provided, are the fan's declared roles
+/// (e.g. `"tabletop-member"`) and are used **only** to evaluate
+/// [allowedRoleIds] guards. A role-gated check fails closed when they are
+/// omitted or empty; an individual fan id is never treated as a role id.
+///
+/// [roleId] is retained for existing single-role callers and is treated as a
+/// one-element role set when [roleIds] is not supplied.
 bool evaluateGuard(
   WorkflowGuard guard,
   String fanId,
   Map<String, dynamic> instanceData, {
   String? roleId,
+  Set<String>? roleIds,
   // completedWorkflowIds is reserved for Phase 3 (cross-workflow deps).
   // Accepted but not yet enforced in Phase 1.
   Set<String>? completedWorkflowIds,
@@ -22,11 +26,13 @@ bool evaluateGuard(
   bool skipRelatedAggregate = false,
   DateTime Function()? clock,
 }) {
-  // allowedRoleIds — if non-null and non-empty, the fan's resolved role must
-  // be in the list. Never compare the individual fan id to a role value.
+  // allowedRoleIds — if non-null and non-empty, any resolved role must be in
+  // the list. Never compare the individual fan id to a role value.
+  final effectiveRoleIds =
+      roleIds ?? (roleId == null ? const <String>{} : <String>{roleId});
   if (guard.allowedRoleIds != null &&
       guard.allowedRoleIds!.isNotEmpty &&
-      (roleId == null || !guard.allowedRoleIds!.contains(roleId))) {
+      !effectiveRoleIds.any(guard.allowedRoleIds!.contains)) {
     return false;
   }
 

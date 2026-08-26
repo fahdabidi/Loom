@@ -1177,6 +1177,98 @@ void main() {
     },
   );
 
+  test('applyTransition accepts a role guard resolved by App Access', () async {
+    await _seedRoleGuardedTransition(database);
+    appAccessClient.roleIds = {'hoa-board'};
+
+    final response = await service.handler(
+      _transitionRequest(
+        fanId: 'fan-board-member',
+        body: {'transitionId': 'approve'},
+      ),
+    );
+
+    expect(response.statusCode, 200);
+    expect(appAccessClient.roleResolutionCallCount, 1);
+    expect(appAccessClient.roleResolutionFanId, 'fan-board-member');
+    expect(appAccessClient.roleResolutionAppId, 'loom_communities');
+    expect(
+      appAccessClient.roleResolutionGroupId,
+      'loom_communities_service_unit',
+    );
+    expect(appAccessClient.roleResolutionCorrelationId, _correlationId);
+    expect(
+      (await database.readInstance(_instanceId))!.currentState,
+      'approved',
+    );
+  });
+
+  test(
+    'applyTransition fails closed for empty and unavailable role resolution',
+    () async {
+      await _seedRoleGuardedTransition(database);
+
+      appAccessClient.roleIds = <String>{};
+      final emptyRoles = await service.handler(
+        _transitionRequest(
+          fanId: 'fan-board-member',
+          body: {'transitionId': 'approve'},
+        ),
+      );
+      expect(emptyRoles.statusCode, 403);
+      expect(
+        jsonDecode(await emptyRoles.readAsString()),
+        containsPair('code', 'workflow_guard_refused'),
+      );
+      expect(appAccessClient.roleResolutionCallCount, 1);
+
+      appAccessClient.roleResolutionError = const AppAccessDecisionException(
+        'App Access role resolution failed.',
+      );
+      final unavailable = await service.handler(
+        _transitionRequest(
+          fanId: 'fan-board-member',
+          idempotencyKey: 'role-resolution-unavailable',
+          body: {'transitionId': 'approve'},
+        ),
+      );
+      expect(unavailable.statusCode, 503);
+      expect(
+        jsonDecode(await unavailable.readAsString()),
+        containsPair('code', 'authorization_service_unavailable'),
+      );
+      expect(appAccessClient.roleResolutionCallCount, 2);
+      expect((await database.readInstance(_instanceId))!.currentState, 'draft');
+    },
+  );
+
+  test(
+    'applyTransition fails closed when the community group is unavailable',
+    () async {
+      await _seedRoleGuardedTransition(database);
+      final unmappedService = WorkflowService(
+        database: database,
+        identityExtractor: const HeaderWorkflowIdentityExtractor(),
+        appAccessClient: appAccessClient,
+        communityGroupIdResolver: MapCommunityGroupIdResolver(const {}),
+      );
+
+      final response = await unmappedService.handler(
+        _transitionRequest(
+          fanId: 'fan-board-member',
+          body: {'transitionId': 'approve'},
+        ),
+      );
+
+      expect(response.statusCode, 503);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('code', 'authorization_service_unavailable'),
+      );
+      expect(appAccessClient.roleResolutionCallCount, 0);
+    },
+  );
+
   test(
     'an instance belonging to another community is returned as absent',
     () async {
@@ -1214,6 +1306,41 @@ Future<void> _seed(WorkflowDatabase database) async {
     currentState: 'draft',
     instanceData: {'ownerFanId': 'fan-owner'},
     createdByFanId: 'fan-owner',
+  );
+}
+
+Future<void> _seedRoleGuardedTransition(WorkflowDatabase database) async {
+  await database.upsertDefinition(
+    definitionId: '${_communityId}_$_workflowType',
+    workflowType: _workflowType,
+    definitionJson: jsonEncode({
+      'initialState': 'draft',
+      'states': {
+        'draft': {'label': 'Draft'},
+        'approved': {'label': 'Approved'},
+      },
+      'transitions': [
+        {
+          'id': 'approve',
+          'label': 'Approve',
+          'from': ['draft'],
+          'to': 'approved',
+          'guard': {
+            'allowedRoleIds': ['hoa-board'],
+          },
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{},
+    }),
+    version: 4,
+  );
+  await database.insertInstance(
+    instanceId: _instanceId,
+    communityId: _communityId,
+    workflowType: _workflowType,
+    currentState: 'draft',
+    instanceData: const <String, dynamic>{},
+    createdByFanId: 'fan-creator',
   );
 }
 
@@ -1500,10 +1627,17 @@ Request _getRequest(String path, String fanId) => Request(
 class _RecordingAppAccessClient implements AppAccessDecisionClient {
   bool allowed = true;
   int callCount = 0;
+  Set<String> roleIds = const {};
+  Object? roleResolutionError;
+  int roleResolutionCallCount = 0;
   String? fanId;
   String? appId;
   String? permissionId;
   String? groupId;
+  String? roleResolutionFanId;
+  String? roleResolutionAppId;
+  String? roleResolutionGroupId;
+  String? roleResolutionCorrelationId;
 
   @override
   Future<bool> checkAccess({
@@ -1519,5 +1653,22 @@ class _RecordingAppAccessClient implements AppAccessDecisionClient {
     this.permissionId = permissionId;
     this.groupId = groupId;
     return allowed;
+  }
+
+  @override
+  Future<Set<String>> resolveRoleIds({
+    required String fanId,
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  }) async {
+    roleResolutionCallCount += 1;
+    roleResolutionFanId = fanId;
+    roleResolutionAppId = appId;
+    roleResolutionGroupId = groupId;
+    roleResolutionCorrelationId = correlationId;
+    final error = roleResolutionError;
+    if (error != null) throw error;
+    return roleIds;
   }
 }

@@ -90,6 +90,69 @@ void main() {
       expect(httpClient.accessRequestCount, 0);
     },
   );
+
+  test(
+    'resolves roleIds from effective permissions with group and correlation',
+    () async {
+      httpClient.tokens.add(('token-one', 300));
+      httpClient.effectivePermissionsResponseBody = jsonEncode({
+        'fanId': 'fan-123',
+        'appId': 'loom_communities',
+        'groupId': null,
+        'permissionIds': <String>[],
+        'roleIds': ['hoa-member', 'hoa-board'],
+        'catalogVersion': '2026-08-13.1',
+        'resolvedAt': '2026-08-26T00:06:37.282036473Z',
+      });
+
+      final roles = await _resolveRoleIds(client);
+
+      expect(roles, {'hoa-member', 'hoa-board'});
+      expect(
+        httpClient.effectivePermissionsRequestUri,
+        Uri.parse(
+          'https://app-access.test/v1/apps/loom_communities/'
+          'effective-permissions/fan-123?groupId=loom_communities_book-club',
+        ),
+      );
+      expect(httpClient.effectivePermissionsAuthorizationHeaders, [
+        'Bearer token-one',
+      ]);
+      expect(httpClient.effectivePermissionsCorrelationIds, [
+        '11111111-1111-4111-8111-111111111111',
+      ]);
+    },
+  );
+
+  test(
+    'rejects non-200 and malformed effective-permissions responses',
+    () async {
+      httpClient.tokens.add(('token-one', 300));
+
+      httpClient.effectivePermissionsStatusCode = HttpStatus.serviceUnavailable;
+      await expectLater(
+        _resolveRoleIds(client),
+        throwsA(isA<AppAccessDecisionException>()),
+      );
+
+      httpClient.effectivePermissionsStatusCode = HttpStatus.ok;
+      httpClient.effectivePermissionsResponseBody = 'not-json';
+      await expectLater(
+        _resolveRoleIds(client),
+        throwsA(isA<AppAccessDecisionException>()),
+      );
+
+      httpClient.effectivePermissionsResponseBody = jsonEncode({
+        'fanId': 'fan-123',
+        'appId': 'loom_communities',
+        'roleIds': ['hoa-member', 3],
+      });
+      await expectLater(
+        _resolveRoleIds(client),
+        throwsA(isA<AppAccessDecisionException>()),
+      );
+    },
+  );
 }
 
 Future<bool> _checkAccess(HttpAppAccessDecisionClient client) {
@@ -102,16 +165,35 @@ Future<bool> _checkAccess(HttpAppAccessDecisionClient client) {
   );
 }
 
+Future<Set<String>> _resolveRoleIds(HttpAppAccessDecisionClient client) async {
+  return client.resolveRoleIds(
+    fanId: 'fan-123',
+    appId: 'loom_communities',
+    groupId: 'loom_communities_book-club',
+    correlationId: '11111111-1111-4111-8111-111111111111',
+  );
+}
+
 class _RecordingHttpClient implements HttpClient {
   final List<(String, int)> tokens = [];
   final List<String?> authorizationHeaders = [];
+  final List<String?> effectivePermissionsAuthorizationHeaders = [];
+  final List<String?> effectivePermissionsCorrelationIds = [];
   final List<String> tokenRequestBodies = [];
+  Uri? effectivePermissionsRequestUri;
   int tokenStatusCode = HttpStatus.ok;
+  int effectivePermissionsStatusCode = HttpStatus.ok;
+  String effectivePermissionsResponseBody = '{}';
   int tokenRequestCount = 0;
   int accessRequestCount = 0;
 
   @override
   Future<HttpClientRequest> postUrl(Uri url) async {
+    return _RecordingHttpClientRequest(url, this);
+  }
+
+  @override
+  Future<HttpClientRequest> getUrl(Uri url) async {
     return _RecordingHttpClientRequest(url, this);
   }
 
@@ -143,6 +225,20 @@ class _RecordingHttpClient implements HttpClient {
       return _RecordingHttpClientResponse(
         HttpStatus.ok,
         jsonEncode({...decoded, 'allowed': true}),
+      );
+    }
+
+    if (uri.path == '/v1/apps/loom_communities/effective-permissions/fan-123') {
+      effectivePermissionsRequestUri = uri;
+      effectivePermissionsAuthorizationHeaders.add(
+        headers.value(HttpHeaders.authorizationHeader),
+      );
+      effectivePermissionsCorrelationIds.add(
+        headers.value('x-loom-correlation-id'),
+      );
+      return _RecordingHttpClientResponse(
+        effectivePermissionsStatusCode,
+        effectivePermissionsResponseBody,
       );
     }
 

@@ -5,15 +5,16 @@ import 'guard_evaluator.dart';
 /// [fanId] and [instanceData]. Returns an empty list (never null) — the
 /// stuck-state regression case is handled here, not at parse time.
 ///
-/// [roleId], when provided, is passed through to [evaluateGuard] so
-/// [allowedRoleIds]-style guards check the role rather than the
-/// individual id.
+/// [roleIds], when provided, are passed through to [evaluateGuard] so
+/// [allowedRoleIds]-style guards check any declared role rather than the
+/// individual id. [roleId] is retained for existing single-role callers.
 List<LoomWorkflowTransition> availableTransitions(
   LoomWorkflowStateMachine machine,
   String currentState,
   String fanId,
   Map<String, dynamic> instanceData, {
   String? roleId,
+  Set<String>? roleIds,
   Set<String>? completedWorkflowIds,
   bool skipRelatedAggregate = false,
   DateTime Function()? clock,
@@ -26,6 +27,7 @@ List<LoomWorkflowTransition> availableTransitions(
           fanId,
           instanceData,
           roleId: roleId,
+          roleIds: roleIds,
           completedWorkflowIds: completedWorkflowIds,
           skipRelatedAggregate: skipRelatedAggregate,
           clock: clock,

@@ -684,4 +684,12 @@ class _DenyAppAccessClient implements AppAccessDecisionClient {
     required String groupId,
     required String correlationId,
   }) async => false;
+
+  @override
+  Future<Set<String>> resolveRoleIds({
+    required String fanId,
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  }) async => <String>{};
 }

@@ -156,11 +156,23 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   /// Maps individual fan ids to their declared role ids.
   /// Set before any guard-evaluating calls so
   /// [allowedRoleIds]-style checks compare the type, not the individual id.
-  final Map<String, String> _roleIdByFanId = {};
+  final Map<String, Set<String>> _roleIdsByFanId = {};
 
-  /// Registers the role for an individual fan account.
+  /// Registers one role for an individual fan account.
+  ///
+  /// This remains a convenience for existing callers. It replaces the fan's
+  /// full role set with the supplied single role.
   void setRoleForFan(String fanId, String roleId) {
-    _roleIdByFanId[fanId] = roleId;
+    setRolesForFan(fanId, {roleId});
+  }
+
+  /// Replaces every role registered for an individual fan account.
+  ///
+  /// A defensive copy prevents a caller from mutating the stored role set
+  /// after registration. Empty sets are deliberately stored: they represent
+  /// an explicit fail-closed resolution rather than an unresolved fallback.
+  void setRolesForFan(String fanId, Set<String> roleIds) {
+    _roleIdsByFanId[fanId] = Set.unmodifiable(Set<String>.of(roleIds));
   }
 
   LocalWorkflowEngineApi({
@@ -488,16 +500,40 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   }) async {
     final lookup = _surfacePermissionLookup;
     if (lookup == null) return;
-    final allowed = await lookup(
-      fanId: fanId,
-      roleId: _roleIdByFanId[fanId],
-      tabId: tabId,
-      workflowType: workflowType,
-    );
+    final roleIds = _roleIdsByFanId[fanId] ?? const <String>{};
+    final allowed = roleIds.isEmpty
+        ? await lookup(fanId: fanId, tabId: tabId, workflowType: workflowType)
+        : await _hasSurfacePermissionForAnyRole(
+            lookup,
+            fanId: fanId,
+            roleIds: roleIds,
+            tabId: tabId,
+            workflowType: workflowType,
+          );
     if (!allowed) {
       final surface = tabId ?? workflowType ?? 'unknown';
       throw StateError('Permission denied for surface "$surface" for $fanId');
     }
+  }
+
+  Future<bool> _hasSurfacePermissionForAnyRole(
+    WorkflowSurfacePermissionLookup lookup, {
+    required String fanId,
+    required Set<String> roleIds,
+    required String? tabId,
+    required String? workflowType,
+  }) async {
+    for (final roleId in roleIds) {
+      if (await lookup(
+        fanId: fanId,
+        roleId: roleId,
+        tabId: tabId,
+        workflowType: workflowType,
+      )) {
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<bool> _isVisibleToFan(
@@ -537,7 +573,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           readGuard,
           fanId,
           instance.instanceData,
-          roleId: _roleIdByFanId[fanId],
+          roleIds: _roleIdsByFanId[fanId],
           clock: _clock,
         );
     }
@@ -596,8 +632,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 
   bool _visibilityRoleMatches(String fanId, String roleId) {
     if (fanId.isEmpty || roleId.isEmpty) return false;
-    final resolvedRoleId = _roleIdByFanId[fanId];
-    return resolvedRoleId != null && resolvedRoleId == roleId;
+    final resolvedRoleIds = _roleIdsByFanId[fanId];
+    return resolvedRoleIds != null && resolvedRoleIds.contains(roleId);
   }
 
   /// Reads the declared specVersion 4 identity field exactly as authored.
@@ -812,7 +848,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       currentState,
       fanId,
       _withComputedFields(instanceData, machine, viewerId: fanId),
-      roleId: _roleIdByFanId[fanId],
+      roleIds: _roleIdsByFanId[fanId],
       clock: _clock,
     );
   }
@@ -837,7 +873,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       currentState,
       fanId,
       _withComputedFields(instanceData, machine, viewerId: fanId),
-      roleId: _roleIdByFanId[fanId],
+      roleIds: _roleIdsByFanId[fanId],
       completedWorkflowIds: completedWorkflowIds,
       skipRelatedAggregate: true,
       clock: _clock,
@@ -971,7 +1007,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       row.currentState,
       fanId,
       computedData,
-      roleId: _roleIdByFanId[fanId],
+      roleIds: _roleIdsByFanId[fanId],
       completedWorkflowIds: completedWorkflowIds,
       skipRelatedAggregate: true,
       clock: _clock,
@@ -1148,7 +1184,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       );
     }
 
-    final registeredFanIds = _roleIdByFanId.keys.toList(growable: false);
+    final registeredFanIds = _roleIdsByFanId.keys.toList(growable: false);
     final membershipLookup = _activeMembershipLookup;
     final memberFanIds = membershipLookup == null
         ? registeredFanIds
@@ -1586,7 +1622,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       guard,
       fanId,
       data,
-      roleId: _roleIdByFanId[fanId],
+      roleIds: _roleIdsByFanId[fanId],
       skipRelatedAggregate: true,
       clock: _clock,
     );
@@ -1682,7 +1718,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       WorkflowGuard(relatedAggregate: related),
       fanId,
       sourceData,
-      roleId: _roleIdByFanId[fanId],
+      roleIds: _roleIdsByFanId[fanId],
       precomputedRelatedAggregate: aggregate is num ? aggregate : null,
       resolvedRelatedAggregateCompareTo: compareTo,
     );
