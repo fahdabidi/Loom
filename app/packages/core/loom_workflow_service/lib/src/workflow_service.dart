@@ -37,6 +37,7 @@ class WorkflowService {
   final WorkflowIdentityExtractor _identityExtractor;
   final AppAccessDecisionClient _appAccessClient;
   final CommunityGroupIdResolver _communityGroupIdResolver;
+  final void Function(String) _unexpectedErrorLogSink;
   final Map<String, LocalWorkflowEngineApi> _engines = {};
 
   // WorkflowDatabase's transaction boundary uses one externally-owned
@@ -49,10 +50,12 @@ class WorkflowService {
     required WorkflowIdentityExtractor identityExtractor,
     required AppAccessDecisionClient appAccessClient,
     required CommunityGroupIdResolver communityGroupIdResolver,
+    void Function(String)? unexpectedErrorLogSink,
   }) : _database = database,
        _identityExtractor = identityExtractor,
        _appAccessClient = appAccessClient,
-       _communityGroupIdResolver = communityGroupIdResolver;
+       _communityGroupIdResolver = communityGroupIdResolver,
+       _unexpectedErrorLogSink = unexpectedErrorLogSink ?? stderr.writeln;
 
   Handler get handler => _handle;
 
@@ -247,7 +250,8 @@ class WorkflowService {
           correlationId: correlationId,
         );
       });
-    } catch (_) {
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
@@ -463,7 +467,7 @@ class WorkflowService {
         code: 'invalid_request',
         message: 'The workflow instance data is invalid.',
       );
-    } on StateError catch (error) {
+    } on StateError catch (error, stackTrace) {
       final message = '${error.message}';
       if (message.startsWith('Creation of ')) return _createRefused(request);
       if (message.startsWith('Unknown workflow type:')) {
@@ -474,13 +478,15 @@ class WorkflowService {
           message: 'The requested workflow type was not found.',
         );
       }
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
         code: 'workflow_service_error',
         message: 'The workflow instance could not be created.',
       );
-    } catch (_) {
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
@@ -659,7 +665,7 @@ class WorkflowService {
         code: 'invalid_request',
         message: 'The workflow instance data is invalid.',
       );
-    } on StateError catch (error) {
+    } on StateError catch (error, stackTrace) {
       final message = '${error.message}';
       if (message.startsWith('Creation of ')) return _createRefused(request);
       if (message.startsWith('Unknown workflow type:')) {
@@ -670,13 +676,15 @@ class WorkflowService {
           message: 'The requested workflow type was not found.',
         );
       }
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
         code: 'workflow_service_error',
         message: 'The workflow instances could not be created.',
       );
-    } catch (_) {
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
@@ -795,7 +803,7 @@ class WorkflowService {
           headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
         );
       });
-    } on StateError catch (error) {
+    } on StateError catch (error, stackTrace) {
       if ('${error.message}'.startsWith('Permission denied for surface')) {
         return _error(
           request: request,
@@ -804,13 +812,15 @@ class WorkflowService {
           message: 'The workflow collection is not available to this caller.',
         );
       }
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
         code: 'workflow_service_error',
         message: 'Workflow instances could not be queried.',
       );
-    } catch (_) {
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
@@ -877,7 +887,8 @@ class WorkflowService {
           headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
         );
       });
-    } catch (_) {
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
@@ -987,7 +998,8 @@ class WorkflowService {
           headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
         );
       });
-    } catch (_) {
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
@@ -1217,7 +1229,7 @@ class WorkflowService {
         code: 'workflow_field_edit_refused',
         message: 'The workflow fields cannot be edited by this caller.',
       );
-    } on StateError catch (error) {
+    } on StateError catch (error, stackTrace) {
       final message = '${error.message}';
       if (message.startsWith('Instance ') ||
           message.startsWith('Unknown workflow type:')) {
@@ -1228,13 +1240,15 @@ class WorkflowService {
           message: 'The requested workflow instance was not found.',
         );
       }
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
         code: 'workflow_service_error',
         message: 'The workflow fields could not be updated.',
       );
-    } catch (_) {
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
@@ -1361,9 +1375,10 @@ class WorkflowService {
           headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
         );
       });
-    } on StateError catch (error) {
-      return _mapEngineStateError(request, error);
-    } catch (_) {
+    } on StateError catch (error, stackTrace) {
+      return _mapEngineStateError(request, error, stackTrace);
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
       return _error(
         request: request,
         statusCode: 500,
@@ -1406,7 +1421,11 @@ class WorkflowService {
     );
   }
 
-  Response _mapEngineStateError(Request request, StateError error) {
+  Response _mapEngineStateError(
+    Request request,
+    StateError error,
+    StackTrace stackTrace,
+  ) {
     final message = '${error.message}';
     if (message.contains('not available from state')) {
       return _error(
@@ -1443,6 +1462,7 @@ class WorkflowService {
         message: 'The transition request is invalid.',
       );
     }
+    _logUnexpectedError(request, error, stackTrace);
     return _error(
       request: request,
       statusCode: 500,
@@ -1457,12 +1477,7 @@ class WorkflowService {
     required String code,
     required String message,
   }) {
-    final requestCorrelationId = request.headers['x-loom-correlation-id'];
-    final correlationId =
-        requestCorrelationId != null &&
-            _uuidPattern.hasMatch(requestCorrelationId)
-        ? requestCorrelationId
-        : _newCorrelationId();
+    final correlationId = _correlationIdForRequest(request);
     return Response(
       statusCode,
       body: jsonEncode({
@@ -1472,6 +1487,32 @@ class WorkflowService {
       }),
       headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
     );
+  }
+
+  void _logUnexpectedError(
+    Request request,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    _unexpectedErrorLogSink(
+      jsonEncode({
+        'event': 'workflow_service_unexpected_error',
+        'correlationId': _correlationIdForRequest(request),
+        'method': request.method,
+        'path': request.requestedUri.path,
+        'errorType': error.runtimeType.toString(),
+        'error': error.toString(),
+        'stackTrace': stackTrace.toString(),
+      }),
+    );
+  }
+
+  String _correlationIdForRequest(Request request) {
+    final requestCorrelationId = request.headers['x-loom-correlation-id'];
+    return requestCorrelationId != null &&
+            _uuidPattern.hasMatch(requestCorrelationId)
+        ? requestCorrelationId
+        : _newCorrelationId();
   }
 
   String _newCorrelationId() {

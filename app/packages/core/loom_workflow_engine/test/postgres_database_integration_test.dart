@@ -56,6 +56,99 @@ void main() {
   final password = Platform.environment['LOOM_POSTGRES_PASSWORD'];
 
   test(
+    'real PostgreSQL upgrades the legacy creator column without losing rows',
+    () async {
+      final host = Platform.environment['LOOM_POSTGRES_HOST'] ?? '127.0.0.1';
+      final port = int.parse(
+        Platform.environment['LOOM_POSTGRES_PORT'] ?? '15432',
+      );
+      final database =
+          Platform.environment['LOOM_POSTGRES_DATABASE'] ?? 'loom_app_access';
+      final username = Platform.environment['LOOM_POSTGRES_USERNAME'] ?? 'loom';
+      final schema =
+          'workflow_database_test_${DateTime.now().microsecondsSinceEpoch}_$pid';
+
+      final connection = await pg.Connection.open(
+        pg.Endpoint(
+          host: host,
+          port: port,
+          database: database,
+          username: username,
+          password: password,
+        ),
+        settings: const pg.ConnectionSettings(sslMode: pg.SslMode.disable),
+      );
+
+      WorkflowDatabase? workflowDatabase;
+      var schemaCreated = false;
+      try {
+        await connection.execute('CREATE SCHEMA $schema');
+        schemaCreated = true;
+        await connection.execute('SET search_path TO $schema');
+        await connection.execute('''
+          CREATE TABLE workflow_instances (
+            instance_id TEXT PRIMARY KEY,
+            community_id TEXT NOT NULL,
+            workflow_type TEXT NOT NULL,
+            current_state TEXT NOT NULL,
+            instance_data TEXT NOT NULL,
+            created_at BIGINT NOT NULL,
+            updated_at BIGINT NOT NULL,
+            created_by_persona_id TEXT NOT NULL
+          )
+        ''');
+        await connection.execute('''
+          INSERT INTO workflow_instances (
+            instance_id, community_id, workflow_type, current_state,
+            instance_data, created_at, updated_at, created_by_persona_id
+          ) VALUES (
+            'legacy-instance', 'legacy-community', 'legacy-workflow', 'draft',
+            '{}', 101, 102, 'legacy-fan'
+          )
+        ''');
+
+        workflowDatabase = WorkflowDatabase.withExecutor(
+          PgDatabase.opened(connection, enableMigrations: false),
+          dialect: WorkflowSqlDialect.postgres,
+        );
+        await workflowDatabase.insertInstance(
+          instanceId: 'new-instance',
+          communityId: 'legacy-community',
+          workflowType: 'legacy-workflow',
+          currentState: 'draft',
+          instanceData: const {},
+          createdByFanId: 'new-fan',
+        );
+
+        final preserved = await workflowDatabase.readInstance(
+          'legacy-instance',
+        );
+        expect(preserved, isNotNull);
+        expect(preserved!.createdByFanId, 'legacy-fan');
+
+        final columns = (await connection.execute('''
+          SELECT column_name
+          FROM information_schema.columns
+          WHERE table_schema = current_schema()
+            AND table_name = 'workflow_instances'
+        ''')).map((row) => row.single as String).toSet();
+        expect(columns, contains('created_by_fan_id'));
+        expect(columns, isNot(contains('created_by_persona_id')));
+      } finally {
+        workflowDatabase?.close();
+        if (schemaCreated) {
+          await connection.execute('DROP SCHEMA $schema CASCADE');
+        }
+        await connection.close();
+      }
+    },
+    skip: password == null || password.isEmpty
+        ? 'Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL '
+              'port-forward.'
+        : false,
+  );
+
+  test(
     'real PostgreSQL supports definition upsert, instance creation, and a '
     'transactional transition',
     () async {

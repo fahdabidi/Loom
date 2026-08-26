@@ -108,10 +108,56 @@ class WorkflowDatabase {
         created_by_fan_id TEXT NOT NULL
       );
     ''');
+    await _migrateWorkflowInstancesCreatorColumn();
     await _db.runCustom('''
       CREATE INDEX IF NOT EXISTS idx_instances_lookup
         ON workflow_instances (community_id, workflow_type, current_state);
     ''');
+  }
+
+  /// Renames the one historical creator column to its current name.
+  ///
+  /// `CREATE TABLE IF NOT EXISTS` deliberately preserves a pre-existing table,
+  /// so schema declaration alone cannot upgrade databases written before the
+  /// creator id rename. Inspect the active database dialect's catalog rather
+  /// than assuming the declaration represents the persisted shape.
+  Future<void> _migrateWorkflowInstancesCreatorColumn() async {
+    final columns = await _workflowInstancesColumns();
+    const legacyColumn = 'created_by_persona_id';
+    const currentColumn = 'created_by_fan_id';
+    final hasLegacyColumn = columns.contains(legacyColumn);
+    final hasCurrentColumn = columns.contains(currentColumn);
+
+    if (hasLegacyColumn && hasCurrentColumn) {
+      throw StateError(
+        'workflow_instances has both created_by_persona_id and '
+        'created_by_fan_id; refusing to choose between ambiguous creator '
+        'columns.',
+      );
+    }
+    if (hasLegacyColumn && !hasCurrentColumn) {
+      await _db.runCustom(
+        'ALTER TABLE workflow_instances '
+        'RENAME COLUMN created_by_persona_id TO created_by_fan_id',
+      );
+    }
+  }
+
+  Future<Set<String>> _workflowInstancesColumns() async {
+    final rows = await _db.runSelect(
+      _dialect.isSqlite
+          ? 'PRAGMA table_info(workflow_instances)'
+          : r'''SELECT column_name
+              FROM information_schema.columns
+              WHERE table_schema = current_schema()
+                AND table_name = $1''',
+      _dialect.isSqlite ? const [] : const ['workflow_instances'],
+    );
+    return rows
+        .map(
+          (row) => (row[_dialect.isSqlite ? 'name' : 'column_name'] as String),
+        )
+        .toSet();
   }
 
   // ── Definitions ────────────────────────────────────────────────────────

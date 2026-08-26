@@ -145,6 +145,61 @@ void main() {
   );
 
   test(
+    'unexpected database errors log one structured record while preserving the generic 500',
+    () async {
+      final logRecords = <String>[];
+      final loggingService = WorkflowService(
+        database: database,
+        identityExtractor: const HeaderWorkflowIdentityExtractor(),
+        appAccessClient: appAccessClient,
+        communityGroupIdResolver: MapCommunityGroupIdResolver({
+          _communityId: 'loom_communities_service_unit',
+        }),
+        unexpectedErrorLogSink: logRecords.add,
+      );
+      await _installCreatableDefinition(database);
+      await database.execute('DROP TABLE workflow_instances');
+
+      final response = await loggingService.handler(
+        Request(
+          'POST',
+          Uri.parse('http://localhost/v1/communities/$_communityId/instances'),
+          headers: {
+            ..._headers('fan-creator'),
+            'authorization': 'Bearer must-not-reach-the-log',
+          },
+          body: jsonEncode({
+            'workflowType': _workflowType,
+            'instanceData': {
+              'ownerFanId': 'fan-creator',
+              'privateMemberContent': 'must-not-reach-the-log',
+            },
+          }),
+        ),
+      );
+
+      expect(response.statusCode, 500);
+      expect(jsonDecode(await response.readAsString()), {
+        'code': 'workflow_service_error',
+        'message': 'The workflow instance could not be created.',
+        'correlationId': _correlationId,
+      });
+      expect(response.headers['x-loom-correlation-id'], _correlationId);
+
+      expect(logRecords, hasLength(1));
+      final record = jsonDecode(logRecords.single) as Map<String, dynamic>;
+      expect(record['correlationId'], _correlationId);
+      expect(record['method'], 'POST');
+      expect(record['path'], '/v1/communities/$_communityId/instances');
+      expect(record['errorType'], isA<String>());
+      expect(record['error'], isA<String>());
+      expect(record['stackTrace'], isA<String>());
+      expect(record['stackTrace'], isNotEmpty);
+      expect(logRecords.single, isNot(contains('must-not-reach-the-log')));
+    },
+  );
+
+  test(
     'createInstance refuses a response-table-owned type before App Access',
     () async {
       const responseWorkflowType = 'event-response';
