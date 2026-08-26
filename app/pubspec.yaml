@@ -46,6 +46,7 @@ workspace:
   - packages/features/creator/feature_creator_customize
   - packages/tooling/api_spec_inventory
   - packages/tooling/loom_lints
+  - packages/tooling/loom_app_access_provisioning
   - packages/tooling/loom_skill_debug_harness
   - packages/tooling/loom_skill_prereq_setup
   - packages/tooling/loom_ux_judges

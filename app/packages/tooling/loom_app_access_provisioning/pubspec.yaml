@@ -1,0 +1,19 @@
+name: loom_app_access_provisioning
+description: Derive and reconcile Loom Communities App Access provisioning.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  loom_ux_judges:
+    path: ../loom_ux_judges
+  loom_workflow_engine:
+    path: ../../core/loom_workflow_engine
+
+dev_dependencies:
+  loom_workflow_service:
+    path: ../../core/loom_workflow_service
+  test: ^1.25.0
