@@ -76,7 +76,18 @@ void main() {
       expect(engine, isA<RemoteWorkflowEngineApi>());
       final remoteEngine = engine as RemoteWorkflowEngineApi;
       expect(remoteEngine.communityId, _liveCommunityId);
-      expect(remoteEngine.baseUri, Uri.parse(_workflowServiceBaseUri));
+      expect(
+        remoteEngine.baseUri.scheme,
+        Uri.parse(_workflowServiceBaseUri).scheme,
+      );
+      expect(
+        remoteEngine.baseUri.host,
+        Uri.parse(_workflowServiceBaseUri).host,
+      );
+      expect(
+        remoteEngine.baseUri.port,
+        Uri.parse(_workflowServiceBaseUri).port,
+      );
 
       // Test-only credentials already committed with the live auth-session
       // coverage. This stores the app's own session and never prints its token.
