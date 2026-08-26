@@ -22,6 +22,8 @@ const _communityGroupIds = String.fromEnvironment('LOOM_COMMUNITY_GROUP_IDS');
 
 const _liveCommunityId = 'community_cedar_commons_hoa';
 const _cedarReservationWorkflowType = 'hoa-facility-reservation';
+const _cedarBoardReserveFacilityTransitionId = 'board-reserve-facility';
+const _testFanAliceId = 'fan-test-alice';
 const _cedarPackageAsset =
     'packages/loom_communities_app_shell/assets/'
     'Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc';
@@ -49,7 +51,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   test(
-    'production factory uses the remote engine to read Cedar HOA data',
+    'production factory uses the remote engine to read and write Cedar HOA data',
     () async {
       // Invoke the same entrypoint that configures the production factory in a
       // normal Android launch. The test must not recreate that configuration.
@@ -124,6 +126,37 @@ void main() {
         'workflowType=${reservation.workflowType} '
         'state=${reservation.currentState} '
         'instanceData=${reservation.instanceData}',
+      );
+
+      // This deliberately uses only the engine obtained through the app's
+      // production factory. A unique facility name avoids the reservation
+      // transition's cross-instance overlap guard on repeatable device runs.
+      final writeProofNonce = DateTime.now().toUtc().microsecondsSinceEpoch;
+      final instanceId = await remoteEngine.createInstance(
+        workflowType: _cedarReservationWorkflowType,
+        initialInstanceData: {
+          'title': 'App write proof $writeProofNonce',
+          'facility': 'App write proof facility $writeProofNonce',
+          'eventDate': '2099-12-31',
+          'eventTime': '12:00',
+          'durationMinutes': 120,
+          'reservationWindow': 'Test-only remote write proof window',
+          'locationDetails': 'Cedar Commons app write proof location',
+          'requesterFanId': _testFanAliceId,
+        },
+        fanId: _testFanAliceId,
+      );
+      expect(instanceId, isNotEmpty);
+
+      final transition = await remoteEngine.applyTransition(
+        workflowType: _cedarReservationWorkflowType,
+        instanceId: instanceId,
+        transitionId: _cedarBoardReserveFacilityTransitionId,
+        fanId: _testFanAliceId,
+      );
+      expect(transition.newState, 'reserved');
+      debugPrint(
+        'APP_WRITE_PROOF instanceId=$instanceId state=${transition.newState}',
       );
     },
     skip: _remoteProofSkipReason,
