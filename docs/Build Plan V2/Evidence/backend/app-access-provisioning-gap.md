@@ -201,3 +201,92 @@ Provisioning grants all declared roles for those four as a deliberate stopgap, m
 The real fix is a spec decision about whether packages should state creation authority
 explicitly — escalated rather than silently resolved, since community JSON is authored
 only by the Skill.
+
+## Addendum 2 — applying the plan found a third blocker in the same chain
+
+Applied the derived plan against the live cluster 2026-08-25. Groups succeeded: **11
+created**, and the pre-existing `loom_communities_cedar_commons_hoa` was matched rather
+than duplicated, which is the idempotency claim holding up under a real run.
+
+Roles then failed on the first attempt:
+
+    POST /v1/apps/loom_communities/roles -> HTTP 400
+    {"code":"unknown_permission_id",
+     "message":"Unknown permission ids: payment_checkout.create",
+     "details":[{"target":"permissionIds",
+                 "reason":"All permission ids must already exist in the app catalog"}]}
+
+App Access requires every permission id a role references to exist already in the app's
+**permission catalog**. Provisioning never registered any.
+
+### A wrong turn worth recording
+
+My first reproduction of that 400 omitted the `Idempotency-Key` header, got
+`missing_request_parameter`, and I briefly recorded that as the root cause. It was not —
+the applier does send that header on every mutating call. **My probe was missing a header
+the real client sends, so I was diagnosing my own curl rather than the applier.** Re-running
+the probe with the same headers the applier uses produced the actual error above. A
+reproduction is only evidence if it reproduces the real caller's request.
+
+### The measurement
+
+| | count |
+|---|---|
+| Catalog holds | 69 |
+| Plan needs | 65 |
+| Overlap | 31 |
+| **Missing from catalog** | **34** |
+| Catalog entries the plan never uses | 38 |
+
+The 34 missing include **every `.create` id** — `payment_checkout.create`,
+`document_library.create`, `equipment_loan.create`, `export_wizard.create`,
+`approval_queue_item.create`, `notification_inbox.create`, `search_ai_answer.create`,
+`status_timeline.create`, `table.create`.
+
+That is the part that matters. `workflow_service.dart:385-415` gates creation on
+`resolver.permissionId(family, 'create')` — exactly `<prefix>.create`. Not one of those
+exists in the catalog, so **creation could never have been authorised even after roles
+were provisioned.** The catalog's own vocabulary is different in kind: it carries
+`payment_checkout.pay`, `.view`, `.refund`, `.view_receipt`,
+`notification_inbox.send`, `.dismiss`, `.mark_read`, `status_timeline.advance`. It was
+authored 2026-08-13 independently of the packages.
+
+This is the same shape as Finding 2, one layer down: two independently-authored
+vocabularies for the same concept. Resolved the same way and for the same reason — the
+packages are upstream of the store, so the catalog is extended to hold what the packages
+need. Adding permissions is additive and safe; bending package vocabulary to match a
+separately-authored catalog would not be. The 38 unused catalog entries are left alone.
+
+## Addendum 3 — only 55% of transitions declare an `action`
+
+Found while checking whether the deriver was under-deriving permissions. It was not; two
+apparent anomalies were the deriver being faithful to its inputs:
+
+- `ad-off-member` derived a single permission because **AdFreeCommunity declares no
+  `action` on any of its 53 transitions**, so no per-action permission is derivable.
+- `portability-member` derived none because it guards no transition out of `initialState`
+  — its four appearances are in `visibility.readGuard`, not transition guards. (I initially
+  read those as transition guards from a raw grep; they are not.)
+
+Measured across all 11 packages:
+
+| package | transitions | with `action` | |
+|---|---|---|---|
+| AdFreeCommunity | 53 | 0 | **none** |
+| MemberSocialSpace | 27 | 0 | **none** |
+| ChessClub | 38 | 10 | 26% |
+| MasjidNur | 69 | 24 | 34% |
+| RiversideYouthSoccer | 74 | 33 | 44% |
+| CedarCommonsHOA | 74 | 40 | 54% |
+| Phase1_TabletopClub | 48 | 35 | 72% |
+| NeighborhoodBookClub | 68 | 50 | 73% |
+| CameraClub | 34 | 26 | 76% |
+| GardenClub | 46 | 39 | 84% |
+| DataPortabilityCommunity | 80 | 80 | 100% |
+| **total** | **611** | **337** | **55%** |
+
+No functional impact today, because the workflow service enforces only `<prefix>.create`
+and never a per-transition permission. Recorded because it is a live trap: if permission
+enforcement is ever extended to transitions, AdFree and MemberSocialSpace have no
+derivable permissions at all and would fail closed on every action, which would read as a
+product bug rather than a missing `action` field.
