@@ -103,6 +103,9 @@ void main() {
           configuration: LoomRemoteServiceConfiguration(
             session: session,
             workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+            appAccessBaseUri: Uri.parse('https://app-access.test/api/'),
+            fanPassportBaseUri: Uri.parse('https://fan-passport.test/api/'),
+            communityGroupIds: const {},
           ),
           httpClient: httpClient,
         ),
@@ -179,6 +182,9 @@ void main() {
           configuration: LoomRemoteServiceConfiguration(
             session: session,
             workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+            appAccessBaseUri: Uri.parse('https://app-access.test/api/'),
+            fanPassportBaseUri: Uri.parse('https://fan-passport.test/api/'),
+            communityGroupIds: const {},
           ),
           httpClient: httpClient,
         ),

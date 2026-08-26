@@ -230,7 +230,9 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
 
   LoomAuthApi _authApiForCommunity(LocalInstalledCommunity community) {
     return _authApisByCommunityId.putIfAbsent(community.communityId, () {
-      return LocalAuthApi(
+      return resolveLoomAuthApiForCommunity(
+        communityId: community.communityId,
+        communityExtensionId: community.extensionId,
         actorIdentityResolver: (communityExtensionId) {
           final experience = _experienceForInstalledCommunityExtensionId(
             communityExtensionId,

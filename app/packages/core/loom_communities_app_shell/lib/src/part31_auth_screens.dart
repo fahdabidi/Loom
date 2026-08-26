@@ -70,6 +70,25 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
     }
   }
 
+  Future<void> _startRemoteLogin() async {
+    final authApi = widget.authApi;
+    if (authApi is! RemoteLoomAuthApi) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (loginContext) => LoomProductionLoginScreen(
+          session: authApi.session,
+          onLoginSucceeded: () => Navigator.of(loginContext).pop(),
+        ),
+      ),
+    );
+    if (!mounted) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    await _loadAccounts();
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -140,6 +159,15 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
                         },
                         child: const Text('Retry'),
                       ),
+                      if (widget.authApi is RemoteLoomAuthApi) ...[
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          key: const ValueKey('remote-auth-login-button'),
+                          onPressed: _startRemoteLogin,
+                          icon: const Icon(Icons.lock_outline),
+                          label: const Text('Continue to secure sign-in'),
+                        ),
+                      ],
                     ],
                   )
                 else ...[

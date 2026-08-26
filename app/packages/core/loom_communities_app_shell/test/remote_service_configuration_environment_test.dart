@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -9,11 +11,19 @@ const _clientId = String.fromEnvironment('LOOM_AUTH_CLIENT_ID');
 const _workflowServiceBaseUri = String.fromEnvironment(
   'LOOM_WORKFLOW_SERVICE_BASE_URI',
 );
+const _appAccessBaseUri = String.fromEnvironment('LOOM_APP_ACCESS_BASE_URI');
+const _fanPassportBaseUri = String.fromEnvironment(
+  'LOOM_FAN_PASSPORT_BASE_URI',
+);
+const _communityGroupIds = String.fromEnvironment('LOOM_COMMUNITY_GROUP_IDS');
 
 final _remoteServiceDefines = <String, String>{
   'LOOM_AUTH_TOKEN_ENDPOINT': _tokenEndpoint,
   'LOOM_AUTH_CLIENT_ID': _clientId,
   'LOOM_WORKFLOW_SERVICE_BASE_URI': _workflowServiceBaseUri,
+  'LOOM_APP_ACCESS_BASE_URI': _appAccessBaseUri,
+  'LOOM_FAN_PASSPORT_BASE_URI': _fanPassportBaseUri,
+  'LOOM_COMMUNITY_GROUP_IDS': _communityGroupIds,
 };
 
 final _missingRemoteServiceDefines = _remoteServiceDefines.entries
@@ -38,13 +48,13 @@ void main() {
       expect(loomAuthSession, isNull);
     },
     skip: _hasAnyRemoteServiceDefine
-        ? 'Run without LOOM_AUTH_TOKEN_ENDPOINT, LOOM_AUTH_CLIENT_ID, and '
-              'LOOM_WORKFLOW_SERVICE_BASE_URI to verify the local default.'
+        ? 'Run without remote-service dart defines to verify the local '
+              'default.'
         : false,
   );
 
   test(
-    'all remote-service defines configure the token session and workflow URI',
+    'all remote-service defines configure the real-service selection',
     () async {
       final authClient = MockClient((request) async {
         expect(request.method, 'POST');
@@ -63,7 +73,11 @@ void main() {
         configuration!.workflowServiceBaseUri,
         Uri.parse(_workflowServiceBaseUri),
       );
+      expect(configuration.appAccessBaseUri, Uri.parse(_appAccessBaseUri));
+      expect(configuration.fanPassportBaseUri, Uri.parse(_fanPassportBaseUri));
+      expect(configuration.communityGroupIds, jsonDecode(_communityGroupIds));
       expect(loomAuthSession, same(configuration.session));
+      expect(loomRemoteServiceConfiguration, same(configuration));
       await expectLater(
         configuration.session.loginWithTestCredentials(
           username: 'fake-user',
@@ -74,9 +88,8 @@ void main() {
     },
     skip: _hasAllRemoteServiceDefines
         ? false
-        : 'Set LOOM_AUTH_TOKEN_ENDPOINT, LOOM_AUTH_CLIENT_ID, and '
-              'LOOM_WORKFLOW_SERVICE_BASE_URI with --dart-define to run '
-              'the configured remote-services assertion.',
+        : 'Set every remote-service dart define to run the configured '
+              'remote-services assertion.',
   );
 
   test(
@@ -99,8 +112,7 @@ void main() {
     },
     skip: _hasPartialRemoteServiceDefines
         ? false
-        : 'Set one or two of LOOM_AUTH_TOKEN_ENDPOINT, LOOM_AUTH_CLIENT_ID, '
-              'and LOOM_WORKFLOW_SERVICE_BASE_URI with --dart-define to run '
-              'the partial-configuration failure assertion.',
+        : 'Set a strict subset of the remote-service dart defines to run the '
+              'partial-configuration failure assertion.',
   );
 }

@@ -189,10 +189,15 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   int _entryGateRevision = 0;
   Future<void>? _engineAuthorizationSync;
 
-  /// Auth API — seeded with demo accounts by default.
+  /// Auth API — local unless the production host configured real services.
+  ///
+  /// An explicit [LocalExtensionScreen.authApi] remains the injection point
+  /// for widget tests and standalone callers.
   late final LoomAuthApi _authApi =
       widget.authApi ??
-      LocalAuthApi(
+      resolveLoomAuthApiForCommunity(
+        communityId: community.communityId,
+        communityExtensionId: community.extensionId,
         actorIdentityResolver: (communityExtensionId) {
           final experience = _experienceForCommunity();
           return actorIdentitiesForExtensionId(

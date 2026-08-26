@@ -14,6 +14,11 @@ const _authClientId = String.fromEnvironment('LOOM_AUTH_CLIENT_ID');
 const _workflowServiceBaseUri = String.fromEnvironment(
   'LOOM_WORKFLOW_SERVICE_BASE_URI',
 );
+const _appAccessBaseUri = String.fromEnvironment('LOOM_APP_ACCESS_BASE_URI');
+const _fanPassportBaseUri = String.fromEnvironment(
+  'LOOM_FAN_PASSPORT_BASE_URI',
+);
+const _communityGroupIds = String.fromEnvironment('LOOM_COMMUNITY_GROUP_IDS');
 
 const _liveCommunityId = 'community_cedar_commons_hoa';
 const _cedarReservationWorkflowType = 'hoa-facility-reservation';
@@ -25,6 +30,9 @@ final _remoteServiceDefines = <String, String>{
   'LOOM_AUTH_TOKEN_ENDPOINT': _authTokenEndpoint,
   'LOOM_AUTH_CLIENT_ID': _authClientId,
   'LOOM_WORKFLOW_SERVICE_BASE_URI': _workflowServiceBaseUri,
+  'LOOM_APP_ACCESS_BASE_URI': _appAccessBaseUri,
+  'LOOM_FAN_PASSPORT_BASE_URI': _fanPassportBaseUri,
+  'LOOM_COMMUNITY_GROUP_IDS': _communityGroupIds,
 };
 
 final _missingRemoteServiceDefines = _remoteServiceDefines.entries
@@ -34,9 +42,8 @@ final _missingRemoteServiceDefines = _remoteServiceDefines.entries
 
 final _remoteProofSkipReason = _missingRemoteServiceDefines.isEmpty
     ? false
-    : 'Set LOOM_AUTH_TOKEN_ENDPOINT, LOOM_AUTH_CLIENT_ID, and '
-          'LOOM_WORKFLOW_SERVICE_BASE_URI with --dart-define to run the '
-          'on-device remote-backend proof.';
+    : 'Set every remote-service dart define to run the on-device remote-backend '
+          'proof.';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
