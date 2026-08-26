@@ -88,7 +88,7 @@ LoomRemoteServiceConfiguration? configureLoomRemoteServicesFromEnvironment({
     'LOOM_COMMUNITY_GROUP_IDS',
   );
 
-  final values = <String, String>{
+  final defineValues = <String, String>{
     'LOOM_AUTH_TOKEN_ENDPOINT': tokenEndpointValue,
     'LOOM_AUTH_CLIENT_ID': clientId,
     'LOOM_WORKFLOW_SERVICE_BASE_URI': workflowServiceBaseUriValue,
@@ -96,7 +96,49 @@ LoomRemoteServiceConfiguration? configureLoomRemoteServicesFromEnvironment({
     'LOOM_FAN_PASSPORT_BASE_URI': fanPassportBaseUriValue,
     'LOOM_COMMUNITY_GROUP_IDS': communityGroupIdsValue,
   };
-  if (values.values.every((value) => value.isEmpty)) return null;
+
+  // The named environment supplies every endpoint; the six defines remain as a
+  // one-off override so a build can be pointed at another cluster without
+  // adding an environment. When no define is present the environment is used
+  // verbatim, which is what makes the real backend the default.
+  //
+  // `resolveLoomServiceEnvironment` returns null only for LOOM_ENV=local, the
+  // explicit opt-in to the in-memory engine, and throws for an unknown name.
+  // There is no silent fallback to local: a capture that quietly ran against a
+  // local engine while appearing to prove the deployed stack is the exact
+  // failure this whole migration exists to prevent.
+  final environment = resolveLoomServiceEnvironment();
+  if (defineValues.values.every((value) => value.isEmpty)) {
+    if (environment == null) return null;
+    return _configurationFromEnvironment(
+      environment,
+      authHttpClient: authHttpClient,
+      secureStorage: secureStorage,
+    );
+  }
+
+  final values = <String, String>{
+    'LOOM_AUTH_TOKEN_ENDPOINT': tokenEndpointValue.isNotEmpty
+        ? tokenEndpointValue
+        : environment?.authTokenEndpoint ?? '',
+    'LOOM_AUTH_CLIENT_ID': clientId.isNotEmpty
+        ? clientId
+        : environment?.authClientId ?? '',
+    'LOOM_WORKFLOW_SERVICE_BASE_URI': workflowServiceBaseUriValue.isNotEmpty
+        ? workflowServiceBaseUriValue
+        : environment?.workflowServiceBaseUri ?? '',
+    'LOOM_APP_ACCESS_BASE_URI': appAccessBaseUriValue.isNotEmpty
+        ? appAccessBaseUriValue
+        : environment?.appAccessBaseUri ?? '',
+    'LOOM_FAN_PASSPORT_BASE_URI': fanPassportBaseUriValue.isNotEmpty
+        ? fanPassportBaseUriValue
+        : environment?.fanPassportBaseUri ?? '',
+    'LOOM_COMMUNITY_GROUP_IDS': communityGroupIdsValue.isNotEmpty
+        ? communityGroupIdsValue
+        : environment == null
+        ? ''
+        : jsonEncode(environment.communityGroupIds),
+  };
 
   final missingKeys = values.entries
       .where((entry) => entry.value.isEmpty)
@@ -112,27 +154,70 @@ LoomRemoteServiceConfiguration? configureLoomRemoteServicesFromEnvironment({
   final configuration = LoomRemoteServiceConfiguration(
     session: LoomAuthSession(
       tokenEndpoint: _absoluteRemoteServiceUri(
-        tokenEndpointValue,
+        values['LOOM_AUTH_TOKEN_ENDPOINT']!,
         defineKey: 'LOOM_AUTH_TOKEN_ENDPOINT',
       ),
-      clientId: clientId,
+      clientId: values['LOOM_AUTH_CLIENT_ID']!,
       secureStorage: FlutterSecureStorageBackend(secureStorage),
       httpClient: authHttpClient,
     ),
     workflowServiceBaseUri: _absoluteRemoteServiceUri(
-      workflowServiceBaseUriValue,
+      values['LOOM_WORKFLOW_SERVICE_BASE_URI']!,
       defineKey: 'LOOM_WORKFLOW_SERVICE_BASE_URI',
     ),
     appAccessBaseUri: _absoluteRemoteServiceUri(
-      appAccessBaseUriValue,
+      values['LOOM_APP_ACCESS_BASE_URI']!,
       defineKey: 'LOOM_APP_ACCESS_BASE_URI',
     ),
     fanPassportBaseUri: _absoluteRemoteServiceUri(
-      fanPassportBaseUriValue,
+      values['LOOM_FAN_PASSPORT_BASE_URI']!,
       defineKey: 'LOOM_FAN_PASSPORT_BASE_URI',
     ),
     communityGroupIds: _remoteCommunityGroupIdsFromEnvironment(
-      communityGroupIdsValue,
+      values['LOOM_COMMUNITY_GROUP_IDS']!,
+    ),
+  );
+  _loomAuthSession = configuration.session;
+  _loomRemoteServiceConfiguration = configuration;
+  return configuration;
+}
+
+/// Builds a configuration directly from a named environment.
+///
+/// This is the default path: no defines present, so every endpoint comes from
+/// [LoomServiceEnvironment] verbatim. The values are compile-time constants
+/// that the environment table already vouches for, so there is nothing to
+/// validate for emptiness here — an absent endpoint would be a missing field
+/// on a `const` constructor and would not compile.
+LoomRemoteServiceConfiguration _configurationFromEnvironment(
+  LoomServiceEnvironment environment, {
+  http.Client? authHttpClient,
+  FlutterSecureStorage secureStorage = const FlutterSecureStorage(),
+}) {
+  final configuration = LoomRemoteServiceConfiguration(
+    session: LoomAuthSession(
+      tokenEndpoint: _absoluteRemoteServiceUri(
+        environment.authTokenEndpoint,
+        defineKey: 'LOOM_ENV=${environment.name} authTokenEndpoint',
+      ),
+      clientId: environment.authClientId,
+      secureStorage: FlutterSecureStorageBackend(secureStorage),
+      httpClient: authHttpClient,
+    ),
+    workflowServiceBaseUri: _absoluteRemoteServiceUri(
+      environment.workflowServiceBaseUri,
+      defineKey: 'LOOM_ENV=${environment.name} workflowServiceBaseUri',
+    ),
+    appAccessBaseUri: _absoluteRemoteServiceUri(
+      environment.appAccessBaseUri,
+      defineKey: 'LOOM_ENV=${environment.name} appAccessBaseUri',
+    ),
+    fanPassportBaseUri: _absoluteRemoteServiceUri(
+      environment.fanPassportBaseUri,
+      defineKey: 'LOOM_ENV=${environment.name} fanPassportBaseUri',
+    ),
+    communityGroupIds: Map<String, String>.unmodifiable(
+      environment.communityGroupIds,
     ),
   );
   _loomAuthSession = configuration.session;

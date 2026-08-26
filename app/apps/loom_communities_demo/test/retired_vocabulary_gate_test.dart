@@ -21,7 +21,6 @@ void main() {
   test('Dart sources contain no retired identity vocabulary', () {
     final appDirectory = _findAppDirectory(Directory.current);
     final retiredToken = ['per', 'sona'].join();
-    final retiredPattern = RegExp(retiredToken, caseSensitive: false);
     final failures = <String>[];
 
     for (final entity in appDirectory.listSync(recursive: true)) {
@@ -45,7 +44,7 @@ void main() {
         for (final literal in _lockedLiterals.keys) {
           inspected = _removeAllowedLiteral(inspected, literal);
         }
-        if (retiredPattern.hasMatch(inspected)) {
+        if (_containsRetiredIdentifier(inspected, retiredToken)) {
           failures.add('$relativePath:${index + 1}: $line');
         }
       }
@@ -60,6 +59,53 @@ void main() {
           'exceptions.\n${failures.join('\n')}',
     );
   });
+}
+
+/// Whether [line] uses [token] as an **identifier component**, rather than
+/// merely containing it as a substring of an ordinary English word.
+///
+/// The gate previously matched with a bare `RegExp(token)`, which flagged two
+/// ordinary English words that merely contain the token as a substring — one
+/// meaning "pretending to be someone else", the other "tailored to an
+/// individual". Neither is retired identity vocabulary. That is precisely the
+/// failure this project's own standing rule names: never match product
+/// vocabulary by substring.
+///
+/// Note this comment deliberately describes its examples rather than spelling
+/// them out. Writing them literally would make this file violate the very gate
+/// it implements — which is why the token itself is assembled from fragments
+/// at the top of the test rather than typed.
+///
+/// The rule applied here:
+///
+/// * preceded by a letter -> part of a larger word, unless the match itself
+///   starts uppercase, which is a camelCase boundary and so still a component;
+/// * followed by a lowercase letter -> part of a larger word;
+/// * otherwise it is an identifier component and a genuine violation, whether
+///   snake_cased, camelCased, capitalised, or bare.
+bool _containsRetiredIdentifier(String line, String token) {
+  final haystack = line.toLowerCase();
+  final needle = token.toLowerCase();
+  final letter = RegExp(r'[A-Za-z]');
+  final lowercase = RegExp(r'[a-z]');
+
+  var index = haystack.indexOf(needle);
+  while (index >= 0) {
+    final matched = line.substring(index, index + needle.length);
+    final startsUppercase = matched[0] == matched[0].toUpperCase();
+
+    final before = index > 0 ? line[index - 1] : '';
+    final afterIndex = index + needle.length;
+    final after = afterIndex < line.length ? line[afterIndex] : '';
+
+    final continuesAWord =
+        before.isNotEmpty && letter.hasMatch(before) && !startsUppercase;
+    final isPrefixOfAWord = after.isNotEmpty && lowercase.hasMatch(after);
+
+    if (!continuesAWord && !isPrefixOfAWord) return true;
+    index = haystack.indexOf(needle, index + 1);
+  }
+  return false;
 }
 
 String _removeAllowedLiteral(String line, String literal) {
