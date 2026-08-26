@@ -454,3 +454,72 @@ earlier groups are now orphaned duplicates holding no roles. They are inert, but
 should be removed once installation is complete — and the `LOOM_COMMUNITY_GROUP_IDS` map
 must be built from the **server-returned** groupIds, not from the earlier plan, or every
 community will resolve to an empty group.
+
+## Addendum 6 — all 11 installed, and the chain is proven end to end
+
+`"failures": []`. Every community installed, with package-verbatim role ids and
+permissions derived by App Access itself — Book Club 57, Soccer 46, Tabletop 37,
+Cedar's `hoa-board` 34.
+
+Two gates fell first, both in the deployed service's baked-in copy of the generated
+vocabulary:
+
+- `unknown_action_for_archetype: 'deliver_reminder' is not valid for 'event-rsvp'`.
+  **I had already seen this and let it go.** Diffing the Loom repo's
+  `permissions-vocabulary.json` against the backend's copy hours earlier returned
+  "differ by exactly one id — `event_rsvp.deliver_reminder`", which I recorded as proof
+  that staleness did not explain the *catalog* gap. That was true, and I stopped there
+  without asking what else depended on that file. That one id blocked two communities.
+  **A difference small enough to dismiss is still a difference; note it, then follow what
+  consumes it.** Fixed by copying the generated file verbatim into loom-backend and
+  rebuilding.
+- `cardSurfaceFamily must not be null` for the 2 of 95 workflows with no bindings of their
+  own, now omitted per permissions.md step 3d.
+
+### 1d closed
+
+The group map was written from the **server-returned** `groupId`s, which are derived from
+`communityHandle` and therefore hyphenated (`loom_communities_cedar-commons-hoa`), not
+from the community id. Using the local plan's ids would have pointed every community at an
+empty group. Secret patched, and the deployment **restarted** so it re-reads
+`LOOM_COMMUNITY_GROUP_IDS` at startup — a secret edit alone changes nothing in a running
+pod.
+
+### The chain, proven
+
+    before grant : {"roleIds":[],           "permissionIds":[]}
+    PUT /v1/apps/loom_communities/groups/loom_communities_cedar-commons-hoa/members/fan-test-alice
+                   {"roleIds":["hoa-board"]}   HTTP 200
+    after  grant : {"roleIds":["hoa-board"], "permissionIds": 34}
+
+Package role id -> App Access -> effective-permissions, on the live cluster. This is the
+first time the whole path has held together, and it is what 1c's role resolution was built
+against.
+
+## Addendum 7 — the stale-image pattern, four times
+
+1b then failed with `workflow_type_not_found`: the service has no workflow definitions.
+It exposes `PUT /v1/communities/{id}/workflow-definitions`, and publishing Cedar's seven
+returned `type 'Null' is not a subtype of type 'String' in type cast`.
+
+This time I checked the executing artifact first. The failing call is
+`LoomWorkflowStateMachine.fromJson`, so I ran exactly that against the same definitions in
+the local engine: **all 7 parse fine.** The engine is correct; the deployed
+`loom-workflow-service:0.1.0` is stale.
+
+That is the fourth instance of one pattern in this session, and it is worth stating as a
+rule rather than four anecdotes:
+
+| I checked | what actually ran |
+|---|---|
+| a curl I wrote | the applier, which sends headers mine omitted |
+| the controller wiring | the deployed image, which answered 501 |
+| the source implementing a method | an image built before that commit |
+| the engine's parser in source | an image bundling an older engine |
+
+**Verify against the artifact that actually executes.** Source, controllers, and hand-built
+probes are all proxies. Three of these cost a full diagnostic cycle each.
+
+A smaller trap alongside it: `docker build ... | tail -8` reported success while the build
+failed, because the pipeline's exit status is `tail`'s. The image build must have its
+status captured directly, not through a pipe.
