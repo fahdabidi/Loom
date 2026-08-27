@@ -39,6 +39,23 @@ known answer for every kind of thing it claims to find, not just one.**
 
 ## Open
 
+### 2026-08-27 — the writer-declaration pass, and what it opened up
+
+Landed today, all pushed and green (judges 440, engine 312, app shell 308, workflow service 75):
+
+- [x] `new-milestone` — **`writableBy` gained `platform`, and `effect` stopped meaning two things.** `effect` had been covering both "a JSON effect writes this" and "something outside the package fills this in", so a field nothing wrote was indistinguishable from one the platform wrote. `InstanceDataField` gained `isMemberWritable`/`isMachineWritten`; six call sites now ask the question they mean. Documented in `field-types.md`, `workflow-grammar.md`, `05-validation.md` and the Skill's instructions
+- [x] `new-milestone` — **two validator rules that make writer defects checkable.** `effect_writable_field_has_no_effect` (60 findings, was 64) and `prefill_written_field_not_platform` (128 findings). Both warnings, deliberately: the packages did not break, the grammar learned to tell things apart. All 10 packages remain `pass` with **zero errors**. Promote to errors once the corpus has moved
+- [x] `needs-skill-dispatch` — **Book Club regenerated**: checksum, transferId and the AI digest answer now say `platform`. Four orphan findings → zero. Verified by my own validator run plus a field-by-field diff, not the agent's report
+- [x] `new-milestone` — **solved-patterns §15 and §16**, the reminder conversion and the prefill writer, each with the plausible-wrong JSON beside the correct JSON. Written after a prose-only rule produced a destructive reading
+
+Open, in order:
+
+- [ ] `needs-skill-dispatch` — **regenerate the remaining 8 communities for writer declarations.** Cedar (16 prefill + 6 orphan), Chess (18+6), Mosque (29+7), Youth Soccer (14+4), Garden (13+12), MemberSocialSpace (22+17), CameraClub (9+4), AdFree (0+4), DataPortability (6+0). Briefs are built at `data/<community>_brief.md` with identifiers re-derived from the shipped package, not from notes. **Book Club needs one more pass too** — its `ownerFanId` is `formEntry` and should be `platform` (its single remaining prefill finding)
+- [ ] `needs-verification` — **Garden Club is regenerated but NOT installed.** Run 1 deleted `reminderAt` *and* `reminderOffsetHours`, removing a capability the product doc promises; run 2, against the corrected instructions, declared the `reminder` block correctly and kept the offset. Re-dispatch once more so the prefill fields land as `platform` in the same pass, then install
+- [ ] `new-ticket` — **two community packages are missing the `chmod 444` guard**: AdFreeCommunity and ChessClub are `664` in `docs/references/communities/` while the other nine are read-only. That guard is what makes hand-editing fail loudly
+- [ ] `new-milestone` — **the export checksum service** (user-queued 2026-08-27, still next after the writer pass): 10 markers across 8 workflows in 6 communities. Spec-first — `migration-export-api` has no checksum concept, and nothing produces an export *bundle* for one to hash
+- [ ] `needs-verification` — **`dueNotifications` has never been proven live.** `loom-workflow-service:0.4.0` is deployed with the endpoint; no community is provisioned into the service with a reminder-bearing instance, so the sweep has never returned a real row
+
 ### RESEQUENCED 2026-08-25 — backend migration comes BEFORE the production bar
 
 **User decision.** The live walkthrough and UX judge now run only **after** the app is fully migrated
