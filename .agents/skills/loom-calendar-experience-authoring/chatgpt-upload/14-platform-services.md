@@ -47,8 +47,18 @@ If it genuinely is not, **stop and report it** rather than inventing a mechanism
 ## Two that are already REAL and usable from JSON
 
 ### Scheduled notifications
-Store a `dueAt` on the instance. The engine's `dueNotifications({asOf})` returns instances whose `dueAt`
-has passed — a real query, not a stub.
+
+Declare a `reminder` block and the platform works out the instant; or, for a materialised
+notification, store a `dueAt` outright. Both are swept by `dueNotifications({asOf})`, which is a real
+query rather than a stub, and is exposed over HTTP as
+`GET /v1/communities/{id}/notifications/due?asOf=`.
+
+```jsonc
+"reminder": { "anchorDateField": "eventDate", "anchorTimeField": "eventTime", "leadHours": 24 }
+```
+
+A **formula-computed** `dueAt` is not swept. That idiom existed before the block and could not carry a
+timezone — see [`workflow-grammar.md`](./workflow-grammar.md)'s `reminder` section.
 
 ```jsonc
 "deadline":       { "type": "date" },

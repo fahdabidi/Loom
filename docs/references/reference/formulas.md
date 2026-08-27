@@ -115,7 +115,7 @@ their implementation shipped. **`combineDateAndTime` is also IMPLEMENTED** (CAL.
 | `isBefore` | `isBefore(a, b)` | bool |
 | `isAfter` | `isAfter(a, b)` | bool |
 | `isPast` | `isPast(date)` | bool — *deadline passed* |
-| `subtractHours` | `subtractHours(date, hours)` | `date` minus `hours` — a real new `DateTime`. *Deriving a reminder's `dueAt` from a `deadline`.* |
+| `subtractHours` | `subtractHours(date, hours)` | `date` minus `hours` — a real new `DateTime`. **Was the reminder idiom; reminders now use the `reminder` block.** Retained for other date arithmetic. |
 | `combineDateAndTime` | `combineDateAndTime(date, time)` | Combines an ISO date field and an optional `HH:mm` time field into one real local `DateTime` (midnight if `time` is absent/null). **IMPLEMENTED 2026-08-01 (Notifications Experience phase, CAL.Notify2.9)** — the shared value-parsing helper preserves the exact behavior used by `cancellationDeadline`/`locationOverlap` guards and is now available as a public formula function so computed fields can use it too. *Combining `event-rsvp`'s separate `eventDate`/`eventTime` fields before computing a real `reminderAt` — the same lesson `cancellationDeadline` already taught: a date field alone parses to midnight, so subtracting hours from just the date makes a reminder inaccurately early for any event with a real time-of-day.* |
 
 Deliberately hour-granularity, not day-granularity — some reminder offsets are sub-day (e.g. "one hour
@@ -217,11 +217,24 @@ must be **acyclic**. → else `circular_formula_dependency` (error)
 The row's own FSM state (`$state`), not a duplicated status field, is what gets tallied — see the
 Reserved row references section above.
 
-### Deriving a reminder time from a deadline
+### Deriving a reminder time — **no longer a formula**
+
+Reminders are declared, not computed. Use the workflow-level `reminder` block
+([`workflow-grammar.md`](./workflow-grammar.md)):
+
 ```jsonc
-"dueAt": { "type": "date",
-  "formula": "subtractHours(deadline, if(reminderOffset == 'one-week', 168, if(reminderOffset == 'one-day', 24, if(reminderOffset == 'one-hour', 1, 0))))" }
+"reminder": {
+  "anchorDateField": "eventDate",
+  "anchorTimeField": "eventTime",
+  "leadHoursField": "reminderOffsetHours",
+  "leadHours": 24
+}
 ```
+
+A formula could express the arithmetic and could not express the timezone: combining a bare date with
+a bare time resolves differently depending on where the resolver runs, and the formula language has no
+zone to resolve against. The platform now owns that, in one place. **The sweep ignores a
+formula-computed `dueAt`.**
 
 ---
 

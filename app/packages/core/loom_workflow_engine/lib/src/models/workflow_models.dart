@@ -1125,7 +1125,8 @@ class InstanceDataField {
 class WorkflowReminder {
   const WorkflowReminder({
     required this.anchorDateField,
-    required this.leadHours,
+    this.leadHours,
+    this.leadHoursField,
     this.anchorTimeField,
     this.enabledField,
   });
@@ -1134,6 +1135,7 @@ class WorkflowReminder {
     'anchorDateField',
     'anchorTimeField',
     'leadHours',
+    'leadHoursField',
     'enabledField',
   };
 
@@ -1145,7 +1147,18 @@ class WorkflowReminder {
   final String? anchorTimeField;
 
   /// How many hours before the anchor the reminder is due.
-  final num leadHours;
+  ///
+  /// When [leadHoursField] is also declared this is its default, used when the
+  /// instance leaves that field empty.
+  final num? leadHours;
+
+  /// An instance field carrying the lead time, for a member who chooses it.
+  ///
+  /// Book Club and Garden Club both let a member pick their own offset, so a
+  /// fixed number could not express what they already do. Declaring the field
+  /// keeps that a capability rather than pushing the community back into a
+  /// formula to read one value.
+  final String? leadHoursField;
 
   /// A boolean field gating whether a reminder is wanted at all.
   ///
@@ -1168,15 +1181,26 @@ class WorkflowReminder {
       );
     }
     final leadHours = value['leadHours'];
-    if (leadHours is! num) {
+    final leadHoursField = value['leadHoursField'];
+    if (leadHours == null && leadHoursField == null) {
       throw const FormatException(
-        'Workflow reminder requires numeric leadHours.',
+        'Workflow reminder requires leadHours, leadHoursField, or both.',
       );
     }
-    if (leadHours < 0) {
+    if (leadHours != null && leadHours is! num) {
+      throw const FormatException(
+        'Workflow reminder leadHours must be numeric when declared.',
+      );
+    }
+    if (leadHours is num && leadHours < 0) {
       throw const FormatException(
         'Workflow reminder leadHours must not be negative; a reminder after '
         'the thing it reminds you about is not a reminder.',
+      );
+    }
+    if (leadHoursField != null && leadHoursField is! String) {
+      throw const FormatException(
+        'Workflow reminder leadHoursField must be a field name when declared.',
       );
     }
     final anchorTimeField = value['anchorTimeField'];
@@ -1194,7 +1218,8 @@ class WorkflowReminder {
     return WorkflowReminder(
       anchorDateField: anchorDateField,
       anchorTimeField: anchorTimeField as String?,
-      leadHours: leadHours,
+      leadHours: leadHours as num?,
+      leadHoursField: leadHoursField as String?,
       enabledField: enabledField as String?,
     );
   }
@@ -1216,17 +1241,25 @@ class WorkflowReminder {
           : instanceData[anchorTimeField!]?.toString(),
     );
     if (anchor == null) return null;
+
+    // The member's own choice wins, and the declared number is its default.
+    // A negative value from instance data is refused the same way the parser
+    // refuses a negative literal -- the difference is only where it came from.
+    final field = leadHoursField;
+    final chosen = field == null ? null : instanceData[field];
+    final lead = chosen is num ? chosen : leadHours;
+    if (lead == null || lead < 0) return null;
+
     return anchor.subtract(
-      Duration(
-        milliseconds: (leadHours * Duration.millisecondsPerHour).round(),
-      ),
+      Duration(milliseconds: (lead * Duration.millisecondsPerHour).round()),
     );
   }
 
   Map<String, dynamic> toJson() => {
     'anchorDateField': anchorDateField,
     if (anchorTimeField != null) 'anchorTimeField': anchorTimeField,
-    'leadHours': leadHours,
+    if (leadHours != null) 'leadHours': leadHours,
+    if (leadHoursField != null) 'leadHoursField': leadHoursField,
     if (enabledField != null) 'enabledField': enabledField,
   };
 }

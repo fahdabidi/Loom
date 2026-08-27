@@ -98,6 +98,15 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    `createInstance`/`generateRecurringInstances` effect means members can never make one (rule 12d).
 5. **Visibility.** `visibility.fields` present exactly where rule 12b requires, absent where it does
    not, and never pointed at archetype-owned bookkeeping.
+5b. **A reminder is declared, never computed.** If the product doc says members are reminded before
+   something, use the workflow-level `reminder` block -- `anchorDateField`, optional
+   `anchorTimeField`, `leadHours` and/or `leadHoursField`, optional `enabledField`. Do **not** write a
+   `dueAt` field with a formula: that idiom predates the block, the sweep no longer honours it, and it
+   could never carry a timezone, so the same event resolved to different instants on different hosts.
+   A member who chooses their own offset is `leadHoursField` with `leadHours` as its default, which is
+   what `if(offset == null, 24, offset)` used to say. A *materialised* notification is different and
+   still stores its `dueAt` outright -- that is data an effect writes, not a calculation.
+
 5a. **Document libraries hold stored files or links — decide which, from the product doc.** A
    `documentLibrary` workflow is one or the other and the package must say so, because the two differ
    in who holds the bytes. If the doc says members or admins *upload* or *add a file*, declare an

@@ -182,6 +182,59 @@ field name nor an object containing only a non-empty string `role`.
 
 ---
 
+## `reminder` — when this workflow's reminder comes due
+
+A workflow that reminds people declares **when**, and the platform works out the instant.
+
+```jsonc
+"reminder": {
+  "anchorDateField": "eventDate",       // required — the date measured back from
+  "anchorTimeField": "eventTime",       // optional — absent means midnight
+  "leadHours": 24,                      // how far before
+  "leadHoursField": "reminderOffsetHours",  // optional — a member's own choice
+  "enabledField": "reminderEnabled"     // optional — absent means always
+}
+```
+
+`leadHours`, `leadHoursField`, or both. With both, the member's value wins and the number is its
+default — which is what `if(reminderOffsetHours == null, 24, reminderOffsetHours)` used to say.
+
+**This replaced a formula, and the reason matters.** Reminders used to be computed in JSON:
+
+```jsonc
+// No longer supported. The sweep ignores a formula-computed dueAt.
+"dueAt": { "type": "date?",
+  "formula": "if(reminderEnabled == true, subtractHours(combineDateAndTime(eventDate, eventTime), 24), null)" }
+```
+
+A formula combining a bare date with a bare time **cannot know a timezone**, because the grammar has
+none. The same reservation therefore resolved to a different absolute instant depending on which host
+evaluated it, and a reminder compared against a UTC clock moved with the server. Fixing that inside the
+formula language would mean teaching every formula about zones. Declared, resolution happens in one
+place.
+
+The grammar keeps a capability and loses a calculation. That is the direction generally: a thing the
+platform can work out belongs to the platform, not to an expression in a package.
+
+### What still stores a `dueAt`
+
+A materialised notification is data, not calculation, and is unaffected. Book Club and Garden Club
+create a notification instance whose `dueAt` an effect writes outright:
+
+```jsonc
+{ "op": "createInstance", "workflowType": "book-notification",
+  "fields": { "recipientFanId": "{fanId}", "dueAt": "{input.dueAt}" } }
+```
+
+The sweep honours that. What it no longer honours is a `dueAt` a formula computed.
+
+### Rules the validator enforces
+
+- `anchorDateField` is required and must name a declared field.
+- At least one of `leadHours` / `leadHoursField`.
+- `leadHours` must be a non-negative number. A reminder after the thing it reminds you about is not a
+  reminder, and that is a parse error rather than a sweep that silently finds nothing.
+
 ## `states`
 
 ```jsonc

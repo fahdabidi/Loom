@@ -78,6 +78,51 @@ void main() {
     expect(await _dueIds(engine, DateTime.utc(2027)), isEmpty);
   });
 
+  test('a member-chosen lead time wins over the declared default', () async {
+    // Book Club and Garden Club both let a member pick their own offset, so a
+    // fixed number could not express what they already ship.
+    await database.upsertDefinition(
+      definitionId: '${_communityId}_chosen',
+      workflowType: 'chosen',
+      definitionJson: _chosenLeadDefinitionJson,
+      version: 4,
+    );
+    final id = await engine.createInstance(
+      workflowType: 'chosen',
+      initialInstanceData: const {
+        'eventDate': '2026-03-10',
+        'eventTime': '18:00',
+        'reminderOffsetHours': 48,
+      },
+      fanId: 'fan-alice',
+    );
+
+    // 48 hours before, not the declared default of 24.
+    expect(await _dueIds(engine, DateTime.utc(2026, 3, 8, 17, 59)), isEmpty);
+    expect(await _dueIds(engine, DateTime.utc(2026, 3, 8, 18, 1)), contains(id));
+  });
+
+  test('the declared default applies when the member chose nothing', () async {
+    await database.upsertDefinition(
+      definitionId: '${_communityId}_chosen',
+      workflowType: 'chosen',
+      definitionJson: _chosenLeadDefinitionJson,
+      version: 4,
+    );
+    final id = await engine.createInstance(
+      workflowType: 'chosen',
+      initialInstanceData: const {
+        'eventDate': '2026-03-10',
+        'eventTime': '18:00',
+      },
+      fanId: 'fan-alice',
+    );
+
+    // Falls back to 24, which is what Book Club's `if(x == null, 24, x)` said.
+    expect(await _dueIds(engine, DateTime.utc(2026, 3, 9, 17, 59)), isEmpty);
+    expect(await _dueIds(engine, DateTime.utc(2026, 3, 9, 18, 1)), contains(id));
+  });
+
   test('the block rejects a lead time that points the wrong way', () {
     // A reminder after the thing it reminds you about is not a reminder, and
     // the grammar should say so at parse time rather than at sweep time.
@@ -90,6 +135,11 @@ void main() {
     );
     expect(
       () => WorkflowReminder.fromJson(const {'leadHours': 24}),
+      throwsA(isA<FormatException>()),
+    );
+    // Neither a number nor a field means the block cannot say when.
+    expect(
+      () => WorkflowReminder.fromJson(const {'anchorDateField': 'eventDate'}),
       throwsA(isA<FormatException>()),
     );
   });
@@ -153,6 +203,31 @@ const _plainDefinitionJson = '''
   "transitions": [],
   "instanceDataSchema": {
     "eventDate": {"type": "date", "writableBy": "formEntry", "storage": "inline"}
+  }
+}
+''';
+
+const _chosenLeadDefinitionJson = '''
+{
+  "initialState": "open",
+  "states": {"open": {"label": "Open"}},
+  "reminder": {
+    "anchorDateField": "eventDate",
+    "anchorTimeField": "eventTime",
+    "leadHoursField": "reminderOffsetHours",
+    "leadHours": 24
+  },
+  "renderBindings": [
+    {"states": ["open"], "audience": "any", "tabId": "calendar",
+     "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary",
+     "actions": [{"kind": "create", "label": "Add", "scope": "tab",
+                  "presentation": "fab"}]}
+  ],
+  "transitions": [],
+  "instanceDataSchema": {
+    "eventDate": {"type": "date", "writableBy": "formEntry", "storage": "inline"},
+    "eventTime": {"type": "time", "writableBy": "formEntry", "storage": "inline"},
+    "reminderOffsetHours": {"type": "number", "writableBy": "formEntry", "storage": "inline"}
   }
 }
 ''';
