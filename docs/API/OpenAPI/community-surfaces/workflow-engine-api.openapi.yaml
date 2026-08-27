@@ -275,6 +275,61 @@ paths:
         '404':
           $ref: '../_shared/errors.yaml#/components/responses/NotFound'
 
+  /v1/communities/{communityId}/notifications/due:
+    get:
+      operationId: dueNotifications
+      summary: The caller's reminders that have come due.
+      description: >-
+        **The service `deliver_reminder` has always named.**
+        [`permissions.md`](../../../references/reference/permissions.md) §4 describes that action as
+        platform-applied "through the `dueNotifications({asOf})` platform service", and until this
+        operation existed there was no such service: a member could set a reminder and nothing would
+        ever deliver it.
+
+
+        Returns notification instances whose `dueAt` has passed, **scoped to the caller by the engine's
+        own read model** rather than by a recipient filter of this endpoint's devising. The engine's
+        local `dueNotifications` returns every instance in the community carrying a past `dueAt`, which
+        is correct on a device holding one member's database and would hand every member everyone
+        else's reminders if returned unchanged here. Both shipped notification workflows already
+        declare a `readGuard` on their recipient field, so asking who may read each one is the same
+        answer, derived rather than restated.
+
+
+        **`asOf` is the caller's instant, not the server's.** A device that has been offline asks for
+        everything due up to now and receives its backlog; answering from a server clock would skip
+        whatever came due while the app was closed. A reminder is delivered late rather than lost.
+
+
+        This operation does not mark anything delivered. Nothing in the grammar records that a
+        reminder was shown -- `read` means the member read it -- so a reminder stays due once its
+        instant passes, and the caller is responsible for not showing it twice.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - name: asOf
+          in: query
+          required: false
+          description: >-
+            ISO-8601 instant to evaluate against. Defaults to the server's clock, which is a
+            convenience for probes rather than the intended use — a client should send its own.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Reminders due as of the given instant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DueNotificationsResponse'
+        '400':
+          description: >-
+            `asOf` was present and not an ISO-8601 instant. Refused rather than defaulted, because a
+            silently-substituted clock delivers the wrong set and looks like it worked.
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+
   /v1/communities/{communityId}/instances/{instanceId}/transitions:
     post:
       operationId: applyTransition
@@ -514,6 +569,24 @@ components:
           nullable: true
           description: The transition's declared input specs, for rendering a form.
           additionalProperties: true
+
+    DueNotificationsResponse:
+      type: object
+      required: [asOf, items]
+      properties:
+        asOf:
+          type: string
+          format: date-time
+          description: >-
+            The instant the answer was evaluated against — echoed so a client can tell whether its own
+            clock was used or the server's default.
+        items:
+          type: array
+          description: >-
+            Notification instances, in the same shape every other instance is returned in. Empty is
+            the ordinary answer.
+          items:
+            $ref: '#/components/schemas/WorkflowInstance'
 
     AvailableTransitionsResponse:
       type: object
