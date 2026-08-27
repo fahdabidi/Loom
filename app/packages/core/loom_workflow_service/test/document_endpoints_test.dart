@@ -128,6 +128,22 @@ void main() {
     expect(objectStore.objects[key], _fileBytes);
   });
 
+  test('uploading publishes the reference into the named instance field',
+      () async {
+    final instanceId = await _createInstance(service, _boardFan);
+    final response = await _upload(service, _boardFan, instanceId);
+    expect(response.statusCode, 201);
+    final body = jsonDecode(await response.readAsString())
+        as Map<String, dynamic>;
+
+    // The card surface renders from instance data, so bytes alone are not a
+    // visible document. Read the stored instance rather than the response.
+    final stored = await database.readInstance(instanceId);
+    final data = jsonDecode(stored!.instanceData) as Map<String, dynamic>;
+    expect(data['attachmentUrl'], body['contentUrl']);
+    expect(data['attachmentUrl'], contains(body['documentId']));
+  });
+
   test('a member without an upload transition is refused', () async {
     final instanceId = await _createInstance(service, _boardFan);
 

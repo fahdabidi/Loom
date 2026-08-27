@@ -41,6 +41,14 @@ class StoredDocument {
   final String objectKey;
   final DateTime uploadedAt;
 
+  /// Where the bytes are read from, relative to the service root.
+  ///
+  /// Carries no token and grants nothing on its own, so it is safe to store in
+  /// instance data -- which a signed URL would not be, since instance data is
+  /// readable by everyone the workflow admits.
+  String get contentUrl =>
+      '/v1/communities/$communityId/documents/$documentId/content';
+
   Map<String, dynamic> toJson() => {
     'documentId': documentId,
     'communityId': communityId,
@@ -53,8 +61,7 @@ class StoredDocument {
     'byteSize': byteSize,
     'ownerFanId': ownerFanId,
     'uploadedAt': uploadedAt.toUtc().toIso8601String(),
-    'contentUrl':
-        '/v1/communities/$communityId/documents/$documentId/content',
+    'contentUrl': contentUrl,
   };
 }
 

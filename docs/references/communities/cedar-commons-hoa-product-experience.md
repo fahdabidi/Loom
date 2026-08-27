@@ -45,15 +45,32 @@ actions.
 | Surface | Required visible content | Required states | Natural actions | Anti-patterns |
 | --- | --- | --- | --- | --- |
 | Dues | amount, due date, payer, receipt | due/paid/failed | pay, view receipt | generic payment chip |
-| Documents | title, version/date, access, provider/source, embedded/external open choices | draft/published/read/acknowledged/access-requested/archived | board: edit, publish, delete, archive, restore · member: open embedded, open external, download, acknowledge, request access | metadata card only; drafts visible to members |
+| Documents | title, version/date, access, uploaded file name and size, embedded/external open choices | draft/published/read/acknowledged/access-requested/archived | board: **upload**, edit, publish, delete, archive, restore · member: open embedded, open external, download, acknowledge, request access | metadata card only; drafts visible to members; **asking the Board to paste a link to a file they are holding** |
 | Facility reservation | facility, date, time, status | open/reserved/conflict | reserve, cancel | checklist modal |
 | Workflow status / review queue | request, requester, current step, reviewer, payment/document checkpoints, comments, audit | submitted/under-review/changes-needed/approved/denied/reopened | approve, reject, request changes, attach document, reopen | single rigid approval card |
 
-**Document lifecycle.** A governing document is drafted before it is published. The Board writes and
-revises it privately, publishes it when it is ready, and may delete a draft that was never published
-or archive a published one that has been superseded.
+**Documents are uploaded, not linked.** The Board holds the HOA's governing documents as files —
+the CC&Rs, the architectural guidelines, the minutes of the meeting where a rule changed. A Board
+member adds one by choosing the file, and Cedar keeps it. They are not asked for a URL, and the
+document does not live in somebody's personal drive where it can be moved, renamed, or lost when
+that person leaves the Board.
 
-Only the Board may edit, publish, delete, archive or restore. **An unpublished document is visible to
+This matters more here than in a reading list. A homeowner who is told a rule exists needs to be able
+to read the rule, and an HOA that cannot produce its own governing documents has a governance problem
+rather than a filing problem. A link to a document is a promise that someone else will keep it; an
+uploaded document is one the HOA keeps itself.
+
+Cedar is the only community that stores documents this way. Chess Club, Masjid Nur, the Book Club and
+Youth Soccer keep libraries of external resources, and should — a khutbah note or a rules PDF that
+already lives somewhere authoritative is better linked than copied.
+
+**Document lifecycle.** A governing document is drafted before it is published. A Board member
+uploads the file, the Board revises it privately, publishes it when it is ready, and may delete a
+draft that was never published or archive a published one that has been superseded. Uploading a new
+file to a published document is how a revision is issued: the version changes, and members who had
+acknowledged the previous version have acknowledged a document that no longer says what it said.
+
+Only the Board may upload, edit, publish, delete, archive or restore. **An unpublished document is visible to
 the Board alone** — a draft policy circulating before the Board has agreed it is worse than no policy,
 because members act on what they read. Once published, every member may open, download and acknowledge
 it.
@@ -68,7 +85,7 @@ order to keep its real history.
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
 | hoa-dues-payment | member | Dues payment | amount and receipt | Wallet/receipts | B14/B25 |
-| hoa-member-document | member | Document center | document title, version, access state, embedded/external open choices, acknowledgement/download state | Documents/external documents/audit | B14/B25 |
+| hoa-member-document | member | Document center | document title, version, access state, uploaded file name/size, embedded/external open choices, acknowledgement/download state | Documents/external documents/audit | B14/B25 |
 | hoa-facility-reservation | member | Calendar reservation detail | facility/date/time, conflict status, reservation window, reminder state | Calendar/facilities/events | B14/B25 |
 | hoa-architectural-request | owner | Workflow status case | change details, current step, reviewer, requested-changes path, document/payment checkpoint, submitted state | Workflow status/cases/tasks/documents | B14/B25 |
 | hoa-committee-decision | owner | Workflow status review queue | requester, decision actions, status history, request-changes path, comments, owner receiver state | Workflow status/cases/tasks/audit | B14/B25 |
@@ -80,7 +97,7 @@ order to keep its real history.
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
 | hoa-dues-payment | member pays quarterly dues | HOA ledger records paid/receipt state | receipt read-only after pay | pay disabled after paid; retry shown on failure | non-member hidden |
-| hoa-member-document | board drafts, publishes and retires; member opens published document | board/admin sees access audit | document metadata/read state visible | download disabled without permission; publish/delete hidden from members; drafts hidden entirely from members | non-member denied |
+| hoa-member-document | board uploads, drafts, publishes and retires; member opens published document | board/admin sees access audit | document metadata/read state visible | download disabled without permission; publish/delete hidden from members; drafts hidden entirely from members | non-member denied |
 | hoa-facility-reservation | member reserves facility | owner/board sees reservation status | confirmed reservation readable | reserve disabled on conflict | non-member denied |
 | hoa-architectural-request | owner submits exterior request | committee sees requester/details | owner sees status history | approve hidden for owner | non-owner denied |
 | hoa-committee-decision | owner/committee reviews request | homeowner receives approved/rejected/changes state | decision history readable | duplicate decision disabled | non-committee denied |
@@ -91,6 +108,11 @@ order to keep its real history.
 
 Use realistic dues amounts, due dates, document names, facility names/times, property request text,
 board comments, receipts, audit labels, and export checksums.
+
+Seeded documents must carry a real uploaded file, not a URL standing in for one. A seed row whose
+document is a link is indistinguishable from the linked libraries the other communities ship, so it
+would demonstrate nothing about Cedar and would hide a broken upload path behind a working-looking
+card.
 
 ## 9. Visual And Interaction Standard
 
@@ -127,6 +149,18 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | `hoa-export-evidence` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | scope/redaction preview, generate/download/checksum, transfer/rollback, audit trail | Demo renderer must select a domain-native surface for `portability` and LocalInAppBackend must expose/import the state for these interactions. |
 
 ## 10. Review And Remediation Log
+
+**2026-08-26 — documents become uploads.** This document previously described the document centre in
+terms of `provider/source` and `embedded/external open choices`, because when it was written the
+platform could not store a file and a link was the only thing a community could offer. Loom now has
+document storage, and Cedar is the community where owning the bytes matters, so the experience is
+restated around uploading. The four other document libraries are deliberately left as link libraries.
+
+Derivation note for the package: the Board's upload capability is the `documentLibrary` archetype's
+`upload` action — see
+[`document-library.md` §3a](../archetypes/document-library.md). The content field must be
+`writableBy: "effect"` and must not be `required`, or a member would still have to type an address
+before the upload could happen.
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |

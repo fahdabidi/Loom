@@ -1232,6 +1232,26 @@ class WorkflowService {
           ? idempotencyKey
           : null,
     );
+
+    // Publish the reference into the instance field the upload named.
+    //
+    // Without this the bytes exist and the card renders nothing: a
+    // documentLibrary surface draws from instance data, so a document that
+    // lives only in the documents table is invisible to the member who just
+    // uploaded it.
+    //
+    // Written through mergeInstanceFields rather than updateInstanceFields.
+    // The latter is the member-edit path -- it demands the field appear in the
+    // state's editableFields and refuses anything declared writableBy
+    // "effect". A document reference is neither: it is archetype-owned
+    // bookkeeping, produced by the platform, and a member must not be able to
+    // type into it. Authorization already happened above, where an `upload`
+    // transition had to be available to this fan.
+    await _database.mergeInstanceFields(
+      instanceId: instanceId,
+      fieldUpdates: <String, dynamic>{fieldName: document.contentUrl},
+    );
+
     return _documentResponse(document, context.correlationId, 201);
   });
 
