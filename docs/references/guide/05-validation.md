@@ -180,6 +180,14 @@ If an error genuinely cannot be fixed within the grammar, **stop and report the 
 | Code | Meaning | Fix |
 | --- | --- | --- |
 | `effect_writable_field_has_no_effect` *(warning)* | A field declares `writableBy: "effect"` and no effect anywhere in the package writes it — not in its own workflow, and not through a `createInstance` from another. It names a writer that does not exist, so the field stays empty forever. | Say who actually writes it. A platform service — a checksum, an opaque receipt or transfer id, a stored document's URL — is `writableBy: "platform"`. A member is `"formEntry"`. Nothing is `writableBy` omitted entirely. **Not** by adding an effect that sets a placeholder: a fabricated value is worse than an empty field, because it looks real. |
+| `prefill_written_field_not_platform` *(warning)* | A field is stamped by a create-action `prefill` — `"ownerFanId": "$actor"`, or a literal starting value — no state lists it in `editableFields`, and its `writableBy` is anything other than `platform`. The platform writes it at creation, so `effect` is false (prefill is not an effect), `formEntry` is false (no member types it, and on an identity field that claim is actively wrong), and omitting the key is false too (something does write it). | Declare `writableBy: "platform"`. If instead the prefill is seeding a **default a member then edits**, the field belongs in that state's `editableFields` and `"formEntry"` is correct — the rule stays silent in that case, and it is the case worth checking first. |
+
+`prefill_written_field_not_platform` is a warning about honesty rather than behaviour. A field is
+editable only when a state lists it in `editableFields`, and the engine checks that membership
+*before* it consults `writableBy`, so a misdeclared prefill field is not editable today whatever it
+says. It is still worth fixing: the declaration should state what actually happens, two authoring
+passes should not answer the same question differently, and `formEntry` on an identity field becomes
+a real hole the moment someone adds that field to `editableFields`.
 
 **Why this only became checkable in 2026-08.** `effect` used to cover two different things: a JSON
 effect setting a value, and something outside the package filling one in. A field nothing wrote was
