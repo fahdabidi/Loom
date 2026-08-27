@@ -325,7 +325,14 @@ void _installEngineNativeExperience(
 ) {
   if (experience.workflowDefinitions == null) return;
   final store = _EngineNativeCommunityStore.install(extensionId, experience);
-  unawaited(store.ensureReady().catchError((Object _, StackTrace __) {}));
+  unawaited(
+    store.ensureReady().then((_) {
+      // Opening a community is the first chance to deliver anything that came
+      // due while the app was closed. Fire-and-forget: the screen must not wait
+      // on a notification, and a failed sweep is recoverable by the next one.
+      unawaited(sweepLoomRemindersForExtensionId(extensionId));
+    }).catchError((Object _, StackTrace __) {}),
+  );
 }
 
 /// Returns the single ready workflow engine for an installed engine-native community.
@@ -340,6 +347,34 @@ Future<WorkflowEngineApi> workflowEngineForExtensionId(
   }
   await store.ensureReady();
   return store.engine;
+}
+
+/// One reminder sweeper per community, built on first use.
+final Map<String, LoomReminderSweeper> _reminderSweepersByExtensionId = {};
+
+/// Delivers any reminders that have come due for this community.
+///
+/// Returns how many were shown, and never throws — see [LoomReminderSweeper].
+/// Call it when a community opens and whenever the app returns to the
+/// foreground; a reminder that came due while the app was closed is delivered
+/// late rather than lost, because the sweep asks for everything due as of now.
+Future<int> sweepLoomRemindersForExtensionId(String extensionId) async {
+  final store = _EngineNativeCommunityStore._stores[extensionId];
+  if (store == null) return 0;
+  await store.ensureReady();
+  final sweeper = _reminderSweepersByExtensionId.putIfAbsent(
+    extensionId,
+    () => LoomReminderSweeper(
+      engine: store.engine,
+      delivery: LocalNotificationDeliveryService(),
+    ),
+  );
+  return sweeper.sweep();
+}
+
+@visibleForTesting
+void resetLoomReminderSweepersForTesting() {
+  _reminderSweepersByExtensionId.clear();
 }
 
 /// Wires the app-shell account store into the already-installed shared engine.

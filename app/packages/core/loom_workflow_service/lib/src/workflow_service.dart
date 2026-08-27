@@ -133,6 +133,9 @@ class WorkflowService {
     if (_matchesDocumentAction(segments, 'access') && request.method == 'GET') {
       return _getDocumentAccess(request, segments[2], segments[4]);
     }
+    if (_matchesNotificationsDue(segments) && request.method == 'GET') {
+      return _dueNotifications(request, segments[2]);
+    }
 
     return _error(
       request: request,
@@ -1049,6 +1052,116 @@ class WorkflowService {
         statusCode: 500,
         code: 'workflow_service_error',
         message: 'Available workflow transitions could not be resolved.',
+      );
+    }
+  }
+
+  // ----------------------------------------------------------- reminders
+  //
+  // `deliver_reminder` is the one action in any archetype vocabulary that the
+  // platform applies rather than a member. permissions.md has said so since it
+  // was written -- "the Calendar sweep applies it through the
+  // dueNotifications({asOf}) platform service" -- and that service did not
+  // exist, so a member could ask to be reminded and nothing would ever remind
+  // them.
+
+  bool _matchesNotificationsDue(List<String> segments) =>
+      segments.length == 5 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'notifications' &&
+      segments[4] == 'due';
+
+  /// The caller's reminders that have come due.
+  ///
+  /// Scoped by the engine's own read model rather than by a recipient filter
+  /// written here. The engine's `dueNotifications` returns every instance in
+  /// the community carrying a past `dueAt`, which is correct on a device
+  /// holding one member's database and would hand every member everyone else's
+  /// reminders if returned as-is. Both shipped notification workflows already
+  /// declare `readGuard` on their recipient field, so asking the engine who may
+  /// read each one is the same answer, derived rather than duplicated.
+  Future<Response> _dueNotifications(Request request, String communityId) async {
+    final correlationId = request.headers['x-loom-correlation-id'];
+    if (correlationId == null || !_uuidPattern.hasMatch(correlationId)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_correlation_id',
+        message: 'X-Loom-Correlation-Id must be a UUID.',
+      );
+    }
+
+    final identity = await _identityExtractor.extract(request);
+    if (identity == null) {
+      return _error(
+        request: request,
+        statusCode: 401,
+        code: 'authentication_required',
+        message: 'An authenticated fan identity is required.',
+      );
+    }
+
+    // `asOf` is the caller's clock, not the server's. A device that has been
+    // offline asks for everything due up to now and gets the backlog; without
+    // it a reminder that came due while the app was closed would be skipped
+    // rather than delivered late.
+    final rawAsOf = request.url.queryParameters['asOf'];
+    final DateTime asOf;
+    if (rawAsOf == null || rawAsOf.isEmpty) {
+      asOf = DateTime.now().toUtc();
+    } else {
+      final parsed = DateTime.tryParse(rawAsOf);
+      if (parsed == null) {
+        return _error(
+          request: request,
+          statusCode: 400,
+          code: 'invalid_as_of',
+          message: 'asOf must be an ISO-8601 timestamp.',
+        );
+      }
+      asOf = parsed.toUtc();
+    }
+
+    try {
+      return await _databaseSerialExecutor.run(() async {
+        final engine = _authoritativeEngine(communityId);
+        final roleResolutionError = await _resolveRolesForRequest(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          engine: engine,
+        );
+        if (roleResolutionError != null) return roleResolutionError;
+
+        final due = await engine.dueNotifications(asOf: asOf);
+        final visible = <Map<String, dynamic>>[];
+        for (final notification in due) {
+          final readable = await engine.readVisibleInstance(
+            instanceId: notification.instanceId,
+            fanId: identity.fanId,
+          );
+          if (readable == null) continue;
+          visible.add(_workflowInstanceJson(readable));
+        }
+
+        return Response.ok(
+          jsonEncode({
+            'asOf': asOf.toIso8601String(),
+            'items': visible,
+          }),
+          headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
+        );
+      });
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'Due notifications could not be resolved.',
       );
     }
   }

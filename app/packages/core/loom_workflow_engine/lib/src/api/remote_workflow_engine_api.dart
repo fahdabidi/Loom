@@ -315,11 +315,28 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
   }
 
   @override
-  Future<List<WorkflowInstance>> dueNotifications({required DateTime asOf}) {
-    throw UnsupportedError(
-      'RemoteWorkflowEngineApi cannot resolve dueNotifications because the '
-      'workflow-service OpenAPI contract defines no such operation.',
+  Future<List<WorkflowInstance>> dueNotifications({
+    required DateTime asOf,
+  }) async {
+    // The service scopes this to the caller through the engine's own read
+    // model, so what comes back is this fan's reminders rather than the
+    // community's. The local engine returns everything with a past `dueAt`,
+    // which is right for a device holding one member's database and would be a
+    // leak over HTTP.
+    final response = await _request(
+      method: 'GET',
+      pathSegments: ['v1', 'communities', _communityId, 'notifications', 'due'],
+      queryParameters: {'asOf': asOf.toUtc().toIso8601String()},
+      expectedStatusCodes: const {200},
     );
+    final decoded = _decodeObject(response);
+    final rawItems = decoded['items'];
+    if (rawItems is! List<dynamic>) {
+      throw _malformedResponse(response, 'items must be a JSON array.');
+    }
+    return rawItems
+        .map((item) => _decodeInstance(item, response, createdByFanId: ''))
+        .toList();
   }
 
   List<String> get _instanceCollectionSegments => [

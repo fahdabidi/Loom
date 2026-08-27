@@ -1431,6 +1431,20 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       createdByFanId: fanId,
     );
 
+    // NOTE: this branch is dead against every shipped community. It fires only
+    // when `workflowType` is literally 'notification', and no package declares
+    // one by that name -- the five that have a notification workflow call it
+    // `book-notification`, `garden-notification`, `hoa-owner-notification`,
+    // `mosque-neutral-notification` or `soccer-reminder-notification`. It also
+    // delivers at creation, which is the wrong moment for a reminder carrying a
+    // future `dueAt`.
+    //
+    // Left in place rather than removed: it is covered by
+    // notification_delivery_service_test.dart, and deleting a mechanism to
+    // replace it is a separate change from adding the one that works. Real
+    // delivery is now LoomReminderSweeper in the app shell, sweeping
+    // `dueNotifications(asOf:)` -- which is what permissions.md has always
+    // described `deliver_reminder` as.
     final deliveryService = _notificationDeliveryService;
     if (workflowType == 'notification' && deliveryService != null) {
       final notification = WorkflowInstance(

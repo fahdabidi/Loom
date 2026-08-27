@@ -461,18 +461,40 @@ void main() {
         ),
       ),
     );
-    expect(
-      () => api.dueNotifications(asOf: DateTime.utc(2026, 8, 16)),
-      throwsA(
-        isA<UnsupportedError>().having(
-          (error) => '$error',
-          'message',
-          contains('no such operation'),
-        ),
-      ),
-    );
     expect(tokenCalls, 0);
     expect(httpCalls, 0);
+  });
+
+  test("dueNotifications asks the service for the reminders of the caller", () async {
+    late http.Request captured;
+    final api = _api(
+      handler: (request) async {
+        captured = request;
+        return _jsonResponse(const {
+          'asOf': '2026-08-16T00:00:00.000Z',
+          'items': [
+            {
+              'instanceId': 'notification-1',
+              'workflowType': 'club-notification',
+              'currentState': 'unread',
+              'instanceData': {'title': 'Meeting soon'},
+            },
+          ],
+        });
+      },
+    );
+
+    final due = await api.dueNotifications(asOf: DateTime.utc(2026, 8, 16));
+
+    expect(captured.method, 'GET');
+    expect(captured.url.path, contains('/notifications/due'));
+    // The instant travels as a query parameter: the service answers against the
+    // caller's clock, so a device that was offline still gets its backlog.
+    expect(captured.url.queryParameters['asOf'], '2026-08-16T00:00:00.000Z');
+    _expectCommonHeaders(captured, mutation: false);
+
+    expect(due, hasLength(1));
+    expect(due.single.instanceId, 'notification-1');
   });
 }
 
