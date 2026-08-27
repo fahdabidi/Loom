@@ -202,6 +202,7 @@ class WorkflowValidator {
     _checkDependencyCycles(workflows, findings);
     _checkNoCreationPathForEditableTypes(workflows, findings);
     _checkEffectWritableFieldsHaveWriters(workflows, findings);
+    _checkPrefillWrittenFieldsUsePlatformWriter(workflows, findings);
 
     return ValidationReport(findings);
   }
@@ -1478,6 +1479,68 @@ class WorkflowValidator {
             location:
                 'experience/workflowDefinitions/${entry.key}/'
                 'instanceDataSchema/${field.key}/writableBy',
+          ),
+        );
+      }
+    }
+  }
+
+  /// A create-action prefill is a platform write at instance creation.
+  ///
+  /// A field that is editable in any state is deliberately excluded: prefill
+  /// can seed a member-editable default, in which case `formEntry` remains the
+  /// truthful writer. Formula fields are excluded as well; the existing
+  /// computed-field rule owns their invalid prefill writes.
+  void _checkPrefillWrittenFieldsUsePlatformWriter(
+    Map<String, LoomWorkflowStateMachine> workflows,
+    List<ValidationFinding> findings,
+  ) {
+    // A create action can target a different workflow type. Collect by the
+    // target rather than by the binding's owner so the writer is attributed to
+    // the schema it actually initializes.
+    final prefilledByType = <String, Set<String>>{};
+    for (final entry in workflows.entries) {
+      for (final binding in entry.value.renderBindings) {
+        for (final action in binding.actions.where(
+          (action) => action.kind == 'create',
+        )) {
+          final prefill = action.prefill;
+          if (prefill == null || prefill.isEmpty) continue;
+          final target = action.workflowType ?? entry.key;
+          (prefilledByType[target] ??= <String>{}).addAll(prefill.keys);
+        }
+      }
+    }
+
+    for (final entry in workflows.entries) {
+      final prefilled = prefilledByType[entry.key];
+      if (prefilled == null || prefilled.isEmpty) continue;
+      final editableFields = entry.value.states.values
+          .expand((state) => state.editableFields ?? const <String>[])
+          .toSet();
+
+      for (final fieldName in prefilled) {
+        final field = entry.value.instanceDataSchema[fieldName];
+        if (field == null ||
+            editableFields.contains(fieldName) ||
+            field.writableBy == 'platform' ||
+            field.formula != null) {
+          continue;
+        }
+        findings.add(
+          ValidationFinding(
+            type: 'prefill_written_field_not_platform',
+            isWarning: true,
+            message:
+                'Field "$fieldName" in workflow "${entry.key}" is written '
+                'by a create-action prefill but is not editable in any state. '
+                'Declare writableBy: "platform". writableBy "effect" is '
+                'false because prefill is not an effect, and omitting '
+                'writableBy is also false because something does write this '
+                'field.',
+            location:
+                'experience/workflowDefinitions/${entry.key}/'
+                'instanceDataSchema/$fieldName/writableBy',
           ),
         );
       }

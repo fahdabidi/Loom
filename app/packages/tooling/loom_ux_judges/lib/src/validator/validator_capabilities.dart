@@ -8,6 +8,7 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 /// asserts that this declaration is exact.
 const Set<String> communityPackageValidatorFindingCodes = <String>{
   'effect_writable_field_has_no_effect',
+  'prefill_written_field_not_platform',
   'document_library_is_link_only',
   'document_upload_stores_no_content',
   'actor_equals_field_on_list_type',
