@@ -8,6 +8,10 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+# The deployed tag has been bumped by hand before now (0.1.0 -> 0.2.1),
+# which left this script building a version nobody deploys. Take it from
+# the environment so the two cannot drift again.
+IMAGE_TAG="${IMAGE_TAG:-0.1.0}"
 SCRATCH="$(mktemp -d)"
 trap 'rm -rf "$SCRATCH"' EXIT
 
@@ -18,8 +22,8 @@ mkdir -p "$SCRATCH/home/fahd/Loom"
 cp -r "$REPO_ROOT/app" "$SCRATCH/home/fahd/Loom/app"
 cp "$(dirname "${BASH_SOURCE[0]}")/Dockerfile" "$SCRATCH/Dockerfile"
 
-echo "Building loom-workflow-service:0.1.0 ..."
-docker build --tag loom-workflow-service:0.1.0 "$SCRATCH"
+echo "Building loom-workflow-service:$IMAGE_TAG ..."
+docker build --tag "loom-workflow-service:$IMAGE_TAG" "$SCRATCH"
 
 echo "Built. Import into a k3s node with:"
-echo "  docker save loom-workflow-service:0.1.0 | sudo k3s ctr images import -"
+echo "  docker save loom-workflow-service:$IMAGE_TAG | sudo k3s ctr images import -"
