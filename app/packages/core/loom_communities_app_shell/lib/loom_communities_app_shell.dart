@@ -6,6 +6,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:animations/animations.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -57,6 +58,7 @@ part 'src/part39_remote_auth_api.dart';
 part 'src/part40_service_environments.dart';
 part 'src/part41_fan_passport_client.dart';
 part 'src/part42_document_client.dart';
+part 'src/part43_document_uploads.dart';
 part 'src/part38_production_login_screen.dart';
 part 'src/instance_scoped_action_context.dart';
 part 'src/repeater_surface.dart';

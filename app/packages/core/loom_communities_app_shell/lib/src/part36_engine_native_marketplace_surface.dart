@@ -947,8 +947,102 @@ class _DocumentLibraryArchetypeCardState
     return schema;
   }
 
+  /// Picks a file and stores it against this document.
+  ///
+  /// The engine is never asked to apply the `upload` transition. The service
+  /// checks the same guard when it authorises the upload, so the permission is
+  /// enforced once, in the place that also holds the bytes.
+  Future<void> _uploadDocument() async {
+    final blocker = loomDocumentUploadBlocker(
+      engine: widget.engine,
+      machine: widget.resolved.machine,
+    );
+    if (blocker != null) {
+      setState(() => _error = blocker);
+      return;
+    }
+
+    final engine = widget.engine as RemoteWorkflowEngineApi;
+    final client = resolveLoomDocumentClient()!;
+    final fieldName = storedDocumentFieldName(widget.resolved.machine)!;
+
+    final LoomPickedDocument? picked;
+    try {
+      picked = await loomDocumentPicker();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _error = 'The file could not be read.');
+      return;
+    }
+    // Backing out of the picker is not an error, and must not leave the card
+    // stuck in its mutating state.
+    if (picked == null || !mounted || _mutating) return;
+
+    setState(() {
+      _mutating = true;
+      _error = null;
+    });
+    try {
+      final document = await client.upload(
+        communityId: engine.communityId,
+        instanceId: _instance.instanceId,
+        fieldName: fieldName,
+        filename: picked.filename,
+        bytes: picked.bytes,
+        contentType: picked.contentType,
+        title: _instance.instanceData['title'] as String?,
+      );
+
+      // The service already wrote this exact value into the instance. Mirroring
+      // it locally rather than refetching keeps the card in step without a
+      // second round trip, and the two agree by construction: both are the
+      // document's own contentUrl.
+      final next = WorkflowInstance(
+        instanceId: _instance.instanceId,
+        workflowType: _instance.workflowType,
+        currentState: _instance.currentState,
+        instanceData: <String, dynamic>{
+          ..._instance.instanceData,
+          fieldName: document.contentUrl,
+        },
+        createdByFanId: _instance.createdByFanId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _instance = next;
+        _mutating = false;
+      });
+      widget.onInstanceChanged(next);
+      await _loadActions();
+    } on LoomDocumentException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _mutating = false;
+        _error = error.isNotFoundOrForbidden
+            ? 'You do not have permission to upload to this document.'
+            : 'The document could not be uploaded.';
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _mutating = false;
+        _error = 'The document could not be uploaded.';
+      });
+    }
+  }
+
   Future<void> _applyTransition(LoomWorkflowTransition transition) async {
     if (_mutating) return;
+    // `upload` is not an ordinary transition. Its whole effect is the file, and
+    // the file does not travel through the engine: the Document Library API
+    // stores the bytes and writes the content reference into the instance
+    // itself. Applying the transition here would run a transition that declares
+    // no effects, and leave the member looking at a button that did nothing.
+    if (transition.action == 'upload') {
+      await _uploadDocument();
+      return;
+    }
+
     final inputs = await _collectTransitionInputs(
       context: context,
       transition: transition,
