@@ -158,6 +158,7 @@ class CommunityPackageValidator {
     findings.addAll(_validateTransitionActions(rawDefinitions));
     findings.addAll(_validateResponseRowSweep(rawDefinitions));
     findings.addAll(_validateRedundantTransitions(rawDefinitions));
+    findings.addAll(_validateDocumentContentSource(rawDefinitions));
     final rawInstances = experience['workflowInstances'];
     if (rawInstances is! List) return ValidationReport(findings);
     final instances = <String, Map<String, dynamic>>{};
@@ -1679,6 +1680,111 @@ class CommunityPackageValidator {
             ),
           );
         }
+      }
+    }
+    return findings;
+  }
+
+  /// Where a `documentLibrary` workflow's document content comes from.
+  ///
+  /// Ported here from the workflow service's install-time validator, which was
+  /// the wrong home for it. This is the validator the Skill runs while
+  /// authoring; an author who only learns at install time that their upload
+  /// action publishes a link has already shipped the package.
+  ///
+  /// A library holds stored documents or links to documents hosted elsewhere.
+  /// Both are legitimate — four of the five shipped libraries are deliberately
+  /// link libraries — so only the incoherent case is an error.
+  List<ValidationFinding> _validateDocumentContentSource(
+    Map<Object?, Object?> rawDefinitions,
+  ) {
+    final findings = <ValidationFinding>[];
+    for (final entry in rawDefinitions.entries) {
+      final workflow = entry.value;
+      if (workflow is! Map) continue;
+      final workflowType = '${entry.key}';
+
+      final bindings = workflow['renderBindings'];
+      if (bindings is! List) continue;
+      final isDocumentLibrary = bindings.any(
+        (binding) =>
+            binding is Map && binding['cardSurfaceFamily'] == 'documentLibrary',
+      );
+      if (!isDocumentLibrary) continue;
+
+      // The content field is the one a link library lets a member type into.
+      // Matched on its declared type, never on its name: `documentUrl` is what
+      // Cedar happens to call it, and reading meaning from an identifier's
+      // spelling is a mistake this repo has made before.
+      final schema = workflow['instanceDataSchema'];
+      final linkFields = <String>{};
+      if (schema is Map) {
+        for (final field in schema.entries) {
+          final declared = field.value;
+          if (declared is Map && declared['type'] == 'url') {
+            linkFields.add('${field.key}');
+          }
+        }
+      }
+
+      final transitions = workflow['transitions'];
+      if (transitions is! List) continue;
+
+      var declaresUpload = false;
+      for (final transition in transitions) {
+        if (transition is! Map) continue;
+        if (transition['action'] != 'upload') continue;
+        declaresUpload = true;
+
+        final memberSupplied = <String>[];
+        final effects = transition['effects'];
+        if (effects is List) {
+          for (final effect in effects) {
+            if (effect is! Map || effect['op'] != 'set') continue;
+            final key = '${effect['key']}';
+            if (!linkFields.contains(key)) continue;
+            final value = effect['value'];
+            if (value is String && value.contains('{input.')) {
+              memberSupplied.add(key);
+            }
+          }
+        }
+        if (memberSupplied.isEmpty) continue;
+
+        final transitionId = transition['id'] ?? '<unknown>';
+        final fieldList = memberSupplied.join(', ');
+        findings.add(
+          _finding(
+            'document_upload_stores_no_content',
+            'Transition "$transitionId" in workflow "$workflowType" declares '
+                'the "upload" action but sets $fieldList from a '
+                'member-supplied input, so it publishes a link rather than '
+                'storing a document. Declaring "upload" also grants permission '
+                'to store files through the Document Library API, so this '
+                'hands out file-storage authority for a paste. For a stored '
+                'library, drop the input and let the API write the field; for '
+                'a link library, use "edit" or a community-defined transition.',
+            'experience/workflowDefinitions/$workflowType/transitions',
+          ),
+        );
+      }
+
+      if (!declaresUpload && linkFields.isNotEmpty) {
+        final fieldList = linkFields.join(', ');
+        findings.add(
+          _finding(
+            'document_library_is_link_only',
+            'Workflow "$workflowType" holds links rather than stored '
+                'documents: its content lives in $fieldList and no transition '
+                'declares the "upload" action, so nothing can be stored '
+                'through the Document Library API. This is correct for a '
+                'library of external resources — say so in Gaps/assumptions '
+                'naming this finding. Only add an "upload" transition if the '
+                'product doc says members add files.',
+            'experience/workflowDefinitions/$workflowType',
+            warning: true,
+          ),
+        );
       }
     }
     return findings;

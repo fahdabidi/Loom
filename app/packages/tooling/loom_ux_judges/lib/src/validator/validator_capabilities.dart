@@ -7,6 +7,8 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 /// suite instead extracts the literals from both validator implementations and
 /// asserts that this declaration is exact.
 const Set<String> communityPackageValidatorFindingCodes = <String>{
+  'document_library_is_link_only',
+  'document_upload_stores_no_content',
   'actor_equals_field_on_list_type',
   'ambiguous_workflow_archetype',
   'binding_cap_exceeded',

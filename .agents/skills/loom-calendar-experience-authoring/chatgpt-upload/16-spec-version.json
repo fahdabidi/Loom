@@ -143,6 +143,7 @@
     "snapshotDate": "2026-08-20",
     "capabilities": [
       "archetype.approvalQueueItem",
+      "archetype.calendar",
       "archetype.discussionThread",
       "archetype.documentLibrary",
       "archetype.equipment-loan",

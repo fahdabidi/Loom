@@ -16,6 +16,12 @@ const Set<String> supportedAppShellBespokeCardSurfaceFamilies = <String>{
 /// Card-surface families intentionally rendered by
 /// `GenericWorkflowInstanceCard`.
 const Set<String> supportedAppShellGenericCardSurfaceFamilies = <String>{
+  // A closed vocabulary, but no bespoke card: a calendar item's detail is an
+  // ordinary instance card, and what makes it a calendar is the tab surface
+  // that places it on a grid. Bespoke vocabulary and bespoke card rendering are
+  // separate decisions, and this is the first family to take one without the
+  // other.
+  'calendar',
   'paymentCheckout',
   'approvalQueueItem',
   'formEntry',
@@ -52,6 +58,9 @@ const Map<String, String> supportedAppShellTabRendererContracts =
 /// tab id.
 const Map<String, String> appShellTabNativeRendererContractIdsByArchetype =
     <String, String>{
+      // Both reach the calendar surface. `calendar` is the family for items
+      // with no attendance; `event-rsvp` keeps it for items with.
+      'calendar': 'calendar-agenda-event-detail',
       'event-rsvp': 'calendar-agenda-event-detail',
       'equipment-loan': 'marketplace-browse-listing-detail',
     };

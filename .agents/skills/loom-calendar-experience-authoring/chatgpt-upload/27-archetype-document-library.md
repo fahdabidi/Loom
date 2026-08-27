@@ -1,13 +1,14 @@
 ---
 spec: 4
-doc_version: 1.1.0
+doc_version: 1.2.0
 status: proposed
-last_verified: 2026-08-14
+last_verified: 2026-08-26
 audience: llm-agent
 derived_from:
   - docs/references/archetypes/CONTRACTS.md
   - docs/references/reference/permissions.md
   - app/packages/core/loom_workflow_engine/lib/src/api/local_workflow_engine_api.dart
+  - docs/API/OpenAPI/community-surfaces/document-library-api.openapi.yaml
 ---
 
 # `documentLibrary`
@@ -104,6 +105,68 @@ Alex sharing a document with Casey requires nothing in community JSON.
 > Read guards fail closed. An unset identity field matches nobody, so a document owned by no one is
 > visible to no one. That is why seed data carrying no identity renders nothing rather than leaking.
 
+## 3a. Where a document's content lives
+
+A library holds **stored** documents or **linked** ones. Both are real products. The workflow has to
+say which, because the two differ in who holds the bytes, what a member does to add one, and what
+happens when the source disappears.
+
+**Linked.** The community declares a `url` field. A member pastes an address when creating the
+document, and Loom stores nothing but the address. This is what every community shipped before
+2026-08-26 and what four of the five still do — a list of khutbah notes, book guides or rules PDFs
+that live in a provider's drive. A linked document's content is only as durable as somebody else's
+link.
+
+**Stored.** The workflow declares an `upload` transition. A member holding it uploads a file through
+the Document Library API
+([`document-library-api.openapi.yaml`](../../API/OpenAPI/community-surfaces/document-library-api.openapi.yaml)),
+which stores the bytes, records the document against the instance, and writes the content reference
+into the instance field the upload named.
+
+> **`upload` is a capability, not a label.** The Document Library API derives permission to store
+> files from the presence of an `upload` transition a fan can invoke. A transition that declares
+> `upload` but merely sets a URL from a member's input is therefore not a naming quibble: it hands
+> out file-storage authority for a paste. The validator rejects that as
+> `document_upload_stores_no_content`, and reports a library with no `upload` at all as
+> `document_library_is_link_only` — a warning, because a link library is a legitimate choice, not a
+> mistake.
+
+### Authoring a stored library
+
+Three things, and only the first is new:
+
+```jsonc
+"transitions": [
+  // 1. The upload capability. Guarded like any other authoring action.
+  { "id": "upload-document", "action": "upload", "from": ["draft"], "to": null,
+    "guard": { "allowedRoleIds": ["hoa-board"] } }
+],
+
+"instanceDataSchema": {
+  // 2. The field the stored document fills. `writableBy: "effect"` because the
+  //    platform writes it and a member must not be able to type into it -- that
+  //    is the difference between a stored document and a linked one.
+  "documentUrl": { "type": "url", "writableBy": "effect", "storage": "inline" }
+}
+```
+
+3. Nothing else. There is no bucket to name, no size to configure, no storage permission to declare.
+A community that grants `upload` to a role has said everything the platform needs.
+
+The field stays `type: "url"`: the reference the platform writes *is* a URL, and it carries no token,
+so it is safe to keep in instance data — which a signed URL would not be, since instance data is
+readable by everyone the workflow admits.
+
+**A stored library must not also require a member-supplied URL.** If `documentUrl` is `required` and
+`writableBy: "formEntry"`, a member cannot create the document without typing an address, and the
+upload has nothing left to do. Make the content field `writableBy: "effect"` and never `required`.
+
+### Reading a stored document
+
+`GET /v1/communities/{communityId}/instances/{instanceId}/documents` lists the documents a viewer may
+read; the content endpoint streams the bytes. Neither needs anything in the package: the reader set
+is the instance's, resolved exactly as §3 describes.
+
 ## 4. Worked example — Cedar Commons HOA
 
 The policy, stated in English:
@@ -192,5 +255,32 @@ outcome.
 - **Whether `delete` should be terminal or soft.** Written above as `to: null` on a draft, which is
   the least destructive reading. A community wanting hard deletion of published documents is a
   different policy and probably wants a terminal state.
-- **`sharing.grantable`** is proposed, not implemented. The engine does not yet enforce
-  archetype-owned bookkeeping or the shared-with read model.
+- **Archetype-owned bookkeeping** is still not enforced. The per-person fields in §2 are maintained
+  by whatever the community writes, so the `actorInList` guards this contract promises to remove are
+  still being written by hand.
+
+### Closed since 1.1.0
+
+- **`sharing.grantable` is implemented** (2026-08-26). A fan in the field named by
+  `visibility.fields.sharedWith` may invoke transitions whose action is in the contract's grantable
+  set — `open`, `download`, `edit` for this archetype. The grant is an alternative to a transition's
+  guard rather than a clause within it, because guards combine with AND and have no combinator, so a
+  grant expressed as a guard clause would narrow access instead of widening it.
+
+  The grantable set comes from the contract and never from community JSON. A package that could name
+  its own would be able to add `delete` and hand one person the power to destroy a document the
+  community reserves to a role, so lifecycle actions — `publish`, `archive`, `delete`, `create` — are
+  ungrantable by construction.
+
+  Populating the shared-with field is still the community's own business: `share` and `grant_access`
+  are in the vocabulary, but nothing supplies the list automatically, and a field declared
+  `writableBy: "None"` can be honoured and never filled.
+
+- **The shared-with read model is enforced** (and was before 1.1.0 was written — the note claiming
+  otherwise was stale). `_isVisibleThroughArchetype` admits a shared-with fan ahead of the visibility
+  default.
+
+- **A state's `readGuard` narrows under any default** (2026-08-26). It was previously consulted only
+  when `visibility.default` was `guarded`, so the pairing this document's §4 example depends on —
+  `membersOnly` with board-only guards on `draft` and `archived` — silently admitted every member.
+  §3's claim that the engine "prefers" the state guard is now true as written.

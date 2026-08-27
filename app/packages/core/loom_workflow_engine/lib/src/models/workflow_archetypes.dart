@@ -19,6 +19,11 @@ class WorkflowArchetype {
 /// Canonical workflow archetype registry used by renderer/validator workstreams.
 const List<WorkflowArchetype> knownWorkflowArchetypes = <WorkflowArchetype>[
   WorkflowArchetype(
+    id: 'calendar',
+    purpose: 'A dated item on a schedule that nobody RSVPs to',
+    status: ArchetypeStatus.real,
+  ),
+  WorkflowArchetype(
     id: 'event-rsvp',
     purpose: 'Event with RSVP, capacity, and waitlist',
     status: ArchetypeStatus.real,

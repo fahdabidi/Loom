@@ -18,6 +18,15 @@
       "allowsCustomActions": true,
       "bookkeeping": []
     },
+    "calendar": {
+      "isBespoke": true,
+      "visibility": "owner",
+      "enforcement": "client_engine",
+      "allowsCustomActions": true,
+      "bookkeeping": [
+        "reminderFanIds"
+      ]
+    },
     "discussionThread": {
       "isBespoke": false,
       "visibility": "participants",
@@ -145,6 +154,31 @@
     }
   },
   "bespokeArchetypes": {
+    "calendar": {
+      "permissionPrefix": "calendar",
+      "actions": [
+        "cancel",
+        "create",
+        "deliver_reminder",
+        "edit",
+        "propose_change",
+        "record_outcome",
+        "reopen",
+        "set_reminder",
+        "view"
+      ],
+      "permissions": [
+        "calendar.cancel",
+        "calendar.create",
+        "calendar.deliver_reminder",
+        "calendar.edit",
+        "calendar.propose_change",
+        "calendar.record_outcome",
+        "calendar.reopen",
+        "calendar.set_reminder",
+        "calendar.view"
+      ]
+    },
     "documentLibrary": {
       "permissionPrefix": "document_library",
       "actions": [

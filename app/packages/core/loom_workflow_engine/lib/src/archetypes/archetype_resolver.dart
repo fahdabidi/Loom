@@ -181,6 +181,15 @@ class ArchetypeResolver {
       },
       enforcement: EnforcementBoundary.clientEngine,
     ),
+    'calendar': ArchetypeContract(
+      family: 'calendar',
+      isBespoke: true,
+      // Only reminders. No attendance arrays, because nobody attends a
+      // calendar item -- a community wanting those has picked the wrong family.
+      bookkeeping: {'reminderFanIds'},
+      visibility: VisibilityModel.owner,
+      enforcement: EnforcementBoundary.clientEngine,
+    ),
     'event-rsvp': ArchetypeContract(
       family: 'event-rsvp',
       isBespoke: true,
@@ -276,6 +285,7 @@ class ArchetypeResolver {
   /// `part27_engine_native_binding_dispatcher.dart`. Their widgets look
   /// transitions up by id, so their vocabulary is closed.
   static const Set<String> bespokeFamilies = {
+    'calendar',
     'event-rsvp',
     'votePoll',
     'equipment-loan',
@@ -299,6 +309,20 @@ class ArchetypeResolver {
 
   /// Closed action vocabularies, permissions.md §4.
   static const Map<String, Set<String>> bespokeVocabularies = {
+    // `event-rsvp` minus `respond`, `withdraw_response` and `join_waitlist`.
+    // The absence of those three is the entire difference: a prayer time or a
+    // bin collection is a dated item nobody attends.
+    'calendar': {
+      'view',
+      'create',
+      'edit',
+      'cancel',
+      'reopen',
+      'set_reminder',
+      'deliver_reminder',
+      'propose_change',
+      'record_outcome',
+    },
     'event-rsvp': {
       'view',
       'create',
@@ -397,6 +421,7 @@ class ArchetypeResolver {
   /// `cardSurfaceFamily` -> permission-id prefix. Permission ids are
   /// `<archetype_snake_case>.<action>`.
   static const Map<String, String> permissionPrefixes = {
+    'calendar': 'calendar',
     'event-rsvp': 'event_rsvp',
     'votePoll': 'vote_poll',
     'equipment-loan': 'equipment_loan',

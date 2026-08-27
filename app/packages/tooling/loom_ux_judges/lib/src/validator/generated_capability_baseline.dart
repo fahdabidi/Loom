@@ -9,6 +9,7 @@ const String communityCapabilityBaselineSnapshotDate = '2026-08-20';
 
 const Set<String> communityCapabilityBaseline = <String>{
   'archetype.approvalQueueItem',
+  'archetype.calendar',
   'archetype.discussionThread',
   'archetype.documentLibrary',
   'archetype.equipment-loan',

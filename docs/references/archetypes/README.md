@@ -101,6 +101,7 @@ archetype supplies the rest. Fields an archetype owns are never declared by a co
 
 | Archetype | Contract | Actions | Bookkeeping | Visibility |
 |---|---|---|---|---|
+| `calendar` | [doc](./calendar.md) | 9 | `reminderFanIds` | `roles` + `owner` |
 | `event-rsvp` | [doc](./event-rsvp.md) | 11 | 5 response sets | `roles` + `owner` |
 | `equipment-loan` | [doc](./equipment-loan.md) | 14 | queue, holder | `roles` + `owner` |
 | `documentLibrary` | [doc](./document-library.md) | 19 | 6 engagement sets | `owner_and_shared` |
@@ -134,6 +135,7 @@ current-status summary, that section is the historical record of how each got th
 
 | `cardSurfaceFamily` | Purpose | Status | Evidence |
 |---|---|---|---|
+| `calendar` | A dated item on a schedule that nobody RSVPs to — prayer time, fixture, bin collection, volunteer shift. `event-rsvp` minus `respond`/`withdraw_response`/`join_waitlist`, and minus every attendance array. Renders through the same calendar surface, in a tab named anything. | ✅ REAL | Added 2026-08-27. Reaches `CalendarTabSurface` via `appShellTabNativeRendererContractIdsByArchetype`, the same derivation `event-rsvp` uses — the tab id is only a join key. Requires literally-named `eventDate`/`eventTime`, same as `event-rsvp` (see the warning below). |
 | `event-rsvp` | Event with RSVP + capacity + waitlist, a container of cards scoped to a view (Day/Week/Month/Pending), organizer-creatable | ✅ REAL | Per-row `event-rsvp-response` table (one row/member/event) queried live (`part28...:806-844,809`); scoped Day/Week/Month/Pending views (`part28...:983-1002`); real "+ New event" creation via an `actions: [{"kind":"create", ...}]` entry on the renderBinding (`...jsonc:271-297`) — ⚠️ **not** a binding-level `creatable` key, which is dead grammar-1 vocabulary removed by grammar 2 (`CHANGELOG.md:17-21`) and silently dropped if used; see `workflow-grammar.md`'s render-binding shape and `render-bindings.md` for the real `actions[]` shape. The CAL.1-CAL.4 redesign — spec-only as of 2026-07-17 — is fully implemented, not just proposed. |
 | `equipment-loan` | Browse/borrow/queue/return items | ✅ REAL | `EquipmentLoanArchetypeCard` (`part36...:369-693`): real borrow/join-queue/leave-queue/return/return-game/claim buttons driven by live `availableTransitionsAsync`, giveaway-vs-loan branching. Zero fallback to the generic template anywhere in the file (grepped). Flipped from 🟡 PARTIAL — Phase C built the missing per-item interaction. |
 | `votePoll` | Ballot: candidates, tally, tie/runoff; also tournament-attendance summary | ✅ REAL | `VotePollArchetypeCard` (`part35_votepoll_archetype_card.dart`), dispatched purely by `cardSurfaceFamily`. The old hardcoded `'ballot'`-tab path this archetype used to require is **deleted** (Phase B.8) — confirmed zero references to `TournamentBallotTabSurface`/`'ballot'` remain in `part02_tab_shell.dart`/`part11_shell_models.dart`. |

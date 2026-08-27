@@ -178,6 +178,42 @@ attendance versus calling off the event for everyone. The literal `cancel-rsvp` 
 `propose_change` exists because `suggest-new-time` is offered to members who cannot `edit`. Mapping it
 to `edit` would grant every suggester the power to actually move the event.
 
+### `calendar`
+
+A dated item on a schedule that nobody RSVPs to: a prayer time, a fixture, a bin collection, a
+volunteer shift. It is `event-rsvp` with the attendance removed, and the overlap is not accidental —
+the two share every action except the three that exist to record who is coming.
+
+| Action | Grants | Observed transitions it covers |
+|---|---|---|
+| `view` | `calendar.view` | read-only bindings |
+| `create` | `calendar.create` | scheduling the item — `add-prayer-time`, `schedule-shift`, `publish-fixture` |
+| `edit` | `calendar.edit` | correcting a detail without moving it |
+| `cancel` | `calendar.cancel` | calling the item off; the date stays visible as cancelled |
+| `reopen` | `calendar.reopen` | reversing a cancellation |
+| `set_reminder` | `calendar.set_reminder` | a member asking to be reminded |
+| `deliver_reminder` | `calendar.deliver_reminder` | **platform-applied, never user-tapped** — the same rule as `event_rsvp.deliver_reminder`: no role is granted it, so it renders as no button by §1's ordinary derivation |
+| `propose_change` | `calendar.propose_change` | suggesting a new time without the power to move it |
+| `record_outcome` | `calendar.record_outcome` | what happened — attendance counts, a result, a note |
+
+**Why this is a separate family and not an `event-rsvp` with unused actions.** A closed vocabulary is
+a statement about what a workflow *can* do, and the derivation in §1 reads it literally. Modelling a
+prayer time as `event-rsvp` would make `respond`, `withdraw_response` and `join_waitlist` legal
+actions for it — a community could grant `event_rsvp.respond` on a prayer time and the grammar would
+allow it. The absence of those three is the whole content of this family.
+
+**It carries no attendance bookkeeping.** `event-rsvp` owns `goingFanIds`, `maybeFanIds`,
+`notGoingFanIds` and `waitlistFanIds`; `calendar` owns only `reminderFanIds`. A community that finds
+itself wanting an attendance list on a `calendar` item has chosen the wrong family, and the fix is to
+change the family rather than to declare the arrays by hand.
+
+**`eventDate` and `eventTime` are part of the contract, not a convention.** A calendar item declares
+both, spelled exactly that way, because the app shell's calendar surface reads those two keys to
+place an item on a grid. This was true before this family existed and was undeclared: Masjid Nur's
+volunteer shift used `shiftDate`/`shiftTime`, bound to a calendar-rendered tab, and silently lost its
+month grid because nothing said the names were load-bearing. Declaring them here is what makes that
+checkable instead of folklore.
+
 ### `equipment-loan`
 
 | Action | Grants | Observed transitions it covers |

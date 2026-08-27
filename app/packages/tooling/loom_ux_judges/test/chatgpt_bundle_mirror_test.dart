@@ -64,6 +64,7 @@ const _mirroredFiles = <String, String>{
   '35-archetype-status-timeline.md': 'archetypes/status-timeline.md',
   '36-archetype-table.md': 'archetypes/table.md',
   '37-archetype-vote-poll.md': 'archetypes/vote-poll.md',
+  '38-archetype-calendar.md': 'archetypes/calendar.md',
 };
 
 /// Authored directly in the Skill bundle, per SKILL.md — not mirrors, so they

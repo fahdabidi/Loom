@@ -256,18 +256,27 @@ void main() {
     );
   });
 
-  test('each tab-native archetype names exactly one dedicated contract', () {
+  test('each tab-native archetype names one contract that declares it', () {
     expect(
       appShellTabNativeRendererContractIdsByArchetype,
       const <String, String>{
+        // Two families reach the calendar surface, and that is the point of
+        // the `calendar` family: an item nobody RSVPs to still belongs on a
+        // schedule. Each still names exactly one contract, which is what this
+        // test is about.
+        'calendar': 'calendar-agenda-event-detail',
         'event-rsvp': 'calendar-agenda-event-detail',
         'equipment-loan': 'marketplace-browse-listing-detail',
       },
     );
-    expect(
-      appShellTabNativeRendererContractIdsByArchetype.values.toSet(),
-      hasLength(appShellTabNativeRendererContractIdsByArchetype.length),
-    );
+    // Deliberately not asserting that the mapping is injective. It was until
+    // the `calendar` family arrived, and the registry never intended it to be:
+    // `calendar-agenda-event-detail` declares
+    // `surfaceFamilies: ['calendar', 'event-rsvp', 'member-meetup']`, so
+    // hosting several families is the contract's own design. What must hold is
+    // the check below -- that a contract named for an archetype actually
+    // declares it -- and that is strictly stronger than counting distinct
+    // values.
     for (final entry
         in appShellTabNativeRendererContractIdsByArchetype.entries) {
       expect(

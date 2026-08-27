@@ -81,7 +81,7 @@ void main() {
       );
     });
 
-    test('the same six bespoke families appear in both', () {
+    test('the same bespoke families appear in both', () {
       expect(
         documented.keys.toSet(),
         equals(ArchetypeResolver.bespokeVocabularies.keys.toSet()),
