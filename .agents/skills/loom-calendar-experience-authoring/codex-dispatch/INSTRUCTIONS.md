@@ -116,6 +116,22 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    what `if(offset == null, 24, offset)` used to say. A *materialised* notification is different and
    still stores its `dueAt` outright -- that is data an effect writes, not a calculation.
 
+   **Converting one you find.** A shipped package may still carry the old idiom: a formula field such
+   as `reminderAt`, alongside a member- or admin-chosen offset field it reads. Convert it — add the
+   `reminder` block, keep the offset field and name it in `leadHoursField`, and delete only the
+   formula. Do **not** delete the offset along with it. That field is someone's choice of how far
+   ahead they are reminded, consuming it is the block's entire purpose, and dropping both turns a
+   reminder the product doc promises into one the package can no longer deliver.
+
+5b-i. **Dead data is a missing wire, not an unwanted feature.** When you find a field nothing writes,
+   nothing reads, or that only feeds something obsolete, check the product doc before removing it. If
+   the doc promises the capability that field served, connect it: name its real writer, or declare the
+   block that consumes it. Remove it only when nothing in the doc asks for anything it could serve,
+   and say so in Gaps/assumptions when you do. This matters because deletion is invisible in a
+   validator run — the findings go away either way, so a package that quietly lost a feature and one
+   that correctly gained a wire look identical in the report. The validator counts what is declared;
+   only the product doc says what is owed.
+
 5a. **Document libraries hold stored files or links — decide which, from the product doc.** A
    `documentLibrary` workflow is one or the other and the package must say so, because the two differ
    in who holds the bytes. If the doc says members or admins *upload* or *add a file*, declare an
