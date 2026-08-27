@@ -23,7 +23,7 @@
 | --- | --- | --- | --- | --- |
 | HOA home | Current obligations and requests. | Member/board | dues, documents, reservations, requests, board notices. | Pay dues / submit request |
 | Dues payment | Pay and view receipt. | Member | amount, due date, payer, receipt. | Pay dues |
-| Document center | Read HOA docs and linked external records. | Member | doc title, version/date, access state, embedded/external open option. | Open document |
+| Document center | Read the HOA's own governing documents, held by Cedar. | Member | doc title, version/date, access state, uploaded file name and size. | Open document |
 | HOA calendar | See meetings, reservation windows, dues deadlines, and review dates. | Member/board | date, location, conflict/status, reminder. | Reserve / add reminder |
 | Workflow status center | Track multi-step HOA cases. | Member/board | submitted details, current step, reviewer, requested changes, payment/document checkpoints, status history. | Continue case |
 | Review queue | Board decision. | Board | requester, change, comments, approve/reject/request changes. | Approve request |
@@ -141,7 +141,7 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
 | `hoa-dues-payment` | [payment](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | intent/confirm/retry, receipt/refund, recurring/entitlement, settlement state | Demo renderer must select a domain-native surface for `payment` and LocalInAppBackend must expose/import the state for these interactions. |
-| `hoa-member-document` | [documents](../../CardSurfaces/documents.md) and [external-document-link](../../CardSurfaces/external-document-link.md) | `CommunityDocumentSurfaceApi` / `CommunityExternalDocumentApi` | list/open/download/acknowledge/request access, embedded browser open, external app launch, version/audit trail | Demo renderer must show HOA document title/version/source, embedded/external open options, acknowledgement/access state, and audit. |
+| `hoa-member-document` | [documents](../../CardSurfaces/documents.md) | Document Library API (`uploadDocument`, `downloadDocumentContent`, `getDocumentAccess`) | upload, list/open/download/acknowledge/request access, version/audit trail | Demo renderer must show HOA document title/version, the uploaded file's name and size, acknowledgement/access state, and audit. A document with nothing to open is a failed capture, not a rendering choice. |
 | `hoa-facility-reservation` | [calendar](../../CardSurfaces/calendar.md) | `CommunityCalendarSurfaceApi` | list/create/update/cancel/reschedule reservation item, conflict detection, reminders, linked facility status | Demo renderer must show facility/date/time/conflict state, reserve/change/cancel actions, and reminder state. |
 | `hoa-architectural-request` | [workflow-status](../../CardSurfaces/workflow-status.md) | `CommunityWorkflowStatusApi` | create case, current step, reviewer, request changes, attach documents, payment checkpoint, reopen/cancel, audit | Demo renderer must show current step, submitted details, reviewer, request-changes path, document/payment checkpoint, and owner receiver state. |
 | `hoa-committee-decision` | [workflow-status](../../CardSurfaces/workflow-status.md) | `CommunityWorkflowStatusApi` | approve/reject/request changes, comments/history, reviewer/committee state, appeal/reopen, owner notification | Demo renderer must show requester, decision actions, request-changes path, comments/history, and resulting owner notification state. |
@@ -149,6 +149,13 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | `hoa-export-evidence` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | scope/redaction preview, generate/download/checksum, transfer/rollback, audit trail | Demo renderer must select a domain-native surface for `portability` and LocalInAppBackend must expose/import the state for these interactions. |
 
 ## 10. Review And Remediation Log
+
+**2026-08-26 (b) — residual link language removed.** The first pass at this rewrite left two rows
+still describing an external-link library: the information-architecture row still promised "linked
+external records", and the card-surface registry row still mapped to `external-document-link` /
+`CommunityExternalDocumentApi` and asked the renderer to show a `source`. A package derived from a doc
+that contradicts itself can satisfy either half. Caught by the Skill on a later regeneration, which
+reported the doc as self-contradictory rather than picking a side.
 
 **2026-08-26 — documents become uploads.** This document previously described the document centre in
 terms of `provider/source` and `embedded/external open choices`, because when it was written the

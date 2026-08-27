@@ -113,6 +113,26 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
 7. **Zero validator errors and zero warnings.** A warning you cannot eliminate must be justified
    explicitly in Gaps/assumptions, naming the finding.
 
+#### When you revise the product doc, revise it — do not replace it
+
+A product doc in this repo is read by more than a person. Its section structure and its two
+six-column tables are parsed: the workflow-to-surface mapping, the persona/state matrix, and the B25
+addendum table that defines the production bar. Dropping a section because your rewrite covers the
+same ground in fewer words removes rows that evidence tooling counts.
+
+So when you return a revised product doc:
+
+- **Keep every `##` section the source doc had**, in its order. Add sections if the product needs
+  them; do not merge or drop.
+- **Keep both six-column table headers verbatim.** They are matched literally. A reworded header
+  silently unparses every row beneath it.
+- **Never write the `## Existing identifiers` block into the product doc.** It is dispatch
+  scaffolding that tells you what to preserve — it is not something the community's product doc
+  should carry, and a later run that reads it back would treat it as product content.
+- Prefer a targeted correction to a rewrite. If the doc contradicts itself, fix the contradiction and
+  say which rows you changed; a doc that is 40% shorter has usually lost a requirement rather than
+  found a better way to say it.
+
 #### The block lists identifiers. It is not evidence that anything else exists.
 
 The `## Existing identifiers` block exists to tell you the values in the table above — the ones you
