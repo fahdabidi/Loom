@@ -479,8 +479,16 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     for (final row in rows) {
       final machine = await _getDefinition(row.workflowType);
       if (machine == null && _failClosedOnMissingDefinition) return true;
-      if (machine != null &&
-          machine.visibility.defaultValue != WorkflowVisibilityDefault.public) {
+      if (machine == null) continue;
+      if (machine.visibility.defaultValue != WorkflowVisibilityDefault.public) {
+        return true;
+      }
+      // A public workflow can still restrict individual states. Without this,
+      // the filtering shortcut below would decide a page of public rows needs
+      // no visibility pass and hand back exactly the guarded drafts the state
+      // guard exists to withhold -- which is the Book Club case, the worst of
+      // the three.
+      if (machine.states.values.any((state) => state.readGuard != null)) {
         return true;
       }
     }
@@ -560,14 +568,42 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     if (_isVisibleThroughArchetype(instance, machine, fanId)) {
       return true;
     }
+    // A state's own readGuard narrows, whatever the workflow's default is.
+    //
+    // This used to be consulted only under `guarded`, so a state guard declared
+    // alongside a `public` or `membersOnly` default was parsed, stored, and
+    // silently ignored. Three shipped workflows relied on it: Cedar Commons
+    // HOA kept draft, archived and deleted documents to `hoa-board` under a
+    // `membersOnly` default, and Book Club kept nomination and selection drafts
+    // to a role under a `public` one -- which made those drafts readable by
+    // anyone at all.
+    //
+    // The packages were authored correctly. `document-library.md` §3 states
+    // that "per-state read guards already exist ... which the engine prefers
+    // over the workflow-level guard", and pairs a `membersOnly` default with
+    // board-only state guards in its worked example. The engine simply did not
+    // implement the contract its own reference described.
+    //
+    // Narrowing only. Creator and archetype-share visibility are decided above
+    // this and still apply, so an author can always read their own draft.
+    final stateGuard = machine.states[instance.currentState]?.readGuard;
+    if (stateGuard != null) {
+      return evaluateGuard(
+        stateGuard,
+        fanId,
+        instance.instanceData,
+        roleIds: _roleIdsByFanId[fanId],
+        clock: _clock,
+      );
+    }
+
     switch (machine.visibility.defaultValue) {
       case WorkflowVisibilityDefault.public:
         return true;
       case WorkflowVisibilityDefault.membersOnly:
         return activeMembership();
       case WorkflowVisibilityDefault.guarded:
-        final stateGuard = machine.states[instance.currentState]?.readGuard;
-        final readGuard = stateGuard ?? machine.visibility.readGuard;
+        final readGuard = machine.visibility.readGuard;
         if (readGuard == null) return false;
         return evaluateGuard(
           readGuard,
