@@ -7,7 +7,7 @@
   "extensionId": "ext_cedar_commons_hoa",
   "branding": { "accentColor": "#285A7B" },
   "seedDataFiles": [],
-  "idempotencyKey": "cedar-commons-hoa-experience-v4-2026-08-26-upload",
+  "idempotencyKey": "cedar-commons-hoa-experience-v4-2026-08-27-calendar-reminder",
 
   "experience": {
     "displayName": "Cedar Commons HOA",
@@ -1083,6 +1083,12 @@
       "hoa-facility-reservation": {
         "initialState": "open",
         "visibility": { "default": "membersOnly" },
+        "reminder": {
+          "anchorDateField": "eventDate",
+          "anchorTimeField": "eventTime",
+          "leadHours": 24,
+          "enabledField": "reminderEnabled"
+        },
         "states": {
           "open": {
             "label": "Reservation open", "tone": "info",
@@ -1214,7 +1220,7 @@
           {
             "states": ["open", "reserved", "conflict", "cancelled"],
             "audience": "any", "tabId": "calendar",
-            "cardSurfaceFamily": "event-rsvp", "bindingKind": "primary",
+            "cardSurfaceFamily": "calendar", "bindingKind": "primary",
             "actions": [{
               "kind": "create", "label": "Reserve a facility", "byRoleIds": ["hoa-member", "hoa-board"],
               "scope": "tab", "presentation": "fab", "prefill": {
@@ -1224,7 +1230,7 @@
           },
           {
             "states": ["reserved", "conflict"], "audience": "any", "tabId": "home",
-            "cardSurfaceFamily": "event-rsvp", "bindingKind": "summary"
+            "cardSurfaceFamily": "calendar", "bindingKind": "summary"
           }
         ],
         "instanceDataSchema": {
@@ -1255,9 +1261,6 @@
             "displayContexts": ["tile", "detail"] },
           "reminderEnabled": { "type": "bool", "writableBy": "effect", "displayIcon": "notifications",
             "labelTemplate": "Reminder enabled: {value}", "displayContexts": ["detail"] },
-          "dueAt": { "type": "date?",
-            "formula": "if(reminderEnabled == true, subtractHours(combineDateAndTime(eventDate, eventTime), 24), null)",
-            "displayIcon": "alarm", "labelTemplate": "Reminder due {value}", "displayContexts": ["detail"] },
           "reminderState": { "type": "text", "formula": "if(reminderEnabled == true, 'on', 'off')",
             "displayIcon": "notifications_active", "labelTemplate": "Reminder: {value}",
             "displayContexts": ["tile", "detail"] }
