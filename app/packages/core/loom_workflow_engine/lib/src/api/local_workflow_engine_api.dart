@@ -2242,7 +2242,36 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     return result;
   }
 
+  /// Instance data as consumers see it: formula fields evaluated, and the
+  /// declared reminder surfaced as a value.
+  ///
+  /// `reminderAt` is computed by the platform and handed over as data. That is
+  /// the point of moving reminders out of the formula language -- the package
+  /// declares when it wants one, the platform works out the instant, and every
+  /// reader keeps reading a field. The calendar surface already reads
+  /// `reminderAt` to decide whether a reminder has fired, and does not need to
+  /// know the value stopped being a formula.
   Map<String, dynamic> _withComputedFields(
+    Map<String, dynamic> data,
+    LoomWorkflowStateMachine? machine, {
+    String? viewerId,
+    String? actorId,
+  }) {
+    final computed = Map<String, dynamic>.from(
+      _withFormulaFields(data, machine, viewerId: viewerId, actorId: actorId),
+    );
+    final reminder = machine?.reminder;
+    if (reminder != null) {
+      final dueAt = reminder.dueAtFor(computed);
+      // Absent rather than null when no reminder is wanted: a key holding null
+      // and a key that is not there read the same to every consumer here, and
+      // omitting it keeps instance data free of fields that mean nothing.
+      if (dueAt != null) computed['reminderAt'] = dueAt;
+    }
+    return computed;
+  }
+
+  Map<String, dynamic> _withFormulaFields(
     Map<String, dynamic> data,
     LoomWorkflowStateMachine? machine, {
     String? viewerId,

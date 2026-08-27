@@ -123,6 +123,30 @@ void main() {
     expect(await _dueIds(engine, DateTime.utc(2026, 3, 9, 18, 1)), contains(id));
   });
 
+  test('the resolved instant is surfaced as reminderAt for readers', () async {
+    // Book Club and Garden Club computed `reminderAt` with a formula, and the
+    // calendar surface reads that key to decide whether a reminder has fired.
+    // Moving the calculation to the platform must not remove the value those
+    // readers depend on -- the package stops declaring how, and still gets what.
+    final id = await _seed(engine, reminderEnabled: true);
+    final visible = await engine.readVisibleInstance(
+      instanceId: id,
+      fanId: 'fan-alice',
+    );
+    expect(visible!.instanceData['reminderAt'], DateTime.utc(2026, 3, 9, 18));
+  });
+
+  test('reminderAt is absent, not null, when no reminder is wanted', () async {
+    final id = await _seed(engine, reminderEnabled: false);
+    final visible = await engine.readVisibleInstance(
+      instanceId: id,
+      fanId: 'fan-alice',
+    );
+    // A key holding null and a missing key read the same to every consumer,
+    // and omitting it keeps instance data free of fields that mean nothing.
+    expect(visible!.instanceData.containsKey('reminderAt'), isFalse);
+  });
+
   test('the block rejects a lead time that points the wrong way', () {
     // A reminder after the thing it reminds you about is not a reminder, and
     // the grammar should say so at parse time rather than at sweep time.
