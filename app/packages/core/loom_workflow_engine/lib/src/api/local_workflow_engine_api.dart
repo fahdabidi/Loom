@@ -896,20 +896,51 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final due = <WorkflowInstance>[];
     for (final row in rows) {
       final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
-      final rawDueAt = data['dueAt'];
-      if (rawDueAt is! String) continue;
-      final dueAt = DateTime.tryParse(rawDueAt);
-      if (dueAt == null || dueAt.isAfter(asOf)) continue;
+
+      // Compute before filtering. `dueAt` is not always a stored value: Cedar
+      // Commons HOA derives its reservation reminder with
+      // `if(reminderEnabled == true, subtractHours(combineDateAndTime(eventDate,
+      // eventTime), 24), null)`, so the stored map holds `reminderEnabled` and
+      // no `dueAt` at all. Reading the raw map skipped every such row, which
+      // meant the community that models reminders most completely could never
+      // receive one.
+      //
+      // The cost is real and accepted: the definition lookup and source-field
+      // hydration now run for every row rather than only for rows that already
+      // matched. A reminder that cannot be found is worse than a sweep that
+      // does more work.
       final machine = await _getDefinition(row.workflowType);
       final hydrated = machine != null
           ? await _hydrateSourceFields(data, machine, row.instanceId)
           : data;
+      final computed = _withComputedFields(hydrated, machine);
+
+      // Two shapes, because `dueAt` arrives two ways. A stored one is the ISO
+      // string an effect wrote; a computed one is whatever the formula
+      // evaluated to, and `subtractHours(combineDateAndTime(...))` yields a
+      // DateTime rather than text. Checking only for a String was why the
+      // computed case stayed invisible even after the filter moved.
+      final rawDueAt = computed['dueAt'];
+      final DateTime? dueAt = switch (rawDueAt) {
+        final DateTime value => value,
+        final String value => DateTime.tryParse(value),
+        _ => null,
+      };
+      // NOTE: a computed `dueAt` is timezone-naive. `combineDateAndTime` builds
+      // it from a bare date and time, so it lands in the server's local zone,
+      // while `asOf` arrives as UTC. The comparison is therefore correct only
+      // relative to wherever this runs: the same reservation is due at a
+      // different absolute instant on a PDT server than on a UTC one. Filed
+      // rather than fixed here -- the formula grammar has no timezone, so the
+      // fix is a spec question, not a comparison one.
+      if (dueAt == null || dueAt.isAfter(asOf)) continue;
+
       due.add(
         WorkflowInstance(
           instanceId: row.instanceId,
           workflowType: row.workflowType,
           currentState: row.currentState,
-          instanceData: _withComputedFields(hydrated, machine),
+          instanceData: computed,
           createdByFanId: row.createdByFanId,
         ),
       );
