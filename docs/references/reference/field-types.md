@@ -24,6 +24,21 @@ editability, and computation. Every field a workflow touches MUST be declared he
 | `platform` | a platform service writes it |
 | *(omitted)* | nothing writes it — a computed field, or genuinely read-only |
 
+### Who writes a field the create action prefills?
+
+`platform`. A create-action `prefill` — `"ownerFanId": "$actor"`, or a literal starting value — is the
+platform stamping the field at creation:
+
+```jsonc
+"prefill": { "ownerFanId": "$actor", "mode": "loan" },
+"ownerFanId": { "type": "text", "writableBy": "platform" }
+```
+
+Not `effect` (no effect writes it, and the validator reports
+`effect_writable_field_has_no_effect`), not `formEntry` (no member types it — and on an identity
+field that claim is actively wrong), and not omitted (something does write it). See
+[`solved-patterns.md` §16](./solved-patterns.md).
+
 **`platform` is not decoration.** Effects are data-only: they can move values around and cannot hash
 bytes, mint an opaque id, or call a service. A checksum, a receipt id, a transfer id and a stored
 document's URL are all written from outside the package, and declaring them `effect` names a writer

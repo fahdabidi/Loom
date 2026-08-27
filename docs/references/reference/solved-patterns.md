@@ -622,6 +622,50 @@ next to this.
 
 ---
 
+## 16. A field written by a create-action `prefill` is `writableBy: "platform"` — not `effect`, not `formEntry`, not omitted
+
+**Requirement shape:** a workflow stamps the creator's identity or a starting value at creation time,
+through the create action's `prefill`:
+```jsonc
+"prefill": { "ownerFanId": "$actor", "mode": "loan", "conditionState": "good" }
+```
+
+**Looks plausible, is wrong** — all three of these appear in the shipped corpus for exactly this shape:
+```jsonc
+"ownerFanId": { "type": "text", "writableBy": "effect" }     // no effect writes it
+"ownerFanId": { "type": "text", "writableBy": "formEntry" }  // no member types it
+"ownerFanId": { "type": "text" }                             // something does write it
+```
+`effect` is the corpus's dominant convention here and it is a false claim — the validator reports it
+as `effect_writable_field_has_no_effect`, because prefill is not an effect. Reading that finding as
+"so nothing writes it" and dropping `writableBy` altogether trades one false statement for another.
+`formEntry` is the worst of the three: it says a member types their own `ownerFanId`, which is an
+identity field.
+
+**Verified-correct shape:**
+```jsonc
+"prefill": { "ownerFanId": "$actor", "mode": "loan" },
+
+"ownerFanId": { "type": "text", "writableBy": "platform" },
+"mode":       { "type": "text", "writableBy": "platform" }
+```
+The platform's create action stamps the value. That is what `platform` means, and it is the only one
+of the four that is true.
+
+**Be clear about what this does and does not fix.** With any of the wrong values the package still
+behaves correctly today, because a field is editable only when a state lists it in `editableFields`,
+and these fields are not listed — the engine checks membership there *before* it looks at
+`writableBy`, so neither the form nor the API will accept an edit either way. This is a correctness
+and consistency fix, not a live defect: the declaration should state what actually happens, one
+authoring pass should not answer it differently from the next, and `formEntry` on an identity field
+is a claim that becomes dangerous the moment someone adds that field to `editableFields`.
+
+**Found in:** Garden Club and Neighborhood Book Club, 2026-08-27 — the same shape, in two packages
+regenerated hours apart, answered `formEntry` in one and omitted in the other. Two different guesses
+for one question is the signal that the grammar had not answered it.
+
+---
+
 ## Known current engine limitations to design around (not "solved" — update this section once each lands)
 
 These are real, confirmed gaps in the App Shell's implementation of documented grammar, not JSON-authoring
