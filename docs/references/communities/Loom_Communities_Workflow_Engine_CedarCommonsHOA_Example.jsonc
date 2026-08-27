@@ -7,7 +7,7 @@
   "extensionId": "ext_cedar_commons_hoa",
   "branding": { "accentColor": "#285A7B" },
   "seedDataFiles": [],
-  "idempotencyKey": "cedar-commons-hoa-experience-v4-2026-08-19",
+  "idempotencyKey": "cedar-commons-hoa-experience-v4-2026-08-26-upload",
 
   "experience": {
     "displayName": "Cedar Commons HOA",
@@ -910,7 +910,7 @@
             "tone": "warning",
             "editableFields": [
               "title", "version", "versionHistory", "publishedDate", "documentOwner", "provider",
-              "sourceLabel", "documentUrl", "downloadUrl", "accessLabel", "auditLabel"
+              "sourceLabel", "accessLabel", "auditLabel"
             ],
             "editGuard": { "allowedRoleIds": ["hoa-board"] },
             "readGuard": { "allowedRoleIds": ["hoa-board"] }
@@ -920,7 +920,7 @@
             "tone": "positive",
             "editableFields": [
               "title", "version", "versionHistory", "publishedDate", "documentOwner", "provider",
-              "sourceLabel", "documentUrl", "downloadUrl", "accessLabel", "auditLabel"
+              "sourceLabel", "accessLabel", "auditLabel"
             ],
             "editGuard": { "allowedRoleIds": ["hoa-board"] }
           },
@@ -937,6 +937,11 @@
           }
         },
         "transitions": [
+          {
+            "id": "upload-document", "action": "upload", "label": "Upload document",
+            "icon": "upload_file", "tone": "primary", "from": ["draft", "published"], "to": null,
+            "guard": { "allowedRoleIds": ["hoa-board"] }
+          },
           {
             "id": "record-document-edit", "action": "edit", "label": "Save document edits",
             "icon": "edit_document", "tone": "primary", "from": ["draft", "published"], "to": null,
@@ -1060,10 +1065,8 @@
             "displayContexts": ["tile", "detail"] },
           "sourceLabel": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "source", "labelTemplate": "Source: {value}", "displayContexts": ["detail"] },
-          "documentUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice",
+          "documentUrl": { "type": "url", "writableBy": "effect", "openMode": "choice",
             "displayIcon": "open_in_browser", "labelTemplate": "Open {value}", "displayContexts": ["detail"] },
-          "downloadUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "external",
-            "displayIcon": "download", "labelTemplate": "Download {value}", "displayContexts": ["detail"] },
           "accessLabel": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "policy", "labelTemplate": "Access: {value}",
             "displayContexts": ["tile", "detail"] },
@@ -1615,9 +1618,7 @@
           "versionHistory": [{ "note": "Counsel comments incorporated", "authorFanId": "hoa-board",
             "at": "2026-08-12T14:00:00-07:00" }],
           "publishedDate": "2026-10-01", "documentOwner": "Cedar Commons HOA Board",
-          "provider": "Cedar Commons board workspace", "sourceLabel": "Board policy working draft",
-          "documentUrl": "https://example.com/cedar-commons/drafts/ev-charging-policy-04.pdf",
-          "downloadUrl": "https://example.com/cedar-commons/drafts/ev-charging-policy-04.pdf",
+          "provider": "Cedar Commons document storage", "sourceLabel": "Board-uploaded policy working draft",
           "accessLabel": "Board-only until publication",
           "auditLabel": "Unpublished draft; not visible to homeowners", "explicitReaderFanIds": []
         }
@@ -1631,9 +1632,7 @@
             { "version": "2025.3", "date": "2025-11-18", "note": "Current consolidated copy" }
           ],
           "publishedDate": "2025-11-18", "documentOwner": "Cedar Commons HOA Board",
-          "provider": "Cedar Commons records portal", "sourceLabel": "Governing documents / recorded declaration",
-          "documentUrl": "https://example.com/cedar-commons/ccrs-2025.pdf",
-          "downloadUrl": "https://example.com/cedar-commons/ccrs-2025.pdf",
+          "provider": "Cedar Commons document storage", "sourceLabel": "Board-uploaded governing document",
           "accessLabel": "Available to all homeowners",
           "auditLabel": "Board-published; acknowledgement tracked per homeowner", "explicitReaderFanIds": []
         }
@@ -1645,9 +1644,7 @@
           "versionHistory": [{ "version": "2025.2", "date": "2025-05-09",
             "note": "Superseded by the 2026 two-hour-slot policy" }],
           "publishedDate": "2025-05-09", "documentOwner": "Facilities Committee",
-          "provider": "Cedar Commons records portal", "sourceLabel": "Facilities policies archive",
-          "documentUrl": "https://example.com/cedar-commons/pool-house-rules-2025.pdf",
-          "downloadUrl": "https://example.com/cedar-commons/pool-house-rules-2025.pdf",
+          "provider": "Cedar Commons document storage", "sourceLabel": "Board-uploaded facilities policy archive",
           "accessLabel": "Board archive", "auditLabel": "Archived after 2026 policy superseded it",
           "explicitReaderFanIds": [], "archivedAt": "2026-04-02T10:00:00-07:00"
         }
