@@ -99,7 +99,7 @@ void main() {
           'eventDate': '2026-07-20',
           'eventTime': '19:30',
         }),
-        DateTime(2026, 7, 20, 19, 30),
+        DateTime.utc(2026, 7, 20, 19, 30),
       );
     });
     test('combineDateAndTime defaults an absent time to midnight', () {
@@ -107,11 +107,11 @@ void main() {
         _eval('combineDateAndTime(eventDate, eventTime)', {
           'eventDate': '2026-07-20',
         }),
-        DateTime(2026, 7, 20),
+        DateTime.utc(2026, 7, 20),
       );
       expect(
         _eval('combineDateAndTime(eventDate)', {'eventDate': '2026-07-20'}),
-        DateTime(2026, 7, 20),
+        DateTime.utc(2026, 7, 20),
       );
     });
     test('combineDateAndTime fails closed for invalid time values', () {
@@ -244,7 +244,7 @@ void main() {
       );
       expect(
         page.items.single.instanceData['reminderAt'],
-        DateTime(2026, 7, 19, 19, 30),
+        DateTime.utc(2026, 7, 19, 19, 30),
       );
       database.close();
     },

@@ -576,7 +576,7 @@ void main() {
         reminderTransitionId: 'notify-attendee',
       );
       await tester.pumpWidget(
-        _calendar(harness, currentDate: DateTime(2026, 7, 10, 20)),
+        _calendar(harness, currentDate: DateTime.utc(2026, 7, 10, 20)),
       );
       await _waitForReminderStamp(tester, harness);
 
@@ -607,13 +607,13 @@ void main() {
       eventTime: '19:00',
     );
     await tester.pumpWidget(
-      _calendar(harness, currentDate: DateTime(2026, 7, 10, 20)),
+      _calendar(harness, currentDate: DateTime.utc(2026, 7, 10, 20)),
     );
     await _waitForReminderStamp(tester, harness);
     expect(await _notificationCount(harness), 1);
 
     await tester.pumpWidget(
-      _calendar(harness, currentDate: DateTime(2026, 7, 10, 20), revision: 1),
+      _calendar(harness, currentDate: DateTime.utc(2026, 7, 10, 20), revision: 1),
     );
     await _settleCalendar(tester);
     expect(await _notificationCount(harness), 1);
@@ -628,7 +628,7 @@ void main() {
       includeSetReminder: true,
     );
     await tester.pumpWidget(
-      _calendar(harness, currentDate: DateTime(2026, 7, 9, 18, 59)),
+      _calendar(harness, currentDate: DateTime.utc(2026, 7, 9, 18, 59)),
     );
     await _settleCalendar(tester);
 
@@ -647,7 +647,7 @@ void main() {
       responseState: 'declined',
     );
     await tester.pumpWidget(
-      _calendar(harness, currentDate: DateTime(2026, 7, 10, 20)),
+      _calendar(harness, currentDate: DateTime.utc(2026, 7, 10, 20)),
     );
     await _settleCalendar(tester);
 
@@ -664,7 +664,7 @@ void main() {
       reminderTransitionId: 'notify-attendee',
     );
     await tester.pumpWidget(
-      _calendar(harness, currentDate: DateTime(2026, 7, 10, 20)),
+      _calendar(harness, currentDate: DateTime.utc(2026, 7, 10, 20)),
     );
     await _waitForReminderStamp(tester, harness);
     await _settleCalendar(tester);
@@ -705,7 +705,7 @@ void main() {
       final controlled = _ControlledReminderEngine(installed.engine);
       final harness = _withEngine(installed, controlled);
       await tester.pumpWidget(
-        _calendar(harness, currentDate: DateTime(2026, 7, 10, 20)),
+        _calendar(harness, currentDate: DateTime.utc(2026, 7, 10, 20)),
       );
       await _pumpUntilFreshnessRead(tester, controlled);
 
@@ -745,7 +745,7 @@ void main() {
     final controlled = _ControlledReminderEngine(installed.engine);
     final harness = _withEngine(installed, controlled);
     await tester.pumpWidget(
-      _calendar(harness, currentDate: DateTime(2026, 7, 10, 20)),
+      _calendar(harness, currentDate: DateTime.utc(2026, 7, 10, 20)),
     );
     await _pumpUntilFreshnessRead(tester, controlled);
 

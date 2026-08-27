@@ -158,7 +158,7 @@ void main() {
       expect(instance.currentState, 'closed');
       expect(
         instance.instanceData['reminderAt'],
-        DateTime(2026, 7, 19, 19, 30),
+        DateTime.utc(2026, 7, 19, 19, 30),
       );
     },
   );
@@ -223,7 +223,7 @@ void main() {
         (item) => item.instanceId == targetId,
       );
       expect(target.currentState, 'going');
-      expect(target.instanceData['reminderAt'], DateTime(2026, 7, 19, 19, 30));
+      expect(target.instanceData['reminderAt'], DateTime.utc(2026, 7, 19, 19, 30));
     },
   );
 }

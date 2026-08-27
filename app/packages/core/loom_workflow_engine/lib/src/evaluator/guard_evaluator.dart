@@ -76,7 +76,12 @@ bool evaluateGuard(
       guard.cancellationDeadline!,
       instanceData,
     );
-    if (deadline == null || (clock ?? DateTime.now)().isAfter(deadline)) {
+    // `.toUtc()` because the deadline is now an absolute instant and
+    // `DateTime.now()` is local. Comparing the two directly was the same
+    // mixed-zone mistake this change set out to remove, relocated: a deadline
+    // resolved in UTC against a wall clock in whatever zone the host sits in.
+    if (deadline == null ||
+        (clock ?? DateTime.now)().toUtc().isAfter(deadline)) {
       return false;
     }
   }

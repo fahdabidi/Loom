@@ -16,7 +16,7 @@ void main() {
         evaluateGuard(_guard, 'member', {
           'eventDate': '2026-07-10',
           'eventTime': '19:00',
-        }, clock: () => DateTime(2026, 7, 7)),
+        }, clock: () => DateTime.utc(2026, 7, 7)),
         isTrue,
       );
     });
@@ -26,7 +26,7 @@ void main() {
         evaluateGuard(_guard, 'member', {
           'eventDate': '2026-07-10',
           'eventTime': '19:00',
-        }, clock: () => DateTime(2026, 7, 10, 18)),
+        }, clock: () => DateTime.utc(2026, 7, 10, 18)),
         isFalse,
       );
     });
@@ -36,7 +36,7 @@ void main() {
         evaluateGuard(_guard, 'member', {
           'eventDate': '2026-07-10',
           'eventTime': '19:00',
-        }, clock: () => DateTime(2026, 7, 11)),
+        }, clock: () => DateTime.utc(2026, 7, 11)),
         isFalse,
       );
     });
@@ -52,13 +52,13 @@ void main() {
       expect(
         evaluateGuard(allDayGuard, 'member', {
           'eventDate': '2026-07-10',
-        }, clock: () => DateTime(2026, 7, 8, 23, 59)),
+        }, clock: () => DateTime.utc(2026, 7, 8, 23, 59)),
         isTrue,
       );
       expect(
         evaluateGuard(allDayGuard, 'member', {
           'eventDate': '2026-07-10',
-        }, clock: () => DateTime(2026, 7, 9, 0, 1)),
+        }, clock: () => DateTime.utc(2026, 7, 9, 0, 1)),
         isFalse,
       );
     });
@@ -91,7 +91,7 @@ void main() {
         final outsideApi = LocalWorkflowEngineApi(
           db: outsideDb,
           communityId: 'outside-deadline',
-          clock: () => DateTime(2026, 7, 8),
+          clock: () => DateTime.utc(2026, 7, 8),
         )..registerDefinition(_machine());
         final outsideId = await outsideApi.createInstance(
           workflowType: 'event',
@@ -114,7 +114,7 @@ void main() {
         final insideApi = LocalWorkflowEngineApi(
           db: insideDb,
           communityId: 'inside-deadline',
-          clock: () => DateTime(2026, 7, 10, 18),
+          clock: () => DateTime.utc(2026, 7, 10, 18),
         )..registerDefinition(_machine());
         final insideId = await insideApi.createInstance(
           workflowType: 'event',

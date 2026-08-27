@@ -431,7 +431,24 @@ DateTime? combineDateAndTimeValues(String? dateValue, String? timeValue) {
     if (hour > 23 || minute > 59) return null;
   }
 
-  return DateTime(date.year, date.month, date.day, hour, minute);
+  // UTC, explicitly, not the unnamed constructor's server-local.
+  //
+  // A bare `eventDate` + `eventTime` carries no zone, so something has to
+  // choose one. Server-local made the answer depend on where the code ran: the
+  // same reservation resolved to a different absolute instant on a PDT machine
+  // than a UTC one, and a reminder comparison against a UTC `asOf` silently
+  // moved with the host.
+  //
+  // This is stage one of the Google Calendar model. Google stores a calendar's
+  // IANA zone (`calendar.timeZone`) and resolves an event's wall time against
+  // it, keeping the zone name rather than an offset so a recurring 18:00
+  // survives DST. Loom's grammar has no zone yet, so it cannot resolve against
+  // the right one -- but it can stop resolving against an accidental one.
+  // Deterministic first, correct once a community can declare where it is.
+  //
+  // Callers are unaffected in relative terms: the location-overlap guard
+  // compares two values that both come through here, so both shift together.
+  return DateTime.utc(date.year, date.month, date.day, hour, minute);
 }
 
 int _compare(dynamic a, dynamic b) {

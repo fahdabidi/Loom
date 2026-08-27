@@ -873,7 +873,12 @@ class _EngineNativeCalendarContentState
         ? DateTime.tryParse(reminderAtValue)
         : null;
     if (reminderAt == null) return false;
-    return !widget.currentDate().isBefore(reminderAt);
+    // `.toUtc()` because `reminderAt` is an absolute instant and `currentDate`
+    // defaults to `DateTime.now`, which is local. Comparing them directly made
+    // whether a reminder had fired depend on the device's zone -- the third
+    // place this same mixed comparison turned up, after the reminder sweep and
+    // the cancellation-deadline guard.
+    return !widget.currentDate().toUtc().isBefore(reminderAt);
   }
 
   Future<_CalendarEntry?> _freshReminderEntry(_CalendarEntry entry) async {
