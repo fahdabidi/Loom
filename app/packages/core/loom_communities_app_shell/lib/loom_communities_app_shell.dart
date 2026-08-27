@@ -3,6 +3,7 @@ library loom_communities_app_shell;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +56,7 @@ part 'src/part37_remote_auth_session.dart';
 part 'src/part39_remote_auth_api.dart';
 part 'src/part40_service_environments.dart';
 part 'src/part41_fan_passport_client.dart';
+part 'src/part42_document_client.dart';
 part 'src/part38_production_login_screen.dart';
 part 'src/instance_scoped_action_context.dart';
 part 'src/repeater_surface.dart';
