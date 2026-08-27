@@ -920,7 +920,20 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       // evaluated to, and `subtractHours(combineDateAndTime(...))` yields a
       // DateTime rather than text. Checking only for a String was why the
       // computed case stayed invisible even after the filter moved.
-      final rawDueAt = computed['dueAt'];
+      // Two ways a reminder says when it is due, and the declared one wins.
+      //
+      // A `reminder` block is the package stating intent -- "24 hours before
+      // eventDate/eventTime, when reminderEnabled" -- and the platform working
+      // out the instant. That is where the calculation belongs: the grammar
+      // stays declarative, and the timezone question has one home instead of
+      // being spread across every formula that combines a date with a time.
+      //
+      // A stored `dueAt` is the other shape and stays supported: Book Club and
+      // Garden Club materialise a notification instance whose dueAt is written
+      // outright by a createInstance effect. That is data, not calculation, so
+      // there is nothing to move.
+      final declared = machine?.reminder?.dueAtFor(computed);
+      final rawDueAt = declared ?? computed['dueAt'];
       final DateTime? dueAt = switch (rawDueAt) {
         final DateTime value => value,
         final String value => DateTime.tryParse(value),

@@ -1,3 +1,4 @@
+import '../evaluator/formula_evaluator.dart';
 import '../workflow_capabilities.dart';
 
 /// Specification for a single input parameter on a transition.
@@ -1108,6 +1109,128 @@ class InstanceDataField {
 }
 
 /// A domain-agnostic workflow state machine definition.
+/// When a workflow's reminder comes due.
+///
+/// Declarative on purpose. This replaces a formula that computed the instant in
+/// JSON — Cedar Commons HOA carried
+/// `if(reminderEnabled == true, subtractHours(combineDateAndTime(eventDate,
+/// eventTime), 24), null)` — which put a calculation in the grammar and, worse,
+/// put it somewhere that cannot know a timezone. A bare date and a bare time
+/// resolve differently depending on where the resolver runs, so the same
+/// reservation was due at different absolute instants on different hosts.
+///
+/// The package now says what it wants and the platform works out when that is.
+/// The zone question then has exactly one home instead of being distributed
+/// across every formula that happens to combine a date with a time.
+class WorkflowReminder {
+  const WorkflowReminder({
+    required this.anchorDateField,
+    required this.leadHours,
+    this.anchorTimeField,
+    this.enabledField,
+  });
+
+  static const jsonKeys = <String>{
+    'anchorDateField',
+    'anchorTimeField',
+    'leadHours',
+    'enabledField',
+  };
+
+  /// The instance field holding the date the reminder is measured back from.
+  final String anchorDateField;
+
+  /// The field holding its time. Absent means midnight, which is what an
+  /// all-day item wants.
+  final String? anchorTimeField;
+
+  /// How many hours before the anchor the reminder is due.
+  final num leadHours;
+
+  /// A boolean field gating whether a reminder is wanted at all.
+  ///
+  /// Absent means always. Present and false means never — that is how a member
+  /// turns their own reminder off without the package writing a formula to
+  /// express the same thing.
+  final String? enabledField;
+
+  factory WorkflowReminder.fromJson(Object? value) {
+    if (value is! Map) {
+      throw const FormatException(
+        'Workflow reminder must be an object when declared.',
+      );
+    }
+    final anchorDateField = value['anchorDateField'];
+    if (anchorDateField is! String || anchorDateField.isEmpty) {
+      throw const FormatException(
+        'Workflow reminder requires anchorDateField, naming the instance '
+        'field the reminder is measured back from.',
+      );
+    }
+    final leadHours = value['leadHours'];
+    if (leadHours is! num) {
+      throw const FormatException(
+        'Workflow reminder requires numeric leadHours.',
+      );
+    }
+    if (leadHours < 0) {
+      throw const FormatException(
+        'Workflow reminder leadHours must not be negative; a reminder after '
+        'the thing it reminds you about is not a reminder.',
+      );
+    }
+    final anchorTimeField = value['anchorTimeField'];
+    if (anchorTimeField != null && anchorTimeField is! String) {
+      throw const FormatException(
+        'Workflow reminder anchorTimeField must be a field name when declared.',
+      );
+    }
+    final enabledField = value['enabledField'];
+    if (enabledField != null && enabledField is! String) {
+      throw const FormatException(
+        'Workflow reminder enabledField must be a field name when declared.',
+      );
+    }
+    return WorkflowReminder(
+      anchorDateField: anchorDateField,
+      anchorTimeField: anchorTimeField as String?,
+      leadHours: leadHours,
+      enabledField: enabledField as String?,
+    );
+  }
+
+  /// The instant this instance's reminder is due, or null if it is not wanted.
+  ///
+  /// Returns UTC, like every other derived instant, so the comparison against a
+  /// caller's `asOf` means the same thing wherever it runs. Resolving against a
+  /// community's own zone is the next step and belongs here — one place, rather
+  /// than in every package that wants a reminder.
+  DateTime? dueAtFor(Map<String, dynamic> instanceData) {
+    final gate = enabledField;
+    if (gate != null && instanceData[gate] != true) return null;
+
+    final anchor = combineDateAndTimeValues(
+      instanceData[anchorDateField]?.toString(),
+      anchorTimeField == null
+          ? null
+          : instanceData[anchorTimeField!]?.toString(),
+    );
+    if (anchor == null) return null;
+    return anchor.subtract(
+      Duration(
+        milliseconds: (leadHours * Duration.millisecondsPerHour).round(),
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'anchorDateField': anchorDateField,
+    if (anchorTimeField != null) 'anchorTimeField': anchorTimeField,
+    'leadHours': leadHours,
+    if (enabledField != null) 'enabledField': enabledField,
+  };
+}
+
 class LoomWorkflowStateMachine {
   static const jsonKeys = <String>{
     'initialState',
@@ -1116,6 +1239,7 @@ class LoomWorkflowStateMachine {
     'renderBindings',
     'instanceDataSchema',
     'visibility',
+    'reminder',
   };
 
   final String workflowType;
@@ -1126,6 +1250,13 @@ class LoomWorkflowStateMachine {
   final Map<String, InstanceDataField> instanceDataSchema;
   final WorkflowVisibility visibility;
 
+  /// When this workflow's reminder is due, when it declares one.
+  ///
+  /// Null means the workflow has no reminder of its own. That is not the same
+  /// as having one nobody enabled -- a package with no reminder block is never
+  /// swept, while one whose `enabledField` is false is swept and skipped.
+  final WorkflowReminder? reminder;
+
   const LoomWorkflowStateMachine({
     required this.workflowType,
     required this.initialState,
@@ -1134,6 +1265,7 @@ class LoomWorkflowStateMachine {
     this.renderBindings = const [],
     this.instanceDataSchema = const {},
     this.visibility = const WorkflowVisibility(isDeclared: false),
+    this.reminder,
   });
 
   factory LoomWorkflowStateMachine.fromJson(
@@ -1168,6 +1300,9 @@ class LoomWorkflowStateMachine {
       visibility: json.containsKey('visibility')
           ? WorkflowVisibility.fromJson(json['visibility'])
           : const WorkflowVisibility(isDeclared: false),
+      reminder: json.containsKey('reminder')
+          ? WorkflowReminder.fromJson(json['reminder'])
+          : null,
     );
   }
 
