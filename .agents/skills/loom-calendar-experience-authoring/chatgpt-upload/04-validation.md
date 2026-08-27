@@ -175,6 +175,22 @@ If an error genuinely cannot be fixed within the grammar, **stop and report the 
 | `missing_action_button_row` | A `primary` binding's surface has no action row | Use `summary`, or a surface that supports actions |
 | `binding_cap_exceeded` (warning) | >32 bindings or >16 roles | A smell — likely two workflows. Split. |
 
+### Field writers (added 2026-08-27)
+
+| Code | Meaning | Fix |
+| --- | --- | --- |
+| `effect_writable_field_has_no_effect` *(warning)* | A field declares `writableBy: "effect"` and no effect anywhere in the package writes it — not in its own workflow, and not through a `createInstance` from another. It names a writer that does not exist, so the field stays empty forever. | Say who actually writes it. A platform service — a checksum, an opaque receipt or transfer id, a stored document's URL — is `writableBy: "platform"`. A member is `"formEntry"`. Nothing is `writableBy` omitted entirely. **Not** by adding an effect that sets a placeholder: a fabricated value is worse than an empty field, because it looks real. |
+
+**Why this only became checkable in 2026-08.** `effect` used to cover two different things: a JSON
+effect setting a value, and something outside the package filling one in. A field nothing wrote was
+therefore indistinguishable from one the platform wrote, and neither could be flagged without flagging
+the other. `platform` separates them, and the check follows.
+
+It is a warning because 64 fields across 9 communities declare `effect` today with nothing writing
+them. Most are genuinely platform-written; a few are fields nobody ever populates. Failing the corpus
+on introduction would report that the packages broke, when what happened is that the grammar learned
+to tell two things apart.
+
 ### Documents (added 2026-08-26)
 
 | Code | Meaning | Fix |

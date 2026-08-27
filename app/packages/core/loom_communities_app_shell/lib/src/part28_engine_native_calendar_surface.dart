@@ -1644,7 +1644,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         ? [
             for (final key in state?.editableFields ?? const <String>[])
               if (widget.machine.instanceDataSchema[key] case final schema?)
-                if (schema.formula == null && schema.writableBy != 'effect')
+                if (schema.formula == null && !schema.isMachineWritten)
                   if (_isEditingFieldVisible(schema, {
                     ..._instance.instanceData,
                     ..._edits,

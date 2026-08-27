@@ -83,7 +83,7 @@ String? storedDocumentFieldName(LoomWorkflowStateMachine machine) {
     final field = entry.value;
     final type = field.type;
     if (type != 'url' && type != 'url?') continue;
-    if (field.writableBy != 'effect') continue;
+    if (field.writableBy != 'platform') continue;
     return entry.key;
   }
   return null;

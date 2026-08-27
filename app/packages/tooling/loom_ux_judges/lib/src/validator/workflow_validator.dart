@@ -201,6 +201,7 @@ class WorkflowValidator {
 
     _checkDependencyCycles(workflows, findings);
     _checkNoCreationPathForEditableTypes(workflows, findings);
+    _checkEffectWritableFieldsHaveWriters(workflows, findings);
 
     return ValidationReport(findings);
   }
@@ -1409,6 +1410,80 @@ class WorkflowValidator {
   // will ever exist is whatever was seeded in workflowInstances -- the
   // "implemented edit, but no create" pattern, package-wide.
   // ---------------------------------------------------------------------------
+  /// A field claiming an effect writes it, that no effect writes.
+  ///
+  /// Only checkable since `platform` existed to mean the other thing. Before
+  /// that, `effect` covered both "a JSON effect sets this" and "something
+  /// outside the package fills this in", so a field nothing wrote was
+  /// indistinguishable from one the platform wrote, and neither could be
+  /// flagged without flagging the other.
+  ///
+  /// A warning rather than an error, deliberately. Seventy fields across nine
+  /// communities declare `effect` today with nothing writing them; most are
+  /// genuinely platform-written and want `platform`, a few are fields nobody
+  /// ever populates. Failing the corpus on introduction would report that the
+  /// packages broke, when what happened is that the grammar learned to tell two
+  /// things apart. Promote to an error once the corpus has moved.
+  void _checkEffectWritableFieldsHaveWriters(
+    Map<String, LoomWorkflowStateMachine> workflows,
+    List<ValidationFinding> findings,
+  ) {
+    // Effects reach across workflows: `createInstance` names a target type and
+    // seeds its fields, so a field written only from another workflow is
+    // written all the same. Collecting per-target first is what stops this
+    // flagging every notification field a reminder transition fills in.
+    final writtenByType = <String, Set<String>>{};
+
+    void collect(List<WorkflowEffect> effects, String owningType) {
+      for (final effect in effects) {
+        final target = effect.workflowType ?? owningType;
+        final key = effect.key;
+        if (key != null) {
+          (writtenByType[owningType] ??= <String>{}).add(key);
+        }
+        for (final field in (effect.fields ?? const {}).keys) {
+          (writtenByType[target] ??= <String>{}).add(field);
+        }
+        collect(effect.thenEffects, target);
+        collect(effect.elseEffects, target);
+      }
+    }
+
+    for (final entry in workflows.entries) {
+      for (final transition in entry.value.transitions) {
+        collect(transition.effects, entry.key);
+      }
+    }
+
+    for (final entry in workflows.entries) {
+      final written = writtenByType[entry.key] ?? const <String>{};
+      for (final field in entry.value.instanceDataSchema.entries) {
+        if (field.value.writableBy != 'effect') continue;
+        if (field.value.formula != null) continue;
+        if (written.contains(field.key)) continue;
+        findings.add(
+          ValidationFinding(
+            type: 'effect_writable_field_has_no_effect',
+            isWarning: true,
+            message:
+                'Field "${field.key}" in workflow "${entry.key}" is declared '
+                'writableBy "effect", but no effect anywhere in this package '
+                'writes it -- not in this workflow, and not through a '
+                'createInstance from another. It names a writer that does not '
+                'exist, so the field stays empty forever. If a platform '
+                'service fills it -- a checksum, an opaque id, a stored '
+                'document URL -- declare writableBy "platform", which says so '
+                'honestly. If a member fills it, use "formEntry". If nothing '
+                'should, omit writableBy entirely.',
+            location:
+                'experience/workflowDefinitions/${entry.key}/'
+                'instanceDataSchema/${field.key}/writableBy',
+          ),
+        );
+      }
+    }
+  }
+
   void _checkNoCreationPathForEditableTypes(
     Map<String, LoomWorkflowStateMachine> workflows,
     List<ValidationFinding> findings,
@@ -1455,8 +1530,7 @@ class WorkflowValidator {
       final machine = entry.value;
       if (everCreatedTypes.contains(type)) continue;
       final hasWritableField = machine.instanceDataSchema.values.any(
-        (field) =>
-            field.writableBy == 'formEntry' || field.writableBy == 'effect',
+        (field) => field.isMemberWritable || field.isMachineWritten,
       );
       if (!hasWritableField) continue;
       findings.add(

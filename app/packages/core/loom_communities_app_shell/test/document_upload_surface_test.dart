@@ -20,7 +20,7 @@ void main() {
     test('finds the platform-written url field', () {
       final machine = _machine({
         'title': {'type': 'text', 'writableBy': 'formEntry'},
-        'documentUrl': {'type': 'url', 'writableBy': 'effect'},
+        'documentUrl': {'type': 'url', 'writableBy': 'platform'},
       });
       expect(storedDocumentFieldName(machine), 'documentUrl');
     });
@@ -34,9 +34,18 @@ void main() {
       expect(storedDocumentFieldName(machine), isNull);
     });
 
+    test('ignores an effect-written url, which is a link not an upload', () {
+      // `effect` means a JSON effect fills it, which no upload does. Only
+      // `platform` marks a field the Document Library API writes.
+      final machine = _machine({
+        'documentUrl': {'type': 'url', 'writableBy': 'effect'},
+      });
+      expect(storedDocumentFieldName(machine), isNull);
+    });
+
     test('ignores a non-url field the platform writes', () {
       final machine = _machine({
-        'publishedAt': {'type': 'date?', 'writableBy': 'effect'},
+        'publishedAt': {'type': 'date?', 'writableBy': 'platform'},
       });
       expect(storedDocumentFieldName(machine), isNull);
     });
@@ -52,7 +61,7 @@ void main() {
 
     test('accepts the nullable url spelling', () {
       final machine = _machine({
-        'documentUrl': {'type': 'url?', 'writableBy': 'effect'},
+        'documentUrl': {'type': 'url?', 'writableBy': 'platform'},
       });
       expect(storedDocumentFieldName(machine), 'documentUrl');
     });
@@ -61,7 +70,7 @@ void main() {
   group('upload blockers', () {
     test('a local engine cannot upload, and says so', () {
       final machine = _machine({
-        'documentUrl': {'type': 'url', 'writableBy': 'effect'},
+        'documentUrl': {'type': 'url', 'writableBy': 'platform'},
       });
       final blocker = loomDocumentUploadBlocker(
         engine: _LocalOnlyEngine(),

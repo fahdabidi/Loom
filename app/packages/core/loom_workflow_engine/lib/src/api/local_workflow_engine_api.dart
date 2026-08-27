@@ -1654,9 +1654,10 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             'Computed field "$key" cannot be user-edited',
           );
         }
-        if (schema != null && schema.writableBy == 'effect') {
+        if (schema != null && schema.isMachineWritten) {
           throw WorkflowAuthorizationError(
-            'Field "$key" is effect-only and cannot be user-edited',
+            'Field "$key" is written by the ${schema.writableBy} and cannot be '
+            'user-edited',
           );
         }
       }

@@ -15,6 +15,23 @@ derived_from:
 `instanceDataSchema` is the **single source of truth** for a workflow's data: validation, display,
 editability, and computation. Every field a workflow touches MUST be declared here.
 
+## `writableBy` — who writes this field
+
+| Value | Who writes it |
+|---|---|
+| `formEntry` | a member types it |
+| `effect` | a JSON effect writes it — `set`, `append`, `increment`, or a `createInstance` from another workflow |
+| `platform` | a platform service writes it |
+| *(omitted)* | nothing writes it — a computed field, or genuinely read-only |
+
+**`platform` is not decoration.** Effects are data-only: they can move values around and cannot hash
+bytes, mint an opaque id, or call a service. A checksum, a receipt id, a transfer id and a stored
+document's URL are all written from outside the package, and declaring them `effect` names a writer
+that cannot exist. The validator reports that as `effect_writable_field_has_no_effect`.
+
+A `platform` field is not member-editable, exactly like an `effect` field. The distinction is about
+who fills it, not about who may.
+
 ## Field object — all 15 attributes
 
 ```jsonc

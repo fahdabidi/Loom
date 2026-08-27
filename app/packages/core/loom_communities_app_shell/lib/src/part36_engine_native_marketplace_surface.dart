@@ -1728,6 +1728,9 @@ class _SearchAiAnswerArchetypeCardState
 
   int _writablePriority(InstanceDataField field) {
     switch (field.writableBy) {
+      // Platform-written sorts with effect-written: both are machine-owned and
+      // neither is something a member fills in.
+      case 'platform':
       case 'effect':
         return 2;
       case 'formEntry':

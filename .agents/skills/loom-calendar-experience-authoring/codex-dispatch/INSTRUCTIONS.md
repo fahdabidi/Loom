@@ -98,6 +98,15 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    `createInstance`/`generateRecurringInstances` effect means members can never make one (rule 12d).
 5. **Visibility.** `visibility.fields` present exactly where rule 12b requires, absent where it does
    not, and never pointed at archetype-owned bookkeeping.
+5c. **Say who writes each field, and do not name a writer that cannot exist.** `writableBy` is
+   `formEntry` (a member), `effect` (a JSON effect), `platform` (a platform service), or omitted
+   (nothing — computed or read-only). Effects are data-only: they move values around and cannot hash
+   bytes, mint an opaque id, or call a service. So a checksum, a receipt or transfer id, and a stored
+   document's URL are `platform`, never `effect`. The validator warns
+   `effect_writable_field_has_no_effect` when a field claims an effect writes it and none does — the
+   fix is to name the real writer, **never** to add an effect that sets a placeholder, because a
+   fabricated value looks real and an empty field does not.
+
 5b. **A reminder is declared, never computed.** If the product doc says members are reminded before
    something, use the workflow-level `reminder` block -- `anchorDateField`, optional
    `anchorTimeField`, `leadHours` and/or `leadHoursField`, optional `enabledField`. Do **not** write a

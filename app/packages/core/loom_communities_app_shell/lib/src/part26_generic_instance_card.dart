@@ -106,7 +106,7 @@ class _GenericWorkflowInstanceCardState
     return [
       for (final key in state?.editableFields ?? const <String>[])
         if (widget.machine.instanceDataSchema[key] case final schema?)
-          if (schema.formula == null && schema.writableBy != 'effect')
+          if (schema.formula == null && !schema.isMachineWritten)
             if (_isEditingFieldVisible(schema, {
               ..._instance.instanceData,
               ..._edits,
@@ -394,7 +394,7 @@ class _GenericWorkflowInstanceCardState
     // Effect-owned fields without an explicit label are persistence/status
     // plumbing, not user-facing facts. Falling back to the field key here
     // would expose internal names such as `receiptStatus` in the card.
-    if (schema.writableBy == 'effect' &&
+    if (schema.isMachineWritten &&
         !(schema.labelTemplate?.trim().isNotEmpty ?? false)) {
       return false;
     }

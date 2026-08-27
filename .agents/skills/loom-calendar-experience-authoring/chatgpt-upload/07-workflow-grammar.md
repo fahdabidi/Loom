@@ -468,6 +468,15 @@ you get a value that is confidently wrong.
 
 ---
 
+### `writableBy` — who fills a field in
+
+`formEntry` (a member), `effect` (a JSON effect), `platform` (a platform service), or omitted
+(nothing — computed or read-only). See [`field-types.md`](./field-types.md).
+
+Declaring `effect` for something only a service can produce — a checksum, an opaque id, a stored
+document's URL — names a writer that does not exist, and the validator reports it as
+`effect_writable_field_has_no_effect`. Effects are data-only.
+
 ## Complete worked example
 
 A ballot with cross-instance eligibility, a computed tally, and a real runoff on a tie — every grammar

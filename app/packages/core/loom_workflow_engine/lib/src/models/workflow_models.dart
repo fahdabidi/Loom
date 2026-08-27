@@ -1027,7 +1027,38 @@ class InstanceDataField {
 
   final String type;
   final bool required;
-  final String? writableBy; // "formEntry" | "effect"
+  /// Who writes this field.
+  ///
+  /// | value | meaning |
+  /// |---|---|
+  /// | `formEntry` | a member types it |
+  /// | `effect` | a JSON effect writes it |
+  /// | `platform` | a platform service writes it |
+  /// | absent | nothing writes it — computed, or genuinely read-only |
+  ///
+  /// `platform` exists because `effect` was doing two jobs. A checksum, an
+  /// opaque receipt id and a stored document's URL are all written by something
+  /// outside the package, and declaring them `effect` named a writer that
+  /// cannot exist: effects can `set`, `append` and `increment`, and cannot hash
+  /// bytes, mint an id, or call a service. With the two spelled apart, "no
+  /// effect writes this effect-writable field" becomes a checkable defect
+  /// instead of an ambiguity.
+  final String? writableBy;
+
+  /// Whether a member may type into this field.
+  ///
+  /// The only value that admits a member. Everything else is written by the
+  /// platform, by an effect, or by nothing.
+  bool get isMemberWritable => writableBy == 'formEntry';
+
+  /// Whether something other than a member writes this field.
+  ///
+  /// True for both `effect` and `platform`. Most callers want this rather than
+  /// an equality test against `effect`: a field the platform fills is no more
+  /// member-editable than one an effect fills, and the UI must not offer either
+  /// as a form input.
+  bool get isMachineWritten =>
+      writableBy == 'effect' || writableBy == 'platform';
   final String? storage; // "inline" | "reference"
   final String? storageTarget;
   final bool searchable;
