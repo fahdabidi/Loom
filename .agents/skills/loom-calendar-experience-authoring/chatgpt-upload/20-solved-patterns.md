@@ -549,6 +549,79 @@ community back to the unrequested subsystem as their root cause, not a missing g
 
 ---
 
+## 15. A formula-computed reminder **converts** to a `reminder` block — deleting it removes a capability, and nothing in the validator will tell you
+
+**Requirement shape:** an already-shipped package reminds members before an event the old way — a
+`reminderAt` field carrying a formula, plus a member- or admin-chosen offset field that formula reads.
+The grammar has since replaced that idiom with a declared workflow-level `reminder` block.
+
+**Looks plausible, is wrong:**
+```jsonc
+// Both fields deleted: the sweep ignores a formula-computed reminder, and once
+// the formula is gone nothing reads the offset either. Therefore -- dead code?
+"instanceDataSchema": {
+  "eventDate": { "type": "date", "required": true, "writableBy": "formEntry" },
+  "eventTime": { "type": "time", "required": true, "writableBy": "formEntry" }
+  // reminderAt: removed.  reminderOffsetHours: removed.
+}
+```
+
+The diagnosis is right and the repair is not. The sweep really does ignore `reminderAt`, and the
+offset really is unread once the formula goes. But *"this data is dead"* is a fact about the wiring,
+never about the product. The doc still promises the capability — Garden Club's B25 row for
+`garden-event-rsvp` requires a visible reminder affordance, and its §5 row says
+`recurrence/reminder` — so the package now owes something it cannot deliver.
+
+**The validator will not catch this.** Removing both fields makes every finding go away: zero errors,
+warnings *down*, every identifier and workflow preserved. A package that quietly lost a feature and
+one that correctly gained a wire produce identical reports, because the validator counts what is
+declared and only the product doc says what is owed.
+
+**Verified-correct shape** — keep the offset, delete only the formula, declare the block that
+consumes it:
+```jsonc
+"reminder": {
+  "anchorDateField": "eventDate",
+  "anchorTimeField": "eventTime",
+  "leadHoursField": "reminderOffsetHours",  // the field that already exists
+  "leadHours": 24                           // its default when unset
+},
+"instanceDataSchema": {
+  "eventDate": { "type": "date", "required": true, "writableBy": "formEntry" },
+  "eventTime": { "type": "time", "required": true, "writableBy": "formEntry" },
+
+  // KEPT. Someone's choice of how far ahead they are reminded; consuming it is
+  // the block's entire purpose. It also rides along through recurrence, so
+  // deleting it silently changes every generated instance in the series.
+  "reminderOffsetHours": {
+    "type": "number", "required": true, "writableBy": "formEntry",
+    "storage": "inline", "displayIcon": "notifications_active",
+    "labelTemplate": "Default reminder: {value} hours before",
+    "displayContexts": ["detail"]
+  }
+
+  // GONE: "reminderAt" -- the platform resolves the instant now, in one place,
+  // with a timezone the formula language never had.
+}
+```
+
+The conversion is a net gain, which is the tell that it is the right move: a display no mechanism
+consumed becomes a reminder the sweep actually fires.
+
+**The general rule this is an instance of:** dead data is a missing wire, not an unwanted feature.
+Before removing any field nothing writes or reads, check the product doc. If the doc promises the
+capability that field served, connect it — name its real writer, or declare the block that consumes
+it. Remove it only when nothing in the doc asks for anything it could serve, and say so explicitly in
+Gaps/assumptions when you do.
+
+**Found in:** Garden Club (`garden-event-rsvp`), 2026-08-27 — a regeneration that passed the
+validator cleanly and had deleted `reminderAt` and `reminderOffsetHours`. Caught by diffing the
+returned package against the shipped one field-by-field, not by any check in the pipeline. Cedar
+Commons HOA (`hoa-facility-reservation`) is the same conversion done correctly, and is worth reading
+next to this.
+
+---
+
 ## Known current engine limitations to design around (not "solved" — update this section once each lands)
 
 These are real, confirmed gaps in the App Shell's implementation of documented grammar, not JSON-authoring

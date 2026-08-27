@@ -216,6 +216,34 @@ place.
 The grammar keeps a capability and loses a calculation. That is the direction generally: a thing the
 platform can work out belongs to the platform, not to an expression in a package.
 
+### Converting a package that still computes its reminder
+
+An already-shipped package may carry the old idiom. Convert it; do not delete it.
+
+```jsonc
+// BEFORE -- the offset feeds a formula the sweep ignores
+"reminderOffsetHours": { "type": "number", "writableBy": "formEntry",
+  "labelTemplate": "Default reminder: {value} hours before" },
+"reminderAt": { "type": "date",
+  "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), reminderOffsetHours)" }
+
+// AFTER -- the offset feeds the block, and the platform resolves the instant
+"reminder": {
+  "anchorDateField": "eventDate",
+  "anchorTimeField": "eventTime",
+  "leadHoursField": "reminderOffsetHours",
+  "leadHours": 24
+},
+"reminderOffsetHours": { "type": "number", "writableBy": "formEntry",
+  "labelTemplate": "Default reminder: {value} hours before" }
+// reminderAt is removed; nothing replaces it.
+```
+
+**Only the formula field goes.** The offset is the member's or admin's choice of how far ahead, and
+consuming it is what `leadHoursField` is for — deleting it along with the formula removes a
+capability the product doc still promises, and no validator finding will report the loss. See
+[`solved-patterns.md` §15](./solved-patterns.md).
+
 ### What still stores a `dueAt`
 
 A materialised notification is data, not calculation, and is unaffected. Book Club and Garden Club

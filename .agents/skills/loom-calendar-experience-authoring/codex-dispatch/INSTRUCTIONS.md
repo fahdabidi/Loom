@@ -122,6 +122,9 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    formula. Do **not** delete the offset along with it. That field is someone's choice of how far
    ahead they are reminded, consuming it is the block's entire purpose, and dropping both turns a
    reminder the product doc promises into one the package can no longer deliver.
+   [`solved-patterns.md` §15](../../../docs/references/reference/solved-patterns.md) has the worked
+   before/after, and `workflow-grammar.md`'s reminder section has the short form. Cedar Commons HOA's
+   `hoa-facility-reservation` is this conversion already done correctly — read it before authoring.
 
 5b-i. **Dead data is a missing wire, not an unwanted feature.** When you find a field nothing writes,
    nothing reads, or that only feeds something obsolete, check the product doc before removing it. If
