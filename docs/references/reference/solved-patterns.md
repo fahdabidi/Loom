@@ -666,6 +666,46 @@ for one question is the signal that the grammar had not answered it.
 
 ---
 
+## 17. Regenerating a shipped package is a **revision**, not a rewrite — and the validator cannot tell the two apart
+
+**Requirement shape:** an already-shipped community package needs a specific, bounded change — a
+writer declaration corrected, a reminder converted, a field renamed.
+
+**Looks plausible, is wrong:** author the package fresh from the product doc, apply the change, and
+return the result. It validates, so it must be right.
+
+Here are three runs of one community for one bounded requirement, every one of them
+`status: pass`, zero errors:
+
+| Run | Bytes | Lines | Comments | Longest line | What it actually was |
+| --- | ---: | ---: | ---: | ---: | --- |
+| shipped | 105,220 | 3,007 | 15 | 213 | the baseline |
+| r2 | 104,903 | 2,998 | 15 | 213 | a revision — one field removed, on purpose |
+| r3 | 70,756 | 418 | 6 | 1,262 | a rewrite wearing a revision's name |
+
+r3 made the requested writer corrections **and** reformatted the file compactly, dropped nine of the
+fifteen authored comments, deleted a member's `contactInfo` in favour of an invented `contactMethod`,
+and removed two `coordinatorFanId` fields nobody had asked about. Every one of those is invisible in
+a validation report, because the validator checks that a package is well-formed and self-consistent —
+which a rewrite very much can be.
+
+**Verified-correct shape:** treat the shipped package as the base text and change only what the
+requirement implicates.
+
+- Keep the existing formatting exactly — indentation, line breaks, key order. A package that arrives
+  reflowed cannot be reviewed, because every line reads as changed.
+- Keep every authored comment. They were written by someone explaining a decision, and they are the
+  first thing lost in a rewrite and the last thing anyone notices missing.
+- Do not touch a field the requirement does not name. Renaming `contactInfo` to `contactMethod` while
+  fixing checksum writers is a second, unrequested change riding along inside the first.
+- The diff is part of the deliverable. If it cannot be read line by line and every hunk traced to the
+  requirement, the change is not finished, however green the validator is.
+
+**Found in:** Garden Club, 2026-08-27, across three consecutive runs of the same requirement. r2 is
+the shape to copy; r3 is the shape to avoid. The tell was not the validator — it was `wc -l`.
+
+---
+
 ## Known current engine limitations to design around (not "solved" — update this section once each lands)
 
 These are real, confirmed gaps in the App Shell's implementation of documented grammar, not JSON-authoring

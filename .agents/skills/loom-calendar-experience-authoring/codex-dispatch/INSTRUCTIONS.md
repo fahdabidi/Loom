@@ -145,6 +145,16 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    authority and gives the JSON for both. Getting this wrong is caught by
    `document_upload_stores_no_content`, and it is worth getting right first because `upload` grants a
    real platform capability.
+5d. **Regenerating a shipped package is a revision, not a rewrite.** When the target already ships,
+   the existing file is your base text: keep its formatting, its key order and every authored
+   comment, and change only what the requirement names. Do not reflow the JSON, do not rename or drop
+   a field the requirement did not mention, and do not "improve" something you noticed in passing —
+   raise it in Gaps/assumptions instead. The diff is part of what you deliver, and it must be
+   readable hunk by hunk against the requirement. A validator pass does not distinguish a faithful
+   revision from a rewrite; one Garden Club requirement produced 3,007-line, 2,998-line and 418-line
+   answers, all three `status: pass`, and only the 2,998-line one was correct.
+   [`solved-patterns.md` §17](../../../docs/references/reference/solved-patterns.md) has the numbers.
+
 6. **Seeds.** Every seed declares `createdByFanId` (rule 12c) and demonstrates a state worth seeing —
    seeds are the first thing a reviewer looks at.
 7. **Zero validator errors and zero warnings.** A warning you cannot eliminate must be justified
