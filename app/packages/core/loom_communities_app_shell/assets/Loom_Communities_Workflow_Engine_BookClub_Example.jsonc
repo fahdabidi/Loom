@@ -268,7 +268,11 @@
                             "capacity": "{capacity}", "reminderOffsetHours": "{reminderOffsetHours}",
                             "seriesId": "$newSeriesId" },
                 "recurrenceRule": { "freq": "{input.freq}", "count": "{input.count}" } }
-            ] }
+            ] },
+          { "id": "set-meeting-reminder", "action": "set_reminder", "label": "Add reminder",
+            "icon": "notifications_active", "tone": "secondary",
+            "from": ["open"], "to": null,
+            "guard": { "allowedRoleIds": ["book-member", "book-organizer"] } }
         ],
         "renderBindings": [
           { "states": ["open"], "audience": "any", "tabId": "calendar",
@@ -283,6 +287,12 @@
             "cardSurfaceFamily": "event-rsvp", "bindingKind": "summary" }
         ],
         "visibility": { "default": "public" },
+        "reminder": {
+          "anchorDateField": "eventDate",
+          "anchorTimeField": "eventTime",
+          "leadHours": 24,
+          "leadHoursField": "reminderOffsetHours"
+        },
         "instanceDataSchema": {
           "title": { "type": "text", "required": true, "writableBy": "formEntry",
             "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
@@ -307,10 +317,6 @@
           "publishedAt": { "type": "date?", "writableBy": "effect", "sortable": true,
             "displayIcon": "publish", "labelTemplate": "Published {value}",
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "reminderAt": { "type": "date",
-            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), if(reminderOffsetHours == null, 24, reminderOffsetHours))",
-            "displayIcon": "alarm", "labelTemplate": "Reminder due {value}", "displayContexts": ["detail"] },
-
           "responses": { "type": "list", "source": "query(book-meeting-rsvp-response where eventId == id)" },
           "responseCounts": { "type": "map", "formula": "groupCount(responses, '$state')", "displayContexts": [] },
           "goingCount": { "type": "number", "formula": "mapGet(responseCounts, 'going')",
@@ -354,21 +360,10 @@
               "relatedAggregate": { "workflowType": "book-meeting-rsvp-response",
                 "filter": { "eventId": "{eventId}", "$state": "going" }, "op": "count", "comparator": ">=",
                 "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" } } } },
-          { "id": "send-reminder", "action": "deliver_reminder", "label": "Add reminder", "tone": "secondary",
-            "from": ["pending", "maybe", "going", "waitlisted"], "to": null,
-            "guard": { "actorEqualsField": { "key": "fanId" } },
-            "inputs": {
-              "dueAt": { "type": "text", "required": true },
-              "notificationTitle": { "type": "text", "required": true },
-              "notificationBody": { "type": "text", "required": true }
-            },
-            "effects": [
-              { "op": "createInstance", "workflowType": "book-notification",
-                "fields": { "recipientFanId": "{fanId}", "title": "{input.notificationTitle}",
-                            "body": "{input.notificationBody}", "dueAt": "{input.dueAt}",
-                            "createdAt": "$timestamp" } },
-              { "op": "set", "key": "reminderSentAt", "value": "$timestamp" }
-            ] },
+          { "id": "withdraw-rsvp", "action": "withdraw_response", "label": "Withdraw RSVP",
+            "icon": "undo", "tone": "secondary",
+            "from": ["going", "maybe", "waitlisted"], "to": "pending",
+            "guard": { "allowedRoleIds": ["book-member", "book-organizer"] } },
           { "id": "event-cancelled", "action": "cancel", "label": "Meeting cancelled", "tone": "destructive",
             "from": ["pending", "going", "maybe", "declined", "waitlisted"], "to": "cancelled",
             "guard": { "allowedRoleIds": ["book-organizer"] } }
@@ -378,8 +373,7 @@
           "readGuard": { "actorEqualsField": { "key": "fanId" } } },
         "instanceDataSchema": {
           "eventId": { "type": "text", "required": true, "storage": "inline" },
-          "fanId": { "type": "fanId", "required": true, "storage": "inline" },
-          "reminderSentAt": { "type": "date?", "writableBy": "effect", "storage": "inline" }
+          "fanId": { "type": "fanId", "required": true, "storage": "inline" }
         }
       },
 
@@ -404,11 +398,11 @@
           "readGuard": { "actorEqualsField": { "key": "recipientFanId" } },
           "fields": { "recipient": "recipientFanId" } },
         "instanceDataSchema": {
-          "recipientFanId": { "type": "fanId", "required": true, "writableBy": "effect", "storage": "inline" },
-          "title": { "type": "text", "required": true, "writableBy": "effect", "storage": "inline" },
-          "body": { "type": "text", "required": true, "writableBy": "effect", "storage": "inline" },
-          "dueAt": { "type": "date", "required": true, "writableBy": "effect", "storage": "inline", "sortable": true },
-          "createdAt": { "type": "date", "required": true, "writableBy": "effect", "storage": "inline", "sortable": true }
+          "recipientFanId": { "type": "fanId", "required": true, "storage": "inline" },
+          "title": { "type": "text", "required": true, "storage": "inline" },
+          "body": { "type": "text", "required": true, "storage": "inline" },
+          "dueAt": { "type": "date", "required": true, "storage": "inline", "sortable": true },
+          "createdAt": { "type": "date", "required": true, "storage": "inline", "sortable": true }
         }
       },
 
@@ -482,11 +476,7 @@
             "displayIcon": "visibility_outlined", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "materialUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice",
             "displayIcon": "description", "labelTemplate": "Open {value}",
-            "displayContexts": ["tile", "detail"] },
-          "acknowledgedByFanIds": { "type": "fanId[]", "displayContexts": [] },
-          "savedByFanIds": { "type": "fanId[]", "displayContexts": [] },
-          "accessRequestedFanIds": { "type": "fanId[]", "displayContexts": [] },
-          "approvedFanIds": { "type": "fanId[]", "displayContexts": [] }
+            "displayContexts": ["tile", "detail"] }
         }
       },
 
@@ -563,8 +553,8 @@
             "guard": { "allowedRoleIds": ["book-member"] } },
           { "id": "return-item", "action": "return", "label": "Return item", "icon": "assignment_return", "tone": "primary",
             "from": ["published"], "to": null,
-            "guard": { "instanceDataEquals": { "key": "availabilityState", "value": "borrowed" },
-                       "formula": "if(currentHolderFanId == $actor, true, if(ownerFanId == $actor, true, false))" },
+            "guard": { "allowedRoleIds": ["book-member", "book-organizer"],
+                       "instanceDataEquals": { "key": "availabilityState", "value": "borrowed" } },
             "effects": [
               { "op": "set", "key": "availabilityState", "value": "available" },
               { "op": "set", "key": "dueDate", "value": null },
@@ -572,22 +562,22 @@
             ] },
           { "id": "cancel-loan", "action": "return", "label": "Cancel loan", "icon": "cancel_outlined", "tone": "secondary",
             "from": ["published"], "to": null,
-            "guard": { "instanceDataEquals": { "key": "availabilityState", "value": "borrowed" },
-                       "actorEqualsField": { "key": "currentHolderFanId" } },
+            "guard": { "allowedRoleIds": ["book-member"],
+                       "instanceDataEquals": { "key": "availabilityState", "value": "borrowed" } },
             "effects": [
               { "op": "set", "key": "availabilityState", "value": "available" },
               { "op": "set", "key": "dueDate", "value": null }
             ] },
           { "id": "renew-loan", "action": "renew", "label": "Renew / extend", "icon": "update", "tone": "secondary",
             "from": ["published"], "to": null,
-            "guard": { "actorEqualsField": { "key": "currentHolderFanId" },
-                       "formula": "size(queuedFanIds) == 0" },
+            "guard": { "allowedRoleIds": ["book-member"],
+                       "instanceDataEquals": { "key": "availabilityState", "value": "borrowed" } },
             "inputs": { "dueDate": { "type": "text", "required": true } },
             "effects": [ { "op": "set", "key": "dueDate", "value": "{input.dueDate}" } ] },
           { "id": "report-lost", "action": "report_issue", "label": "Report lost", "icon": "report_problem_outlined", "tone": "destructive",
             "from": ["published"], "to": "lost",
-            "guard": { "instanceDataEquals": { "key": "availabilityState", "value": "borrowed" },
-                       "formula": "if(currentHolderFanId == $actor, true, if(ownerFanId == $actor, true, false))" } },
+            "guard": { "allowedRoleIds": ["book-member", "book-organizer"],
+                       "instanceDataEquals": { "key": "availabilityState", "value": "borrowed" } } },
           { "id": "delist-item", "action": "delist", "label": "Delist", "icon": "delete_outline", "tone": "destructive",
             "from": ["published"], "to": "delisted",
             "guard": { "actorEqualsField": { "key": "ownerFanId" },
@@ -620,11 +610,6 @@
           "pendingBorrowerFanId": { "type": "fanId?", "writableBy": "effect",
             "displayIcon": "hourglass_top", "labelTemplate": "Loan requested by {value}",
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "currentHolderFanId": { "type": "fanId?", "displayContexts": [] },
-          "currentHolderDisplay": { "type": "text",
-            "formula": "if(currentHolderFanId == null, 'Available', if($viewer == ownerFanId, currentHolderFanId, if($viewer == currentHolderFanId, currentHolderFanId, 'Checked out')))" ,
-            "displayIcon": "person_pin_circle_outlined", "labelTemplate": "Holder: {value}",
-            "displayContexts": ["tile", "detail"] },
           "availabilityState": { "type": "text", "writableBy": "effect",
             "displayIcon": "info_outline", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "dueDate": { "type": "date?", "writableBy": "effect",
@@ -633,13 +618,8 @@
           "lastReturnedAt": { "type": "date?", "writableBy": "effect", "sortable": true,
             "displayIcon": "assignment_return", "labelTemplate": "Returned {value}",
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "queuedFanIds": { "type": "fanId[]", "displayContexts": [] },
           "isOverdue": { "type": "bool", "formula": "if(dueDate == null, false, isPast(dueDate))",
             "displayIcon": "warning_amber_outlined", "labelTemplate": "Overdue", "displayContexts": ["tile", "detail"] },
-          "queueLength": { "type": "number", "formula": "size(queuedFanIds)" },
-          "myQueuePosition": { "type": "number",
-            "formula": "if(indexOf(queuedFanIds, $viewer) < 0, 0, indexOf(queuedFanIds, $viewer) + 1)",
-            "displayIcon": "format_list_numbered", "labelTemplate": "Your position: {value}", "displayContexts": ["detail"] },
           "isAvailable": { "type": "bool", "formula": "availabilityState == 'available'" }
         }
       },
@@ -1038,22 +1018,24 @@
         "createdByFanId": "book-organizer",
         "instanceData": { "eventId": "meeting-sept", "fanId": "book-member" } },
 
+      { "instanceId": "notification-meeting-sept", "workflowType": "book-notification", "currentState": "unread",
+        "createdByFanId": "book-organizer",
+        "instanceData": { "recipientFanId": "book-member", "title": "September discussion tomorrow",
+          "body": "The Song of Achilles discussion meets tomorrow at the Maple branch community room.",
+          "dueAt": "2026-09-13T18:30:00-07:00", "createdAt": "2026-09-01T17:00:00-07:00" } },
+
       { "instanceId": "material-public", "workflowType": "book-reading-material", "currentState": "active",
         "createdByFanId": "book-organizer",
         "instanceData": { "title": "Circe Reading Guide", "author": "Madeline Miller",
           "source": "Little, Brown and Company", "version": "2023 edition",
           "publicationDate": "2023-01-01", "accessType": "public",
-          "materialUrl": "https://www.hachettebookgroup.com/titles/madeline-miller/circe/9780316556347/reading-group-guide/",
-          "acknowledgedByFanIds": [], "savedByFanIds": [],
-          "accessRequestedFanIds": [], "approvedFanIds": [] } },
+          "materialUrl": "https://www.hachettebookgroup.com/titles/madeline-miller/circe/9780316556347/reading-group-guide/" } },
       { "instanceId": "material-private", "workflowType": "book-reading-material", "currentState": "active",
         "createdByFanId": "book-organizer",
         "instanceData": { "title": "Circe author background (members only)", "author": "Madeline Miller",
           "source": "Madeline Miller official site", "version": "v1",
           "publicationDate": "2026-07-01", "accessType": "private",
-          "materialUrl": "https://www.madelinemiller.com/circe/",
-          "acknowledgedByFanIds": [], "savedByFanIds": [],
-          "accessRequestedFanIds": ["book-member"], "approvedFanIds": [] } },
+          "materialUrl": "https://www.madelinemiller.com/circe/" } },
 
       { "instanceId": "item-draft", "workflowType": "book-shared-library-item", "currentState": "draft",
         "createdByFanId": "book-member",
@@ -1066,7 +1048,7 @@
         "createdByFanId": "book-organizer",
         "instanceData": { "title": "The Odyssey (audiobook)", "format": "Audiobook", "condition": "Good",
           "listingMode": "loan", "ownerFanId": "book-organizer", "availabilityState": "borrowed",
-          "currentHolderFanId": "book-member", "dueDate": "2026-08-01", "queuedFanIds": ["book-organizer"] } },
+          "dueDate": "2026-08-01" } },
       { "instanceId": "item-giveaway", "workflowType": "book-shared-library-item", "currentState": "published",
         "createdByFanId": "book-member",
         "instanceData": { "title": "Trivial Pursuit: Book Lovers Edition", "format": "Board game", "condition": "Fair",
