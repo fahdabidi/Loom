@@ -23,19 +23,19 @@
         "visibleRoleIds": ["soccer-guardian", "soccer-coach"]
       },
       {
-        "tabId": "calendar", "label": "Calendar",
+        "tabId": "calendar", "label": "Schedule",
         "iconKey": "calendar_today", "description": "Practices, attendance, reminders, and calendar-sync requests.",
         "pinnedWorkflowIds": ["soccer-practice-schedule"],
         "visibleRoleIds": ["soccer-guardian", "soccer-coach"]
       },
       {
-        "tabId": "giving", "label": "Giving",
+        "tabId": "giving", "label": "Payments",
         "iconKey": "payments", "description": "Registration checkout, payment status, and private receipt access.",
         "pinnedWorkflowIds": ["soccer-registration-payment"],
         "visibleRoleIds": ["soccer-guardian"]
       },
       {
-        "tabId": "admin", "label": "Admin",
+        "tabId": "admin", "label": "Coach & Owner",
         "iconKey": "admin_panel_settings", "description": "Guardian approval, reminder operations, and owner export controls.",
         "pinnedWorkflowIds": ["soccer-guardian-join-approval", "soccer-practice-schedule", "soccer-export-metadata"],
         "visibleRoleIds": ["soccer-coach", "soccer-owner"]
@@ -233,7 +233,7 @@
             ]
           },
           {
-            "id": "attach-registration-document", "label": "Attach registration document", "icon": "attach_file", "tone": "secondary",
+            "id": "attach-registration-document", "label": "Add registration document link", "icon": "attach_file", "tone": "secondary",
             "from": ["draft", "submitted", "under-review", "missing-info", "approved", "rejected", "withdrawn"], "to": null,
             "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
             "inputs": {
@@ -534,6 +534,15 @@
         },
         "transitions": [
           {
+            "id": "confirm-payment-authorization", "label": "Confirm payment authorization", "icon": "verified_user", "tone": "primary",
+            "from": ["unpaid", "failed"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "set", "key": "consentConfirmed", "value": true },
+              { "op": "append", "key": "paymentHistory", "value": { "event": "Guardian confirmed payment authorization", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
             "id": "start-checkout", "label": "Pay registration", "icon": "payment", "tone": "primary",
             "from": ["unpaid"], "to": "processing",
             "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" }, "instanceDataEquals": { "key": "consentConfirmed", "value": true } },
@@ -611,11 +620,11 @@
           "amountLabel": { "type": "text", "required": true, "displayIcon": "payments", "labelTemplate": "Fee: {value}", "displayContexts": ["tile", "detail"] },
           "purpose": { "type": "text", "required": true, "displayIcon": "description", "labelTemplate": "For: {value}", "displayContexts": ["tile", "detail"] },
           "consentRequiredLabel": { "type": "text", "required": true, "displayIcon": "policy", "labelTemplate": "Consent: {value}", "displayContexts": ["detail"] },
-          "consentConfirmed": { "type": "bool", "required": true, "displayIcon": "check_circle", "labelTemplate": "Payment authorization: {value}", "displayContexts": ["tile", "detail"] },
+          "consentConfirmed": { "type": "bool", "required": true, "writableBy": "effect", "displayIcon": "check_circle", "labelTemplate": "Payment authorization: {value}", "displayContexts": ["tile", "detail"] },
           "paymentMethodNote": { "type": "text", "writableBy": "formEntry", "displayIcon": "credit_card", "labelTemplate": "Payment method: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "receiptStatus": { "type": "text", "writableBy": "effect", "displayIcon": "receipt_long", "labelTemplate": "Receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           // NEEDS IMPLEMENTATION (platform service): wallet/receipt provider must populate a private receipt id; JSON effects must not fabricate it.
-          "receiptId": { "type": "text", "displayContexts": [] },
+          "receiptId": { "type": "text", "writableBy": "effect", "displayContexts": [] },
           "receiptDisplay": { "type": "text", "formula": "if($viewer == guardianFanId, receiptId, 'Private receipt')", "displayIcon": "receipt", "labelTemplate": "Receipt detail: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "failureReason": { "type": "text", "writableBy": "effect", "displayIcon": "error", "labelTemplate": "Failure: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "paidAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Paid {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
@@ -713,7 +722,7 @@
           "location": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "location_on", "labelTemplate": "Location: {value}", "displayContexts": ["tile", "detail"] },
           "fieldName": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "place", "labelTemplate": "Field: {value}", "displayContexts": ["tile", "detail"] },
           "opponent": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "groups", "labelTemplate": "Opponent/session: {value}", "displayContexts": ["tile", "detail"] },
-          "capacity": { "type": "int", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "groups", "labelTemplate": "Capacity: {value}", "displayContexts": ["tile", "detail"] },
+          "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "groups", "labelTemplate": "Capacity: {value}", "displayContexts": ["tile", "detail"] },
           "reminderChannel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "notifications", "labelTemplate": "Reminder: {value}", "displayContexts": ["tile", "detail"] },
           "reminderBody": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 500, "displayIcon": "message", "labelTemplate": "Reminder text: {value}", "displayContexts": ["detail"] },
           "published": { "type": "bool", "required": true, "writableBy": "effect", "displayIcon": "publish", "labelTemplate": "RSVPs open: {value}", "displayContexts": ["tile", "detail"] },
@@ -740,7 +749,15 @@
           {
             "id": "respond-going", "label": "Going", "icon": "check_circle", "tone": "primary", "action": "respond",
             "from": ["pending", "maybe", "declined", "waitlisted"], "to": "going",
-            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "fanId" } },
+            "guard": {
+              "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "fanId" },
+              "relatedAggregate": {
+                "workflowType": "soccer-practice-rsvp-response",
+                "filter": { "eventId": "{eventId}", "$state": "going" },
+                "op": "count", "comparator": "<",
+                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+              }
+            },
             "effects": [
               { "op": "set", "key": "responseUpdatedAt", "value": "$timestamp" },
               { "op": "append", "key": "responseHistory", "value": { "response": "going", "byFanId": "$actor", "at": "$timestamp" } }
@@ -767,7 +784,15 @@
           {
             "id": "respond-waitlist", "label": "Join waitlist", "icon": "hourglass_top", "tone": "secondary", "action": "join_waitlist",
             "from": ["pending", "maybe", "declined"], "to": "waitlisted",
-            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "fanId" } },
+            "guard": {
+              "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "fanId" },
+              "relatedAggregate": {
+                "workflowType": "soccer-practice-rsvp-response",
+                "filter": { "eventId": "{eventId}", "$state": "going" },
+                "op": "count", "comparator": ">=",
+                "compareTo": { "relatedInstanceField": "eventId", "field": "capacity" }
+              }
+            },
             "effects": [
               { "op": "set", "key": "responseUpdatedAt", "value": "$timestamp" },
               { "op": "append", "key": "responseHistory", "value": { "response": "waitlisted", "byFanId": "$actor", "at": "$timestamp" } }
@@ -880,8 +905,10 @@
           {
             "id": "grant-document-access", "label": "Grant access", "icon": "verified_user", "tone": "primary", "action": "grant_access",
             "from": ["access-requested"], "to": "unread", "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": { "authorizedGuardianFanId": { "type": "fanId", "required": true } },
             "effects": [
               { "op": "set", "key": "accessLabel", "value": "Members may open; acknowledgement is tracked" },
+              { "op": "appendUnique", "key": "authorizedGuardianFanIds", "value": "{input.authorizedGuardianFanId}" },
               { "op": "append", "key": "acknowledgementHistory", "value": { "event": "Coach granted document access", "byFanId": "$actor", "at": "$timestamp" } }
             ]
           },
@@ -896,7 +923,7 @@
             "effects": [{ "op": "append", "key": "acknowledgementHistory", "value": { "event": "Document marked unread", "byFanId": "$actor", "at": "$timestamp" } }]
           },
           {
-            "id": "prepare-new-version", "label": "Publish new waiver version", "icon": "upload_file", "tone": "secondary", "action": "upload",
+            "id": "prepare-new-version", "label": "Publish linked waiver version", "icon": "link", "tone": "secondary", "action": "edit",
             "from": ["unread", "read", "acknowledged"], "to": "unread", "guard": { "allowedRoleIds": ["soccer-coach"] },
             "inputs": {
               "documentVersion": { "type": "text", "required": true },
@@ -906,6 +933,14 @@
               { "op": "set", "key": "documentVersion", "value": "{input.documentVersion}" },
               { "op": "set", "key": "documentUrl", "value": "{input.documentUrl}" },
               { "op": "append", "key": "acknowledgementHistory", "value": { "event": "Coach published a new waiver version", "version": "{input.documentVersion}", "byFanId": "$actor", "at": "$timestamp" } }
+            ]
+          },
+          {
+            "id": "record-document-download", "label": "Download document", "icon": "download", "tone": "secondary", "action": "download",
+            "from": ["unread", "read", "acknowledged"], "to": null,
+            "guard": { "allowedRoleIds": ["soccer-guardian"], "actorEqualsField": { "key": "guardianFanId" } },
+            "effects": [
+              { "op": "append", "key": "acknowledgementHistory", "value": { "event": "Guardian downloaded linked document", "version": "{documentVersion}", "byFanId": "$actor", "at": "$timestamp" } }
             ]
           },
           {
@@ -941,6 +976,7 @@
           "accessLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "lock_open", "labelTemplate": "Access: {value}", "displayContexts": ["tile", "detail"] },
           "guardianFanId": { "type": "fanId", "required": true, "writableBy": "formEntry", "displayIcon": "family_restroom", "labelTemplate": "Guardian: {value}", "displayContexts": ["detail"] },
           "authorizedGuardianFanIds": { "type": "fanId[]", "required": true, "writableBy": "formEntry", "displayIcon": "group", "labelTemplate": "Authorized guardians: {value.length}", "displayContexts": ["detail"] },
+          "authorizedGuardianCount": { "type": "number", "formula": "size(authorizedGuardianFanIds)", "displayIcon": "group_add", "labelTemplate": "Authorized guardians: {value}", "displayContexts": ["tile", "detail"] },
           "askedCoachFanIds": { "type": "fanId[]", "writableBy": "effect", "displayIcon": "contact_support", "labelTemplate": "Coach questions: {value.length}", "displayContexts": ["detail"] },
           "lastOpenedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Last opened {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "acknowledgedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Acknowledged {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
@@ -1114,7 +1150,7 @@
             ]
           },
           {
-            "id": "record-export-download", "label": "Download export", "icon": "download", "tone": "secondary", "action": "record_outcome",
+            "id": "record-export-download", "label": "Download export", "icon": "download", "tone": "secondary", "action": "download",
             "from": ["completed"], "to": null,
             "guard": { "allowedRoleIds": ["soccer-owner"], "formula": "if(downloadUrl == null, false, true)" },
             "effects": [
@@ -1149,11 +1185,11 @@
           "operationMode": { "type": "text", "writableBy": "effect", "displayIcon": "swap_horiz", "labelTemplate": "Mode: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "downloadUrl": { "type": "url", "writableBy": "effect", "openMode": "external", "displayIcon": "download", "labelTemplate": "Download: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           // NEEDS IMPLEMENTATION (platform service): export service must calculate and populate checksum; no JSON effect may fabricate it.
-          "checksum": { "type": "text", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "checksum": { "type": "text", "writableBy": "effect", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           // NEEDS IMPLEMENTATION (platform service): transfer provider must allocate and populate transferId.
-          "transferId": { "type": "text", "displayIcon": "swap_horiz", "labelTemplate": "Transfer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "transferId": { "type": "text", "writableBy": "effect", "displayIcon": "swap_horiz", "labelTemplate": "Transfer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           // NEEDS IMPLEMENTATION (platform service): export service must allocate and populate exportReceiptId.
-          "exportReceiptId": { "type": "text", "displayIcon": "receipt_long", "labelTemplate": "Export receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "exportReceiptId": { "type": "text", "writableBy": "effect", "displayIcon": "receipt_long", "labelTemplate": "Export receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Started {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "completedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "task_alt", "labelTemplate": "Completed {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "downloadedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "download_done", "labelTemplate": "Downloaded {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
