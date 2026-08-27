@@ -19,6 +19,17 @@ and never struck. Suite baselines quoted inside older tracker entries are stale 
 numbers are judges **432**, app shell **271**, engine **281 (+3 skipped)**, demo **156**, zero failures on
 Windows.
 
+**Backend-integration sweep 2026-08-26/27.** The app now runs on the real backends by default and the
+document library exists end to end. Current baselines: judges **434**, app shell **307**, engine **299
+(+4 skipped)**, workflow service **75 (+5)**, demo **160**, app-access **49**.
+
+**A pattern this sweep kept finding: declared and never read.** Seven constants, fields or code paths
+existed and nothing consumed them — `sharingGrantable`, a state `readGuard` under a non-`guarded`
+default, `explicitReaderFanIds` (`writableBy: None`), the renderer contract's `calendar`
+surface-family, `SurfaceQuery.dateWindowStart/End`, the engine's `workflowType == 'notification'`
+delivery branch, and `dueNotifications` itself. None failed anything. **A grep for a declaration
+proves it exists, not that anything reads it** — check the consumer.
+
 **A measurement caveat worth carrying.** Two sweeps run that day were wrong in the same way: they read an
 artifact instead of the code path that consumes it. `grep actorIdentities` over the packages returned zero
 and was read as "packages declare no identities" — they are *derived* from `roles[]` at load. A role
@@ -102,12 +113,21 @@ in a separate repository this tracker cannot see.
 ### Spec decisions that block other work
 
 - [ ] `needs-spec-decision` — `deliver_reminder` applies cleanly to 2 of 4 candidates; Chess and Soccer expose a contradiction inside `permissions.md` itself and are deliberately UNAPPLIED — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
-- [ ] `needs-spec-decision` — Calendar hardcodes transition id `send-reminder`; 9 communities declare 7 different spellings, so Camera/Cedar/Garden/Masjid Nur get **no** reminder and the failure is swallowed by a `debugPrint` — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
 - [ ] `needs-spec-decision` — two permission vocabularies that do not meet: `community.surface.navigation.*` (app-shell only, decided by string suffix) vs `permissions.md`'s `community.manage_settings` (App Access). Prerequisite for Phase E — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
 - [ ] `new-milestone` — **Document ACL**: `sharedWith` is one flat `fanId` list, so there is exactly one permission level ("shared" = "can read") and sharing with a group is impossible. Sequenced AFTER Phase F — see [Document ACL Spec Proposal.md](Document%20ACL%20Spec%20Proposal.md)
 - [ ] `new-milestone` — **Spec-version compatibility hardening**: Layers 1–3 land with the v4-only cut; Layer 4 (packages declaring `requiresCapabilities`) needs a spec decision — see [Spec Version Compatibility.md](Spec%20Version%20Compatibility.md)
 
 ### Known defects and debt
+
+- [ ] `needs-verification` — **deploy `loom-workflow-service:0.4.0` and prove reminders live**; the running 0.3.0 predates the `dueNotifications` endpoint, so `set_reminder` still delivers nothing against the cluster — build in flight 2026-08-27
+- [ ] `new-milestone` — **archetype-owned bookkeeping is unimplemented**, so `grant_access`/`share` cannot populate the shared-with field a grant reads; blocks Cedar's `explicitReaderFanIds` ever being filled — see [document-library.md §6](../references/archetypes/document-library.md)
+- [ ] `new-ticket` — **Cedar's seeded documents carry no file**: JSON cannot hold bytes, so the document surface renders nothing to open until a post-install fixture uploads through the API — delivery step, not a package one (`729c802f`)
+- [ ] `new-ticket` — **Masjid Nur's calendar tab is a list, not a calendar**: `mosque-volunteer-signup` uses `shiftDate`/`shiftTime` on a calendar-rendered tab, and a mixed-archetype tab degrades wholesale — now a documented contract violation, fixable by Skill regeneration — see [calendar.md §2](../references/archetypes/calendar.md)
+- [ ] `new-ticket` — **Cedar declares `request_access`/`withdraw_access_request` with no granting counterpart**; filling it needs archetype bookkeeping above, so left open rather than filled with an inert transition (`bfb1fabd` records the same trap)
+- [ ] `new-ticket` — **`_updateInstanceFields` resolves no roles**, unlike the four read/execute paths the membership fix covered — separate question, untouched (`3bbda3f9`)
+- [ ] `new-ticket` — **`SurfaceQuery.dateWindowStart/End` is declared and never plumbed**: the service builds `SurfaceQuery(sort:)` only and the calendar pages every instance and filters on device — a community with years of events transfers all of them to draw one month
+- [ ] `new-ticket` — **the engine's `workflowType == 'notification'` delivery branch is dead and mistimed**; no package uses that type and it fires at creation, ignoring `dueAt`. Left in place with the finding recorded at the site; deleting it is separate work (`bf1acf6d`)
+- [ ] `needs-spec-decision` — **recurrence has no scheduled top-up**: `generateRecurringInstances` runs only when a transition is applied, so a series never extends itself. Whether that is a defect depends on whether series are finite — unmeasured
 
 - [ ] `new-ticket` — **`b25_capture_workflow_screenshots.dart` uninstalls the demo app on teardown**, so the next capture run finds nothing installed. `flutter drive` rebuilds and reinstalls, so a run recovers on its own — but any check of `adb shell pm list packages` between runs will correctly report the app absent, which reads like a broken environment. Either stop uninstalling or say so in the capture output
 - [ ] `needs-debug-agent` — CJM.16 Messages-tab fix, landing with Phase F rather than as its own dispatch — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
@@ -128,6 +148,16 @@ Items not tied to a formal tracker doc — the fallback location when a `call_*.
 `DISPATCH_TRACKER_FILE` set. Empty right now.
 
 ## Recently closed
+
+- [x] `new-milestone` — **the reminder service**, the half of `set_reminder` that never existed (`bf1acf6d`, spec `b6d5f24a`). `RemoteWorkflowEngineApi.dueNotifications` threw, naming its own cause, and nothing called it on either engine; six workflows let a member ask to be reminded and nothing ever reminded them. `GET /v1/communities/{id}/notifications/due?asOf=` scopes by the engine's read model rather than a recipient filter of its own, because the local engine returns the whole community's due instances — right on one member's device, a leak over HTTP. `asOf` is the caller's instant so an offline device gets its backlog. `LoomReminderSweeper` delivers once, retries failures, never throws, and is wired to community open.
+- [x] `new-milestone` — **`calendar` is a real archetype, placeable in any tab** (`b6ce5515`). `event-rsvp` minus `respond`/`withdraw_response`/`join_waitlist` and minus every attendance array. Placement was already archetype-driven — the tab id is only a join key — so a community can call the tab `prayer-times` and get a month grid. Touched nine registries; `permissions.md` §4 had to move first because the spec-sync test compares the two by set equality. One injectivity assertion removed rather than updated, with the rationale in the test.
+- [x] `new-milestone` — **document library, end to end**: spec (`2ba56eac`, corrected `0f871c7c`), endpoints + 8 infrastructure-free tests (`01957d62`), app client (`add0b384`), upload wired into the card surface (`fc04103f`), Cedar regenerated to store files (`729c802f`), validator rules in the authoring validator (`6e38c315`). Access derives from the workflow — no new authorization model.
+- [x] `new-ticket` — **`membersOnly` meant creator-only server-side** (`3bbda3f9`). The service never installed an `ActiveMembershipLookup`, so `_isActiveMember` fell through to false and every member saw only their own instances. The app shell had always installed one, so the same workflow answered differently on device and server.
+- [x] `new-ticket` — **a state `readGuard` was ignored unless `visibility.default` was `guarded`** (`dc78f7f1`). Three shipped workflows declared guards that never ran: Cedar's board-only documents were readable by every member, Book Club's drafts by anyone at all. The filtering shortcut needed the same correction or the fix would have been inert for exactly the worst case.
+- [x] `new-milestone` — **`sharingGrantable` implemented** (`ca5f617e`), declared since the contracts were written and read by nothing. A grant is an alternative to a transition's guard, never a clause in it, because guards are AND-only. The grantable set comes from the contract so no package can add `delete` to it.
+- [x] `new-ticket` — **Youth Soccer's waiver library called a URL paste an upload** (`bfb1fabd`), which after the document API meant it granted file-storage authority for a paste. The Skill fixed it from a brief carrying no document instructions at all.
+- [x] `new-ticket` — **Skill taught what my briefs were carrying** (`a358b536`, `e079b9e4`): where a brief and the fetched package disagree the package wins; an action legal for its family is not a reason to declare it; document libraries decide stored-vs-linked from the product doc; revise a product doc, never replace it. Proven by re-running the same dispatch against a brief stripped to 21 lines of identifiers — byte-identical package.
+- [x] `needs-spec-decision` — **Calendar's hardcoded `send-reminder` transition id** — closed on measurement 2026-08-27: the literal is gone from the app shell (only a copy-catalog label key remains), fixed 2026-08-20 per `permissions.md`'s own note and never struck here.
 
 - [x] `needs-debug-agent` — **CJM.18 fixed and verified 2026-08-24** (`cd40d07f`). `_authApiForCommunity` cached resolver closures written `(_) =>` that discarded their own `communityExtensionId` and closed over whichever community was current. Both now honour the argument, the experience resolves fresh per call, and re-hydration drops the cached API. Verified red-then-green: against unpatched code both new tests fail with `Role "community-b-role" is not declared by community "ext_cjm18_community_b"` — the same shape as the original field report, so the regression test reproduces the real defect. Demo 153 → 155.
 - [x] `new-ticket` — **capture integrity, both defects** (`3c6496cb`). A second bare-`adb` call site at `b25_capture_workflow_screenshots.dart:532` (the earlier fix covered only the guard file, because the ticket scoped the audit to it); and byte-identical frames counted as fresh evidence. Duplicate frames now fail the workflow with `screenshotStatus: failed-duplicate-frame` and are excluded from the count, and the detector explicitly refuses to guess whether identical bytes mean an unchanged screen or a bad write. The adb half was **proven in situ** with adb off PATH — unit tests passing had not been enough the first time. Judges 430 → 432.
