@@ -175,6 +175,19 @@ If an error genuinely cannot be fixed within the grammar, **stop and report the 
 | `missing_action_button_row` | A `primary` binding's surface has no action row | Use `summary`, or a surface that supports actions |
 | `binding_cap_exceeded` (warning) | >32 bindings or >16 roles | A smell — likely two workflows. Split. |
 
+### Documents (added 2026-08-26)
+
+| Code | Meaning | Fix |
+| --- | --- | --- |
+| `document_upload_stores_no_content` | A transition declares the `documentLibrary` `upload` action while setting the library's `url` content field from a member-supplied `{input.…}`. It publishes a link under the upload action's name. | Decide which the community actually wants. For a **stored** library, drop the input and let the Document Library API write the field — see [`document-library.md` §3a](../archetypes/document-library.md). For a **link** library, this transition is not an upload: use `edit`, or a community-defined transition with no `action`. |
+| `document_library_is_link_only` *(warning)* | A `documentLibrary` workflow keeps its content in a `url` field and declares no `upload` action, so nothing can ever be stored through the Document Library API. | Nothing, if the product doc describes a library of external resources — four of the five shipped document libraries are exactly that, deliberately. Justify it in Gaps/assumptions naming this finding. Only add an `upload` transition if the product doc says members add files. |
+
+**Why `upload` is not just a label.** The Document Library API derives permission to store files from
+whether a fan can invoke an `upload` transition. Declaring one therefore grants file-storage
+authority; declaring one for what is really a URL paste hands that authority out for a paste. This is
+the only action in any archetype vocabulary that carries a platform capability, so it is the only one
+where the wrong choice is a security question rather than a wording question.
+
 ### Expected affordances (added 2026-08-04)
 
 These three are heuristic, warning-only checks — never hard failures — but each has caught a real,

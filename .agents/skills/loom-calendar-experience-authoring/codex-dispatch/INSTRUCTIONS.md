@@ -79,6 +79,11 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    shipped package if that choice was wrong.
 2. **Actions.** Every bespoke-family transition declares an `action` from that family's closed
    vocabulary; every generic-family transition declares none (rule 12).
+   **Every action must be driven by something the product doc asks for.** An action being *legal* for
+   the family is not a reason to declare it. Adding one the shipped package lacks and the doc never
+   requests produces a control that renders and does nothing, because nothing in the package gives it
+   an effect and no requirement gives it a purpose. If an action looks missing, write it in
+   Gaps/assumptions; do not add it speculatively.
 3. **Every reachable state renders — except on response-row workflows.** No state a transition path
    can reach may be missing from every `renderBindings[].states` list; a state bound nowhere is an
    instance nobody can see.
@@ -93,10 +98,41 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    `createInstance`/`generateRecurringInstances` effect means members can never make one (rule 12d).
 5. **Visibility.** `visibility.fields` present exactly where rule 12b requires, absent where it does
    not, and never pointed at archetype-owned bookkeeping.
+5a. **Document libraries hold stored files or links — decide which, from the product doc.** A
+   `documentLibrary` workflow is one or the other and the package must say so, because the two differ
+   in who holds the bytes. If the doc says members or admins *upload* or *add a file*, declare an
+   `upload` transition and make the content field `writableBy: "effect"` and never `required`. If the
+   doc talks about a *source*, a *provider*, an *external link* or *opening* something hosted
+   elsewhere, it is a link library: a member-writable `url` field and no `upload` action.
+   [`document-library.md` §3a](../../../docs/references/archetypes/document-library.md) is the
+   authority and gives the JSON for both. Getting this wrong is caught by
+   `document_upload_stores_no_content`, and it is worth getting right first because `upload` grants a
+   real platform capability.
 6. **Seeds.** Every seed declares `createdByFanId` (rule 12c) and demonstrates a state worth seeing —
    seeds are the first thing a reviewer looks at.
 7. **Zero validator errors and zero warnings.** A warning you cannot eliminate must be justified
    explicitly in Gaps/assumptions, naming the finding.
+
+#### The block lists identifiers. It is not evidence that anything else exists.
+
+The `## Existing identifiers` block exists to tell you the values in the table above — the ones you
+cannot discover any other way because they are referenced from outside the package. **Anything else it
+asserts is a claim you can and must check**, because you fetched the shipped package and it is right
+there.
+
+If the block says an action, transition, field or workflow exists and the fetched package does not
+declare it, **the package wins.** Say so in Gaps/assumptions and carry on from what the package
+actually contains. Do not add the thing to make the brief true.
+
+This is a real defect, not a hypothetical. A dispatch brief once listed `grant_access` among a
+community's existing document actions; the package declared no such thing. The agent noticed the
+discrepancy, reported it, and added the transition anyway out of deference to the brief. Because the
+archetype owns that action's bookkeeping and the platform had not implemented it yet, the result was a
+transition with no effects — a button that rendered and did nothing.
+
+The general rule the incident illustrates: **a dispatching session can be wrong about the package, and
+you are the one holding the package.** Deference is correct for identifiers you cannot verify. It is
+wrong for existence claims you can.
 
 If no `## Existing identifiers` section is present in the target doc, this is a brand-new community
 with nothing to preserve — author roles/tabs fresh as normal, per the rest of this document.
@@ -601,6 +637,8 @@ Two quick sanity checks on your own work, both cheap:
 | `invalid_workflow_definition` | The workflow failed to parse. | Read the message for the exact type error and fix the shape. | Deleting the workflow. |
 | `unknown_instance_workflow_type` | A seed names a workflow type that does not exist. | Fix the type name, or declare the workflow. | Deleting the seed. |
 | `seed_instance_missing_creator` | A seed has no `createdByFanId`. | Add it — rule 12c. The value is a person. | Deleting the seed. |
+| `document_upload_stores_no_content` | A transition declares the `upload` action but sets the library's `url` content field from a member input — a link publish named as an upload, which also hands out file-storage permission. | Decide which library this is. Stored: drop the input, let the API write the field. Linked: this is not an upload, so use `edit` or a community-defined transition. | Deleting the transition. The community still needs whatever it did. |
+| `document_library_is_link_only` *(warning)* | This library keeps its content in a member-typed `url` field and declares no `upload`, so nothing can be stored through the Document Library API. | Usually nothing — most shipped document libraries are deliberately link libraries. Justify it in Gaps/assumptions by name. | Adding an `upload` transition to silence it. That grants file-storage authority the product doc never asked for. |
 | `redundant_transition` | Two transitions share a guard and target from the same states. | If they really are one capability, remove one. If they are distinct operations, give them different targets or effects — and if they legitimately differ only in effects, say so in Gaps/assumptions and leave them. | Blindly deleting one. Approve and decline commonly share a target state and are not duplicates. |
 
 **When a finding recurs across rounds**, stop and re-read the reference doc for that construct rather
