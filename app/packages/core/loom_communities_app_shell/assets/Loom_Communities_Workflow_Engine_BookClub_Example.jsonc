@@ -803,7 +803,7 @@
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
           // NEEDS IMPLEMENTATION (platform service): AI answer generation. Declared for the
           // searchAiAnswer surface, never seeded and never written by an effect.
-          "answer": { "type": "textarea", "writableBy": "effect", "maxLength": 2000,
+          "answer": { "type": "textarea", "writableBy": "platform", "maxLength": 2000,
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "citations": { "type": "list", "writableBy": "effect",
             "itemSchema": {
@@ -943,7 +943,7 @@
         "instanceDataSchema": {
           "scope": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayContexts": [] },
-          "ownerFanId": { "type": "fanId", "required": true, "writableBy": "effect",
+          "ownerFanId": { "type": "fanId", "required": true, "writableBy": "formEntry",
             "displayContexts": [] },
           "scopeDisplay": { "type": "text", "formula": "if($viewer == ownerFanId, scope, 'Protected export scope')",
             "displayIcon": "filter_alt_outlined", "labelTemplate": "Scope: {value}",
@@ -955,11 +955,11 @@
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           // NEEDS IMPLEMENTATION (platform service): checksum / integrity hash generation.
           // Declared for exportWizard, never seeded, never effect-written, and never used as a guard.
-          "checksum": { "type": "text?", "writableBy": "effect", "hideWhenEmpty": true,
+          "checksum": { "type": "text?", "writableBy": "platform", "hideWhenEmpty": true,
             "displayIcon": "fingerprint", "displayContexts": ["detail"] },
           // NEEDS IMPLEMENTATION (platform service): opaque transfer-ID generation.
           // Declared for exportWizard, never seeded, never effect-written, and never used as a guard.
-          "transferId": { "type": "text?", "writableBy": "effect", "hideWhenEmpty": true,
+          "transferId": { "type": "text?", "writableBy": "platform", "hideWhenEmpty": true,
             "displayIcon": "key", "displayContexts": ["detail"] },
           "statusMessage": { "type": "text?", "writableBy": "effect",
             "displayIcon": "receipt_long", "labelTemplate": "{value}",
