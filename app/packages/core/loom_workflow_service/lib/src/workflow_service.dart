@@ -263,7 +263,10 @@ class WorkflowService {
     }
 
     final findings = validateExecutableDefinitions(body.definitions);
-    if (findings.isNotEmpty) {
+    // Only errors block an install. Warnings travel in the success summary, so
+    // an advisory finding informs the author instead of rejecting a package
+    // that is correct as authored.
+    if (findings.any((finding) => finding.isError)) {
       return _workflowDefinitionsSummary(
         statusCode: 422,
         communityId: communityId,

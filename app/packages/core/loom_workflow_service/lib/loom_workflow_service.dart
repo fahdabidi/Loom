@@ -1,5 +1,6 @@
 export 'src/app_access_client.dart';
 export 'src/community_group_id_resolver.dart';
+export 'src/definition_validation.dart';
 export 'src/document_access.dart';
 export 'src/document_object_store.dart';
 export 'src/document_repository.dart';

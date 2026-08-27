@@ -2,22 +2,42 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 const supportedWorkflowSpecVersions = <int>{currentCommunitySpecVersion};
 
+/// How a finding should be treated.
+///
+/// Added because not every true thing about a definition should stop it being
+/// installed. A package that is coherent but worth a second look needs a way to
+/// say so; without one, the only options were to fail a correct package or to
+/// stay silent, and staying silent is what let five document libraries ship as
+/// link lists without anyone noticing.
+enum WorkflowFindingSeverity {
+  /// The definition cannot be installed.
+  error,
+
+  /// The definition installs. Something about it is worth reading.
+  warning,
+}
+
 class WorkflowDefinitionFinding {
   final String code;
   final String message;
   final String? workflowType;
   final String? transitionId;
+  final WorkflowFindingSeverity severity;
 
   const WorkflowDefinitionFinding({
     required this.code,
     required this.message,
     this.workflowType,
     this.transitionId,
+    this.severity = WorkflowFindingSeverity.error,
   });
+
+  bool get isError => severity == WorkflowFindingSeverity.error;
 
   Map<String, dynamic> toJson() => {
     'code': code,
     'message': message,
+    'severity': severity.name,
     if (workflowType != null) 'workflowType': workflowType,
     if (transitionId != null) 'transitionId': transitionId,
   };
@@ -36,7 +56,123 @@ List<WorkflowDefinitionFinding> validateExecutableDefinitions(
   _validateActions(definitions, findings);
   _validateFormulas(definitions, findings);
   _validateEffectOps(definitions, findings);
+  _validateDocumentContent(definitions, findings);
   return findings;
+}
+
+/// Where a `documentLibrary` workflow's document content comes from.
+///
+/// Every shipped document library turned out to be a list of links: a member
+/// types a URL into a `url` field and the library shows its title, source and
+/// version. That is a coherent product and it is what all five product docs
+/// describe -- "open embedded, launch external, download". It is also invisible
+/// from the outside, which is why nobody noticed that the platform's document
+/// storage had no packages using it.
+///
+/// These checks make the choice explicit rather than latent.
+void _validateDocumentContent(
+  Map<String, Map<String, dynamic>> definitions,
+  List<WorkflowDefinitionFinding> findings,
+) {
+  const resolver = ArchetypeResolver();
+  final archetypes = resolver.resolveAll(definitions);
+
+  for (final entry in definitions.entries) {
+    if (archetypes[entry.key]?.family != 'documentLibrary') continue;
+
+    final schema = entry.value['instanceDataSchema'];
+    final linkFields = <String>{};
+    if (schema is Map<String, dynamic>) {
+      for (final field in schema.entries) {
+        final declared = field.value;
+        if (declared is Map && declared['type'] == 'url') {
+          linkFields.add(field.key);
+        }
+      }
+    }
+
+    final transitions = entry.value['transitions'];
+    if (transitions is! List) continue;
+
+    var declaresUpload = false;
+    for (final transition in transitions) {
+      if (transition is! Map) continue;
+      if (transition['action'] != 'upload') continue;
+      declaresUpload = true;
+
+      final transitionId = transition['id'] is String
+          ? transition['id'] as String
+          : null;
+
+      // An upload whose document location is typed in by the member is a link
+      // publish wearing the upload action's name. That matters beyond
+      // vocabulary now: the document library API derives permission to store
+      // files from the presence of an `upload` transition, so mislabelling one
+      // hands out file-upload authority as a side effect of pasting a URL.
+      final memberSuppliedFields = _fieldsSetFromInput(
+        transition['effects'],
+        linkFields,
+      );
+      if (memberSuppliedFields.isEmpty) continue;
+
+      findings.add(
+        WorkflowDefinitionFinding(
+          code: 'document_upload_stores_no_content',
+          message:
+              'Transition "${transitionId ?? '<unknown>'}" declares the '
+              '"upload" action but sets '
+              '${memberSuppliedFields.map((f) => '"$f"').join(', ')} from a '
+              'member-supplied input, so it publishes a link rather than '
+              'storing a document. Declaring "upload" also grants permission '
+              'to store files through the document library API. Use a '
+              'community-defined transition or "edit" for a link publish.',
+          workflowType: entry.key,
+          transitionId: transitionId,
+        ),
+      );
+    }
+
+    if (!declaresUpload && linkFields.isNotEmpty) {
+      findings.add(
+        WorkflowDefinitionFinding(
+          code: 'document_library_is_link_only',
+          severity: WorkflowFindingSeverity.warning,
+          message:
+              'This document library holds links, not stored documents: its '
+              'content lives in ${linkFields.map((f) => '"$f"').join(', ')} '
+              'and no transition declares the "upload" action, so no document '
+              'can be stored through the document library API. Intended for a '
+              'library of external resources; declare an "upload" transition '
+              'if members should be able to add files.',
+          workflowType: entry.key,
+        ),
+      );
+    }
+  }
+}
+
+/// Which of [candidateFields] an effect list assigns from a member input.
+///
+/// Matches on the effect's own shape rather than on field names. A field called
+/// `documentUrl` is not evidence of anything -- the project has been bitten
+/// before by inferring meaning from identifier spelling.
+Set<String> _fieldsSetFromInput(
+  Object? effects,
+  Set<String> candidateFields,
+) {
+  final matched = <String>{};
+  if (effects is! List || candidateFields.isEmpty) return matched;
+  for (final effect in effects) {
+    if (effect is! Map) continue;
+    if (effect['op'] != 'set') continue;
+    final key = effect['key'];
+    if (key is! String || !candidateFields.contains(key)) continue;
+    final value = effect['value'];
+    if (value is String && value.contains('{input.')) {
+      matched.add(key);
+    }
+  }
+  return matched;
 }
 
 void _validateSurfaceFamilies(
