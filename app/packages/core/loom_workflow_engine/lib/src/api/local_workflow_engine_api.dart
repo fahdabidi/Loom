@@ -615,6 +615,56 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     }
   }
 
+  /// Which transitions [fanId] may invoke because a document was shared with
+  /// them, rather than because of a role they hold.
+  ///
+  /// This implements `ArchetypeContract.sharingGrantable`, which has been
+  /// declared since the archetype contracts were written and read by nothing.
+  /// `documentLibrary` declares `{open, download, edit}`: being shared a
+  /// document lets you open, download and edit it, and nothing else.
+  ///
+  /// The grantable set comes from the contract, never from community JSON. A
+  /// package that could name its own grantable actions could add `delete` and
+  /// hand an individual the power to destroy a document the community's roles
+  /// reserve to a board -- so lifecycle actions are not grantable to anyone,
+  /// by construction rather than by policy.
+  ///
+  /// Returns a predicate rather than a bool so the shared-with membership test
+  /// runs once per instance instead of once per transition.
+  bool Function(LoomWorkflowTransition transition) _archetypeGrantPredicate(
+    LoomWorkflowStateMachine machine,
+    Map<String, dynamic> instanceData,
+    String fanId,
+  ) {
+    const denyAll = _denyAllTransitions;
+    final family = _resolvedArchetypes[machine.workflowType]?.family;
+    final contract = ArchetypeResolver.contracts[family];
+    if (contract == null || contract.sharingGrantable.isEmpty) return denyAll;
+
+    // The community names the field; the archetype does not fix it. An
+    // undeclared field grants nobody anything, which is the same fail-closed
+    // reading the visibility model applies.
+    final sharedField = machine.visibility.fields.sharedWith;
+    if (sharedField == null || sharedField.isEmpty) return denyAll;
+
+    if (!_identityFieldMatches(
+      instanceData,
+      sharedField,
+      fanId,
+      shape: _IdentityFieldShape.list,
+    )) {
+      return denyAll;
+    }
+
+    return (transition) {
+      final action = transition.action;
+      // A transition declaring no action is community-defined. The archetype
+      // has no idea what it means, so it cannot be granted -- the same honest
+      // outcome such transitions get for per-person bookkeeping.
+      return action != null && contract.sharingGrantable.contains(action);
+    };
+  }
+
   bool _isVisibleThroughArchetype(
     WorkflowInstance instance,
     LoomWorkflowStateMachine machine,
@@ -879,13 +929,23 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final machine = _definitions[defId];
     if (machine == null) return const [];
 
+    final resolvedData = _withComputedFields(
+      instanceData,
+      machine,
+      viewerId: fanId,
+    );
     return trans_eval.availableTransitions(
       machine,
       currentState,
       fanId,
-      _withComputedFields(instanceData, machine, viewerId: fanId),
+      resolvedData,
       roleIds: _roleIdsByFanId[fanId],
       clock: _clock,
+      grantedByArchetype: _archetypeGrantPredicate(
+        machine,
+        resolvedData,
+        fanId,
+      ),
     );
   }
 
@@ -904,15 +964,25 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     // invisible to the UI action resolver even though the mutation is
     // already persisted.
     final completedWorkflowIds = await completedWorkflowIdsForFan(fanId);
+    final computedForFan = _withComputedFields(
+      instanceData,
+      machine,
+      viewerId: fanId,
+    );
     final candidates = trans_eval.availableTransitions(
       machine,
       currentState,
       fanId,
-      _withComputedFields(instanceData, machine, viewerId: fanId),
+      computedForFan,
       roleIds: _roleIdsByFanId[fanId],
       completedWorkflowIds: completedWorkflowIds,
       skipRelatedAggregate: true,
       clock: _clock,
+      grantedByArchetype: _archetypeGrantPredicate(
+        machine,
+        computedForFan,
+        fanId,
+      ),
     );
     final result = <LoomWorkflowTransition>[];
     for (final transition in candidates) {
@@ -1047,6 +1117,11 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       completedWorkflowIds: completedWorkflowIds,
       skipRelatedAggregate: true,
       clock: _clock,
+      grantedByArchetype: _archetypeGrantPredicate(
+        machine,
+        computedData,
+        fanId,
+      ),
     );
 
     final declaredTransition = machine.transitions.firstWhere(
@@ -2433,3 +2508,9 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 enum _IdentityFieldShape { scalar, list, scalarOrList }
 
 enum _ArchetypeBookkeepingOperation { addActor, removeActor }
+
+/// A grant predicate that refuses every transition.
+///
+/// A named constant rather than an inline closure so the several fail-closed
+/// paths above cannot drift apart.
+bool _denyAllTransitions(LoomWorkflowTransition transition) => false;
