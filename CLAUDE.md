@@ -85,3 +85,77 @@ as evidence**; example output inside an agent's report is prose, not telemetry.
 - UX judging runs on Claude Sonnet (`data/call_ux_judge_agent.sh`) and live walkthroughs on
   Claude Opus (`data/call_live_verification_agent.sh`) — the DeepSeek gateway is text-only and
   refuses images, which a UX judge fundamentally needs.
+
+## Autonomous mode — how to run the tracker without being asked
+
+Armed 2026-08-27. These are the patterns that actually held up over the preceding week; each one is
+here because ignoring it cost a rework.
+
+### Build the real thing, or declare honestly that it is missing
+
+**No placeholder values, ever.** A fabricated checksum, a stubbed receipt id, an effect that `set`s
+`"pending"` — each looks real and is therefore worse than an empty field. The whole export-checksum
+gap stayed invisible for weeks because a field claimed a writer it never had.
+
+**No incomplete workflows.** A capability the product doc promises must reach a live end: a real
+writer, a real consumer, a reachable terminal state. If it cannot, say so in the gaps section and
+leave the field visibly unwritten rather than papering it.
+
+**Prefer building the service to widening the grammar.** A thing the platform can compute belongs to
+the platform, exposed as an API — not to an expression in a package. That is why formulas lost the
+reminder case and `reminder` gained a declarative block.
+
+### Whose hands touch what
+
+| Change | Who does it |
+| --- | --- |
+| Application/Dart/backend code | `data/call_implementation_agent.sh` — **never** hand-edit |
+| Community `*.jsonc` | the Skill only, via `data/call_skill_authoring_agent.sh`; copy its output byte-identically. Files are `chmod 444`; lift, copy, restore |
+| Product docs, reference docs, Skill instructions | me, directly |
+| Root-causing a stubborn defect | `data/call_root_cause_agent.sh` |
+| UX judging (Sonnet, needs images) | `data/call_ux_judge_agent.sh` |
+| Live walkthrough (Opus) | `data/call_live_verification_agent.sh` |
+
+**JSON specification edits are allowed only for correctness, and only minor ones.** A grammar change
+needs a reason a worked example can carry. Anything larger stops and asks.
+
+### When the Skill produces wrong JSON, fix the Skill — with an example, not just a rule
+
+Prose in `INSTRUCTIONS.md` is the weaker half. Add the shape to
+`docs/references/reference/solved-patterns.md` in its house style — requirement shape, the
+plausible-but-wrong JSON, the verified-correct JSON, the community and date it was found in — and
+cite a live community that already does it right. The Skill learns by matching shapes. A rule with no
+shape to match leaves it inferring, and it can infer a destructive reading: "the sweep ignores this
+formula" became "delete the field and the member's chosen offset with it".
+
+Never write a community-specific instruction into a dispatch prompt. If one community needs telling,
+every future one does too, and that belongs in the reference materials.
+
+### Verify with your own oracle, never the agent's report
+
+Re-derive expected values from the spec and the shipped package; do not hand a dispatch the answer
+and do not accept its summary. For a regenerated package that means, from your own shell: `POST
+/validate`, plus a field-by-field diff against what shipped confirming identifiers, roles, tabs,
+workflows, reminder blocks and seeds all survived.
+
+**Deletion is invisible in a validator run.** A package that quietly lost a feature and one that
+correctly gained a wire produce identical reports — the validator counts what is declared, and only
+the product doc says what is owed. Diff against the previous package, always.
+
+Grep every dispatch diff for weakened assertions — changed `hasLength(N)`, `expect(…, N)`,
+`findsNWidgets(N)` — and confirm each new number is right because the package genuinely differs.
+
+### Ordering rules that have bitten
+
+- **A new validator finding code is a documentation change first.** `05-validation.md` is hard-locked
+  and a conformance test requires every emitted code to be listed there, so register the code (and
+  its bundle mirror) before dispatching the rule, or the agent is blocked through no fault of its own.
+- **The validator server on `:8787` is not the test-suite validator.** A green suite does not mean the
+  long-running server has your rule; it does not restart itself.
+- **Push before any reset**, and re-run the suites yourself after installing package output.
+
+### The end of the line, not the middle
+
+The UX judge and the live walkthrough are the **final polish**, run once all backend services are
+wired and integrated — not as progress checks along the way. The production bar is the B25 addendum
+table: 79 rows, each proven by live walkthrough *and* UX judge.
