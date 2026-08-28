@@ -39,6 +39,12 @@ known answer for every kind of thing it claims to find, not just one.**
 
 ## Open
 
+### 2026-08-28 — the app's engine is in-memory, so nothing survives a restart
+
+- [ ] `new-ticket` — **`WorkflowDatabase.memory()` is the app's only engine database.** Both construction sites use it — `part02_tab_shell.dart:754` and `part25_engine_native_community_store.dart:227` — so in a default local build every loan, RSVP, custody handoff, due date and acknowledgement lives for the life of the process and no longer. Close the app and the community resets to seed data. `WorkflowDatabase.file(path)` exists in `store/database.dart:54` and the app never calls it. **Needs a decision before it is a ticket:** is local persistence wanted (`WorkflowDatabase.file()` on device), or is the local engine deliberately an ephemeral demo shell whose replacement is the remote engine, making local persistence irrelevant? The answer changes the fix entirely
+- [ ] `needs-verification` — **in-memory also means per-device, which is the worse half.** Two members hold private copies and never see each other's state, so one borrowing an item does not make it unavailable to another. Lending, queueing and RSVP capacity are all inherently multi-party, so local-only is not a degraded version of those features — it is a different thing that resembles them. Any B25 row proven against a default build proves single-device behaviour only
+- [x] `needs-verification` — **corrected my own claim that "the loan lifecycle already works".** It does not. The effects are correctly authored and the state machine is right — that part stands — but authored is not backed. `listing-loan-api.openapi.yaml`'s framing paragraph is rewritten: the queue is *unauthored*, custody and loans are *authored but unbacked*, and both need the service
+
 ### 2026-08-28 — a tab you may read but not act on is invisible — CLOSED
 
 - [x] `new-ticket` — **`roleHasPermission` conflated "can act" with "can see". Fixed `3006fa29`.** A role is now admitted if it can act OR if the bound workflow's visibility admits it to read, with read resolution moved into a shared `read_visibility_resolver.dart` in the engine so the tab rail and the instance list cannot disagree. `visibleRoleIds` remains an absolute override. Blast radius was 5 role-tab grants, all in Chess, no removals — predicted independently before reading the agent's report, and the two lists matched

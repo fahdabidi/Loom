@@ -24,10 +24,34 @@ info:
 
 
     Each section below is therefore marked **NEW** or **MIGRATION**. A `NEW` section builds something
-    that does not exist. A `MIGRATION` section moves behaviour out of workflow JSON that currently
-    works, and is worth doing only for a reason better than symmetry — the JSON version is not broken,
-    and moving it trades a working implementation for a better-placed one. Build the `NEW` parts first
-    and let the migrations be a separate, deliberate decision.
+    nobody authored. A `MIGRATION` section covers behaviour that *is* authored — the effects are
+    correct and the state machine is right — but is not backed by anything durable.
+
+
+    **Corrected 2026-08-28, because the first version of this paragraph was wrong.** It said the loan
+    lifecycle "works" and that migrating it would trade a working implementation for a better-placed
+    one. That is not true, and the reason matters more than the error. In the app's default build both
+    engine construction sites use `WorkflowDatabase.memory()` —
+    `part02_tab_shell.dart:754` and `part25_engine_native_community_store.dart:227` — so every loan,
+    custody handoff and due date lives only for the life of the process. Close the app and the
+    community resets to seed data. `WorkflowDatabase.file()` exists and the app never calls it.
+
+
+    The second consequence is worse than the first. In-memory means **per-device**: two members each
+    hold a private copy and never see each other's state, so one member borrowing an item does not make
+    it unavailable to anyone else. Lending is inherently multi-party, so a local-only implementation is
+    not a degraded version of the feature — it is a different thing that resembles it.
+
+
+    So the honest distinction is not "one is missing and three work". It is that the queue is
+    **unauthored**, and custody and loans are **authored but unbacked**. Both need this service; only
+    the queue also needs its JSON written. Build the `NEW` parts first because they are strictly
+    smaller, not because the rest is fine.
+
+
+    The deployed path does persist — the workflow service embeds the engine against Postgres, and that
+    was proven on device reading real rows. But it is reached only by a build carrying all three
+    `--dart-defines`; an unconfigured build silently runs local.
 
 
     **Why the queue cannot stay in workflow JSON, when the rest can.** An ordered `fanId[]` on the
