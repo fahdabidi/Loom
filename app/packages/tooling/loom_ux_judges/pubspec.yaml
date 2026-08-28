@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   archive: ^4.0.9
+  crypto: ^3.0.7
   image: ^4.7.2
   loom_workflow_engine:
     path: ../../core/loom_workflow_engine

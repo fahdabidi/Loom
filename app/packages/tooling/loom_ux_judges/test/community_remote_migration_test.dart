@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:loom_ux_judges/community_remote_migration.dart';
+import 'package:loom_ux_judges/src/community_package_provenance.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:test/test.dart';
 
@@ -314,12 +315,10 @@ File _memberSocialFixture() {
 
 File _communityFixture(String fileName) {
   final relativePath = 'docs/references/communities/$fileName';
-  var directory = Directory.current;
-  for (var depth = 0; depth < 8; depth++) {
-    final candidate = File('${directory.path}/$relativePath');
-    if (candidate.existsSync()) return candidate;
-    directory = directory.parent;
-  }
+  final candidate = File(
+    '${locateCommunityPackageRepositoryRoot().path}/$relativePath',
+  );
+  if (candidate.existsSync()) return candidate;
   throw StateError('Could not find $relativePath from ${Directory.current}.');
 }
 
