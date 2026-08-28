@@ -45,9 +45,9 @@
       "sha256": "f00570f0cf3db30ff6335136071a8828b7e5a19986eb7249dd1767beb7e97813",
       "bytes": 87560,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "c86ab744",
-      "lastCommitDate": "2026-08-27",
-      "lastCommitSubject": "fix(chessclub): declare the reminder and the doc's own tabs; correct a stale doc note"
+      "lastCommit": "2e8541af",
+      "lastCommitDate": "2026-08-28",
+      "lastCommitSubject": "fix(chessclub): declare who each tab is for"
     },
     "Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc": {
       "sha256": "7f6af5b6faed12924eecbb2d13cbc8aa3db3ce7baf62bbc744090276e241290c",
@@ -98,8 +98,8 @@
       "lastCommitSubject": "fix(community): Tabletop declares deliver_reminder on its send-reminder transition"
     },
     "Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc": {
-      "sha256": "37e07f4c1eaf6caaeb7b6b76155ecfb2daf2d05dfaa8a9b737f2bbd7f469e7e7",
-      "bytes": 107638,
+      "sha256": "92c79cd4b950a144745198b5f7a6d96aba0a22c357a957adb4016571d8694c39",
+      "bytes": 107477,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "bfb1fabd",
       "lastCommitDate": "2026-08-27",

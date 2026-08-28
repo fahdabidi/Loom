@@ -295,15 +295,15 @@
           "waiverTitle": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": [] },
           "waiverVersion": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": [] },
           "waiverUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice", "displayContexts": [] },
-          "guardianFanId": { "type": "fanId", "required": true, "writableBy": "effect", "displayIcon": "family_restroom", "labelTemplate": "Guardian: {value}", "displayContexts": ["tile", "detail"] },
+          "guardianFanId": { "type": "fanId", "required": true, "writableBy": "platform", "displayIcon": "family_restroom", "labelTemplate": "Guardian: {value}", "displayContexts": ["tile", "detail"] },
           "coachReviewerFanId": { "type": "fanId?", "writableBy": "effect", "displayIcon": "sports", "labelTemplate": "Reviewer: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "paymentCheckpoint": { "type": "text", "writableBy": "effect", "displayIcon": "paid", "labelTemplate": "Payment: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "waiverCheckpoint": { "type": "text", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Waiver: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "missingItems": { "type": "list", "writableBy": "effect", "displayIcon": "rule", "labelTemplate": "Missing: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "missingItems": { "type": "list", "writableBy": "platform", "displayIcon": "rule", "labelTemplate": "Missing: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "reviewerComment": { "type": "textarea", "writableBy": "effect", "displayIcon": "comment", "labelTemplate": "Coach note: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "submittedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "displayIcon": "schedule", "labelTemplate": "Submitted {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "approvedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "verified", "labelTemplate": "Approved {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "history": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "History: {value.length} entries", "displayContexts": ["tile", "detail"] }
+          "history": { "type": "list", "writableBy": "platform", "displayIcon": "history", "labelTemplate": "History: {value.length} entries", "displayContexts": ["tile", "detail"] }
         }
       },
 
@@ -624,7 +624,7 @@
           "paymentMethodNote": { "type": "text", "writableBy": "formEntry", "displayIcon": "credit_card", "labelTemplate": "Payment method: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "receiptStatus": { "type": "text", "writableBy": "effect", "displayIcon": "receipt_long", "labelTemplate": "Receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           // NEEDS IMPLEMENTATION (platform service): wallet/receipt provider must populate a private receipt id; JSON effects must not fabricate it.
-          "receiptId": { "type": "text", "writableBy": "effect", "displayContexts": [] },
+          "receiptId": { "type": "text", "writableBy": "platform", "displayContexts": [] },
           "receiptDisplay": { "type": "text", "formula": "if($viewer == guardianFanId, receiptId, 'Private receipt')", "displayIcon": "receipt", "labelTemplate": "Receipt detail: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "failureReason": { "type": "text", "writableBy": "effect", "displayIcon": "error", "labelTemplate": "Failure: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "paidAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Paid {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
@@ -637,6 +637,7 @@
       "soccer-practice-schedule": {
         "initialState": "upcoming",
         "visibility": { "default": "guarded", "readGuard": { "allowedRoleIds": ["soccer-guardian", "soccer-coach"] } },
+        "reminder": { "anchorDateField": "eventDate", "anchorTimeField": "eventTime", "leadHours": 24 },
         "states": {
           "upcoming": {
             "label": "Upcoming practice", "tone": "info",
@@ -725,12 +726,12 @@
           "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "sortable": true, "displayIcon": "groups", "labelTemplate": "Capacity: {value}", "displayContexts": ["tile", "detail"] },
           "reminderChannel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "notifications", "labelTemplate": "Reminder: {value}", "displayContexts": ["tile", "detail"] },
           "reminderBody": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 500, "displayIcon": "message", "labelTemplate": "Reminder text: {value}", "displayContexts": ["detail"] },
-          "published": { "type": "bool", "required": true, "writableBy": "effect", "displayIcon": "publish", "labelTemplate": "RSVPs open: {value}", "displayContexts": ["tile", "detail"] },
-          "syncState": { "type": "text", "required": true, "writableBy": "effect", "displayIcon": "sync", "labelTemplate": "Calendar: {value}", "displayContexts": ["tile", "detail"] },
+          "published": { "type": "bool", "required": true, "writableBy": "platform", "displayIcon": "publish", "labelTemplate": "RSVPs open: {value}", "displayContexts": ["tile", "detail"] },
+          "syncState": { "type": "text", "required": true, "writableBy": "platform", "displayIcon": "sync", "labelTemplate": "Calendar: {value}", "displayContexts": ["tile", "detail"] },
           "cancellationReason": { "type": "text", "writableBy": "effect", "displayIcon": "event_busy", "labelTemplate": "Cancelled: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "responses": { "type": "list", "source": "query(soccer-practice-rsvp-response where eventId == id)", "displayIcon": "how_to_reg", "labelTemplate": "Responses: {value.length}", "displayContexts": ["detail"] },
-          "reminderHistory": { "type": "list", "writableBy": "effect", "displayIcon": "notifications_active", "labelTemplate": "Reminder history: {value.length} entries", "displayContexts": ["detail"] },
-          "scheduleHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Schedule history: {value.length} entries", "displayContexts": ["detail"] }
+          "reminderHistory": { "type": "list", "writableBy": "platform", "displayIcon": "notifications_active", "labelTemplate": "Reminder history: {value.length} entries", "displayContexts": ["detail"] },
+          "scheduleHistory": { "type": "list", "writableBy": "platform", "displayIcon": "history", "labelTemplate": "Schedule history: {value.length} entries", "displayContexts": ["detail"] }
         }
       },
 
@@ -977,10 +978,10 @@
           "guardianFanId": { "type": "fanId", "required": true, "writableBy": "formEntry", "displayIcon": "family_restroom", "labelTemplate": "Guardian: {value}", "displayContexts": ["detail"] },
           "authorizedGuardianFanIds": { "type": "fanId[]", "required": true, "writableBy": "formEntry", "displayIcon": "group", "labelTemplate": "Authorized guardians: {value.length}", "displayContexts": ["detail"] },
           "authorizedGuardianCount": { "type": "number", "formula": "size(authorizedGuardianFanIds)", "displayIcon": "group_add", "labelTemplate": "Authorized guardians: {value}", "displayContexts": ["tile", "detail"] },
-          "askedCoachFanIds": { "type": "fanId[]", "writableBy": "effect", "displayIcon": "contact_support", "labelTemplate": "Coach questions: {value.length}", "displayContexts": ["detail"] },
+          "askedCoachFanIds": { "type": "fanId[]", "writableBy": "platform", "displayIcon": "contact_support", "labelTemplate": "Coach questions: {value.length}", "displayContexts": ["detail"] },
           "lastOpenedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Last opened {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "acknowledgedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Acknowledged {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "acknowledgementHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Document history: {value.length} entries", "displayContexts": ["tile", "detail"] }
+          "acknowledgementHistory": { "type": "list", "writableBy": "platform", "displayIcon": "history", "labelTemplate": "Document history: {value.length} entries", "displayContexts": ["tile", "detail"] }
         }
       },
 
@@ -1120,9 +1121,7 @@
           {
             "id": "record-export-ready", "label": "Record export ready", "icon": "task_alt", "tone": "primary", "action": "record_outcome",
             "from": ["generating"], "to": "completed", "guard": { "allowedRoleIds": ["soccer-owner"] },
-            "inputs": { "downloadUrl": { "type": "text", "required": true } },
             "effects": [
-              { "op": "set", "key": "downloadUrl", "value": "{input.downloadUrl}" },
               { "op": "set", "key": "completedAt", "value": "$timestamp" },
               { "op": "append", "key": "exportHistory", "value": { "event": "Owner recorded redacted export as ready", "byFanId": "$actor", "at": "$timestamp" } }
             ]
@@ -1179,24 +1178,23 @@
         ],
         "instanceDataSchema": {
           "exportTitle": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "archive", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "exportScope": { "type": "list", "required": true, "writableBy": "effect", "displayIcon": "checklist", "labelTemplate": "Scope: {value}", "displayContexts": ["tile", "detail"] },
-          "redactedFields": { "type": "list", "required": true, "writableBy": "effect", "displayIcon": "privacy_tip", "labelTemplate": "Redacted: {value}", "displayContexts": ["tile", "detail"] },
-          "redactionConfirmed": { "type": "bool", "required": true, "writableBy": "effect", "displayIcon": "verified_user", "labelTemplate": "Redaction approved: {value}", "displayContexts": ["tile", "detail"] },
+          "exportScope": { "type": "list", "required": true, "writableBy": "platform", "displayIcon": "checklist", "labelTemplate": "Scope: {value}", "displayContexts": ["tile", "detail"] },
+          "redactedFields": { "type": "list", "required": true, "writableBy": "platform", "displayIcon": "privacy_tip", "labelTemplate": "Redacted: {value}", "displayContexts": ["tile", "detail"] },
+          "redactionConfirmed": { "type": "bool", "required": true, "writableBy": "platform", "displayIcon": "verified_user", "labelTemplate": "Redaction approved: {value}", "displayContexts": ["tile", "detail"] },
           "operationMode": { "type": "text", "writableBy": "effect", "displayIcon": "swap_horiz", "labelTemplate": "Mode: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "downloadUrl": { "type": "url", "writableBy": "effect", "openMode": "external", "displayIcon": "download", "labelTemplate": "Download: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          // NEEDS IMPLEMENTATION (platform service): export service must calculate and populate checksum; no JSON effect may fabricate it.
-          "checksum": { "type": "text", "writableBy": "effect", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "downloadUrl": { "type": "url", "writableBy": "platform", "openMode": "external", "displayIcon": "download", "labelTemplate": "Download: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "checksum": { "type": "text", "writableBy": "platform", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           // NEEDS IMPLEMENTATION (platform service): transfer provider must allocate and populate transferId.
-          "transferId": { "type": "text", "writableBy": "effect", "displayIcon": "swap_horiz", "labelTemplate": "Transfer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "transferId": { "type": "text", "writableBy": "platform", "displayIcon": "swap_horiz", "labelTemplate": "Transfer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           // NEEDS IMPLEMENTATION (platform service): export service must allocate and populate exportReceiptId.
-          "exportReceiptId": { "type": "text", "writableBy": "effect", "displayIcon": "receipt_long", "labelTemplate": "Export receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "exportReceiptId": { "type": "text", "writableBy": "platform", "displayIcon": "receipt_long", "labelTemplate": "Export receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Started {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "completedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "task_alt", "labelTemplate": "Completed {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "downloadedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "download_done", "labelTemplate": "Downloaded {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "failureReason": { "type": "text", "writableBy": "effect", "displayIcon": "error", "labelTemplate": "Failure: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "rollbackReason": { "type": "text", "writableBy": "effect", "displayIcon": "undo", "labelTemplate": "Rollback: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "rolledBackAt": { "type": "date?", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Rolled back {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "exportHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Export history: {value.length} entries", "displayContexts": ["tile", "detail"] }
+          "exportHistory": { "type": "list", "writableBy": "platform", "displayIcon": "history", "labelTemplate": "Export history: {value.length} entries", "displayContexts": ["tile", "detail"] }
         }
       },
 
@@ -1249,7 +1247,7 @@
           "threadTitle": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "forum", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "lastMessage": { "type": "text", "writableBy": "effect", "displayIcon": "chat_bubble", "labelTemplate": "Latest: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "lastReplyAt": { "type": "date?", "writableBy": "effect", "sortable": true, "displayIcon": "schedule", "labelTemplate": "Last reply {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "messages": { "type": "list", "writableBy": "effect", "displayIcon": "chat", "labelTemplate": "Messages: {value.length}", "displayContexts": ["tile", "detail"] },
+          "messages": { "type": "list", "writableBy": "platform", "displayIcon": "chat", "labelTemplate": "Messages: {value.length}", "displayContexts": ["tile", "detail"] },
           "archivedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "archive", "labelTemplate": "Archived {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] }
         }
       }
