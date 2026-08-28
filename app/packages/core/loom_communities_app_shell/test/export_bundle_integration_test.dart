@@ -34,18 +34,23 @@ final class _TokenSession extends LoomAuthSession {
 }
 
 final class _RemoteExportEngine extends RemoteWorkflowEngineApi {
-  _RemoteExportEngine({required this.transitions, required this.nextData})
-    : super(
-        baseUri: Uri.parse('https://workflow.test/'),
-        communityId: 'community-test',
-        bearerTokenProvider: () async => 'test-access-token',
-        httpClient: MockClient(
-          (_) async => throw StateError('The test engine overrides requests.'),
-        ),
-      );
+  _RemoteExportEngine({
+    required this.transitions,
+    required this.nextState,
+    required this.nextData,
+  }) : super(
+         baseUri: Uri.parse('https://workflow.test/'),
+         communityId: 'community-test',
+         bearerTokenProvider: () async => 'test-access-token',
+         httpClient: MockClient(
+           (_) async => throw StateError('The test engine overrides requests.'),
+         ),
+       );
 
   final List<LoomWorkflowTransition> transitions;
+  final String nextState;
   final Map<String, dynamic> nextData;
+  final appliedTransitionIds = <String>[];
 
   @override
   Future<List<LoomWorkflowTransition>> availableTransitionsAsync({
@@ -63,10 +68,13 @@ final class _RemoteExportEngine extends RemoteWorkflowEngineApi {
     required String transitionId,
     required String fanId,
     Map<String, dynamic>? inputs,
-  }) async => WorkflowTransitionResult(
-    newState: 'generated',
-    newInstanceData: nextData,
-  );
+  }) async {
+    appliedTransitionIds.add(transitionId);
+    return WorkflowTransitionResult(
+      newState: nextState,
+      newInstanceData: nextData,
+    );
+  }
 }
 
 final class _StaticTransitionsEngine implements WorkflowEngineApi {
@@ -102,23 +110,31 @@ Map<String, Object?> _bundleJson() => <String, Object?>{
 LoomWorkflowStateMachine _checksumMachine({
   required String state,
   required List<Map<String, Object?>> transitions,
-}) => LoomWorkflowStateMachine.fromJson(<String, dynamic>{
-  'initialState': state,
-  'states': <String, Object?>{
-    state: <String, Object?>{'label': state},
-    'generated': <String, Object?>{'label': 'Generated'},
-  },
-  'transitions': transitions,
-  'instanceDataSchema': <String, Object?>{
-    'checksum': <String, Object?>{
-      'type': 'text?',
-      'writableBy': 'platform',
-      'labelTemplate': 'Checksum: {value}',
-      'hideWhenEmpty': true,
-      'displayContexts': <String>['tile', 'detail'],
+}) {
+  final stateNames = <String>{state};
+  for (final transition in transitions) {
+    stateNames.addAll((transition['from']! as List<Object?>).cast<String>());
+    final destination = transition['to'];
+    if (destination is String) stateNames.add(destination);
+  }
+  return LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+    'initialState': state,
+    'states': <String, Object?>{
+      for (final stateName in stateNames)
+        stateName: <String, Object?>{'label': stateName},
     },
-  },
-}, 'export-workflow');
+    'transitions': transitions,
+    'instanceDataSchema': <String, Object?>{
+      'checksum': <String, Object?>{
+        'type': 'text?',
+        'writableBy': 'platform',
+        'labelTemplate': 'Checksum: {value}',
+        'hideWhenEmpty': true,
+        'displayContexts': <String>['tile', 'detail'],
+      },
+    },
+  }, 'export-workflow');
+}
 
 EngineNativeResolvedBinding _binding(
   LoomWorkflowStateMachine machine,
@@ -231,7 +247,7 @@ void main() {
                   request.url.path.endsWith('export-bundle'),
             )
             .headers['idempotency-key'],
-        isNotEmpty,
+        'loom-export-export-instance',
       );
       expect(
         requests.where(
@@ -243,7 +259,7 @@ void main() {
   );
 
   testWidgets(
-    'generation shows the service checksum only after the remote service returns it',
+    'a record-outcome transition generates after it enters a download state',
     (tester) async {
       final service = MockClient((request) async {
         expect(request.method, 'POST');
@@ -265,27 +281,35 @@ void main() {
         ),
       );
       final machine = _checksumMachine(
-        state: 'ready',
+        state: 'generating',
         transitions: <Map<String, Object?>>[
           <String, Object?>{
-            'id': 'generate-package',
-            'action': 'run',
-            'label': 'Generate package',
-            'from': <String>['ready'],
-            'to': 'generated',
+            'id': 'record-export-ready',
+            'action': 'record_outcome',
+            'label': 'Record export ready',
+            'from': <String>['generating'],
+            'to': 'completed',
+          },
+          <String, Object?>{
+            'id': 'download-export',
+            'action': 'download',
+            'label': 'Download export',
+            'from': <String>['completed'],
+            'to': null,
           },
         ],
       );
       final instance = WorkflowInstance(
         instanceId: 'export-instance',
         workflowType: machine.workflowType,
-        currentState: 'ready',
+        currentState: 'generating',
         instanceData: const <String, dynamic>{},
         createdByFanId: 'member',
       );
       final engine = _RemoteExportEngine(
         transitions: machine.transitions,
-        nextData: <String, dynamic>{'checksum': 'a' * 64},
+        nextState: 'completed',
+        nextData: const <String, dynamic>{},
       );
       await tester.pumpWidget(
         _host(
@@ -304,7 +328,7 @@ void main() {
       await tester.tap(
         find.byKey(
           const ValueKey(
-            'export-wizard-export-instance-action-generate-package',
+            'export-wizard-export-instance-action-record-export-ready',
           ),
         ),
       );
@@ -313,6 +337,7 @@ void main() {
         find.byKey(const Key('export-wizard-error-export-instance')),
         findsNothing,
       );
+      expect(engine.appliedTransitionIds, <String>['record-export-ready']);
       expect(find.text('Checksum: ${'a' * 64}'), findsOneWidget);
     },
   );
@@ -351,20 +376,28 @@ void main() {
       ),
     );
     final machine = _checksumMachine(
-      state: 'ready',
+      state: 'generating',
       transitions: <Map<String, Object?>>[
         <String, Object?>{
-          'id': 'generate-package',
-          'action': 'run',
-          'label': 'Generate package',
-          'from': <String>['ready'],
-          'to': 'generated',
+          'id': 'record-export-ready',
+          'action': 'record_outcome',
+          'label': 'Record export ready',
+          'from': <String>['generating'],
+          'to': 'completed',
+        },
+        <String, Object?>{
+          'id': 'download-export',
+          'action': 'download',
+          'label': 'Download export',
+          'from': <String>['completed'],
+          'to': null,
         },
       ],
     );
     final engine = _RemoteExportEngine(
       transitions: machine.transitions,
-      nextData: <String, dynamic>{'checksum': 'a' * 64},
+      nextState: 'completed',
+      nextData: const <String, dynamic>{},
     );
     await tester.pumpWidget(
       _host(
@@ -374,7 +407,7 @@ void main() {
             WorkflowInstance(
               instanceId: 'export-instance',
               workflowType: machine.workflowType,
-              currentState: 'ready',
+              currentState: 'generating',
               instanceData: const <String, dynamic>{},
               createdByFanId: 'member',
             ),
@@ -389,7 +422,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(
-        const ValueKey('export-wizard-export-instance-action-generate-package'),
+        const ValueKey(
+          'export-wizard-export-instance-action-record-export-ready',
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -472,6 +507,332 @@ void main() {
   );
 
   testWidgets(
+    'Garden transfer and import runs do not generate an export bundle',
+    (tester) async {
+      final garden = _machineFromAsset(
+        'Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc',
+        'garden-export-custom-schemas',
+      );
+      final startTransfer = garden.transitions.singleWhere(
+        (transition) => transition.id == 'start-transfer',
+      );
+      final startImport = garden.transitions.singleWhere(
+        (transition) => transition.id == 'start-import',
+      );
+      var generationRequests = 0;
+      final service = MockClient((_) async {
+        generationRequests++;
+        return http.Response('unexpected generation', 500);
+      });
+      addTearDown(service.close);
+      overrideLoomExportBundleClientForTesting(
+        LoomExportBundleClient(
+          workflowServiceBaseUri: Uri.parse('https://workflow.test/'),
+          session: _TokenSession(),
+          httpClient: service,
+        ),
+      );
+
+      Future<void> invokeNonGeneratingRun(
+        LoomWorkflowTransition transition,
+        String instanceId,
+      ) async {
+        await tester.pumpWidget(
+          _host(
+            ExportWizardArchetypeCard(
+              resolved: _binding(
+                garden,
+                WorkflowInstance(
+                  instanceId: instanceId,
+                  workflowType: garden.workflowType,
+                  currentState: 'ready',
+                  instanceData: const <String, dynamic>{},
+                  createdByFanId: 'garden-coordinator',
+                ),
+              ),
+              engine: _RemoteExportEngine(
+                transitions: <LoomWorkflowTransition>[transition],
+                nextState: 'processing',
+                nextData: const <String, dynamic>{},
+              ),
+              fanId: 'garden-coordinator',
+              accent: Colors.green,
+              onInstanceChanged: (_) {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(
+            ValueKey('export-wizard-$instanceId-action-${transition.id}'),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      await invokeNonGeneratingRun(startTransfer, 'garden-transfer');
+      await invokeNonGeneratingRun(startImport, 'garden-import');
+
+      expect(generationRequests, 0);
+    },
+  );
+
+  testWidgets('Book Club generates when confirm-export-ready enters ready', (
+    tester,
+  ) async {
+    final book = _machineFromAsset(
+      'Loom_Communities_Workflow_Engine_BookClub_Example.jsonc',
+      'book-export-metadata',
+    );
+    final trigger = book.transitions.singleWhere(
+      (transition) => transition.id == 'confirm-export-ready',
+    );
+    expect(
+      book
+          .transitionsFrom(trigger.to!)
+          .any((transition) => transition.action == 'download'),
+      isTrue,
+    );
+    var generationRequests = 0;
+    final service = MockClient((request) async {
+      generationRequests++;
+      expect(request.method, 'POST');
+      return http.Response(jsonEncode(_bundleJson()), 201);
+    });
+    addTearDown(service.close);
+    overrideLoomExportBundleClientForTesting(
+      LoomExportBundleClient(
+        workflowServiceBaseUri: Uri.parse('https://workflow.test/'),
+        session: _TokenSession(),
+        httpClient: service,
+      ),
+    );
+    final engine = _RemoteExportEngine(
+      transitions: <LoomWorkflowTransition>[trigger],
+      nextState: 'ready',
+      nextData: const <String, dynamic>{'redactionStatus': 'passed'},
+    );
+    WorkflowInstance? changed;
+    await tester.pumpWidget(
+      _host(
+        ExportWizardArchetypeCard(
+          resolved: _binding(
+            book,
+            WorkflowInstance(
+              instanceId: 'export-instance',
+              workflowType: book.workflowType,
+              currentState: 'redaction-previewed',
+              instanceData: const <String, dynamic>{
+                'redactionStatus': 'passed',
+              },
+              createdByFanId: 'book-organizer',
+            ),
+          ),
+          engine: engine,
+          fanId: 'book-organizer',
+          accent: Colors.blue,
+          onInstanceChanged: (instance) => changed = instance,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(
+        const ValueKey(
+          'export-wizard-export-instance-action-confirm-export-ready',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(engine.appliedTransitionIds, <String>[trigger.id]);
+    expect(generationRequests, 1);
+    expect(changed?.currentState, 'ready');
+    expect(changed?.instanceData['checksum'], 'a' * 64);
+  });
+
+  testWidgets(
+    'Cedar does not regenerate when transfer completion enters another download state',
+    (tester) async {
+      final cedar = _machineFromAsset(
+        'Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc',
+        'hoa-export-evidence',
+      );
+      final generationComplete = cedar.transitions.singleWhere(
+        (transition) => transition.id == 'complete-export-generation',
+      );
+      final transferComplete = cedar.transitions.singleWhere(
+        (transition) => transition.id == 'record-transfer-complete',
+      );
+      for (final transition in <LoomWorkflowTransition>[
+        generationComplete,
+        transferComplete,
+      ]) {
+        expect(
+          cedar
+              .transitionsFrom(transition.to!)
+              .any((candidate) => candidate.action == 'download'),
+          isTrue,
+        );
+      }
+      var generationRequests = 0;
+      final service = MockClient((_) async {
+        generationRequests++;
+        return http.Response(jsonEncode(_bundleJson()), 201);
+      });
+      addTearDown(service.close);
+      overrideLoomExportBundleClientForTesting(
+        LoomExportBundleClient(
+          workflowServiceBaseUri: Uri.parse('https://workflow.test/'),
+          session: _TokenSession(),
+          httpClient: service,
+        ),
+      );
+      WorkflowInstance? firstChanged;
+      await tester.pumpWidget(
+        _host(
+          ExportWizardArchetypeCard(
+            resolved: _binding(
+              cedar,
+              WorkflowInstance(
+                instanceId: 'export-instance',
+                workflowType: cedar.workflowType,
+                currentState: 'generating',
+                instanceData: const <String, dynamic>{},
+                createdByFanId: 'hoa-board',
+              ),
+            ),
+            engine: _RemoteExportEngine(
+              transitions: <LoomWorkflowTransition>[generationComplete],
+              nextState: 'ready',
+              nextData: const <String, dynamic>{},
+            ),
+            fanId: 'hoa-board',
+            accent: Colors.teal,
+            onInstanceChanged: (instance) => firstChanged = instance,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(
+          const ValueKey(
+            'export-wizard-export-instance-action-complete-export-generation',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(generationRequests, 1);
+      expect(firstChanged?.instanceData['checksum'], 'a' * 64);
+
+      WorkflowInstance? secondChanged;
+      await tester.pumpWidget(
+        _host(
+          ExportWizardArchetypeCard(
+            resolved: _binding(
+              cedar,
+              WorkflowInstance(
+                instanceId: 'export-instance',
+                workflowType: cedar.workflowType,
+                currentState: 'transferring',
+                instanceData: <String, dynamic>{'checksum': 'a' * 64},
+                createdByFanId: 'hoa-board',
+              ),
+            ),
+            engine: _RemoteExportEngine(
+              transitions: <LoomWorkflowTransition>[transferComplete],
+              nextState: 'transferred',
+              nextData: <String, dynamic>{'checksum': 'a' * 64},
+            ),
+            fanId: 'hoa-board',
+            accent: Colors.teal,
+            onInstanceChanged: (instance) => secondChanged = instance,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(
+          const ValueKey(
+            'export-wizard-export-instance-action-record-transfer-complete',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(generationRequests, 1);
+      expect(secondChanged?.instanceData['checksum'], 'a' * 64);
+    },
+  );
+
+  testWidgets(
+    'checksum evidence records do not generate a bundle without download',
+    (tester) async {
+      final evidence = _machineFromAsset(
+        'Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc',
+        'export-checksum-evidence',
+      );
+      expect(
+        evidence.transitions.where((t) => t.action == 'download'),
+        isEmpty,
+      );
+      final enableTransfer = evidence.transitions.singleWhere(
+        (transition) => transition.id == 'enable-transfer',
+      );
+      var generationRequests = 0;
+      final service = MockClient((_) async {
+        generationRequests++;
+        return http.Response('unexpected generation', 500);
+      });
+      addTearDown(service.close);
+      overrideLoomExportBundleClientForTesting(
+        LoomExportBundleClient(
+          workflowServiceBaseUri: Uri.parse('https://workflow.test/'),
+          session: _TokenSession(),
+          httpClient: service,
+        ),
+      );
+      await tester.pumpWidget(
+        _host(
+          ExportWizardArchetypeCard(
+            resolved: _binding(
+              evidence,
+              WorkflowInstance(
+                instanceId: 'checksum-evidence',
+                workflowType: evidence.workflowType,
+                currentState: 'verified',
+                instanceData: const <String, dynamic>{
+                  'verificationResult': 'passed',
+                },
+                createdByFanId: 'portability-owner',
+              ),
+            ),
+            engine: _RemoteExportEngine(
+              transitions: <LoomWorkflowTransition>[enableTransfer],
+              nextState: 'verified',
+              nextData: const <String, dynamic>{'verificationResult': 'passed'},
+            ),
+            fanId: 'portability-owner',
+            accent: Colors.indigo,
+            onInstanceChanged: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(
+          const ValueKey(
+            'export-wizard-checksum-evidence-action-enable-transfer',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(generationRequests, 0);
+    },
+  );
+
+  testWidgets(
     'an export service error says unavailable and never renders a checksum value',
     (tester) async {
       final service = MockClient((_) async => http.Response('down', 503));
@@ -484,14 +845,21 @@ void main() {
         ),
       );
       final machine = _checksumMachine(
-        state: 'ready',
+        state: 'generating',
         transitions: <Map<String, Object?>>[
           <String, Object?>{
-            'id': 'generate-package',
-            'action': 'run',
-            'label': 'Generate package',
-            'from': <String>['ready'],
-            'to': 'generated',
+            'id': 'record-export-ready',
+            'action': 'record_outcome',
+            'label': 'Record export ready',
+            'from': <String>['generating'],
+            'to': 'completed',
+          },
+          <String, Object?>{
+            'id': 'download-export',
+            'action': 'download',
+            'label': 'Download export',
+            'from': <String>['completed'],
+            'to': null,
           },
         ],
       );
@@ -503,13 +871,14 @@ void main() {
               WorkflowInstance(
                 instanceId: 'export-instance',
                 workflowType: machine.workflowType,
-                currentState: 'ready',
+                currentState: 'generating',
                 instanceData: const <String, dynamic>{},
                 createdByFanId: 'member',
               ),
             ),
             engine: _RemoteExportEngine(
               transitions: machine.transitions,
+              nextState: 'completed',
               nextData: const <String, dynamic>{},
             ),
             fanId: 'member',
@@ -522,7 +891,7 @@ void main() {
       await tester.tap(
         find.byKey(
           const ValueKey(
-            'export-wizard-export-instance-action-generate-package',
+            'export-wizard-export-instance-action-record-export-ready',
           ),
         ),
       );

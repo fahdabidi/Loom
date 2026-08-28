@@ -1262,22 +1262,22 @@ class WorkflowService {
       engine: context.engine,
       instance: instance,
       fanId: context.identity.fanId,
-      action: 'run',
+      action: 'download',
     )) {
-      final runExistsInThisState = await _hasActionInCurrentState(
+      final downloadExistsInThisState = await _hasActionInCurrentState(
         communityId: communityId,
         instance: instance,
-        action: 'run',
+        action: 'download',
       );
       return _error(
         request: request,
-        statusCode: runExistsInThisState ? 403 : 409,
-        code: runExistsInThisState
+        statusCode: downloadExistsInThisState ? 403 : 409,
+        code: downloadExistsInThisState
             ? 'export_bundle_generate_forbidden'
             : 'export_bundle_state_conflict',
-        message: runExistsInThisState
-            ? 'A run transition is not available to this fan.'
-            : 'No run transition is available from the instance state.',
+        message: downloadExistsInThisState
+            ? 'A download transition is not available to this fan.'
+            : 'No download transition is available from the instance state.',
       );
     }
 

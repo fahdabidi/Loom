@@ -145,6 +145,10 @@ final class LoomExportBundleClient {
         'includeDocuments': includeDocuments,
       }),
       mutating: true,
+      // An export is one durable intent per workflow instance. Retrying the
+      // same completed transition must retrieve the recorded bundle rather
+      // than create a second valid checksum for later bytes.
+      idempotencyKey: 'loom-export-$instanceId',
       expectedStatusCodes: const {200, 201},
     );
     return LoomExportBundle.fromJson(
@@ -203,13 +207,17 @@ final class LoomExportBundleClient {
     '${Uri.encodeComponent(exportId)}',
   );
 
-  Future<Map<String, String>> _headers({required bool mutating}) async {
+  Future<Map<String, String>> _headers({
+    required bool mutating,
+    String? idempotencyKey,
+  }) async {
     final accessToken = await _session.currentAccessToken();
     return <String, String>{
       'authorization': 'Bearer $accessToken',
       'accept': 'application/json',
       'x-loom-correlation-id': _newUuidV4(),
-      if (mutating) 'idempotency-key': 'loom-export-${_newUuidV4()}',
+      if (mutating)
+        'idempotency-key': idempotencyKey ?? 'loom-export-${_newUuidV4()}',
     };
   }
 
@@ -218,10 +226,13 @@ final class LoomExportBundleClient {
     Uri uri, {
     String? body,
     bool mutating = false,
+    String? idempotencyKey,
     Set<int> expectedStatusCodes = const {200},
   }) async {
     final request = http.Request(method, uri)
-      ..headers.addAll(await _headers(mutating: mutating));
+      ..headers.addAll(
+        await _headers(mutating: mutating, idempotencyKey: idempotencyKey),
+      );
     if (body != null) {
       request.headers['content-type'] = 'application/json';
       request.body = body;

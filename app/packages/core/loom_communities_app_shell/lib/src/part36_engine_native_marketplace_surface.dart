@@ -1273,26 +1273,16 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
       _mutating = true;
       _error = null;
     });
+    WorkflowInstance? appliedNext;
     try {
       final client = _exportClient;
       final isRemoteChecksumExport =
           _isChecksumExport && widget.engine is RemoteWorkflowEngineApi;
+      final generatesBundle = _generatesBundleAfter(transition);
       if (isRemoteChecksumExport &&
           client == null &&
-          (transition.action == 'run' || transition.action == 'download')) {
+          (generatesBundle || transition.action == 'download')) {
         throw const _ExportBundleServiceUnavailable();
-      }
-      if (_isChecksumExport && client != null && transition.action == 'run') {
-        // The service authorizes the current state's run transition, so it
-        // must generate before this card advances that transition. The service
-        // writes checksum fields; this card accepts only the engine result and
-        // never mirrors the returned checksum into instance data itself.
-        final bundle = await client.generate(
-          communityId: _communityId!,
-          instanceId: _instance.instanceId,
-          redactProtectedData: _redactProtectedData,
-        );
-        rememberLoomExportBundleForCurrentAppSession(bundle);
       }
       if (_isChecksumExport &&
           client != null &&
@@ -1310,7 +1300,22 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
         }
       }
 
-      final next = await _applyWorkflowTransition(transition, inputs);
+      appliedNext = await _applyWorkflowTransition(transition, inputs);
+      var next = appliedNext;
+      if (generatesBundle && client != null) {
+        // Generation is deliberately after the workflow transition: the
+        // destination state's declared download action is both the trigger
+        // and the service's authorization rule. The service performs the
+        // persistent field write; _withGeneratedBundle is only this card's
+        // immediate projection of that server response.
+        final bundle = await client.generate(
+          communityId: _communityId!,
+          instanceId: _instance.instanceId,
+          redactProtectedData: _redactProtectedData,
+        );
+        rememberLoomExportBundleForCurrentAppSession(bundle);
+        next = _withGeneratedBundle(next, bundle);
+      }
       if (!mounted) return;
       setState(() {
         _instance = next;
@@ -1320,34 +1325,49 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
       await _loadActions();
       if (!mounted) return;
     } on _ExportBundleHandleUnavailable {
-      if (!mounted) return;
-      setState(() {
-        _mutating = false;
-        _error =
-            'Export download is unavailable until this app session '
-            'generates a bundle.';
-      });
+      await _finishAfterExportFailure(
+        appliedNext,
+        'Export download is unavailable until this app session generates a '
+        'bundle.',
+      );
     } on _ExportBundleServiceUnavailable {
-      if (!mounted) return;
-      setState(() {
-        _mutating = false;
-        _error =
-            'Checksum is unavailable because this connected community '
-            'has no export service configured.';
-      });
+      await _finishAfterExportFailure(
+        appliedNext,
+        'Checksum is unavailable because this connected community has no '
+        'export service configured.',
+      );
     } on LoomExportBundleException catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _mutating = false;
-        _error = 'Checksum is unavailable because the export service failed.';
-      });
+      await _finishAfterExportFailure(
+        appliedNext,
+        'Checksum is unavailable because the export service failed.',
+      );
     } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _mutating = false;
-        _error = 'Could not update this listing.';
-      });
+      await _finishAfterExportFailure(
+        appliedNext,
+        'Could not update this listing.',
+      );
     }
+  }
+
+  Future<void> _finishAfterExportFailure(
+    WorkflowInstance? appliedNext,
+    String message,
+  ) async {
+    if (!mounted) return;
+    setState(() {
+      if (appliedNext != null) _instance = appliedNext;
+      // The transition reached the service, but the bundle did not. Do not
+      // leave source-state actions active against a now-advanced instance.
+      // A later normal binding refresh will load the destination's actions.
+      if (appliedNext != null) _actions = const [];
+      _mutating = false;
+      _error = message;
+    });
+    // Do not notify the parent in this branch. Its binding reload would
+    // replace this card and clear the error while the new remote state still
+    // lacks a checksum, making the failed generation look like success.
+    // The card intentionally remains a loud, stable failure state until the
+    // next ordinary refresh.
   }
 
   Future<WorkflowInstance> _applyWorkflowTransition(
@@ -1372,6 +1392,45 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
 
   bool get _isChecksumExport =>
       widget.resolved.machine.instanceDataSchema.containsKey('checksum');
+
+  bool get _hasChecksum {
+    final checksum = _instance.instanceData['checksum'];
+    return checksum is String && checksum.trim().isNotEmpty;
+  }
+
+  Set<String> get _downloadCapableStates => widget.resolved.machine.transitions
+      .where((transition) => transition.action == 'download')
+      .expand((transition) => transition.from)
+      .toSet();
+
+  bool _generatesBundleAfter(LoomWorkflowTransition transition) {
+    final destination = transition.to;
+    return _isChecksumExport &&
+        !_hasChecksum &&
+        destination != null &&
+        _downloadCapableStates.contains(destination);
+  }
+
+  WorkflowInstance _withGeneratedBundle(
+    WorkflowInstance transitioned,
+    LoomExportBundle bundle,
+  ) {
+    final data = Map<String, dynamic>.from(transitioned.instanceData)
+      ..['checksum'] = bundle.checksum
+      ..['checksumAlgorithm'] = bundle.checksumAlgorithm;
+    if (widget.resolved.machine.instanceDataSchema.containsKey(
+      'checksumVerified',
+    )) {
+      data['checksumVerified'] = false;
+    }
+    return WorkflowInstance(
+      instanceId: transitioned.instanceId,
+      workflowType: transitioned.workflowType,
+      currentState: transitioned.currentState,
+      instanceData: data,
+      createdByFanId: transitioned.createdByFanId,
+    );
+  }
 
   String? get _communityId {
     final engine = widget.engine;

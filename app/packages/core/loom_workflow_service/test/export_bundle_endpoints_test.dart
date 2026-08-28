@@ -243,7 +243,7 @@ void main() {
     },
   );
 
-  test('a caller without run is refused generation with 403', () async {
+  test('a caller without download is refused generation with 403', () async {
     final generated = await _generate(fanId: _viewer);
 
     expect(generated.response.statusCode, 403);
@@ -251,7 +251,7 @@ void main() {
   });
 
   test('a caller without download is refused download with 403', () async {
-    final generated = await _generate(fanId: _runOnly);
+    final generated = await _generate();
     expect(generated.response.statusCode, 201, reason: generated.rawBody);
 
     final download = await _download(
