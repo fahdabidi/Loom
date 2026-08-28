@@ -34,8 +34,8 @@
       "lastCommitSubject": "feat(communities): regenerate Camera Club at specVersion 4 (3 of 11)"
     },
     "Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc": {
-      "sha256": "26375be19363e6d0ba90ca967d6666f0824d9446d36e0eb8b2dd8f37b64aacbf",
-      "bytes": 101999,
+      "sha256": "b6e8cfa52b9d9f2a35e315222d0f137007053850eda8a83c87eb90e53d1fae41",
+      "bytes": 102880,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "f08a105d",
       "lastCommitDate": "2026-08-27",
@@ -45,9 +45,9 @@
       "sha256": "2aebba46df1204c4d01f4b89b346a7648cc669d4aa07bbc838a2dd0cbfa995ad",
       "bytes": 87542,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "15b57445",
-      "lastCommitDate": "2026-08-24",
-      "lastCommitSubject": "feat(chess): converge Chess Club onto the reserved owner role -- RED, follow-up dispatched"
+      "lastCommit": "c86ab744",
+      "lastCommitDate": "2026-08-27",
+      "lastCommitSubject": "fix(chessclub): declare the reminder and the doc's own tabs; correct a stale doc note"
     },
     "Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc": {
       "sha256": "7f6af5b6faed12924eecbb2d13cbc8aa3db3ce7baf62bbc744090276e241290c",

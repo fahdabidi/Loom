@@ -7,7 +7,7 @@
   "extensionId": "ext_cedar_commons_hoa",
   "branding": { "accentColor": "#285A7B" },
   "seedDataFiles": [],
-  "idempotencyKey": "cedar-commons-hoa-experience-v4-2026-08-27-calendar-reminder",
+  "idempotencyKey": "cedar-commons-hoa-experience-v4-2026-08-27-stored-documents",
 
   "experience": {
     "displayName": "Cedar Commons HOA",
@@ -231,7 +231,7 @@
             "bindingKind": "primary", "actions": [{
               "kind": "create", "label": "Submit property request", "byRoleIds": ["hoa-member"],
               "scope": "tab", "presentation": "fab", "prefill": {
-                "requesterFanId": "$actor", "statusHistory": []
+                "requesterFanId": "$actor"
               }
             }]
           },
@@ -266,7 +266,7 @@
           "attachmentUrl": { "type": "url?", "writableBy": "formEntry", "openMode": "external",
             "displayIcon": "attach_file", "labelTemplate": "Attachment: {value}", "hideWhenEmpty": true,
             "displayContexts": ["detail"] },
-          "requesterFanId": { "type": "fanId", "required": true, "displayIcon": "person_outline",
+          "requesterFanId": { "type": "fanId", "required": true, "writableBy": "platform", "displayIcon": "person_outline",
             "labelTemplate": "Requester: {value}", "displayContexts": ["tile", "detail"] },
           "requestInstanceId": { "type": "text", "writableBy": "effect", "hideWhenEmpty": true },
           "submittedAt": { "type": "date?", "writableBy": "effect", "sortable": true,
@@ -879,9 +879,9 @@
             "displayIcon": "visibility", "labelTemplate": "Visibility: {value}", "displayContexts": ["detail"] },
           "paymentMethodLabel": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "credit_card", "labelTemplate": "Method: {value}", "displayContexts": ["detail"] },
-          "autopayEnabled": { "type": "bool", "writableBy": "effect", "displayIcon": "autorenew",
+          "autopayEnabled": { "type": "bool", "writableBy": "platform", "displayIcon": "autorenew",
             "labelTemplate": "Quarterly autopay: {value}", "displayContexts": ["detail"] },
-          "receiptStatus": { "type": "text", "writableBy": "effect", "displayIcon": "receipt_long",
+          "receiptStatus": { "type": "text", "writableBy": "platform", "displayIcon": "receipt_long",
             "labelTemplate": "Receipt: {value}", "displayContexts": ["tile", "detail"] },
           // NEEDS IMPLEMENTATION (platform service): payment receipt-ID generation is not implemented.
           // Declared for proof, never seeded, and never written by an effect.
@@ -893,7 +893,7 @@
           "refundedAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true },
           "failureReason": { "type": "text", "writableBy": "effect", "displayIcon": "report_problem",
             "labelTemplate": "Failure: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "history": { "type": "list", "writableBy": "effect", "displayIcon": "history",
+          "history": { "type": "list", "writableBy": "platform", "displayIcon": "history",
             "labelTemplate": "History entries: {value.length}", "displayContexts": ["detail"] }
         }
       },
@@ -1065,14 +1065,21 @@
             "displayContexts": ["tile", "detail"] },
           "sourceLabel": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "source", "labelTemplate": "Source: {value}", "displayContexts": ["detail"] },
-          "documentUrl": { "type": "url", "writableBy": "effect", "openMode": "choice",
+          // The Document Library API writes this reference when the uploaded bytes land.
+          "documentUrl": { "type": "url", "writableBy": "platform", "storage": "inline", "openMode": "choice",
             "displayIcon": "open_in_browser", "labelTemplate": "Open {value}", "displayContexts": ["detail"] },
+          "uploadedFileName": { "type": "text", "writableBy": "platform", "displayIcon": "draft",
+            "labelTemplate": "Uploaded file: {value}", "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"] },
+          "uploadedFileSizeBytes": { "type": "number", "writableBy": "platform", "displayIcon": "data_usage",
+            "labelTemplate": "File size: {value} bytes", "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"] },
           "accessLabel": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "policy", "labelTemplate": "Access: {value}",
             "displayContexts": ["tile", "detail"] },
           "auditLabel": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "fact_check", "labelTemplate": "Audit: {value}", "displayContexts": ["detail"] },
-          "explicitReaderFanIds": { "type": "fanId[]" },
+          "explicitReaderFanIds": { "type": "fanId[]", "writableBy": "platform" },
           "publishedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "publish",
             "labelTemplate": "Published {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "archivedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "archive",
@@ -1243,14 +1250,14 @@
             "displayIcon": "calendar_today", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "eventTime": { "type": "time", "required": true, "writableBy": "formEntry",
             "displayIcon": "schedule", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "durationMinutes": { "type": "number", "required": true, "displayIcon": "timer",
+          "durationMinutes": { "type": "number", "required": true, "writableBy": "platform", "displayIcon": "timer",
             "labelTemplate": "{value} minutes", "displayContexts": ["detail"] },
           "reservationWindow": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "date_range", "labelTemplate": "Window: {value}", "displayContexts": ["detail"] },
           "locationDetails": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "location_on_outlined", "labelTemplate": "Location: {value}",
             "displayContexts": ["detail"] },
-          "requesterFanId": { "type": "fanId", "required": true, "displayIcon": "person_outline",
+          "requesterFanId": { "type": "fanId", "required": true, "writableBy": "platform", "displayIcon": "person_outline",
             "labelTemplate": "Requested by {value}", "displayContexts": ["tile", "detail"] },
           "reservedByFanId": { "type": "fanId?", "writableBy": "effect", "displayIcon": "how_to_reg",
             "labelTemplate": "Reserved for {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
@@ -1259,7 +1266,7 @@
           "conflictNote": { "type": "text", "writableBy": "effect", "displayIcon": "event_busy",
             "labelTemplate": "Conflict: {value}", "hideWhenEmpty": true,
             "displayContexts": ["tile", "detail"] },
-          "reminderEnabled": { "type": "bool", "writableBy": "effect", "displayIcon": "notifications",
+          "reminderEnabled": { "type": "bool", "writableBy": "platform", "displayIcon": "notifications",
             "labelTemplate": "Reminder enabled: {value}", "displayContexts": ["detail"] },
           "reminderState": { "type": "text", "formula": "if(reminderEnabled == true, 'on', 'off')",
             "displayIcon": "notifications_active", "labelTemplate": "Reminder: {value}",
@@ -1343,21 +1350,21 @@
             "displayContexts": ["tile", "detail"] },
           "body": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 2000,
             "displayIcon": "message", "labelTemplate": "{value}", "displayContexts": ["detail"] },
-          "senderFanId": { "type": "fanId", "required": true, "displayIcon": "person_outline",
+          "senderFanId": { "type": "fanId", "required": true, "writableBy": "platform", "displayIcon": "person_outline",
             "labelTemplate": "Sender: {value}", "displayContexts": ["tile", "detail"] },
           "recipientFanId": { "type": "fanId", "required": true, "writableBy": "formEntry",
             "displayIcon": "person_pin", "labelTemplate": "Recipient: {value}",
             "displayContexts": ["tile", "detail"] },
-          "sentAt": { "type": "date", "required": true, "writableBy": "effect", "sortable": true,
+          "sentAt": { "type": "date", "required": true, "writableBy": "platform", "sortable": true,
             "displayIcon": "schedule", "labelTemplate": "Sent {value}",
             "displayContexts": ["tile", "detail"] },
-          "deliveryState": { "type": "text", "required": true, "writableBy": "effect",
+          "deliveryState": { "type": "text", "required": true, "writableBy": "platform",
             "displayIcon": "outbox", "labelTemplate": "Delivery: {value}",
             "displayContexts": ["tile", "detail"] },
           "relatedRequestInstanceId": { "type": "text", "displayIcon": "link",
             "labelTemplate": "Related request: {value}", "hideWhenEmpty": true,
             "displayContexts": ["detail"] },
-          "readFanIds": { "type": "fanId[]", "writableBy": "effect" },
+          "readFanIds": { "type": "fanId[]", "writableBy": "platform" },
           "withdrawnAt": { "type": "date?", "writableBy": "effect", "hideWhenEmpty": true },
           "memberReadState": { "type": "text",
             "formula": "if(contains(readFanIds, $viewer), 'read', 'received-unread')",
@@ -1427,20 +1434,21 @@
             "guard": { "allowedRoleIds": ["hoa-board"] },
             "effects": [
               { "op": "set", "key": "generatedAt", "value": "$timestamp" },
-              { "op": "set", "key": "exportStatus", "value": "Generating; checksum pending platform service" },
-              { "op": "set", "key": "checksumStatus", "value": "awaiting-platform" },
+              { "op": "set", "key": "exportStatus", "value": "Generating export bundle" },
+              { "op": "set", "key": "checksumStatus", "value": "verification-pending" },
               { "op": "append", "key": "statusHistory", "value": {
                 "status": "generating", "actorFanId": "$actor", "at": "$timestamp"
               } }
             ]
           },
-          // Per solved pattern 14, completion is not gated on the unavailable checksum service.
+          // Per solved pattern 14, generation completion is not gated on the checksum field;
+          // the separate transfer transition waits for the platform's checksumVerified result.
           {
             "id": "complete-export-generation", "action": "record_outcome",
             "label": "Record generation complete", "icon": "task_alt", "tone": "primary",
             "from": ["generating"], "to": "ready", "guard": { "allowedRoleIds": ["hoa-board"] },
             "effects": [
-              { "op": "set", "key": "exportStatus", "value": "Ready; checksum pending platform verification" },
+              { "op": "set", "key": "exportStatus", "value": "Ready; checksum verification pending" },
               { "op": "append", "key": "statusHistory", "value": {
                 "status": "ready", "actorFanId": "$actor", "at": "$timestamp"
               } }
@@ -1481,12 +1489,15 @@
               } }
             ]
           },
-          // NEEDS IMPLEMENTATION (platform service): checksum and opaque transfer-ID generation are not implemented.
-          // Neither field is seeded or written, and transfer progress is intentionally not gated on them.
+          // The export-bundle platform service writes and verifies the checksum. Opaque transfer-ID
+          // generation remains unavailable, so transfer progress is never gated on transferId.
           {
             "id": "start-export-transfer", "action": "run", "label": "Start transfer",
             "icon": "send", "tone": "primary", "from": ["ready"], "to": "transferring",
-            "guard": { "allowedRoleIds": ["hoa-board"] },
+            "guard": {
+              "allowedRoleIds": ["hoa-board"],
+              "instanceDataEquals": { "key": "checksumVerified", "value": true }
+            },
             "effects": [
               { "op": "set", "key": "exportStatus", "value": "Transfer requested" },
               { "op": "append", "key": "statusHistory", "value": {
@@ -1540,9 +1551,7 @@
           "audience": "any", "tabId": "admin", "cardSurfaceFamily": "exportWizard",
           "bindingKind": "primary", "actions": [{
             "kind": "create", "label": "New HOA export", "byRoleIds": ["hoa-board"],
-            "scope": "tab", "presentation": "fab", "prefill": {
-              "exportStatus": "Draft", "checksumStatus": "not-requested", "statusHistory": []
-            }
+            "scope": "tab", "presentation": "fab"
           }]
         }],
         "instanceDataSchema": {
@@ -1562,9 +1571,11 @@
             "labelTemplate": "Status: {value}", "displayContexts": ["tile", "detail"] },
           "checksumStatus": { "type": "text", "writableBy": "effect", "displayIcon": "verified_user",
             "labelTemplate": "Checksum status: {value}", "displayContexts": ["tile", "detail"] },
-          // NEEDS IMPLEMENTATION (platform service): checksum/integrity-hash generation is not implemented.
-          "checksum": { "type": "text?", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}",
+          "checksum": { "type": "text?", "writableBy": "platform", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "checksumVerified": { "type": "bool", "writableBy": "platform", "displayIcon": "verified",
+            "labelTemplate": "Checksum verified: {value}", "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"] },
           // NEEDS IMPLEMENTATION (platform service): opaque export transfer-ID generation is not implemented.
           "transferId": { "type": "text?", "displayIcon": "swap_horiz",
             "labelTemplate": "Transfer ID: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
@@ -1747,8 +1758,8 @@
           "scope": "Approved minutes, governing-document versions, architectural case audit, and offline payment ledger",
           "redactionPreview": "Redact bank account details and homeowner phone numbers; retain lot number, decision history, and payment status.",
           "provider": "Cedar Commons records archive",
-          "exportStatus": "Ready; checksum pending platform verification",
-          "checksumStatus": "awaiting-platform", "generatedAt": "2026-08-09T16:20:00-07:00",
+          "exportStatus": "Ready; checksum verification pending",
+          "checksumStatus": "verification-pending", "generatedAt": "2026-08-09T16:20:00-07:00",
           "statusHistory": [
             { "status": "preview", "actorFanId": "hoa-board", "at": "2026-08-09T16:00:00-07:00" },
             { "status": "redaction-approved", "actorFanId": "hoa-board", "at": "2026-08-09T16:05:00-07:00" },
@@ -1764,7 +1775,7 @@
           "scope": "Certificates of insurance and facility incident summaries",
           "redactionPreview": "Remove personal phone numbers and private claim correspondence.",
           "provider": "Cedar Commons records archive", "exportStatus": "Failed",
-          "checksumStatus": "awaiting-platform", "failureReason": "Destination transfer window closed.",
+          "checksumStatus": "verification-pending", "failureReason": "Destination transfer window closed.",
           "statusHistory": [{
             "status": "failed", "note": "Destination transfer window closed.",
             "actorFanId": "hoa-board", "at": "2026-08-18T17:05:00-07:00"
