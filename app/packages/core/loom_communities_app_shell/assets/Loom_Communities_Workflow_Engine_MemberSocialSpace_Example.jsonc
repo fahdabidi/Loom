@@ -74,7 +74,8 @@
               "actorEqualsField": { "key": "participantAFanId" }
             },
             "effects": [
-              { "op": "set", "key": "participantAFanId", "value": "$actor" }
+              { "op": "set", "key": "participantAFanId", "value": "$actor" },
+              { "op": "set", "key": "blockedByFanId", "value": null }
             ]
           },
           {
@@ -255,7 +256,7 @@
           "participantAFanId": {
             "type": "fanId",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "person_outline",
             "labelTemplate": "{value}",
             "displayContexts": ["tile", "detail"]
@@ -270,15 +271,15 @@
           },
           "messages": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "forum",
             "labelTemplate": "{value.length} messages",
             "displayContexts": ["tile", "detail"]
           },
           // Retained to carry the shipped seeds' exact unread state. No readByFanIds field is
           // declared; that canonical set remains archetype-owned.
-          "unreadForA": { "type": "bool", "writableBy": "effect", "displayContexts": [] },
-          "unreadForB": { "type": "bool", "writableBy": "effect", "displayContexts": [] },
+          "unreadForA": { "type": "bool", "writableBy": "platform", "displayContexts": [] },
+          "unreadForB": { "type": "bool", "writableBy": "platform", "displayContexts": [] },
           "isUnreadForViewer": {
             "type": "bool",
             "formula": "if($viewer == participantAFanId, unreadForA, unreadForB)",
@@ -286,7 +287,7 @@
             "labelTemplate": "Unread: {value}",
             "displayContexts": ["tile", "detail"]
           },
-          "blockedActive": { "type": "bool", "writableBy": "effect", "displayContexts": [] },
+          "blockedActive": { "type": "bool", "writableBy": "platform", "displayContexts": [] },
           // Privacy-sensitive: required by the unblock guard but never rendered to either party.
           "blockedByFanId": { "type": "fanId?", "writableBy": "effect", "displayContexts": [] },
           "messageCount": {
@@ -565,7 +566,7 @@
           "inviterFanId": {
             "type": "fanId",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "person_outline",
             "labelTemplate": "Invited by {value}",
             "displayContexts": ["tile", "detail"]
@@ -587,7 +588,7 @@
             "labelTemplate": "{value}",
             "displayContexts": ["detail"]
           },
-          "messageThreadId": { "type": "text?", "writableBy": "effect", "displayContexts": [] },
+          "messageThreadId": { "type": "text?", "displayContexts": [] },
           // Never rendered. The blocked party sees safetyMessage, not who initiated the block.
           "blockedByFanId": { "type": "fanId?", "writableBy": "effect", "displayContexts": [] },
           "respondedAt": {
@@ -854,7 +855,7 @@
           "sponsorName": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "storefront_outlined",
             "labelTemplate": "Sponsor: {value}",
             "displayContexts": ["tile", "detail"]
@@ -862,14 +863,14 @@
           "disclosureText": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "info_outlined",
             "labelTemplate": "{value}",
             "displayContexts": ["tile", "detail"]
           },
           "bodyText": {
             "type": "text?",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "hideWhenEmpty": true,
             "displayIcon": "campaign_outlined",
             "labelTemplate": "{value}",
@@ -878,7 +879,7 @@
           "contentContext": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "view_stream_outlined",
             "labelTemplate": "Context: {value}",
             "displayContexts": ["detail"]
@@ -886,14 +887,14 @@
           "sponsorUrl": {
             "type": "url",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "openMode": "external",
             "displayIcon": "open_in_new",
             "labelTemplate": "Open sponsor",
             "displayContexts": ["detail"]
           },
-          "dismissible": { "type": "bool", "required": true, "writableBy": "effect", "displayContexts": [] },
-          "reportedByFanIds": { "type": "fanId[]", "writableBy": "effect", "displayContexts": [] },
+          "dismissible": { "type": "bool", "required": true, "writableBy": "platform", "displayContexts": [] },
+          "reportedByFanIds": { "type": "fanId[]", "writableBy": "platform", "displayContexts": [] },
           "reportCount": {
             "type": "number",
             "formula": "size(reportedByFanIds)",
@@ -967,7 +968,7 @@
           "disclosureText": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "info_outlined",
             "labelTemplate": "{value}",
             "displayContexts": ["tile", "detail"]
@@ -975,7 +976,7 @@
           "noFillReason": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "report_gmailerrorred_outlined",
             "labelTemplate": "{value}",
             "displayContexts": ["tile", "detail"]
@@ -983,7 +984,7 @@
           "slotLayoutStatus": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "view_day_outlined",
             "labelTemplate": "{value}",
             "displayContexts": ["tile", "detail"]
@@ -996,7 +997,7 @@
             "labelTemplate": "Refreshed {value}",
             "displayContexts": ["detail"]
           },
-          "reasonInspectedByFanIds": { "type": "fanId[]", "writableBy": "effect", "displayContexts": [] }
+          "reasonInspectedByFanIds": { "type": "fanId[]", "writableBy": "platform", "displayContexts": [] }
         }
       },
 
@@ -1072,7 +1073,7 @@
           "disclosureText": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "info_outlined",
             "labelTemplate": "{value}",
             "displayContexts": ["tile", "detail"]
@@ -1080,7 +1081,7 @@
           "noFillReason": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "shield_outlined",
             "labelTemplate": "{value}",
             "displayContexts": ["tile", "detail"]
@@ -1088,7 +1089,7 @@
           "protectedContextLabel": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "privacy_tip_outlined",
             "labelTemplate": "{value}",
             "displayContexts": ["tile", "detail"]
@@ -1096,12 +1097,12 @@
           "layoutStatus": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "view_agenda_outlined",
             "labelTemplate": "{value}",
             "displayContexts": ["detail"]
           },
-          "policyReviewedByFanIds": { "type": "fanId[]", "writableBy": "effect", "displayContexts": [] }
+          "policyReviewedByFanIds": { "type": "fanId[]", "writableBy": "platform", "displayContexts": [] }
         }
       }
     },

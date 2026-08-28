@@ -74,8 +74,8 @@
       "lastCommitSubject": "fix(mosque): declare the event reminder, and name the writers honestly"
     },
     "Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc": {
-      "sha256": "a98e16c8e3f4c5ab6f75dcce2758d850f8eac97b8269a89f669624d8fe1ad740",
-      "bytes": 45031,
+      "sha256": "44c093126d5347c7b2502940b994e755114b57f28563e7b86ff66fba5cddec81",
+      "bytes": 45122,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "f69604aa",
       "lastCommitDate": "2026-08-22",
