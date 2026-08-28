@@ -212,15 +212,15 @@
         "instanceDataSchema": {
           "title": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "body": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 2000, "displayIcon": "article", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "senderFanId": { "type": "fanId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "From {value}", "displayContexts": ["tile", "detail"] },
+          "senderFanId": { "type": "fanId", "required": true, "writableBy": "platform", "displayIcon": "person_outline", "labelTemplate": "From {value}", "displayContexts": ["tile", "detail"] },
           "audience": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "groups_outlined", "labelTemplate": "Audience: {value}", "displayContexts": ["tile", "detail"] },
           "channel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "campaign", "labelTemplate": "Channel: {value}", "displayContexts": ["detail"] },
           "scheduledFor": { "type": "date?", "writableBy": "formEntry", "sortable": true, "displayIcon": "schedule", "labelTemplate": "Scheduled {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "sentAt": { "type": "date?", "writableBy": "effect", "sortable": true, "displayIcon": "send", "labelTemplate": "Sent {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "deliveryState": { "type": "text", "writableBy": "effect", "displayIcon": "outbox", "labelTemplate": "Delivery: {value}", "displayContexts": ["tile", "detail"] },
-          "readFanIds": { "type": "fanId[]", "writableBy": "effect", "displayIcon": "mark_email_read", "labelTemplate": "Read by {value.length}", "displayContexts": ["tile", "detail"] },
-          "deliveryHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Delivery history: {value.length}", "displayContexts": ["detail"] },
-          "revisionHistory": { "type": "list", "writableBy": "effect", "displayIcon": "edit_note", "labelTemplate": "Revisions: {value.length}", "displayContexts": ["detail"] },
+          "deliveryState": { "type": "text", "writableBy": "platform", "displayIcon": "outbox", "labelTemplate": "Delivery: {value}", "displayContexts": ["tile", "detail"] },
+          "readFanIds": { "type": "fanId[]", "writableBy": "platform", "displayIcon": "mark_email_read", "labelTemplate": "Read by {value.length}", "displayContexts": ["tile", "detail"] },
+          "deliveryHistory": { "type": "list", "writableBy": "platform", "displayIcon": "history", "labelTemplate": "Delivery history: {value.length}", "displayContexts": ["detail"] },
+          "revisionHistory": { "type": "list", "writableBy": "platform", "displayIcon": "edit_note", "labelTemplate": "Revisions: {value.length}", "displayContexts": ["detail"] },
           "readCount": { "type": "number", "formula": "size(readFanIds)", "displayIcon": "done_all", "labelTemplate": "Readers: {value}", "displayContexts": ["tile", "detail"] }
         }
       },
@@ -228,6 +228,11 @@
       "mosque-event-rsvp": {
         "initialState": "draft",
         "visibility": { "default": "membersOnly" },
+        "reminder": {
+          "anchorDateField": "eventDate",
+          "anchorTimeField": "eventTime",
+          "leadHours": 24
+        },
         "states": {
           "draft": {
             "label": "Draft event",
@@ -453,11 +458,11 @@
           "recurrence": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "repeat", "labelTemplate": "Repeats: {value}", "displayContexts": ["tile", "detail"] },
           "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "displayIcon": "groups_outlined", "labelTemplate": "{value} seats", "displayContexts": ["tile", "detail"] },
           "publishedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "publish", "labelTemplate": "Published {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "goingFanIds": { "type": "fanId[]", "writableBy": "effect" },
-          "maybeFanIds": { "type": "fanId[]", "writableBy": "effect" },
-          "notGoingFanIds": { "type": "fanId[]", "writableBy": "effect" },
-          "waitlistFanIds": { "type": "fanId[]", "writableBy": "effect", "displayIcon": "hourglass_top", "labelTemplate": "Waitlist: {value.length}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "reminderHistory": { "type": "list", "writableBy": "effect", "displayIcon": "notifications_active", "labelTemplate": "Reminder changes: {value.length}", "displayContexts": ["detail"] },
+          "goingFanIds": { "type": "fanId[]", "writableBy": "platform" },
+          "maybeFanIds": { "type": "fanId[]", "writableBy": "platform" },
+          "notGoingFanIds": { "type": "fanId[]", "writableBy": "platform" },
+          "waitlistFanIds": { "type": "fanId[]", "writableBy": "platform", "displayIcon": "hourglass_top", "labelTemplate": "Waitlist: {value.length}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "reminderHistory": { "type": "list", "writableBy": "platform", "displayIcon": "notifications_active", "labelTemplate": "Reminder changes: {value.length}", "displayContexts": ["detail"] },
           "goingCount": { "type": "number", "formula": "size(goingFanIds)", "displayIcon": "how_to_reg", "labelTemplate": "Going: {value}", "displayContexts": ["tile", "detail"] },
           "spotsRemaining": { "type": "number", "formula": "capacity - size(goingFanIds)", "displayIcon": "event_seat", "labelTemplate": "Open spots: {value}", "displayContexts": ["tile", "detail"] },
           "isFull": { "type": "bool", "formula": "size(goingFanIds) >= capacity", "displayIcon": "block", "labelTemplate": "Full: {value}", "displayContexts": ["detail"] }
@@ -633,8 +638,8 @@
           "resourceUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice", "displayIcon": "open_in_new", "labelTemplate": "Open {value}", "displayContexts": ["tile", "detail"] },
           "accessLabel": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "verified_user", "labelTemplate": "Access: {value}", "displayContexts": ["tile", "detail"] },
           "allowedFanIds": { "type": "fanId[]", "writableBy": "formEntry", "displayIcon": "lock", "labelTemplate": "Restricted to {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "followUpRequestedFanIds": { "type": "fanId[]", "writableBy": "effect", "displayIcon": "question_answer", "labelTemplate": "Follow-ups: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "auditHistory": { "type": "list", "writableBy": "effect", "displayIcon": "policy", "labelTemplate": "Audit entries: {value.length}", "displayContexts": ["detail"] }
+          "followUpRequestedFanIds": { "type": "fanId[]", "writableBy": "platform", "displayIcon": "question_answer", "labelTemplate": "Follow-ups: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "auditHistory": { "type": "list", "writableBy": "platform", "displayIcon": "policy", "labelTemplate": "Audit entries: {value.length}", "displayContexts": ["detail"] }
         }
       },
 
@@ -785,11 +790,11 @@
           "location": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "location_on_outlined", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "displayIcon": "groups_outlined", "labelTemplate": "Capacity: {value}", "displayContexts": ["tile", "detail"] },
           "contactSharingPolicy": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "privacy_tip", "labelTemplate": "Contact privacy: {value}", "displayContexts": ["detail"] },
-          "signedUpFanIds": { "type": "fanId[]", "writableBy": "effect", "displayIcon": "how_to_reg", "labelTemplate": "Volunteers: {value.length}", "displayContexts": ["tile", "detail"] },
-          "contactSharingFanIds": { "type": "fanId[]", "writableBy": "effect", "displayIcon": "shield", "labelTemplate": "Protected contact consents: {value.length}", "displayContexts": ["detail"] },
-          "signupHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Signup history: {value.length}", "displayContexts": ["detail"] },
-          "availabilityHistory": { "type": "list", "writableBy": "effect", "displayIcon": "edit_note", "labelTemplate": "Availability updates: {value.length}", "displayContexts": ["detail"] },
-          "coordinatorFollowUpHistory": { "type": "list", "writableBy": "effect", "displayIcon": "contact_phone", "labelTemplate": "Coordinator follow-ups: {value.length}", "displayContexts": ["detail"] },
+          "signedUpFanIds": { "type": "fanId[]", "writableBy": "platform", "displayIcon": "how_to_reg", "labelTemplate": "Volunteers: {value.length}", "displayContexts": ["tile", "detail"] },
+          "contactSharingFanIds": { "type": "fanId[]", "writableBy": "platform", "displayIcon": "shield", "labelTemplate": "Protected contact consents: {value.length}", "displayContexts": ["detail"] },
+          "signupHistory": { "type": "list", "writableBy": "platform", "displayIcon": "history", "labelTemplate": "Signup history: {value.length}", "displayContexts": ["detail"] },
+          "availabilityHistory": { "type": "list", "writableBy": "platform", "displayIcon": "edit_note", "labelTemplate": "Availability updates: {value.length}", "displayContexts": ["detail"] },
+          "coordinatorFollowUpHistory": { "type": "list", "writableBy": "platform", "displayIcon": "contact_phone", "labelTemplate": "Coordinator follow-ups: {value.length}", "displayContexts": ["detail"] },
           "signedUpCount": { "type": "number", "formula": "size(signedUpFanIds)", "displayIcon": "groups", "labelTemplate": "Signed up: {value}", "displayContexts": ["tile", "detail"] },
           "spotsRemaining": { "type": "number", "formula": "capacity - size(signedUpFanIds)", "displayIcon": "event_seat", "labelTemplate": "Open spots: {value}", "displayContexts": ["tile", "detail"] },
           "isFull": { "type": "bool", "formula": "size(signedUpFanIds) >= capacity", "displayIcon": "block", "labelTemplate": "Full: {value}", "displayContexts": ["detail"] }
@@ -1110,21 +1115,21 @@
           }
         ],
         "instanceDataSchema": {
-          "payerFanId": { "type": "fanId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "Payer: {value}", "displayContexts": ["detail"] },
+          "payerFanId": { "type": "fanId", "required": true, "writableBy": "platform", "displayIcon": "person_outline", "labelTemplate": "Payer: {value}", "displayContexts": ["detail"] },
           "amount": { "type": "number", "required": true, "writableBy": "formEntry", "displayIcon": "payments_outlined", "labelTemplate": "Amount: $ {value}", "displayContexts": ["tile", "detail"] },
           "fund": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "volunteer_activism", "labelTemplate": "Fund: {value}", "displayContexts": ["tile", "detail"] },
           "privacyChoice": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "privacy_tip", "labelTemplate": "Privacy: {value}", "displayContexts": ["tile", "detail"] },
           "recurringPreference": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "repeat", "labelTemplate": "Giving plan: {value}", "displayContexts": ["detail"] },
           "requestedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Requested {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "paidAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "labelTemplate": "Recorded paid {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "paymentStatus": { "type": "text", "writableBy": "effect", "displayIcon": "account_balance_wallet", "labelTemplate": "Status: {value}", "displayContexts": ["tile", "detail"] },
+          "paymentStatus": { "type": "text", "writableBy": "platform", "displayIcon": "account_balance_wallet", "labelTemplate": "Status: {value}", "displayContexts": ["tile", "detail"] },
           "failureReason": { "type": "text", "writableBy": "effect", "displayIcon": "error_outline", "labelTemplate": "Failure: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "receiptSummary": { "type": "text", "writableBy": "effect", "displayIcon": "receipt_long", "labelTemplate": "Receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "receiptStatus": { "type": "text", "writableBy": "effect", "displayIcon": "verified", "labelTemplate": "Receipt status: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "receiptViewedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "visibility", "labelTemplate": "Receipt viewed {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           // NEEDS IMPLEMENTATION (platform service): opaque receipt-ID generation. Declared, never written or seeded.
-          "receiptId": { "type": "text?", "writableBy": "effect", "displayIcon": "tag", "labelTemplate": "Receipt ID: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "paymentHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Payment history: {value.length}", "displayContexts": ["detail"] }
+          "receiptId": { "type": "text?", "writableBy": "platform", "displayIcon": "tag", "labelTemplate": "Receipt ID: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "paymentHistory": { "type": "list", "writableBy": "platform", "displayIcon": "history", "labelTemplate": "Payment history: {value.length}", "displayContexts": ["detail"] }
         }
       },
 
@@ -1318,7 +1323,7 @@
           }
         ],
         "instanceDataSchema": {
-          "requesterFanId": { "type": "fanId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "Requester: {value}", "displayContexts": ["detail"] },
+          "requesterFanId": { "type": "fanId", "required": true, "writableBy": "platform", "displayIcon": "person_outline", "labelTemplate": "Requester: {value}", "displayContexts": ["detail"] },
           "assignedReviewerFanId": { "type": "fanId", "writableBy": "effect", "displayIcon": "admin_panel_settings", "labelTemplate": "Reviewer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "publicSummary": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "description", "labelTemplate": "Public summary: {value}", "displayContexts": ["tile", "detail"] },
           "privateDetails": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 2000, "displayIcon": "lock", "labelTemplate": "Protected details: {value}", "displayContexts": ["detail"] },
@@ -1329,7 +1334,7 @@
           "respondedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "reply", "labelTemplate": "Responded {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "reviewNote": { "type": "text", "writableBy": "effect", "displayIcon": "rate_review", "labelTemplate": "Review note: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "responseSummary": { "type": "text", "writableBy": "effect", "displayIcon": "forum", "labelTemplate": "Private response: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "statusHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Status history: {value.length}", "displayContexts": ["tile", "detail"] }
+          "statusHistory": { "type": "list", "writableBy": "platform", "displayIcon": "history", "labelTemplate": "Status history: {value.length}", "displayContexts": ["tile", "detail"] }
         }
       },
 
@@ -1581,14 +1586,14 @@
         ],
         "instanceDataSchema": {
           "query": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "search", "labelTemplate": "Query: {value}", "displayContexts": ["tile", "detail"] },
-          "askedByFanId": { "type": "fanId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "Asked by {value}", "displayContexts": ["detail"] },
+          "askedByFanId": { "type": "fanId", "required": true, "writableBy": "platform", "displayIcon": "person_outline", "labelTemplate": "Asked by {value}", "displayContexts": ["detail"] },
           // NEEDS IMPLEMENTATION (platform service): external search / AI answer. Declared, never written or seeded.
-          "aiAnswerBody": { "type": "textarea?", "writableBy": "effect", "displayIcon": "auto_awesome", "labelTemplate": "AI answer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "aiAnswerBody": { "type": "textarea?", "writableBy": "platform", "displayIcon": "auto_awesome", "labelTemplate": "AI answer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "curatedAnswerBody": { "type": "textarea?", "writableBy": "effect", "displayIcon": "rate_review", "labelTemplate": "Curated answer: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "displayAnswer": { "type": "textarea?", "formula": "if(curatedAnswerBody == null, aiAnswerBody, curatedAnswerBody)", "displayIcon": "article", "labelTemplate": "Answer: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "citations": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "itemSchema": {
               "label": { "type": "text" },
               "source": { "type": "url", "openMode": "external" }
@@ -1599,9 +1604,9 @@
           },
           "answerSource": { "type": "text", "writableBy": "effect", "displayIcon": "verified_user", "labelTemplate": "Answer source: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "answeredAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Answered {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "citationStatus": { "type": "text", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Citation status: {value}", "displayContexts": ["tile", "detail"] },
-          "saveAnswerHistory": { "type": "list", "writableBy": "effect", "displayIcon": "bookmark", "labelTemplate": "Saved: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "hiddenCitationUrls": { "type": "list", "writableBy": "effect", "displayIcon": "visibility_off", "labelTemplate": "Hidden sources: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "citationStatus": { "type": "text", "writableBy": "platform", "displayIcon": "fact_check", "labelTemplate": "Citation status: {value}", "displayContexts": ["tile", "detail"] },
+          "saveAnswerHistory": { "type": "list", "writableBy": "platform", "displayIcon": "bookmark", "labelTemplate": "Saved: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "hiddenCitationUrls": { "type": "list", "writableBy": "platform", "displayIcon": "visibility_off", "labelTemplate": "Hidden sources: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "reportReason": { "type": "text", "writableBy": "effect", "displayIcon": "report", "labelTemplate": "Report: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] }
         }
       },
@@ -1714,8 +1719,8 @@
         "instanceDataSchema": {
           "threadTitle": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "initialMessage": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 1000, "displayIcon": "chat_bubble_outline", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "authorFanId": { "type": "fanId", "required": true, "writableBy": "effect", "displayIcon": "person_outline", "labelTemplate": "Started by {value}", "displayContexts": ["detail"] },
-          "messages": { "type": "list", "writableBy": "effect", "displayIcon": "forum", "labelTemplate": "Replies: {value.length}", "displayContexts": ["detail"] },
+          "authorFanId": { "type": "fanId", "required": true, "writableBy": "platform", "displayIcon": "person_outline", "labelTemplate": "Started by {value}", "displayContexts": ["detail"] },
+          "messages": { "type": "list", "writableBy": "platform", "displayIcon": "forum", "labelTemplate": "Replies: {value.length}", "displayContexts": ["detail"] },
           "latestMessage": { "type": "text", "writableBy": "effect", "displayIcon": "reply", "labelTemplate": "Latest: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "latestMessageAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Latest reply {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "messageCount": { "type": "number", "formula": "size(messages)", "displayIcon": "mark_chat_read", "labelTemplate": "Replies: {value}", "displayContexts": ["tile", "detail"] }
