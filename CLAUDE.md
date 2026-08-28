@@ -188,6 +188,14 @@ evidence.
   its bundle mirror) before dispatching the rule, or the agent is blocked through no fault of its own.
 - **The validator server on `:8787` is not the test-suite validator.** A green suite does not mean the
   long-running server has your rule; it does not restart itself.
+- **A test command piped into `grep` gates on grep, not on the tests.**
+  `flutter test | grep -E "All tests|Some tests" && git commit` commits a red suite, because grep
+  succeeds when it finds the words "Some tests failed". This looked like verification every time it
+  was used. Redirect and check the status instead:
+  `flutter test > /tmp/run.txt 2>&1; echo "exit=$?"; grep … /tmp/run.txt`
+- **The finding-code conformance test runs both ways.** Every code the validator emits must be
+  documented, *and* every documented code must exist. So registering a code before building its rule
+  is only correct when the rule lands in the same change; register-then-commit turns the suite red.
 - **Push before any reset**, and re-run the suites yourself after installing package output.
 - **Commit a verified package immediately.** An uncommitted correct package is one stray command from
   gone: `git checkout -- .` while cleaning up after a mis-invoked dispatch silently reverted a Cedar
