@@ -49,14 +49,16 @@ File _fixtureFile(String relativePath) {
 
 Future<_InstalledFixture> _installFixture(
   String extensionId,
-  String fixtureRelative,
-) async {
+  String fixtureRelative, {
+  void Function(Map<String, dynamic> source)? configure,
+}) async {
   final source =
       jsonDecode(
             stripJsonComments(_fixtureFile(fixtureRelative).readAsStringSync()),
           )
           as Map<String, dynamic>;
   source['extensionId'] = extensionId;
+  configure?.call(source);
   final temp = await Directory.systemTemp.createTemp(
     'loom-exportwizard-$extensionId-',
   );
@@ -562,11 +564,69 @@ void main() {
   );
 
   testWidgets(
+    'Cedar ready export without a verified checksum does not offer transfer',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _installFixture(
+          'ext_hoa_exportwizard_checksum_gate',
+          _cedarFixtureRelative,
+        ),
+      ))!;
+      addTearDown(() => tester.runAsync(installed.dispose));
+
+      final exportWorkflow = _exportWorkflow(installed.experience);
+      final exportSeed = _exportSeed(
+        installed.experience,
+        exportWorkflow.workflowType,
+        currentState: 'ready',
+      );
+      final instance = (await tester.runAsync(
+        () => _queryInstance(
+          engine: installed.engine,
+          instanceId: exportSeed.instanceId,
+          fanId: _cedarFanId,
+          tabId: _adminTab,
+        ),
+      ))!;
+
+      expect(instance.currentState, 'ready');
+      expect(instance.instanceData['checksumVerified'], isNot(true));
+      final readyActions = (await tester.runAsync(
+        () => _queryTransitions(
+          engine: installed.engine,
+          instance: instance,
+          fanId: _cedarFanId,
+        ),
+      ))!;
+      expect(
+        readyActions.map((action) => action.id),
+        isNot(contains('start-export-transfer')),
+      );
+    },
+  );
+
+  testWidgets(
     'Cedar fixture exportWizard renders divergent instance fields and handles rolled-back flow',
     (tester) async {
       final installed = (await tester.runAsync(
-        () =>
-            _installFixture('ext_hoa_exportwizard_hoa', _cedarFixtureRelative),
+        () => _installFixture(
+          'ext_hoa_exportwizard_hoa',
+          _cedarFixtureRelative,
+          configure: (source) {
+            final experience = source['experience'] as Map<String, dynamic>;
+            final instances = experience['workflowInstances'] as List<dynamic>;
+            final readyExport = instances
+                .cast<Map<String, dynamic>>()
+                .singleWhere(
+                  (instance) =>
+                      instance['instanceId'] ==
+                      'hoa-export-board-records-2026-q2',
+                );
+            final instanceData =
+                readyExport['instanceData'] as Map<String, dynamic>;
+            instanceData['checksumVerified'] = true;
+          },
+        ),
       ))!;
       addTearDown(() => tester.runAsync(installed.dispose));
 
