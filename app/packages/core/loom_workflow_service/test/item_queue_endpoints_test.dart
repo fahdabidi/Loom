@@ -75,18 +75,12 @@ void main() {
   setUp(() async {
     database = WorkflowDatabase.memory();
     now = DateTime.utc(2026, 8, 28, 16);
-    service = WorkflowService(
-      database: database,
-      identityExtractor: const HeaderWorkflowIdentityExtractor(),
-      appAccessClient: const _QueueAppAccessClient(),
-      communityGroupIdResolver: MapCommunityGroupIdResolver({
-        _communityId: _groupId,
-      }),
-      itemQueueRepository: InMemoryItemQueueRepository(),
+    service = _queueService(
+      database,
+      clock: () => now,
       queueOfferHoldWindows: <String, Duration>{
         _communityId: const Duration(minutes: 30),
       },
-      clock: () => now,
     );
     await database.upsertDefinition(
       definitionId: '${_communityId}_$_workflowType',
@@ -204,6 +198,72 @@ void main() {
       now.add(const Duration(minutes: 30)),
     );
   });
+
+  test(
+    'queue routes other than advance work without an offer-hold configuration',
+    () async {
+      final unconfiguredService = _queueService(database, clock: () => now);
+
+      final joined = await _join(unconfiguredService, _memberOne);
+      expect(joined.response.statusCode, 201, reason: joined.rawBody);
+
+      final read = await _getQueue(unconfiguredService, _memberOne);
+      expect(read.response.statusCode, 200, reason: read.rawBody);
+      expect(read.body['viewerPosition'], 1);
+
+      final memberships = await unconfiguredService.handler(
+        _request(
+          'GET',
+          '/v1/communities/$_communityId/queue-memberships',
+          fanId: _memberOne,
+        ),
+      );
+      expect(memberships.statusCode, 200);
+
+      final left = await unconfiguredService.handler(
+        _request(
+          'DELETE',
+          '/v1/communities/$_communityId/instances/$_instanceId/queue',
+          fanId: _memberOne,
+        ),
+      );
+      expect(left.statusCode, 204);
+
+      final rejoined = await _join(unconfiguredService, _memberOne);
+      expect(rejoined.response.statusCode, 201, reason: rejoined.rawBody);
+      final removed = await unconfiguredService.handler(
+        _request(
+          'DELETE',
+          '/v1/communities/$_communityId/instances/$_instanceId/queue/$_memberOne',
+          fanId: _admin,
+        ),
+      );
+      expect(removed.statusCode, 204);
+    },
+  );
+
+  test(
+    'advance refuses a non-empty queue without a configured hold window',
+    () async {
+      final unconfiguredService = _queueService(database, clock: () => now);
+      await _join(unconfiguredService, _memberOne);
+
+      final response = await _advance(
+        unconfiguredService,
+        idempotencyKey: 'unconfigured-hold-window',
+      );
+      final body =
+          jsonDecode(await response.readAsString()) as Map<String, dynamic>;
+
+      expect(response.statusCode, 409);
+      expect(body['code'], 'item_queue_hold_window_unconfigured');
+      expect(
+        body['message'],
+        contains('LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS'),
+      );
+      expect(body['message'], contains(_communityId));
+    },
+  );
 
   test(
     'a lapsed offer removes its head and passes to the next member',
@@ -337,6 +397,22 @@ Future<void> _insertItem(
   currentState: 'published',
   instanceData: <String, dynamic>{'title': title},
   createdByFanId: _admin,
+);
+
+WorkflowService _queueService(
+  WorkflowDatabase database, {
+  required DateTime Function() clock,
+  Map<String, Duration> queueOfferHoldWindows = const <String, Duration>{},
+}) => WorkflowService(
+  database: database,
+  identityExtractor: const HeaderWorkflowIdentityExtractor(),
+  appAccessClient: const _QueueAppAccessClient(),
+  communityGroupIdResolver: MapCommunityGroupIdResolver({
+    _communityId: _groupId,
+  }),
+  itemQueueRepository: InMemoryItemQueueRepository(),
+  queueOfferHoldWindows: queueOfferHoldWindows,
+  clock: clock,
 );
 
 Future<_JsonResponse> _join(

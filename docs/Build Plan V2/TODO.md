@@ -39,6 +39,26 @@ known answer for every kind of thing it claims to find, not just one.**
 
 ## Open
 
+### 2026-08-28 — where the writer pass and the archetype backends actually stand
+
+**Writer-declaration pass — 7 of 10 installed.** Book Club (partially, see below), Garden, Mosque,
+MemberSocialSpace, Chess (twice: writers, then tab audiences), Cedar, Youth Soccer.
+
+- [ ] `needs-skill-dispatch` — **DataPortability (6 prefill) and AdFree (4 orphan) were never dispatched.** Briefs are built and current at `data/{dataportability,adfreecommunity}_brief.md`
+- [ ] `needs-skill-dispatch` — **Camera Club's regeneration was REJECTED, not installed.** It moved the reminder from the per-member `photo-walk-response` row to the parent event and deleted each member's `reminderOffsetHours` — the same collapse that shipped in Book Club and became solved-patterns §19. Camera's own product doc argues the per-member design explicitly at §119–129. Re-dispatch against rule 5f; the output in `~/.codex-skill-authoring-scratch/camera-writers/` is the rejected one, do not install it
+- [ ] `needs-skill-dispatch` — **Book Club is knowingly damaged and held.** `c0e0355b` removed its per-member `send-reminder`, the shared-library queue/custody fields and the reading-material access lists; its own doc requires all of them. A verified restore exists at `~/.codex-skill-authoring-scratch/bookclub-restore-r2/` and is deliberately NOT installed — held until the listing/loan backend exists, by user decision, so it can be regenerated once against the new API rather than restoring instance-data fields the backend supersedes. **Verify any Book Club output against `c0e0355b^`, not against HEAD** — HEAD is the damaged state and a diff against it reports the loss as faithfully preserved
+
+**Archetype backends.** The pattern is now three specs and two services.
+
+- [x] `new-milestone` — **export bundles + checksum**: spec, service, app client, all committed and green
+- [x] `new-milestone` — **document library gains version and per-member state**: `Document.version` is service-assigned and bumps on revision; `read`/`saved`/`acknowledged` move off instance data; acknowledgement binds to the version so a revision invalidates it without rewriting a record. **Spec only — not built**
+- [x] `new-milestone` — **item queue service built** (`b77d0cfd`), 12 tests, workflow service 89 → 101
+- [ ] `needs-verification` — **b77d0cfd MUST NOT BE DEPLOYED as-is.** `_queueOfferHoldWindows` throws at line 38 of `main`, before Postgres opens, so the service will not start without `LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS`. Deploying it without the manifest entry takes down documents, exports and notifications too. Fix dispatched: startup tolerates absence, malformed config still fails loudly, `advanceItemQueue` alone refuses per-community
+- [ ] `new-ticket` — **the six dead queue transitions are still dead.** `join-queue`/`leave-queue` in Book Club, Camera and Garden have zero effects. The service exists; nothing points at it. Needs a Skill regeneration per community plus an app-shell client, neither started
+- [ ] `new-milestone` — **messaging is a boundary, not an implementation.** `messaging-api.openapi.yaml` is `0.0.0-placeholder`; `messaging_feature_not_available` warns on the 8 thread-state transitions that do nothing
+
+**Validator rules added this pass** — four defect classes that were previously invisible to every check: `effect_writable_field_has_no_effect` (60), `prefill_written_field_not_platform` (128), `transition_has_no_observable_effect` (37), `messaging_feature_not_available` (8). Judges 434 → 460.
+
 ### 2026-08-28 — the app's engine is in-memory, so nothing survives a restart
 
 - [ ] `new-ticket` — **`WorkflowDatabase.memory()` is the app's only engine database.** Both construction sites use it — `part02_tab_shell.dart:754` and `part25_engine_native_community_store.dart:227` — so in a default local build every loan, RSVP, custody handoff, due date and acknowledgement lives for the life of the process and no longer. Close the app and the community resets to seed data. `WorkflowDatabase.file(path)` exists in `store/database.dart:54` and the app never calls it. **Needs a decision before it is a ticket:** is local persistence wanted (`WorkflowDatabase.file()` on device), or is the local engine deliberately an ephemeral demo shell whose replacement is the remote engine, making local persistence irrelevant? The answer changes the fix entirely

@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:loom_workflow_service/loom_workflow_service.dart';
+import 'package:loom_workflow_service/src/queue_offer_hold_windows.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 
 Future<void> main() async {
@@ -147,33 +147,5 @@ Future<void> main() async {
 }
 
 Map<String, Duration> _queueOfferHoldWindows(String? encoded) {
-  if (encoded == null || encoded.trim().isEmpty) {
-    throw StateError('LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS is required');
-  }
-  final Object? decoded;
-  try {
-    decoded = jsonDecode(encoded);
-  } on FormatException {
-    throw StateError(
-      'LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS must be a JSON object.',
-    );
-  }
-  if (decoded is! Map<String, dynamic> || decoded.isEmpty) {
-    throw StateError(
-      'LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS must be a non-empty JSON object.',
-    );
-  }
-
-  final result = <String, Duration>{};
-  for (final entry in decoded.entries) {
-    final seconds = entry.value;
-    if (entry.key.trim().isEmpty || seconds is! int || seconds <= 0) {
-      throw StateError(
-        'Each queue offer hold window must have a community id and positive '
-        'integer seconds.',
-      );
-    }
-    result[entry.key] = Duration(seconds: seconds);
-  }
-  return result;
+  return parseQueueOfferHoldWindows(encoded);
 }

@@ -18,6 +18,7 @@ import 'document_repository.dart';
 import 'export_bundle_repository.dart';
 import 'identity.dart';
 import 'item_queue_repository.dart';
+import 'queue_offer_hold_windows.dart';
 
 /// Shelf HTTP adapter for the workflow-engine OpenAPI surface.
 ///
@@ -1547,6 +1548,25 @@ class WorkflowService {
       communityId: communityId,
       instanceId: instanceId,
     );
+    if (entries.isEmpty) {
+      return Response(
+        204,
+        headers: <String, String>{
+          'x-loom-correlation-id': context.correlationId,
+        },
+      );
+    }
+    final holdWindow = _queueOfferHoldWindows[communityId];
+    if (holdWindow == null || holdWindow <= Duration.zero) {
+      return _error(
+        request: request,
+        statusCode: 409,
+        code: 'item_queue_hold_window_unconfigured',
+        message:
+            '$queueOfferHoldWindowsEnvironmentVariable has no positive hold '
+            'window configured for community "$communityId".',
+      );
+    }
     while (entries.isNotEmpty) {
       final head = entries.first;
       final existingExpiry = head.offerExpiresAt;
@@ -1565,15 +1585,6 @@ class WorkflowService {
         continue;
       }
 
-      final holdWindow = _queueOfferHoldWindows[communityId];
-      if (holdWindow == null || holdWindow <= Duration.zero) {
-        return _error(
-          request: request,
-          statusCode: 503,
-          code: 'item_queue_hold_window_unavailable',
-          message: 'No positive item-queue hold window is configured.',
-        );
-      }
       final offeredAt = now;
       final offerExpiresAt = offeredAt.add(holdWindow);
       await context.repository.recordOffer(
