@@ -756,6 +756,56 @@ find it: the package validates clean, and every structural diff passes, because 
 
 ---
 
+## 19. A workflow-level `reminder` block does **not** replace a member-owned reminder on a response row
+
+**Requirement shape:** an event workflow with per-member RSVP rows, where each member can set their
+own reminder — their own lead time, or their own due time and notification text.
+
+**Looks plausible, is wrong:** declare a `reminder` block on the parent event and delete the
+member-owned reminder transition, on the reasoning that reminders are declared now.
+
+```jsonc
+// parent event
+"reminder": { "anchorDateField": "eventDate", "anchorTimeField": "eventTime", "leadHours": 24 }
+// and the response row's own set-reminder / send-reminder transition: deleted
+```
+
+The two are different capabilities and only one of them is per-member. A block on the parent produces
+**one** reminder derived from **one** instance's anchor fields — every attendee gets the same 24
+hours. The transition on the response row let each member choose. Replacing the second with the first
+looks like a modernisation and is a quiet downgrade: nothing fails, the validator is clean, and every
+member silently loses a setting they had.
+
+**Verified-correct shape:** they coexist. Keep the member-owned transition; add the block only if the
+*event itself* also needs a reminder.
+
+```jsonc
+// response row — per member, unchanged
+{ "id": "set-reminder", "action": "deliver_reminder", "label": "Add reminder",
+  "guard": { "actorEqualsField": { "key": "fanId" } },
+  "inputs": { "dueAt": {...}, "notificationTitle": {...}, "notificationBody": {...} },
+  "effects": [ { "op": "createInstance", "workflowType": "<community>-notification",
+                 "fields": { "recipientFanId": "{fanId}", "dueAt": "{input.dueAt}" } } ] }
+```
+
+That is the **materialised notification** path, and `workflow-grammar.md`'s reminder section says in
+as many words that it is unaffected by the move away from formulas: a stored `dueAt` an effect writes
+outright is data, not calculation, and the sweep honours it. What the formula drop retired was a
+`dueAt` computed by a formula — not a member's ability to schedule one.
+
+**Before deleting any reminder transition, ask which instance owns the choice.** If the answer is
+"each member, on their own row", a parent block cannot express it and deleting the transition removes
+the feature.
+
+**Found in:** Neighborhood Book Club, 2026-08-28 — `book-meeting-rsvp-response.send-reminder`
+(`action: "deliver_reminder"`, guarded on `actorEqualsField: fanId`, taking the member's own `dueAt`,
+title and body) was removed and a parent block added in its place. It shipped. Caught afterwards by a
+verifier that compares transition sets, not by the validator, which was clean throughout. Camera Club
+was about to receive the identical change and its product doc §119–129 argues explicitly for the
+per-member design — worth reading, because it reasons the case out.
+
+---
+
 ## Known current engine limitations to design around (not "solved" — update this section once each lands)
 
 These are real, confirmed gaps in the App Shell's implementation of documented grammar, not JSON-authoring

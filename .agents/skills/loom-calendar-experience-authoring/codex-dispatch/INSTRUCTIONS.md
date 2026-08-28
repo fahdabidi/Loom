@@ -180,6 +180,17 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    exposure and far harder to spot.
    [`solved-patterns.md` §18](../../../docs/references/reference/solved-patterns.md) has the worked case.
 
+5f. **A `reminder` block and a member-owned reminder transition are different capabilities.** The
+   block derives one instant from one instance's anchor fields; a `deliver_reminder` transition on a
+   per-member response row lets each member choose their own. Adding the block **never** justifies
+   deleting the transition — ask which instance owns the choice, and if the answer is "each member, on
+   their own row", a parent block cannot express it. A member's stored `dueAt`, written outright by an
+   effect, is a materialised notification: `workflow-grammar.md` states it is unaffected by the move
+   away from formulas, and the sweep honours it. What was retired is a `dueAt` a *formula* computed,
+   not a member's ability to schedule one.
+   [`solved-patterns.md` §19](../../../docs/references/reference/solved-patterns.md) has the case that
+   shipped before it was noticed.
+
 6. **Seeds.** Every seed declares `createdByFanId` (rule 12c) and demonstrates a state worth seeing —
    seeds are the first thing a reviewer looks at.
 7. **Zero validator errors and zero warnings.** A warning you cannot eliminate must be justified
