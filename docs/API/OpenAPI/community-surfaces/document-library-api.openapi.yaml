@@ -81,6 +81,10 @@ tags:
     description: Upload, read and remove the bytes bound to a workflow instance.
   - name: Access
     description: The resolved reader and writer sets for a document.
+  - name: Member state
+    description: >-
+      Per-member facts about a shared document — read, saved, acknowledged — and the version each
+      acknowledgement was made against.
 
 paths:
   /v1/communities/{communityId}/instances/{instanceId}/documents:
@@ -311,6 +315,188 @@ paths:
         '404':
           description: No such document, or the caller may not read it.
 
+  /v1/communities/{communityId}/documents/{documentId}/revisions:
+    post:
+      tags: [Documents]
+      operationId: addDocumentRevision
+      summary: Replace the bytes and bump the version.
+      description: >-
+        Requires that the caller could invoke a transition whose `action` is `upload` on the owning
+        instance — the same permission that created the document.
+
+
+        Stores the new bytes and increments `version` by one. The previous revision is retained and
+        remains addressable, because a document people have acknowledged cannot be quietly rewritten:
+        "who accepted the CC&Rs" is unanswerable if the thing they accepted no longer exists.
+
+
+        **The version is the service's to assign.** A caller cannot set it. It began as a member-typed
+        text field in at least one community — an author could write "v2" over "v3", or leave it
+        untouched through five real edits, and nothing anywhere would disagree. A version that does not
+        move when the bytes move is worse than no version, because every acknowledgement bound to it
+        silently becomes a lie.
+
+
+        **Bumping invalidates acknowledgements.** Every prior acknowledgement recorded against an
+        earlier version stays in the record, and stops satisfying "has this member acknowledged the
+        current document". That is the point: a revised policy is a policy nobody has accepted yet.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/DocumentId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                changeNote:
+                  type: string
+                  description: >-
+                    What changed, for the version history a reader sees. Optional, and never a
+                    substitute for the version itself.
+      responses:
+        '201':
+          description: The revision was stored and the version incremented.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '403':
+          description: The caller could not invoke an `upload` transition on the owning instance.
+        '404':
+          description: No such document in this community.
+
+  /v1/communities/{communityId}/documents/{documentId}/state:
+    get:
+      tags: [Member state]
+      operationId: getDocumentMemberState
+      summary: The calling member's own read, acknowledged and saved state.
+      description: >-
+        Returns the caller's own state and nobody else's. This is a per-member fact about a shared
+        object: one document, one state per reader, and the instance has no room for N of them.
+
+
+        Communities modelled this as instance data before this endpoint existed, and it failed in two
+        directions. A `fanId[]` list of readers grows without bound and rides along on every read of
+        the instance. A pair of fields — `unreadForA` / `unreadForB` — works for exactly two members
+        and cannot generalise.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/DocumentId'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: The caller's state. Absent facts are false rather than missing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMemberState'
+        '403':
+          description: The caller may not read this document, so it has no state for them.
+        '404':
+          description: No such document in this community.
+
+    put:
+      tags: [Member state]
+      operationId: setDocumentMemberState
+      summary: Mark read, unread, acknowledged or saved.
+      description: >-
+        Sets the caller's own state. A member cannot set another member's — identity comes from the
+        token, never the request, exactly as it does for access resolution.
+
+
+        **`acknowledged` is not a toggle.** It can be set true and never set false: an acknowledgement
+        is a record that something happened at a moment, and un-acknowledging would erase evidence
+        rather than change a preference. To require acknowledgement again, publish a revision — the
+        version bump does it, and does it for everyone at once. Sending `acknowledged: false` is a
+        `409`, not a silent no-op, because a client that believes it cleared an acknowledgement has
+        a different idea of the record than the record does.
+
+
+        `read` and `saved` are ordinary toggles and may be set either way.
+
+
+        Acknowledging records the document's **current** `version` alongside the timestamp. That
+        binding is what makes the compliance question answerable at all.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/DocumentId'
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentMemberStateUpdate'
+      responses:
+        '200':
+          description: The caller's state after the update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentMemberState'
+        '403':
+          description: The caller may not read this document.
+        '404':
+          description: No such document in this community.
+        '409':
+          description: >-
+            An attempt to set `acknowledged` to false. Acknowledgements are not retractable; publish a
+            revision instead.
+
+  /v1/communities/{communityId}/documents/{documentId}/acknowledgements:
+    get:
+      tags: [Member state]
+      operationId: listDocumentAcknowledgements
+      summary: Who has acknowledged this document, and which version they saw.
+      description: >-
+        The compliance view: every acknowledgement on record, each carrying the version it was made
+        against. Requires that the caller could invoke a transition whose `action` is `upload` or
+        `grant_access` on the owning instance — the roles that administer the document, not every
+        reader, since who has and has not read a policy is not public information.
+
+
+        `currentVersionOnly` answers the question people actually ask — who has accepted the document
+        as it stands now — while the full list preserves the history that makes it auditable.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/DocumentId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - name: currentVersionOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: The acknowledgements on record.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [documentId, currentVersion, acknowledgements]
+                properties:
+                  documentId:
+                    type: string
+                  currentVersion:
+                    type: integer
+                  acknowledgements:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DocumentAcknowledgement'
+        '403':
+          description: The caller does not administer this document.
+        '404':
+          description: No such document in this community.
+
 components:
   parameters:
     CommunityId:
@@ -331,6 +517,41 @@ components:
       required: true
       schema:
         type: string
+    CorrelationId:
+      name: X-Loom-Correlation-Id
+      in: header
+      required: true
+      description: >-
+        Required on every workflow-service route. A request without one is rejected
+        `400 invalid_correlation_id` rather than assigned a generated id, so a caller cannot lose the
+        thread of its own request by omitting it.
+      schema:
+        type: string
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: >-
+        A repeated call with the same key returns the original result rather than storing a second
+        copy. Two documents for one intent would each be a valid upload with nothing able to say which
+        one the instance field means.
+      schema:
+        type: string
+
+  responses:
+    BadRequest:
+      description: The request was malformed, or its correlation id was missing.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: No usable token was presented.
+    NotFound:
+      description: No such community, instance or document.
+    Conflict:
+      description: The request contradicts the document's current state.
+
 
   schemas:
     Document:
@@ -380,6 +601,22 @@ components:
         uploadedAt:
           type: string
           format: date-time
+        version:
+          type: integer
+          minimum: 1
+          description: >-
+            Starts at 1 and increments on every revision. **The service assigns it; a caller cannot.**
+            Cedar Commons HOA carried a member-typed `version` text field before this existed, so an
+            author could write "v2" over "v3" or leave it untouched through five real edits and nothing
+            would disagree. A version that does not move when the bytes move is worse than none, because
+            every acknowledgement bound to it silently becomes false.
+        revisedAt:
+          type: string
+          format: date-time
+          description: When the current version was published. Equals `uploadedAt` for version 1.
+        changeNote:
+          type: string
+          description: What changed in this revision, if the uploader said.
         contentUrl:
           type: string
           format: uri
@@ -485,6 +722,88 @@ components:
               type: array
               items:
                 type: string
+
+    DocumentMemberState:
+      type: object
+      additionalProperties: false
+      required: [documentId, fanId, read, acknowledged, saved, currentVersion]
+      properties:
+        documentId:
+          type: string
+        fanId:
+          type: string
+          description: The caller, taken from the token. Never accepted from the request.
+        currentVersion:
+          type: integer
+          description: The document's version right now, so a client can compare it against the one acknowledged.
+        read:
+          type: boolean
+        readAt:
+          type: string
+          format: date-time
+        saved:
+          type: boolean
+        savedAt:
+          type: string
+          format: date-time
+        acknowledged:
+          type: boolean
+          description: >-
+            Whether this member has acknowledged **any** version. On its own it does not answer the
+            question worth asking — compare `acknowledgedVersion` with `currentVersion` for that.
+        acknowledgedAt:
+          type: string
+          format: date-time
+        acknowledgedVersion:
+          type: integer
+          description: >-
+            The version that was current when they acknowledged. Less than `currentVersion` means they
+            accepted an older document and the acknowledgement is stale — which is a real state, not an
+            error, and the surface should say so rather than showing a tick.
+
+    DocumentMemberStateUpdate:
+      type: object
+      additionalProperties: false
+      description: >-
+        Only the fields present are changed. Omitting a field leaves it alone rather than clearing it,
+        so a client marking something read cannot accidentally unsave it.
+      properties:
+        read:
+          type: boolean
+        saved:
+          type: boolean
+        acknowledged:
+          type: boolean
+          description: >-
+            May only be set `true`. Setting it `false` is a `409` — see this endpoint's description.
+
+    DocumentAcknowledgement:
+      type: object
+      additionalProperties: false
+      required: [fanId, version, acknowledgedAt]
+      properties:
+        fanId:
+          type: string
+        version:
+          type: integer
+          description: The version acknowledged, not the version now.
+        acknowledgedAt:
+          type: string
+          format: date-time
+        stale:
+          type: boolean
+          description: >-
+            True when `version` is behind the document's current version. Computed, not stored — the
+            same record becomes stale the moment a revision is published, without being rewritten.
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
 
   securitySchemes:
     LoomUserOAuth:

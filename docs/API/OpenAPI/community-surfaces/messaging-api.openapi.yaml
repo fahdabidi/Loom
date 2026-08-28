@@ -1,0 +1,148 @@
+openapi: 3.1.0
+info:
+  title: Loom Messaging API
+  version: 0.0.0-placeholder
+  summary: >-
+    PLACEHOLDER. The messaging tab is not built. This spec exists so packages stop expressing thread
+    state as workflow data, and so the validator can name what is missing.
+  description: >-
+    **Nothing here is implemented.** No service answers these paths, and no client calls them. The
+    version is `0.0.0-placeholder` and stays there until something does.
+
+
+    **Why a spec for something that does not exist.** Communities are already authoring thread
+    behaviour into workflow JSON, because that was the only place to put it. Fourteen transitions
+    across three communities — mute, unmute, mark read, mark unread on discussion threads and message
+    threads — declare no action, change no state and carry no effects. They render as buttons and do
+    nothing at all. Member Social Space went further and modelled per-member unread state as
+    `unreadForA` / `unreadForB`, two fields that work for exactly two participants and cannot
+    generalise to three.
+
+
+    Those are not authoring mistakes to be fixed one package at a time. They are the shape of a
+    missing capability, and every community that adds a thread will reinvent the same dead transition.
+    Writing the boundary down now means a package can say "this belongs to messaging" instead of
+    faking it, and the validator can say so too — see `messaging_feature_not_available` in
+    `../../../references/guide/05-validation.md`.
+
+
+    **What belongs here, not in workflow JSON.** Per-member thread state: read position, mute, unread
+    counts. These are per-member facts about a shared object, the same shape the Document Library API
+    now owns for documents (`read`, `saved`, `acknowledged`). A workflow instance has one state; a
+    thread has one per participant, and instance data has no room for N of them.
+
+
+    **What stays in workflow JSON.** The messages themselves, where a community models discussion as a
+    workflow — Book Club's `book-discussion-message` is a real workflow with real states and should
+    remain one. This API owns *state about* threads, not their content.
+
+
+    **Design status: none of the below is agreed.** Paths and schemas are a sketch to make the
+    boundary concrete and to give the validator something to point at. Treat every shape here as a
+    proposal. Do not build against it, and do not cite it as a contract.
+servers:
+  - url: https://communities.loom.example
+security:
+  - LoomUserOAuth:
+      - community.messaging
+  - LoomServiceAuth: []
+x-loom-api-owner: community-surfaces/messaging
+x-loom-status: placeholder-not-implemented
+x-loom-architecture-docs:
+  - ../../../references/reference/permissions.md
+  - ./document-library-api.openapi.yaml
+
+tags:
+  - name: Thread state
+    description: Per-member facts about a thread. Not implemented.
+
+paths:
+  /v1/communities/{communityId}/threads/{threadId}/state:
+    get:
+      tags: [Thread state]
+      operationId: getThreadMemberState
+      summary: NOT IMPLEMENTED — the calling member's own thread state.
+      description: >-
+        Would return the caller's read position, mute setting and unread count for one thread.
+        Deliberately mirrors `getDocumentMemberState`: the same problem — per-member state on a shared
+        object — should not grow two different shapes.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/ThreadId'
+      responses:
+        '501':
+          description: Not implemented. The messaging tab does not exist.
+        '200':
+          description: Would return the caller's thread state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreadMemberState'
+
+    put:
+      tags: [Thread state]
+      operationId: setThreadMemberState
+      summary: NOT IMPLEMENTED — mute, unmute, or move the read position.
+      description: >-
+        Would set the caller's own state. Muting is a toggle and carries no history; a read position
+        is a marker, not an event log. Neither is an acknowledgement, and neither should be recorded
+        as one — the document API's `acknowledged` is deliberately irretractable, and a mute plainly
+        is not.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/ThreadId'
+      responses:
+        '501':
+          description: Not implemented. The messaging tab does not exist.
+
+components:
+  parameters:
+    CommunityId:
+      name: communityId
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z0-9_]+$'
+    ThreadId:
+      name: threadId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    ThreadMemberState:
+      type: object
+      description: Sketch. Not agreed.
+      additionalProperties: false
+      required: [threadId, fanId, muted, unreadCount]
+      properties:
+        threadId:
+          type: string
+        fanId:
+          type: string
+          description: The caller, from the token. Never accepted from the request.
+        muted:
+          type: boolean
+        lastReadMessageId:
+          type: string
+          description: >-
+            A position, not a count. A stored count goes wrong the moment a message is deleted or
+            arrives out of order; a position survives both.
+        unreadCount:
+          type: integer
+          description: Derived from `lastReadMessageId`, never stored.
+
+  securitySchemes:
+    LoomUserOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.loom.example/realms/loom/protocol/openid-connect/auth
+          tokenUrl: https://auth.loom.example/realms/loom/protocol/openid-connect/token
+          scopes:
+            community.messaging: Act on message threads in a community.
+    LoomServiceAuth:
+      type: http
+      scheme: bearer
