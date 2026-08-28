@@ -414,15 +414,20 @@ class _EquipmentLoanArchetypeCardState
   late WorkflowInstance _instance;
   List<LoomWorkflowTransition> _actions = const [];
   bool _loadingActions = true;
+  LoomItemQueue? _queue;
+  bool _loadingQueue = false;
+  bool _queueUnavailable = false;
   bool _mutating = false;
   String? _error;
   int _actionRequest = 0;
+  int _queueRequest = 0;
 
   @override
   void initState() {
     super.initState();
     _instance = widget.resolved.instance;
     _loadActions();
+    _loadQueue();
   }
 
   @override
@@ -437,12 +442,14 @@ class _EquipmentLoanArchetypeCardState
         oldWidget.engine != widget.engine) {
       _instance = newInstance;
       _loadActions();
+      _loadQueue();
     }
   }
 
   @override
   void dispose() {
     _actionRequest++;
+    _queueRequest++;
     super.dispose();
   }
 
@@ -485,6 +492,152 @@ class _EquipmentLoanArchetypeCardState
     return null;
   }
 
+  LoomWorkflowTransition? _actionFor(String action) {
+    for (final candidate in _actions) {
+      if (candidate.action == action) return candidate;
+    }
+    return null;
+  }
+
+  /// The engine's old queue guards read an instance-local list. The remote
+  /// queue is now durable and cross-member, so it selects the semantic action
+  /// from the declared machine after the service has told us whether the
+  /// viewer is in the queue. We deliberately key this on [action], not an id:
+  /// a community owns transition ids, while the surface owns these semantics.
+  LoomWorkflowTransition? _declaredActionFor(String action) {
+    for (final candidate in widget.resolved.machine.transitions) {
+      if (candidate.action == action &&
+          candidate.from.contains(_instance.currentState)) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+
+  LoomWorkflowTransition? _transitionForButtonId(String id) {
+    final available = _action(id);
+    if (available != null) return available;
+    for (final candidate in widget.resolved.machine.transitions) {
+      if (candidate.id == id &&
+          candidate.from.contains(_instance.currentState)) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+
+  bool get _declaresItemQueue => widget.resolved.machine.transitions.any(
+    (transition) =>
+        transition.action == 'join_queue' || transition.action == 'leave_queue',
+  );
+
+  bool get _usesServiceItemQueue =>
+      widget.engine is RemoteWorkflowEngineApi && _declaresItemQueue;
+
+  bool _isQueueAction(LoomWorkflowTransition transition) =>
+      transition.action == 'join_queue' || transition.action == 'leave_queue';
+
+  bool _isLegacyQueueField(String key) =>
+      key == 'queuedFanIds' || key == 'queueLength' || key == 'myQueuePosition';
+
+  LoomItemQueueClient? get _queueClient =>
+      _usesServiceItemQueue ? resolveLoomItemQueueClient() : null;
+
+  String? get _queueCommunityId {
+    final engine = widget.engine;
+    return engine is RemoteWorkflowEngineApi ? engine.communityId : null;
+  }
+
+  Future<void> _loadQueue() async {
+    if (!_usesServiceItemQueue) return;
+    final request = ++_queueRequest;
+    final client = _queueClient;
+    if (client == null) {
+      if (!mounted || request != _queueRequest) return;
+      setState(() {
+        _queue = null;
+        _loadingQueue = false;
+        _queueUnavailable = true;
+      });
+      return;
+    }
+    if (mounted) {
+      // Do not leave a previous answer on screen while a fresh service read is
+      // in flight. A queue position is neither a cache nor an estimate.
+      setState(() {
+        _queue = null;
+        _loadingQueue = true;
+        _queueUnavailable = false;
+      });
+    }
+    try {
+      final queue = await client.getItemQueue(
+        communityId: _queueCommunityId!,
+        instanceId: _instance.instanceId,
+      );
+      if (!mounted || request != _queueRequest) return;
+      setState(() {
+        _queue = queue;
+        _loadingQueue = false;
+        _queueUnavailable = false;
+      });
+    } catch (_) {
+      if (!mounted || request != _queueRequest) return;
+      setState(() {
+        _queue = null;
+        _loadingQueue = false;
+        _queueUnavailable = true;
+      });
+    }
+  }
+
+  Future<void> _applyQueueAction(LoomWorkflowTransition transition) async {
+    if (_mutating) return;
+    final client = _queueClient;
+    final communityId = _queueCommunityId;
+    if (client == null || communityId == null) {
+      setState(() {
+        _queue = null;
+        _loadingQueue = false;
+        _queueUnavailable = true;
+      });
+      return;
+    }
+    setState(() {
+      _mutating = true;
+      _error = null;
+    });
+    try {
+      switch (transition.action) {
+        case 'join_queue':
+          await client.joinItemQueue(
+            communityId: communityId,
+            instanceId: _instance.instanceId,
+          );
+        case 'leave_queue':
+          await client.leaveItemQueue(
+            communityId: communityId,
+            instanceId: _instance.instanceId,
+          );
+        default:
+          throw StateError(
+            'Expected a queue action, got ${transition.action}.',
+          );
+      }
+      await _loadQueue();
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _queue = null;
+          _loadingQueue = false;
+          _queueUnavailable = true;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _mutating = false);
+    }
+  }
+
   bool get _isGiveaway => widget.resolved.machine.transitions.any(
     (transition) => transition.id == 'claim',
   );
@@ -492,8 +645,16 @@ class _EquipmentLoanArchetypeCardState
   LoomWorkflowTransition? get _contextualBorrow =>
       _isGiveaway ? null : _action('borrow');
 
-  LoomWorkflowTransition? get _queueToggle =>
-      _action('join-queue') ?? _action('leave-queue');
+  LoomWorkflowTransition? get _queueToggle {
+    if (_usesServiceItemQueue) {
+      final queue = _queue;
+      if (_loadingQueue || _queueUnavailable || queue == null) return null;
+      return _declaredActionFor(
+        queue.viewerPosition == 0 ? 'join_queue' : 'leave_queue',
+      );
+    }
+    return _actionFor('join_queue') ?? _actionFor('leave_queue');
+  }
 
   LoomWorkflowTransition? get _returnAction =>
       _action('return') ?? _action('return-game');
@@ -510,7 +671,7 @@ class _EquipmentLoanArchetypeCardState
       };
       return [
         for (final action in _actions)
-          if (!used.contains(action.id)) action,
+          if (!used.contains(action.id) && !_isQueueAction(action)) action,
       ];
     }
     final used = {
@@ -519,7 +680,7 @@ class _EquipmentLoanArchetypeCardState
     };
     return [
       for (final action in _actions)
-        if (!used.contains(action.id)) action,
+        if (!used.contains(action.id) && !_isQueueAction(action)) action,
     ];
   }
 
@@ -528,6 +689,10 @@ class _EquipmentLoanArchetypeCardState
     for (final entry in widget.resolved.machine.instanceDataSchema.entries) {
       final key = entry.key;
       final field = entry.value;
+      // Remote queues supersede these process-local derived values. Rendering
+      // them after a failed queue read would turn an outage into a convincing
+      // but false position or length.
+      if (_usesServiceItemQueue && _isLegacyQueueField(key)) continue;
       if (widget.visibleFieldKeys != null &&
           !widget.visibleFieldKeys!.contains(key)) {
         continue;
@@ -582,6 +747,7 @@ class _EquipmentLoanArchetypeCardState
     for (final entry in widget.resolved.machine.instanceDataSchema.entries) {
       final key = entry.key;
       final field = entry.value;
+      if (_usesServiceItemQueue && _isLegacyQueueField(key)) continue;
       final contexts = field.displayContexts;
       if (widget.visibleFieldKeys != null &&
           !widget.visibleFieldKeys!.contains(key)) {
@@ -629,6 +795,10 @@ class _EquipmentLoanArchetypeCardState
 
   Future<void> _applyTransition(LoomWorkflowTransition transition) async {
     if (_mutating) return;
+    if (_usesServiceItemQueue && _isQueueAction(transition)) {
+      await _applyQueueAction(transition);
+      return;
+    }
     final inputs = await _collectTransitionInputs(
       context: context,
       transition: transition,
@@ -694,6 +864,69 @@ class _EquipmentLoanArchetypeCardState
     );
   }
 
+  Widget _queueStatus(BuildContext context, Color foreground) {
+    final instanceId = _instance.instanceId;
+    if (_loadingQueue) {
+      return const Padding(
+        key: ValueKey('equipment-loan-queue-loading'),
+        padding: EdgeInsets.only(top: 10),
+        child: Text('Loading queue…'),
+      );
+    }
+    if (_queueUnavailable) {
+      return Padding(
+        key: ValueKey('equipment-loan-queue-unavailable-$instanceId'),
+        padding: const EdgeInsets.only(top: 10),
+        child: const Text('Queue unavailable.'),
+      );
+    }
+    final queue = _queue;
+    if (queue == null) return const SizedBox();
+    final entries = queue.entries;
+    return Padding(
+      key: ValueKey('equipment-loan-queue-status-$instanceId'),
+      padding: const EdgeInsets.only(top: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Queue length: ${queue.length}',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: foreground,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            queue.viewerPosition == 0
+                ? 'You are not queued.'
+                : 'Your position: ${queue.viewerPosition}',
+          ),
+          if (entries != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Queue members',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (entries.isEmpty)
+              const Text('No one is waiting.')
+            else
+              for (final entry in entries)
+                Text(
+                  '${entry.position}. ${entry.fanId}',
+                  key: ValueKey(
+                    'equipment-loan-queue-entry-$instanceId-${entry.fanId}',
+                  ),
+                ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final foreground =
@@ -719,6 +952,7 @@ class _EquipmentLoanArchetypeCardState
                 foreground: foreground,
                 accent: widget.accent,
               ),
+              if (_usesServiceItemQueue) _queueStatus(context, foreground),
               if (tileOutcomeFacts.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 WorkflowFactPillRow(
@@ -760,9 +994,16 @@ class _EquipmentLoanArchetypeCardState
                   onTransitionPressed: _mutating
                       ? null
                       : (transitionId) {
-                          final transition = _actions.firstWhere(
-                            (candidate) => candidate.id == transitionId,
+                          final transition = _transitionForButtonId(
+                            transitionId,
                           );
+                          if (transition == null) {
+                            setState(
+                              () =>
+                                  _error = 'Could not resolve listing action.',
+                            );
+                            return;
+                          }
                           unawaited(_applyTransition(transition));
                         },
                   foreground: foreground,
