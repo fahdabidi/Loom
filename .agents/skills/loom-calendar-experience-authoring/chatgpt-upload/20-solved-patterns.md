@@ -706,6 +706,56 @@ the shape to copy; r3 is the shape to avoid. The tell was not the validator — 
 
 ---
 
+## 18. A tab's audience is **declared**, never inferred from who happens to hold a transition
+
+**Requirement shape:** a community has a tab not everyone should see (an admin or organiser surface),
+and a tab everyone should see that only some roles can act on (a public leaderboard, a read-only
+document shelf).
+
+**Looks plausible, is wrong:** declare the tabs, guard the transitions, and let visibility fall out.
+It appears to work — an `admin` tab whose every transition is `allowedRoleIds: ["organizer"]` really
+is hidden from members, because the App Shell derives tab access from transition guards
+(`roleHasPermission`).
+
+It works by accident, and it fails in both directions.
+
+*Too hidden.* A workflow that declares `visibility: {"default": "public"}` and whose transitions are
+all admin-only is **readable by everyone and visible to no one**. Chess's `chess-rankings-table` is
+exactly this: a public ladder its own product doc requires the Player persona to see, hidden from
+players because only organisers can publish to it. Nothing in the package looks wrong. The tab is
+simply absent.
+
+*Too exposed.* The moment anyone adds a read-only surface to an admin tab, or relaxes one guard, the
+tab appears for roles nobody intended. The restriction was never stated, so nothing protects it.
+
+**Verified-correct shape:** say who the tab is for.
+
+```jsonc
+"appShell": { "tabs": [
+  { "tabId": "admin",    "label": "Admin",    "visibleRoleIds": ["chess-organizer"] },
+  { "tabId": "rankings", "label": "Rankings" }   // no restriction: everyone sees it
+]}
+```
+
+Nine of the ten shipping communities already do this — Ad-Free `admin: ["ad-off-owner"]`, Book Club
+`["book-organizer"]`, Cedar and Youth Soccer on five and six tabs each. Chess declares none at all,
+which is why it is the community where the defect surfaced.
+
+**Where the audience comes from.** Every product doc has a §3.1 persona table with a *Required tabs*
+column. Read it — but read it as a **lower bound, not an exclusive list**. Chess's table names
+Rankings under Player and not under Organizer, and organisers plainly need it: §2 lists "publish
+rankings" among their duties. A tab absent from one persona's required list is not thereby forbidden
+to them. Restrict a tab only where the doc actually says it is restricted, and when the doc does not
+settle it, declare no restriction and say so in Gaps rather than inventing one — an over-restricted
+tab is as much a defect as an exposed one, and much harder to notice.
+
+**Found in:** Chess Club, 2026-08-28. Surfaced when an implementation agent refused to change a demo
+test to match the broken behaviour, calling that manufactured evidence. Worth noting what did *not*
+find it: the package validates clean, and every structural diff passes, because a missing
+`visibleRoleIds` is an absence and nothing counts absences.
+
+---
+
 ## Known current engine limitations to design around (not "solved" — update this section once each lands)
 
 These are real, confirmed gaps in the App Shell's implementation of documented grammar, not JSON-authoring

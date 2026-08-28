@@ -39,6 +39,13 @@ known answer for every kind of thing it claims to find, not just one.**
 
 ## Open
 
+### 2026-08-28 — a tab you may read but not act on is invisible
+
+- [ ] `new-ticket` — **`roleHasPermission` conflates "can act" with "can see", hiding a readable tab.** `part12_actor_identity_and_tabs.dart:563` admits a role to a tab only if it appears in a transition's `allowedRoleIds` or a create action's `byRoleIds`. A role that can *read* the bound workflow but has no transition on it gets no tab. Proven on Chess: `chess-rankings-table` declares `visibility: {"default": "public"}` and all three of its transitions are `chess-organizer` only, so the Player persona cannot see the `rankings` tab — which `chess-club-product-experience.md` §3.1 explicitly requires. Found by an implementation agent that refused to change the test to match, correctly calling that manufactured evidence
+- [ ] `new-ticket` — **PREREQUISITE, do this first: Chess must declare `visibleRoleIds`.** Nine of the ten communities already restrict tabs the explicit way — AdFree `admin: ['ad-off-owner']`, Book Club `['book-organizer']`, Cedar and Youth Soccer on five and six tabs each. **Chess declares none at all**, so its `admin` tab is restricted only by the accident of who holds transitions. Fixing the app shell before Chess declares its tab visibility would expose Chess's admin tab to every member. The general rule the Skill should apply: a product doc's §3.1 persona/tab table is the source for `visibleRoleIds`, and every doc has one
+- [ ] `needs-verification` — **my corpus scan of this defect over-counted twice and is not evidence.** It first said 8 by not following `responseTable` into response workflows, which the real derivation does — that produced false hits on Camera and Garden calendars, where members obviously do RSVP. Refined to 6, still wrong, because it ignored `visibleRoleIds`: AdFree's `admin` hidden from a member is correct behaviour, not a defect. Only the Chess `rankings` case is proven, and it was proven by rendering the UI rather than by reading JSON. Re-measure with the real derivation before quoting any number
+- [ ] `needs-verification` — **the demo suite is red on this defect.** `b44_chess_engine_migration_test.dart` had a stale `matches` assertion; updating it to the correct topology moved the failure rather than removing it, and the test now fails on the real Player→Rankings gap. That is the honest state: 159/160 either way. Do not skip the assertion to go green without recording why
+
 ### 2026-08-27 — the writer-declaration pass, and what it opened up
 
 Landed today, all pushed and green (judges 440, engine 312, app shell 308, workflow service 75):

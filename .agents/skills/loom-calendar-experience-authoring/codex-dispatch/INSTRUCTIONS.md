@@ -168,6 +168,18 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    answers, all three `status: pass`, and only the 2,998-line one was correct.
    [`solved-patterns.md` §17](../../../docs/references/reference/solved-patterns.md) has the numbers.
 
+5e. **Declare every tab's audience; never let transition guards decide it.** A tab not everyone should
+   see gets `visibleRoleIds` on its `appShell.tabs[]` entry. Do **not** rely on its workflows'
+   transition guards to hide it — that is an accident of who holds a transition, and it fails both
+   ways: a workflow with `visibility: {"default": "public"}` whose transitions are all admin-only is
+   readable by everyone and visible to nobody, and an admin tab restricted only by its guards opens up
+   the moment a read-only surface joins it. The audience comes from the product doc's §3.1 persona
+   table, read as a **lower bound**: a tab missing from one persona's required list is not forbidden to
+   that persona, so restrict only where the doc says restricted, and where it does not settle the
+   question declare no restriction and note it in Gaps. Over-restriction is as real a defect as
+   exposure and far harder to spot.
+   [`solved-patterns.md` §18](../../../docs/references/reference/solved-patterns.md) has the worked case.
+
 6. **Seeds.** Every seed declares `createdByFanId` (rule 12c) and demonstrates a state worth seeing —
    seeds are the first thing a reviewer looks at.
 7. **Zero validator errors and zero warnings.** A warning you cannot eliminate must be justified
