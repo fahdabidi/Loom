@@ -1,0 +1,438 @@
+openapi: 3.1.0
+info:
+  title: Loom Export Bundle API
+  version: 0.1.0
+  summary: Real bytes for the `exportWizard` archetype, and a checksum computed over them.
+  description: >-
+    Produces the archive behind the `exportWizard` archetype: a member exports their community's
+    records, this service serialises them, keeps the bytes, and returns a checksum over those bytes.
+
+
+    **What this replaces, and why it is worth stating.** Until now the only implementation was a fake
+    that returned the string `checksum_<communityId>_<documentCount>_<r|full>`. It hashed nothing. It
+    concatenated an id and a count, and it was reachable only from tests, so the running app never saw
+    even that. Meanwhile the app showed a `Verify checksum` affordance and the community packages
+    declared a `checksum` field, so the product promised an integrity guarantee that no code anywhere
+    provided. A fabricated checksum is worse than an absent one: an empty field reads as missing,
+    while `checksum_garden-club_12_r` reads as a hash to anyone who does not go looking.
+
+
+    **The checksum is computed over the bytes this service actually serves.** Not over a description
+    of them, not over the record set that produced them, not over a scope declaration. The value
+    returned by `generateExportBundle`, the bytes returned by `downloadExportBundle`, and the value
+    recomputed by `verifyExportBundle` are all the same sequence of octets, or the guarantee is
+    theatre. This is the single invariant the whole API exists to hold.
+
+
+    **Verification recomputes; it never re-reads.** `verifyExportBundle` fetches the stored bytes,
+    hashes them again, and compares that fresh digest to the one recorded at generation. It must never
+    return the recorded checksum as the observed one -- a verifier that compares a stored value to
+    itself passes unconditionally, including for a bundle whose bytes were truncated, swapped or lost.
+    That failure mode looks identical to success in every log and every UI, which is precisely why it
+    is called out here rather than left to the implementer's judgement.
+
+
+    **Serialisation is canonical, because a checksum over a non-deterministic encoding cannot be
+    verified.** Object keys are emitted in sorted order, timestamps in UTC as RFC 3339, numbers
+    without locale formatting, and UTF-8 without a byte-order mark. Two generations of the same scope
+    over unchanged data must produce byte-identical output and therefore the same digest. Without
+    this, re-generating an export appears to corrupt it.
+
+
+    **Redaction happens before hashing.** When `redactProtectedData` is set, protected fields are
+    removed from the record set and the digest covers the redacted bytes -- what the recipient
+    actually receives. Hashing the full set and shipping a redacted archive would produce a checksum
+    that fails against its own download.
+
+
+    **Generation is a workflow action, not a file operation.** Generating requires that the caller
+    could invoke a transition whose `action` is `run` on that instance; downloading requires
+    `download`. Neither permission is granted or configured here -- both come from `action` +
+    `allowedRoleIds` in the community's JSON, derived exactly as
+    `../../../references/reference/permissions.md` describes and as
+    `./document-library-api.openapi.yaml` already does for uploads. Verification is deliberately not
+    gated on its own action: a community whose workflow offers `record-checksum-pass` needs to observe
+    the result before recording it, and reading an integrity result reveals nothing the downloader
+    could not compute themselves.
+
+
+    **The bundle belongs to one workflow instance.** There is no way to generate an archive that
+    belongs to nothing: an orphaned bundle has no owner, no state and no answer to "who may download
+    this", and the only safe answer to an unanswerable access question is to refuse the write. The
+    instance is also where the resulting `checksum` is written back, which is what makes the value
+    visible on the surface that asked for it.
+servers:
+  - url: https://communities.loom.example
+security:
+  - LoomUserOAuth:
+      - community.workflow
+  - LoomServiceAuth: []
+x-loom-api-owner: community-surfaces/workflow-engine
+x-loom-archetype: exportWizard
+x-loom-architecture-docs:
+  - ../../../references/archetypes/export-wizard.md
+  - ../../../references/reference/permissions.md
+x-loom-upstream-apis:
+  - ./workflow-engine-api.openapi.yaml
+  - ./document-library-api.openapi.yaml
+  - ../identity/app-access-api.openapi.yaml
+
+tags:
+  - name: Bundles
+    description: Generate and download the bytes for an export.
+  - name: Integrity
+    description: Recompute a bundle's digest and compare it to the recorded one.
+
+paths:
+  /v1/communities/{communityId}/instances/{instanceId}/export-bundle:
+    post:
+      tags: [Bundles]
+      operationId: generateExportBundle
+      summary: Serialise the instance's export scope, store the bytes, and hash them.
+      description: >-
+        Requires that the caller could invoke a transition whose `action` is `run` on this instance.
+        Serialises the records the instance's scope selects, applies redaction when asked, writes the
+        resulting octets to object storage, and returns the digest of exactly those octets.
+
+
+        Writes `checksum` and `checksumAlgorithm` back onto the instance, so the value appears on the
+        surface without the client having to copy it there. A community whose schema also declares
+        `checksumVerified` gets `false` on generation; only `verifyExportBundle` may set it true.
+
+
+        Idempotent on `Idempotency-Key`: a repeated call with the same key returns the original
+        bundle rather than generating a second one. Two bundles for one intent would each hold a
+        valid checksum for different bytes, and nothing downstream could say which was authoritative.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/InstanceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportBundleRequest'
+      responses:
+        '201':
+          description: The bundle was generated and its bytes stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportBundle'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: >-
+            The caller could not invoke a `run` transition on this instance. Deliberately not
+            distinguished from a non-existent instance, so this endpoint cannot be used to discover
+            which instances exist.
+        '404':
+          description: No such community, or no such instance within it.
+        '409':
+          description: >-
+            The instance is in a state with no `run` transition available -- an export already
+            generating, or one already complete and not reopened.
+        '422':
+          description: >-
+            The scope selects no records. An empty archive has a well-formed digest and no meaning,
+            and returning one would let a member believe they had exported something.
+
+  /v1/communities/{communityId}/export-bundles/{exportId}:
+    get:
+      tags: [Bundles]
+      operationId: getExportBundle
+      summary: The bundle's metadata, including its recorded checksum.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/ExportId'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: The bundle record. Does not read the stored bytes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportBundle'
+        '403':
+          description: The caller could not invoke a `download` transition on the owning instance.
+        '404':
+          description: No such bundle in this community.
+
+  /v1/communities/{communityId}/export-bundles/{exportId}/content:
+    get:
+      tags: [Bundles]
+      operationId: downloadExportBundle
+      summary: The bytes the checksum was computed over.
+      description: >-
+        Requires that the caller could invoke a transition whose `action` is `download` on the owning
+        instance. Returns the stored octets unmodified -- no re-serialisation, no re-redaction, no
+        re-ordering. Anything that rewrites the bytes on the way out invalidates the digest that was
+        published with them.
+
+
+        `ETag` carries the checksum, so a client that already holds the bundle can revalidate without
+        transferring it again, and `Content-Length` carries the byte size recorded at generation.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/ExportId'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: The bundle bytes.
+          headers:
+            ETag:
+              description: The bundle's checksum, quoted, as recorded at generation.
+              schema:
+                type: string
+            Content-Length:
+              schema:
+                type: integer
+                format: int64
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: The caller could not invoke a `download` transition on the owning instance.
+        '404':
+          description: No such bundle, or its stored object is missing.
+        '410':
+          description: >-
+            The bundle record exists but its bytes are gone from object storage. Distinguished from
+            404 on purpose: a member who was told an export succeeded is owed the difference between
+            "never existed" and "no longer retrievable".
+
+  /v1/communities/{communityId}/export-bundles/{exportId}/verification:
+    post:
+      tags: [Integrity]
+      operationId: verifyExportBundle
+      summary: Re-hash the stored bytes and compare against the recorded digest.
+      description: >-
+        Reads the bundle's octets back out of object storage, computes their digest afresh, and
+        compares it to the value recorded when the bundle was generated.
+
+
+        `observedChecksum` MUST be the freshly computed digest. Returning the recorded value in that
+        field makes every verification pass, including for bytes that were truncated, replaced or
+        lost -- and a verifier that cannot fail is indistinguishable from one that was never called.
+
+
+        A mismatch is a `200` with `verified: false`, not an error status. The comparison ran and
+        produced an answer; the answer is what the caller asked for. Reserve non-2xx for the cases
+        where no comparison could happen at all.
+
+
+        On success, sets `checksumVerified` to `true` on the owning instance when its schema declares
+        that field. On mismatch, sets it `false` and leaves the recorded checksum untouched -- the
+        recorded value is evidence of what was generated, and overwriting it with what was observed
+        would erase the discrepancy this endpoint exists to surface.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/ExportId'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: The comparison ran. `verified` says whether the digests matched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportVerification'
+        '403':
+          description: The caller could not invoke a `download` transition on the owning instance.
+        '404':
+          description: No such bundle in this community.
+        '410':
+          description: >-
+            The bytes are gone, so no digest could be computed. Explicitly not reported as
+            `verified: false`, which would claim a comparison that never happened.
+
+components:
+  parameters:
+    CommunityId:
+      name: communityId
+      in: path
+      required: true
+      description: >-
+        The workflow service's own community key, underscored -- `community_cedar_commons_hoa`, not
+        the hyphenated group handle. The two are different identifiers for the same community and
+        neither is derivable from the other.
+      schema:
+        type: string
+        pattern: '^[a-z0-9_]+$'
+    InstanceId:
+      name: instanceId
+      in: path
+      required: true
+      schema:
+        type: string
+    ExportId:
+      name: exportId
+      in: path
+      required: true
+      schema:
+        type: string
+    CorrelationId:
+      name: X-Loom-Correlation-Id
+      in: header
+      required: true
+      description: >-
+        Required, as on every workflow-service route. A request without one is rejected
+        `400 invalid_correlation_id` rather than assigned a generated id.
+      schema:
+        type: string
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+
+  responses:
+    BadRequest:
+      description: The request was malformed, or its correlation id was missing.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    ExportBundleRequest:
+      type: object
+      additionalProperties: false
+      required: [redactProtectedData]
+      properties:
+        redactProtectedData:
+          type: boolean
+          description: >-
+            When true, protected fields are removed before serialisation, so the digest covers the
+            redacted bytes the recipient actually receives.
+        componentIds:
+          type: array
+          description: >-
+            Which record groups to include. Omitted means everything the instance's scope allows;
+            an empty array is rejected `422` rather than treated as "everything", because the two
+            readings of an empty list differ by an entire community's data.
+          items:
+            type: string
+        includeDocuments:
+          type: boolean
+          default: true
+          description: >-
+            Whether to embed the bytes of documents bound to the exported instances. When true the
+            document bytes are part of the hashed payload, so a document changing after generation
+            makes the bundle fail verification -- which is correct, since the archive no longer
+            matches what was published.
+
+    ExportBundle:
+      type: object
+      additionalProperties: false
+      required:
+        - exportId
+        - communityId
+        - instanceId
+        - checksum
+        - checksumAlgorithm
+        - byteSize
+        - recordCount
+        - redacted
+        - generatedAt
+      properties:
+        exportId:
+          type: string
+        communityId:
+          type: string
+        instanceId:
+          type: string
+          description: The workflow instance this bundle belongs to and whose `checksum` field it fills.
+        checksum:
+          type: string
+          description: >-
+            Lowercase hex digest of the stored bytes. Hex rather than base64 so it can be compared by
+            eye against `sha256sum` output on a downloaded file without re-encoding.
+          pattern: '^[0-9a-f]{64}$'
+        checksumAlgorithm:
+          type: string
+          enum: [sha-256]
+          description: >-
+            Recorded explicitly rather than implied. A bare hex string outlives the assumption about
+            what produced it, and a bundle generated under one algorithm must still verify correctly
+            after a second is introduced.
+        byteSize:
+          type: integer
+          format: int64
+          description: >-
+            Size of the hashed payload. Checked alongside the digest at verification: a length
+            mismatch localises the fault to truncation rather than corruption.
+        recordCount:
+          type: integer
+          description: How many records the scope selected, after redaction.
+        redacted:
+          type: boolean
+        generatedAt:
+          type: string
+          format: date-time
+          description: UTC, RFC 3339.
+
+    ExportVerification:
+      type: object
+      additionalProperties: false
+      required:
+        - exportId
+        - verified
+        - recordedChecksum
+        - observedChecksum
+        - checksumAlgorithm
+        - verifiedAt
+      properties:
+        exportId:
+          type: string
+        verified:
+          type: boolean
+          description: Whether `observedChecksum` equals `recordedChecksum` and the byte sizes agree.
+        recordedChecksum:
+          type: string
+          description: The digest stored when the bundle was generated.
+          pattern: '^[0-9a-f]{64}$'
+        observedChecksum:
+          type: string
+          description: >-
+            The digest computed from the stored bytes during THIS call. Never a copy of
+            `recordedChecksum`; see this endpoint's description.
+          pattern: '^[0-9a-f]{64}$'
+        checksumAlgorithm:
+          type: string
+          enum: [sha-256]
+        recordedByteSize:
+          type: integer
+          format: int64
+        observedByteSize:
+          type: integer
+          format: int64
+        verifiedAt:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+  securitySchemes:
+    LoomUserOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.loom.example/realms/loom/protocol/openid-connect/auth
+          tokenUrl: https://auth.loom.example/realms/loom/protocol/openid-connect/token
+          scopes:
+            community.workflow: Act on workflow instances in a community.
+    LoomServiceAuth:
+      type: http
+      scheme: bearer
