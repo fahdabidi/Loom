@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:loom_workflow_service/loom_workflow_service.dart';
@@ -34,6 +35,9 @@ Future<void> main() async {
   if (jwtIssuer == null || jwtIssuer.isEmpty) {
     throw StateError('JWT_ISSUER is required');
   }
+  final queueOfferHoldWindows = _queueOfferHoldWindows(
+    environment['LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS'],
+  );
 
   final postgres = await WorkflowPostgresConnection.open(
     host:
@@ -52,6 +56,11 @@ Future<void> main() async {
     clientId: appAccessClientId,
     clientSecret: appAccessClientSecret,
   );
+  // Queue entries are core workflow-service state, not object storage. Migrate
+  // them independently so an installation without document storage can still
+  // run the equipment-loan queue API.
+  final itemQueueRepository = PostgresItemQueueRepository(postgres.connection);
+  await itemQueueRepository.migrate();
   // Document storage is optional. A deployment without MinIO configured still
   // serves every workflow endpoint; only the document endpoints answer 503.
   // Requiring it would make a service that has run for months refuse to start
@@ -109,6 +118,8 @@ Future<void> main() async {
     documentRepository: documentRepository,
     documentObjectStore: documentObjectStore,
     exportBundleRepository: exportBundleRepository,
+    itemQueueRepository: itemQueueRepository,
+    queueOfferHoldWindows: queueOfferHoldWindows,
   );
   final server = await shelf_io.serve(
     service.handler,
@@ -133,4 +144,36 @@ Future<void> main() async {
   identityExtractor.close(force: true);
   appAccessClient.close(force: true);
   await postgres.close();
+}
+
+Map<String, Duration> _queueOfferHoldWindows(String? encoded) {
+  if (encoded == null || encoded.trim().isEmpty) {
+    throw StateError('LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS is required');
+  }
+  final Object? decoded;
+  try {
+    decoded = jsonDecode(encoded);
+  } on FormatException {
+    throw StateError(
+      'LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS must be a JSON object.',
+    );
+  }
+  if (decoded is! Map<String, dynamic> || decoded.isEmpty) {
+    throw StateError(
+      'LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS must be a non-empty JSON object.',
+    );
+  }
+
+  final result = <String, Duration>{};
+  for (final entry in decoded.entries) {
+    final seconds = entry.value;
+    if (entry.key.trim().isEmpty || seconds is! int || seconds <= 0) {
+      throw StateError(
+        'Each queue offer hold window must have a community id and positive '
+        'integer seconds.',
+      );
+    }
+    result[entry.key] = Duration(seconds: seconds);
+  }
+  return result;
 }

@@ -17,6 +17,7 @@ import 'document_object_store.dart';
 import 'document_repository.dart';
 import 'export_bundle_repository.dart';
 import 'identity.dart';
+import 'item_queue_repository.dart';
 
 /// Shelf HTTP adapter for the workflow-engine OpenAPI surface.
 ///
@@ -56,6 +57,9 @@ class WorkflowService {
   final DocumentRepository? _documentRepository;
   final DocumentObjectStore? _documentObjectStore;
   final ExportBundleRepository? _exportBundleRepository;
+  final ItemQueueRepository? _itemQueueRepository;
+  final Map<String, Duration> _queueOfferHoldWindows;
+  final DateTime Function() _clock;
 
   // WorkflowDatabase's transaction boundary uses one externally-owned
   // PostgreSQL connection. Keep whole transitions sequential so statements
@@ -71,10 +75,18 @@ class WorkflowService {
     DocumentRepository? documentRepository,
     DocumentObjectStore? documentObjectStore,
     ExportBundleRepository? exportBundleRepository,
+    ItemQueueRepository? itemQueueRepository,
+    Map<String, Duration> queueOfferHoldWindows = const <String, Duration>{},
+    DateTime Function()? clock,
   }) : _database = database,
        _documentRepository = documentRepository,
        _documentObjectStore = documentObjectStore,
        _exportBundleRepository = exportBundleRepository,
+       _itemQueueRepository = itemQueueRepository,
+       _queueOfferHoldWindows = Map.unmodifiable(
+         Map<String, Duration>.of(queueOfferHoldWindows),
+       ),
+       _clock = clock ?? DateTime.now,
        _identityExtractor = identityExtractor,
        _appAccessClient = appAccessClient,
        _communityGroupIdResolver = communityGroupIdResolver,
@@ -114,6 +126,31 @@ class WorkflowService {
     if (_matchesInstanceAction(segments, 'fields') &&
         request.method == 'PATCH') {
       return _updateInstanceFields(request, segments[2], segments[4]);
+    }
+    if (_matchesItemQueueAdvance(segments) && request.method == 'POST') {
+      return _advanceItemQueue(request, segments[2], segments[4]);
+    }
+    if (_matchesItemQueueMember(segments) && request.method == 'DELETE') {
+      return _removeFromItemQueue(
+        request,
+        segments[2],
+        segments[4],
+        segments[6],
+      );
+    }
+    if (_matchesItemQueue(segments)) {
+      if (request.method == 'GET') {
+        return _getItemQueue(request, segments[2], segments[4]);
+      }
+      if (request.method == 'POST') {
+        return _joinItemQueue(request, segments[2], segments[4]);
+      }
+      if (request.method == 'DELETE') {
+        return _leaveItemQueue(request, segments[2], segments[4]);
+      }
+    }
+    if (_matchesQueueMemberships(segments) && request.method == 'GET') {
+      return _listMyQueueMemberships(request, segments[2]);
     }
     if (_matchesInstanceExportBundle(segments) && request.method == 'POST') {
       return _generateExportBundle(request, segments[2], segments[4]);
@@ -1184,6 +1221,559 @@ class WorkflowService {
       );
     }
   }
+
+  // -------------------------------------------------------------- item queues
+  //
+  // The equipment-loan queue is persistent service state. Workflow transitions
+  // remain the source of authorization, but do not carry the ordered entries:
+  // a queue needs join evidence, cross-item lookup, and an expiring offer.
+
+  bool _matchesItemQueue(List<String> segments) =>
+      segments.length == 6 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'instances' &&
+      segments[4].isNotEmpty &&
+      segments[5] == 'queue';
+
+  bool _matchesItemQueueMember(List<String> segments) =>
+      segments.length == 7 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'instances' &&
+      segments[4].isNotEmpty &&
+      segments[5] == 'queue' &&
+      segments[6].isNotEmpty;
+
+  bool _matchesItemQueueAdvance(List<String> segments) =>
+      _matchesItemQueueMember(segments) && segments[6] == 'advance';
+
+  bool _matchesQueueMemberships(List<String> segments) =>
+      segments.length == 4 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'queue-memberships';
+
+  Future<Response> _getItemQueue(
+    Request request,
+    String communityId,
+    String instanceId,
+  ) => _withItemQueueRequest(request, communityId, (context) async {
+    final lookup = await _readableQueueInstance(
+      context: context,
+      communityId: communityId,
+      instanceId: instanceId,
+    );
+    if (!lookup.exists) return _queueInstanceNotFound(request);
+    final instance = lookup.instance;
+    if (instance == null) return _itemQueueReadForbidden(request);
+
+    final entries = await context.repository.listForItem(
+      communityId: communityId,
+      instanceId: instanceId,
+    );
+    final queueInstance = _withQueueMemberships(instance, entries);
+    final mayAdminister = await _mayAct(
+      engine: context.engine,
+      instance: queueInstance,
+      fanId: context.identity.fanId,
+      action: 'decide_request',
+    );
+    final viewerPosition = _positionFor(entries, context.identity.fanId);
+    return Response.ok(
+      jsonEncode(<String, dynamic>{
+        'instanceId': instanceId,
+        'length': entries.length,
+        'viewerPosition': viewerPosition,
+        if (mayAdminister)
+          'entries': <Map<String, dynamic>>[
+            for (var index = 0; index < entries.length; index++)
+              entries[index].toJson(position: index + 1),
+          ],
+      }),
+      headers: <String, String>{
+        ..._jsonHeaders,
+        'x-loom-correlation-id': context.correlationId,
+      },
+    );
+  });
+
+  Future<Response> _joinItemQueue(
+    Request request,
+    String communityId,
+    String instanceId,
+  ) => _withItemQueueRequest(request, communityId, (context) async {
+    final lookup = await _readableQueueInstance(
+      context: context,
+      communityId: communityId,
+      instanceId: instanceId,
+    );
+    if (!lookup.exists) return _queueInstanceNotFound(request);
+    final instance = lookup.instance;
+    if (instance == null) return _itemQueueReadForbidden(request);
+
+    final entries = await context.repository.listForItem(
+      communityId: communityId,
+      instanceId: instanceId,
+    );
+    final existingPosition = _positionFor(entries, context.identity.fanId);
+    // The legacy engine adds membership eligibility around `join_queue`. The
+    // persistent queue is authoritative here, so omit the caller only while
+    // evaluating the community's transition guards and roles. A duplicate
+    // request still requires the caller to be authorised, but it cannot move
+    // their existing entry once authorised.
+    final queueInstance = _withQueueMemberships(
+      instance,
+      entries
+          .where((entry) => entry.fanId != context.identity.fanId)
+          .toList(growable: false),
+    );
+    if (!await _mayAct(
+      engine: context.engine,
+      instance: queueInstance,
+      fanId: context.identity.fanId,
+      action: 'join_queue',
+    )) {
+      return _itemQueueActionForbidden(request, 'join');
+    }
+    if (existingPosition != 0) {
+      return _queueEntryResponse(
+        entries[existingPosition - 1],
+        position: existingPosition,
+        correlationId: context.correlationId,
+        statusCode: 200,
+      );
+    }
+    if (_currentlyHoldsItem(instance, context.identity.fanId)) {
+      return _error(
+        request: request,
+        statusCode: 409,
+        code: 'item_queue_current_holder',
+        message: 'The current holder cannot join this item queue.',
+      );
+    }
+
+    final joined = await context.repository.join(
+      communityId: communityId,
+      instanceId: instanceId,
+      fanId: context.identity.fanId,
+      joinedAt: _clock().toUtc(),
+    );
+    final currentEntries = await context.repository.listForItem(
+      communityId: communityId,
+      instanceId: instanceId,
+    );
+    final position = _positionFor(currentEntries, context.identity.fanId);
+    if (position == 0) {
+      throw StateError('Queue entry disappeared after a successful join.');
+    }
+    return _queueEntryResponse(
+      joined.entry,
+      position: position,
+      correlationId: context.correlationId,
+      statusCode: joined.created ? 201 : 200,
+    );
+  });
+
+  Future<Response> _leaveItemQueue(
+    Request request,
+    String communityId,
+    String instanceId,
+  ) => _withItemQueueRequest(request, communityId, (context) async {
+    final lookup = await _readableQueueInstance(
+      context: context,
+      communityId: communityId,
+      instanceId: instanceId,
+    );
+    if (!lookup.exists) return _queueInstanceNotFound(request);
+    final instance = lookup.instance;
+    if (instance == null) return _itemQueueReadForbidden(request);
+
+    final entries = await context.repository.listForItem(
+      communityId: communityId,
+      instanceId: instanceId,
+    );
+    // The engine has a compatibility membership gate for its legacy
+    // `queuedFanIds` field. For this service route the repository is
+    // authoritative, so evaluate leave permission against a virtual queue in
+    // which the caller is present. This preserves the community transition's
+    // state and role guards without writing the retired instance-data shape.
+    final queueFanIds = entries
+        .map((entry) => entry.fanId)
+        .toList(growable: true);
+    if (!queueFanIds.contains(context.identity.fanId)) {
+      queueFanIds.add(context.identity.fanId);
+    }
+    final queueInstance = _withQueueFanIds(instance, queueFanIds);
+    if (!await _mayAct(
+      engine: context.engine,
+      instance: queueInstance,
+      fanId: context.identity.fanId,
+      action: 'leave_queue',
+    )) {
+      return _itemQueueActionForbidden(request, 'leave');
+    }
+
+    await context.repository.remove(
+      communityId: communityId,
+      instanceId: instanceId,
+      fanId: context.identity.fanId,
+    );
+    return Response(
+      204,
+      headers: <String, String>{'x-loom-correlation-id': context.correlationId},
+    );
+  });
+
+  Future<Response> _removeFromItemQueue(
+    Request request,
+    String communityId,
+    String instanceId,
+    String fanId,
+  ) => _withItemQueueRequest(request, communityId, (context) async {
+    final lookup = await _readableQueueInstance(
+      context: context,
+      communityId: communityId,
+      instanceId: instanceId,
+    );
+    if (!lookup.exists) return _queueInstanceNotFound(request);
+    final instance = lookup.instance;
+    if (instance == null) return _itemQueueReadForbidden(request);
+
+    if (!await _mayAct(
+      engine: context.engine,
+      instance: instance,
+      fanId: context.identity.fanId,
+      action: 'decide_request',
+    )) {
+      return _itemQueueActionForbidden(request, 'administer');
+    }
+    await context.repository.remove(
+      communityId: communityId,
+      instanceId: instanceId,
+      fanId: fanId,
+    );
+    return Response(
+      204,
+      headers: <String, String>{'x-loom-correlation-id': context.correlationId},
+    );
+  });
+
+  Future<Response> _listMyQueueMemberships(
+    Request request,
+    String communityId,
+  ) => _withItemQueueRequest(request, communityId, (context) async {
+    final memberships = await context.repository.listForFan(
+      communityId: communityId,
+      fanId: context.identity.fanId,
+    );
+    final responseMemberships = <Map<String, dynamic>>[];
+    for (final membership in memberships) {
+      final entries = await context.repository.listForItem(
+        communityId: communityId,
+        instanceId: membership.instanceId,
+      );
+      final position = _positionFor(entries, context.identity.fanId);
+      if (position == 0) {
+        throw StateError(
+          'Membership query returned an entry outside its queue.',
+        );
+      }
+      String? itemTitle;
+      final visible = await context.engine.readVisibleInstance(
+        instanceId: membership.instanceId,
+        fanId: context.identity.fanId,
+      );
+      if (visible != null) {
+        final title = visible.instanceData['title'];
+        if (title is String && title.isNotEmpty) itemTitle = title;
+      }
+      responseMemberships.add(<String, dynamic>{
+        'instanceId': membership.instanceId,
+        if (itemTitle != null) 'itemTitle': itemTitle,
+        'position': position,
+        'length': entries.length,
+        'joinedAt': membership.joinedAt.toUtc().toIso8601String(),
+      });
+    }
+    return Response.ok(
+      jsonEncode(<String, dynamic>{
+        'fanId': context.identity.fanId,
+        'memberships': responseMemberships,
+      }),
+      headers: <String, String>{
+        ..._jsonHeaders,
+        'x-loom-correlation-id': context.correlationId,
+      },
+    );
+  });
+
+  Future<Response> _advanceItemQueue(
+    Request request,
+    String communityId,
+    String instanceId,
+  ) => _withItemQueueRequest(request, communityId, (context) async {
+    final idempotencyKey = request.headers['idempotency-key'];
+    if (idempotencyKey == null || idempotencyKey.trim().isEmpty) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_idempotency_key',
+        message: 'Idempotency-Key is required when advancing an item queue.',
+      );
+    }
+    final lookup = await _readableQueueInstance(
+      context: context,
+      communityId: communityId,
+      instanceId: instanceId,
+    );
+    if (!lookup.exists) return _queueInstanceNotFound(request);
+    final instance = lookup.instance;
+    if (instance == null) return _itemQueueReadForbidden(request);
+    if (!await _mayAct(
+      engine: context.engine,
+      instance: instance,
+      fanId: context.identity.fanId,
+      action: 'decide_request',
+    )) {
+      return _itemQueueActionForbidden(request, 'administer');
+    }
+
+    final now = _clock().toUtc();
+    final entries = await context.repository.listForItem(
+      communityId: communityId,
+      instanceId: instanceId,
+    );
+    while (entries.isNotEmpty) {
+      final head = entries.first;
+      final existingExpiry = head.offerExpiresAt;
+      if (existingExpiry != null && now.isBefore(existingExpiry)) {
+        // A non-lapsed offer remains the head's offer. Repeated delivery work
+        // must not keep extending a member's hold indefinitely.
+        return _queueOfferResponse(head, context.correlationId);
+      }
+      if (existingExpiry != null) {
+        await context.repository.remove(
+          communityId: communityId,
+          instanceId: instanceId,
+          fanId: head.fanId,
+        );
+        entries.removeAt(0);
+        continue;
+      }
+
+      final holdWindow = _queueOfferHoldWindows[communityId];
+      if (holdWindow == null || holdWindow <= Duration.zero) {
+        return _error(
+          request: request,
+          statusCode: 503,
+          code: 'item_queue_hold_window_unavailable',
+          message: 'No positive item-queue hold window is configured.',
+        );
+      }
+      final offeredAt = now;
+      final offerExpiresAt = offeredAt.add(holdWindow);
+      await context.repository.recordOffer(
+        communityId: communityId,
+        instanceId: instanceId,
+        fanId: head.fanId,
+        offeredAt: offeredAt,
+        offerExpiresAt: offerExpiresAt,
+      );
+      return _queueOfferResponse(
+        head.withOffer(offeredAt: offeredAt, offerExpiresAt: offerExpiresAt),
+        context.correlationId,
+      );
+    }
+    return Response(
+      204,
+      headers: <String, String>{'x-loom-correlation-id': context.correlationId},
+    );
+  });
+
+  Future<Response> _withItemQueueRequest(
+    Request request,
+    String communityId,
+    Future<Response> Function(_ItemQueueRequestContext context) body,
+  ) async {
+    final correlationId = request.headers['x-loom-correlation-id'];
+    if (correlationId == null || !_uuidPattern.hasMatch(correlationId)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_correlation_id',
+        message: 'X-Loom-Correlation-Id must be a UUID.',
+      );
+    }
+    final repository = _itemQueueRepository;
+    if (repository == null) {
+      return _error(
+        request: request,
+        statusCode: 503,
+        code: 'item_queue_storage_unavailable',
+        message: 'This deployment has no item queue storage configured.',
+      );
+    }
+    final identity = await _identityExtractor.extract(request);
+    if (identity == null) {
+      return _error(
+        request: request,
+        statusCode: 401,
+        code: 'authentication_required',
+        message: 'An authenticated fan identity is required.',
+      );
+    }
+    final groupId = await _communityGroupIdResolver.resolveGroupId(communityId);
+    if (groupId == null || groupId.trim().isEmpty) {
+      return _authorizationServiceUnavailable(request);
+    }
+
+    try {
+      return await _databaseSerialExecutor.run(() async {
+        final engine = _authoritativeEngine(communityId);
+        final roleResolutionError = await _resolveRolesForRequest(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          engine: engine,
+        );
+        if (roleResolutionError != null) return roleResolutionError;
+        return body(
+          _ItemQueueRequestContext(
+            identity: identity,
+            correlationId: correlationId,
+            engine: engine,
+            repository: repository,
+          ),
+        );
+      });
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'The item queue request could not be completed.',
+      );
+    }
+  }
+
+  Future<_QueueInstanceLookup> _readableQueueInstance({
+    required _ItemQueueRequestContext context,
+    required String communityId,
+    required String instanceId,
+  }) async {
+    final stored = await _database.readInstance(instanceId);
+    if (stored == null || stored.communityId != communityId) {
+      return const _QueueInstanceLookup(exists: false);
+    }
+    final instance = await context.engine.readVisibleInstance(
+      instanceId: instanceId,
+      fanId: context.identity.fanId,
+    );
+    return _QueueInstanceLookup(exists: true, instance: instance);
+  }
+
+  WorkflowInstance _withQueueMemberships(
+    WorkflowInstance instance,
+    List<StoredItemQueueEntry> entries,
+  ) => _withQueueFanIds(instance, entries.map((entry) => entry.fanId));
+
+  WorkflowInstance _withQueueFanIds(
+    WorkflowInstance instance,
+    Iterable<String> fanIds,
+  ) => WorkflowInstance(
+    instanceId: instance.instanceId,
+    workflowType: instance.workflowType,
+    currentState: instance.currentState,
+    instanceData: <String, dynamic>{
+      ...instance.instanceData,
+      'queuedFanIds': List<String>.of(fanIds, growable: false),
+    },
+    createdByFanId: instance.createdByFanId,
+  );
+
+  static int _positionFor(List<StoredItemQueueEntry> entries, String fanId) {
+    final index = entries.indexWhere((entry) => entry.fanId == fanId);
+    return index < 0 ? 0 : index + 1;
+  }
+
+  static bool _currentlyHoldsItem(WorkflowInstance instance, String fanId) {
+    // These are the three custody fields used by the shipped equipment-loan
+    // definitions. Custody remains workflow-owned; this read only enforces the
+    // queue contract's "do not queue for an item you hold" rule.
+    for (final key in const <String>[
+      'currentHolderFanId',
+      'holderFanId',
+      'borrowerFanId',
+    ]) {
+      if (instance.instanceData[key] == fanId) return true;
+    }
+    return false;
+  }
+
+  Response _queueEntryResponse(
+    StoredItemQueueEntry entry, {
+    required int position,
+    required String correlationId,
+    required int statusCode,
+  }) => Response(
+    statusCode,
+    body: jsonEncode(entry.toJson(position: position)),
+    headers: <String, String>{
+      ..._jsonHeaders,
+      'x-loom-correlation-id': correlationId,
+    },
+  );
+
+  Response _queueOfferResponse(
+    StoredItemQueueEntry entry,
+    String correlationId,
+  ) {
+    final offeredAt = entry.offeredAt;
+    final offerExpiresAt = entry.offerExpiresAt;
+    if (offeredAt == null || offerExpiresAt == null) {
+      throw StateError('Cannot return an offer without both timestamps.');
+    }
+    return Response.ok(
+      jsonEncode(<String, dynamic>{
+        'instanceId': entry.instanceId,
+        'fanId': entry.fanId,
+        'offeredAt': offeredAt.toUtc().toIso8601String(),
+        'offerExpiresAt': offerExpiresAt.toUtc().toIso8601String(),
+      }),
+      headers: <String, String>{
+        ..._jsonHeaders,
+        'x-loom-correlation-id': correlationId,
+      },
+    );
+  }
+
+  Response _queueInstanceNotFound(Request request) => _error(
+    request: request,
+    statusCode: 404,
+    code: 'workflow_instance_not_found',
+    message: 'The requested workflow instance was not found.',
+  );
+
+  Response _itemQueueReadForbidden(Request request) => _error(
+    request: request,
+    statusCode: 403,
+    code: 'item_queue_read_forbidden',
+    message: 'The item queue is not readable by this caller.',
+  );
+
+  Response _itemQueueActionForbidden(Request request, String operation) =>
+      _error(
+        request: request,
+        statusCode: 403,
+        code: 'item_queue_${operation}_forbidden',
+        message: 'The item queue cannot be $operation by this caller.',
+      );
 
   // ---------------------------------------------------------- export bundles
   //
@@ -3060,6 +3650,29 @@ class _DocumentRequestContext {
   final LocalWorkflowEngineApi engine;
   final DocumentRepository repository;
   final DocumentObjectStore objectStore;
+}
+
+/// Everything an item-queue handler needs, resolved once by its preamble.
+class _ItemQueueRequestContext {
+  const _ItemQueueRequestContext({
+    required this.identity,
+    required this.correlationId,
+    required this.engine,
+    required this.repository,
+  });
+
+  final WorkflowRequestIdentity identity;
+  final String correlationId;
+  final LocalWorkflowEngineApi engine;
+  final ItemQueueRepository repository;
+}
+
+/// A missing instance is distinct from one the caller cannot read.
+class _QueueInstanceLookup {
+  const _QueueInstanceLookup({required this.exists, this.instance});
+
+  final bool exists;
+  final WorkflowInstance? instance;
 }
 
 /// Everything an export bundle handler needs, resolved once by its preamble.

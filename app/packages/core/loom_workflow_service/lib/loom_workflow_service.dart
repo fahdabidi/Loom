@@ -6,6 +6,7 @@ export 'src/document_object_store.dart';
 export 'src/document_repository.dart';
 export 'src/export_bundle_repository.dart';
 export 'src/identity.dart';
+export 'src/item_queue_repository.dart';
 export 'src/jwt_identity_extractor.dart';
 export 'src/postgres_connection.dart';
 export 'src/workflow_service.dart';
