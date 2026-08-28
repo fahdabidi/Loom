@@ -31,20 +31,33 @@
 >
 > **Two more structural gaps, confirmed by direct source read of the same 6 workflows
 > (`part02_tab_shell.dart:11362-11823`), to resolve at JSON-authoring time, not silently carried forward:**
-> - The legacy implementation binds these workflows to `tabId` values that **do not exist** in the real,
->   closed enum (`docs/references/reference/render-bindings.md`: only
->   admin/calendar/giving/home/marketplace/messages are real) — `chess-match-meetup`/`chess-match-result` use
->   `"matches"`, `chess-rankings-table` uses `"rankings"`, `chess-rules-documents` uses `"documents"`. None of
->   these tabs are real; the engine-native JSON must remap every workflow below onto a real tab (`home` is
->   the default catch-all candidate for each, though `chess-pairing-queue`/`chess-export-package` already
->   correctly use the real `admin` tab and `chess-discussion-thread` already correctly uses `messages`).
-> - The legacy implementation also uses `cardSurfaceFamily` values that are **not** among the 9 real
->   archetypes (`docs/references/archetypes/README.md`: event-rsvp, votePoll, equipment-loan,
->   paymentCheckout, approvalQueueItem, formEntry, discussionThread, statusTimeline, notificationInbox) —
->   `"dashboard"`, `"table"`, `"exportWizard"`, `"documentLibrary"`, `"calendarAgenda"` are all fabricated,
->   never-implemented families (the same CardSurfaces-registry vocabulary trap already found in every other
->   community's product doc this migration effort has touched). Pick real replacements per the row notes
->   below.
+> **BOTH GAPS BELOW WERE RESOLVED BY LATER PLATFORM WORK. Corrected 2026-08-27 — the original text
+> is kept struck through because it was accurate when written and the reasoning still explains why the
+> legacy bindings looked wrong.**
+>
+> - ~~The legacy implementation binds these workflows to `tabId` values that do not exist in the real,
+>   closed enum — `"matches"`, `"rankings"`, `"documents"` are not real tabs and must be remapped onto
+>   `home`.~~ **No longer true.** `tabId` is explicitly **not** a closed enum
+>   (`docs/references/reference/render-bindings.md` line 450: "Exactly two ids are structural" — `home`
+>   and `messages`); every other id is declared by the community in `appShell.tabs[]`. Six shipping
+>   communities already use nine ids outside the old list — Book Club `books`/`discussions`, Garden
+>   `care`/`organize`, Camera `critique`, Cedar `requests`, Mosque `resources`, Youth Soccer `team`, and
+>   `documents` in four of them. So `matches`, `rankings` and `documents` are correct declared tabs for
+>   Chess, and §3.1's persona tab lists are authoritative. Remapping them onto `home` would now be the
+>   error.
+> - ~~The legacy implementation also uses `cardSurfaceFamily` values that are not among the 9 real
+>   archetypes — `"table"`, `"exportWizard"`, `"documentLibrary"` are fabricated, never-implemented
+>   families.~~ **No longer true for three of the five.** `table`, `documentLibrary`, `searchAiAnswer`
+>   and `exportWizard` were promoted on 2026-08-11 and are real, registered and validator-enforced
+>   (`docs/references/archetypes/README.md`: 13 archetypes, not 9). `chess-export-package` correctly
+>   uses `exportWizard`, which is backed by a real export-bundle and checksum service as of 2026-08-27.
+>   `"dashboard"` and `"calendarAgenda"` remain fabricated — pick real replacements for those two per the
+>   row notes below.
+>
+> **Why this correction exists.** A regeneration on 2026-08-27 declared `matches`, `rankings` and
+> `documents` as tabs, which read as scope creep against this note and was very nearly rejected as
+> such. The note was the thing that was wrong. A product doc that carries a stale platform constraint
+> does not merely fail to help — it argues against the correct answer, and it argues from authority.
 
 Chess Club's real, implemented workflow count is **8**. The 2 this doc already covered before this
 correction (`chess-match-meetup`, `chess-match-result`) are documented in the tables below; the 6 more this

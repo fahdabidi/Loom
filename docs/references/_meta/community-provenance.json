@@ -42,8 +42,8 @@
       "lastCommitSubject": "feat(cedar): the reservation reminder is declared, not computed"
     },
     "Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc": {
-      "sha256": "55f32b25e7bbd0d0d77b24170232986386cba7296a25c356325ba3395295dedf",
-      "bytes": 85166,
+      "sha256": "2aebba46df1204c4d01f4b89b346a7648cc669d4aa07bbc838a2dd0cbfa995ad",
+      "bytes": 87542,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "15b57445",
       "lastCommitDate": "2026-08-24",
@@ -77,9 +77,9 @@
       "sha256": "44c093126d5347c7b2502940b994e755114b57f28563e7b86ff66fba5cddec81",
       "bytes": 45122,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "f69604aa",
-      "lastCommitDate": "2026-08-22",
-      "lastCommitSubject": "fix(community): Member Social Space -- the last pinned renderer in the corpus"
+      "lastCommit": "f50e047f",
+      "lastCommitDate": "2026-08-27",
+      "lastCommitSubject": "fix(membersocialspace): name the writers on 39 misdeclared fields"
     },
     "Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc": {
       "sha256": "07a3959bfdfecee2fe27090d2a09c8f3fdf5ab8ffbfba145deb03508d63f2a4b",

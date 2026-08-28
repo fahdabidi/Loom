@@ -9,7 +9,7 @@
     "accentColor": "#6B4F2A"
   },
   "seedDataFiles": [],
-  "idempotencyKey": "chess-club-spec-v4-owner-convergence-2026-08-24",
+  "idempotencyKey": "chess-club-spec-v4-writer-tabs-convergence-2026-08-27",
   "experience": {
     "displayName": "Chess Club",
     "tagline": "Ladder matches, club nights, pairings, standings, and rules for local chess players.",
@@ -279,6 +279,11 @@
                 "value": "added"
               },
               {
+                "op": "set",
+                "key": "reminderEnabled",
+                "value": true
+              },
+              {
                 "op": "append",
                 "key": "matchHistory",
                 "value": {
@@ -350,6 +355,12 @@
             ]
           }
         ],
+        "reminder": {
+          "anchorDateField": "eventDate",
+          "anchorTimeField": "eventTime",
+          "leadHours": 24,
+          "enabledField": "reminderEnabled"
+        },
         "renderBindings": [
           {
             "states": [
@@ -359,7 +370,7 @@
               "rescheduled"
             ],
             "audience": "any",
-            "tabId": "calendar",
+            "tabId": "matches",
             "cardSurfaceFamily": "approvalQueueItem",
             "bindingKind": "primary",
             "actions": [
@@ -375,6 +386,7 @@
                   "proposedByFanId": "$actor",
                   "proposedAt": "$timestamp",
                   "reminderState": "not-added",
+                  "reminderEnabled": false,
                   "matchHistory": []
                 }
               }
@@ -506,25 +518,29 @@
           },
           "proposedByFanId": {
             "type": "fanId?",
-            "writableBy": "effect"
+            "writableBy": "platform"
           },
           "proposedAt": {
             "type": "date?",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "sortable": true
           },
           "reminderState": {
             "type": "text",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "notifications_outlined",
             "labelTemplate": "Reminder: {value}",
             "displayContexts": [
               "detail"
             ]
           },
+          "reminderEnabled": {
+            "type": "bool",
+            "writableBy": "platform"
+          },
           "matchHistory": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "history",
             "labelTemplate": "{value.length} updates",
             "displayContexts": [
@@ -931,6 +947,49 @@
                 }
               }
             ]
+          },
+          {
+            "id": "record-standings-impact",
+            "label": "Record standings impact",
+            "icon": "leaderboard",
+            "tone": "secondary",
+            "from": [
+              "final"
+            ],
+            "to": null,
+            "guard": {
+              "allowedRoleIds": [
+                "chess-organizer"
+              ]
+            },
+            "inputs": {
+              "rankingImpactNote": {
+                "type": "text",
+                "required": true
+              }
+            },
+            "effects": [
+              {
+                "op": "set",
+                "key": "rankingImpactNote",
+                "value": "{input.rankingImpactNote}"
+              },
+              {
+                "op": "set",
+                "key": "rankingImpactRecordedAt",
+                "value": "$timestamp"
+              },
+              {
+                "op": "append",
+                "key": "resultHistory",
+                "value": {
+                  "action": "standings-impact-recorded",
+                  "actorFanId": "$actor",
+                  "at": "$timestamp",
+                  "note": "{input.rankingImpactNote}"
+                }
+              }
+            ]
           }
         ],
         "renderBindings": [
@@ -940,7 +999,7 @@
               "correction-requested"
             ],
             "audience": "any",
-            "tabId": "home",
+            "tabId": "matches",
             "cardSurfaceFamily": "formEntry",
             "bindingKind": "primary",
             "actions": [
@@ -970,7 +1029,7 @@
               "undone"
             ],
             "audience": "any",
-            "tabId": "home",
+            "tabId": "matches",
             "cardSurfaceFamily": "statusTimeline",
             "bindingKind": "primary"
           },
@@ -988,7 +1047,7 @@
               "voided"
             ],
             "audience": "any",
-            "tabId": "home",
+            "tabId": "matches",
             "cardSurfaceFamily": "statusTimeline",
             "bindingKind": "summary"
           }
@@ -1066,7 +1125,7 @@
           },
           "statusMessage": {
             "type": "text",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "info_outline",
             "labelTemplate": "{value}",
             "displayContexts": [
@@ -1102,7 +1161,7 @@
           },
           "resultHistory": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "history",
             "labelTemplate": "{value.length} result updates",
             "displayContexts": [
@@ -1420,7 +1479,7 @@
           },
           "reminderStatus": {
             "type": "text",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "notifications_outlined",
             "labelTemplate": "Reminder: {value}",
             "displayContexts": [
@@ -1430,7 +1489,7 @@
           },
           "reminderHistory": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "history",
             "labelTemplate": "{value.length} reminder updates",
             "displayContexts": [
@@ -1439,7 +1498,7 @@
           },
           "attendingFanIds": {
             "type": "fanId[]",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "groups_outlined",
             "labelTemplate": "Attending: {value.length}",
             "displayContexts": [
@@ -1449,7 +1508,7 @@
           },
           "reminderFanIds": {
             "type": "fanId[]",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "alarm",
             "labelTemplate": "Reminders: {value.length}",
             "hideWhenEmpty": true,
@@ -1631,7 +1690,7 @@
           },
           "messages": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "forum",
             "labelTemplate": "{value.length} messages",
             "displayContexts": [
@@ -1640,7 +1699,7 @@
           },
           "threadHistory": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "history",
             "labelTemplate": "{value.length} thread updates",
             "displayContexts": [
@@ -1984,11 +2043,11 @@
           },
           "ownerFanId": {
             "type": "fanId?",
-            "writableBy": "effect"
+            "writableBy": "platform"
           },
           "statusMessage": {
             "type": "text",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "info_outline",
             "labelTemplate": "{value}",
             "displayContexts": [
@@ -1999,7 +2058,7 @@
           // NEEDS IMPLEMENTATION (platform service): checksum / integrity-hash generation is not implemented; this field is declared and never written by an effect.
           "checksum": {
             "type": "text?",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "verified_user",
             "labelTemplate": "Checksum: {value}",
             "hideWhenEmpty": true,
@@ -2028,7 +2087,7 @@
           },
           "exportHistory": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "history",
             "labelTemplate": "{value.length} export updates",
             "displayContexts": [
@@ -2224,7 +2283,7 @@
           },
           "assignmentHistory": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "history",
             "labelTemplate": "{value.length} pairings assigned",
             "displayContexts": [
@@ -2364,7 +2423,7 @@
               "current"
             ],
             "audience": "any",
-            "tabId": "home",
+            "tabId": "rankings",
             "cardSurfaceFamily": "table",
             "bindingKind": "primary"
           },
@@ -2491,7 +2550,7 @@
           },
           "publicationHistory": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "history",
             "labelTemplate": "{value.length} publications",
             "displayContexts": [
@@ -2660,7 +2719,7 @@
               "downloaded"
             ],
             "audience": "any",
-            "tabId": "home",
+            "tabId": "documents",
             "cardSurfaceFamily": "documentLibrary",
             "bindingKind": "primary",
             "actions": [
@@ -2683,7 +2742,7 @@
               "archived"
             ],
             "audience": "any",
-            "tabId": "home",
+            "tabId": "documents",
             "cardSurfaceFamily": "documentLibrary",
             "bindingKind": "summary"
           }
@@ -2746,7 +2805,7 @@
           },
           "openHistory": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "history",
             "labelTemplate": "{value.length} document actions",
             "displayContexts": [
@@ -3012,6 +3071,24 @@
         "label": "Calendar",
         "iconKey": "calendar_today",
         "description": "Match proposals, club nights, tournaments, reminders, and completed meetups."
+      },
+      {
+        "tabId": "matches",
+        "label": "Matches",
+        "iconKey": "sports_esports",
+        "description": "Match proposals, results, corrections, disputes, and completed games."
+      },
+      {
+        "tabId": "rankings",
+        "label": "Rankings",
+        "iconKey": "leaderboard",
+        "description": "Current public ladder standings in a sortable, searchable grid."
+      },
+      {
+        "tabId": "documents",
+        "label": "Documents",
+        "iconKey": "folder",
+        "description": "Linked club rules with embedded, external, and download choices."
       },
       {
         "tabId": "admin",
