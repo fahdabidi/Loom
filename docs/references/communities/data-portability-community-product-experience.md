@@ -14,16 +14,25 @@
 >   effort for Cedar Commons HOA, Camera Club, and others.
 > - The B25 Card Surface Registry Mapping table below links to `../../CardSurfaces/export-import-transfer.md`
 >   for every workflow — confirmed (same as every other community doc this migration effort has touched) to
->   be a superseded vocabulary that doesn't correspond to the 9 real archetypes
+>   be a superseded vocabulary that doesn't correspond to the 13 real archetypes (9 original + `table`/`documentLibrary`/`searchAiAnswer`/`exportWizard`, promoted 2026-08-11)
 >   (`docs/references/archetypes/README.md`). None of the 9 natively models an export/portability wizard;
 >   `formEntry`/`statusTimeline` are the closest honest approximations, the same conclusion already reached
 >   for Garden Club's/Chess Club's export workflows this migration effort.
 >
 > **AP-6 reminder for whoever authors the JSON:** none of `export-checksum-evidence`'s checksum,
 > `export-full-bundle`/`export-redacted-bundle`'s checksum, or `export-transfer-verification`'s transfer ID
-> may be fabricated — checksum/hash generation is a `❌ Not implemented` platform service
-> (`docs/references/reference/platform-services.md`), the exact same bug already found and fixed in Cedar
-> Commons HOA and Chess Club this migration effort. Leave these values unset or explicitly marked as a gap.
+> may be fabricated. That rule stands permanently.
+>
+> **UPDATED 2026-08-27 — checksum generation is now implemented.** It is no longer a
+> `❌ Not implemented` platform service: `docs/API/OpenAPI/community-surfaces/export-bundle-api.openapi.yaml`
+> specifies it, the workflow service computes a real SHA-256 over the bytes it serves, and the app calls it.
+> So a checksum field is `writableBy: "platform"` — the platform genuinely writes it — rather than left
+> unset. The transfer ID remains unimplemented and must still be left unset or marked as a gap.
+>
+> One caveat specific to this community: `export-checksum-evidence` declares no `download` transition, and
+> the service gates every export operation on `download`. It therefore records the digest of a bundle
+> another workflow produced rather than generating one itself. Do not add a `download` transition to make
+> it generate — verify against §5/§6 first, because that would change what the workflow means.
 
 ## 1. Community Identity And Promise
 

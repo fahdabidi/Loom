@@ -79,7 +79,7 @@ meets, and how the member participates next.
 > - The current implementation binds this workflow to `tabId: "library"` with
 >   `cardSurfaceFamily: "stateMachineGrid"` — **neither is real.** The closed `tabId` enum
 >   (`docs/references/reference/render-bindings.md`) has no `library` value, and `stateMachineGrid` is not
->   one of the 9 real archetypes (`docs/references/archetypes/README.md`). The engine-native JSON must bind
+>   one of the 13 real archetypes (9 original + `table`/`documentLibrary`/`searchAiAnswer`/`exportWizard`, promoted 2026-08-11) (`docs/references/archetypes/README.md`). The engine-native JSON must bind
 >   to the real `marketplace` tab with `cardSurfaceFamily: "equipment-loan"`, the same real archetype every
 >   other community's shared-item marketplace already uses.
 > - Queue position (`indexOf(queuePersonaIds, $viewer)`) is a real formula gap the doc's §5/§6 requires

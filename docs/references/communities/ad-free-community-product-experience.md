@@ -16,7 +16,7 @@
 >   effort for Cedar Commons HOA, Camera Club, and others.
 > - The B25 Card Surface Registry Mapping table below links to `../../CardSurfaces/*` files — confirmed
 >   (same as every other community doc this migration effort has touched) to be a superseded vocabulary that
->   doesn't correspond to the 9 real archetypes (`docs/references/archetypes/README.md`; `paymentCheckout`
+>   doesn't correspond to the 13 real archetypes (9 original + `table`/`documentLibrary`/`searchAiAnswer`/`exportWizard`, promoted 2026-08-11) (`docs/references/archetypes/README.md`; `paymentCheckout`
 >   is the real generic fit for every workflow in this doc). Treat the `Card surface family` column as
 >   historical context only.
 >
