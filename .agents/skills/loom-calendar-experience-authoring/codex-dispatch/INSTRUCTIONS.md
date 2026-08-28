@@ -166,6 +166,19 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    readable hunk by hunk against the requirement. A validator pass does not distinguish a faithful
    revision from a rewrite; one Garden Club requirement produced 3,007-line, 2,998-line and 418-line
    answers, all three `status: pass`, and only the 2,998-line one was correct.
+
+   **But the product doc outranks the shipped file.** "Base text" governs formatting, key order,
+   comments and fields the requirement does not touch. It does **not** mean the package is the
+   authority on what the community does — the doc is, and it always has been. Where the shipped
+   package contradicts or under-implements its own doc, the doc wins: implement what the doc requires
+   and say in Gaps that you did, naming the section.
+
+   This matters because a package can arrive already damaged. Book Club's shipped file had lost the
+   queue-position, current-holder and access-request fields its doc requires in §5 and §9 — removed by
+   an earlier regeneration that was only supposed to convert a reminder. A later pass treated that file
+   as base text and faithfully preserved the loss, so the same capability went missing twice, the
+   second time by following this very rule. Read the doc first and the package second; if the package
+   lacks something the doc names, restoring it is the requirement, not scope creep.
    [`solved-patterns.md` §17](../../../docs/references/reference/solved-patterns.md) has the numbers.
 
 5e. **Declare every tab's audience; never let transition guards decide it.** A tab not everyone should
