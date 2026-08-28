@@ -160,6 +160,27 @@ the product doc says what is owed. Diff against the previous package, always.
 Grep every dispatch diff for weakened assertions — changed `hasLength(N)`, `expect(…, N)`,
 `findsNWidgets(N)` — and confirm each new number is right because the package genuinely differs.
 
+### The five suites, and their baselines
+
+There are **five**, and the demo app is the one that gets forgotten — it was omitted from a previous
+migration too, and a Chess regeneration broke it for a full day in 2026-08 because I was running the
+other four and calling that "the suites".
+
+| Suite | Path | Baseline (2026-08-28) |
+| --- | --- | ---: |
+| UX judges | `app/packages/tooling/loom_ux_judges` | 444 |
+| App shell | `app/packages/core/loom_communities_app_shell` | 318 (+2 skipped) |
+| Workflow engine | `app/packages/core/loom_workflow_engine` | 312 (+4 skipped) |
+| Workflow service | `app/packages/core/loom_workflow_service` | 84 (+5 skipped) |
+| Demo app | `app/apps/loom_communities_demo` | 160 |
+
+Run all five after installing a regenerated community package. The demo app renders the shipped
+packages, so it is precisely the suite a package change can break, and precisely the one that looks
+skippable because the change was "just JSON".
+
+Update these numbers when a suite legitimately grows; a baseline nobody maintains stops being
+evidence.
+
 ### Ordering rules that have bitten
 
 - **A new validator finding code is a documentation change first.** `05-validation.md` is hard-locked
@@ -168,6 +189,13 @@ Grep every dispatch diff for weakened assertions — changed `hasLength(N)`, `ex
 - **The validator server on `:8787` is not the test-suite validator.** A green suite does not mean the
   long-running server has your rule; it does not restart itself.
 - **Push before any reset**, and re-run the suites yourself after installing package output.
+- **Commit a verified package immediately.** An uncommitted correct package is one stray command from
+  gone: `git checkout -- .` while cleaning up after a mis-invoked dispatch silently reverted a Cedar
+  install in 2026-08, and the next agent then reported the file as missing its guard — correctly, and
+  confusingly, because I had destroyed it myself.
+- **Read the `Mode:` line the implementation script prints.** It says `fresh session` or
+  `resume --last`, and it is the only confirmation `--fresh` was honoured — the flag is `$2`, and the
+  script takes no label argument, unlike the Skill dispatcher.
 
 ### The end of the line, not the middle
 
