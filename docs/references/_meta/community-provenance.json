@@ -1,0 +1,109 @@
+{
+  "$comment": [
+    "Provenance for community packages. Every file listed here is authored ONLY by the",
+    "loom-calendar-experience-authoring Skill and copied in byte-identically; hand-editing is",
+    "not permitted (CLAUDE.md, 'Autonomous mode').",
+    "",
+    "loom_ux_judges/test/community_package_provenance_test.dart hashes each package and compares it against this",
+    "manifest. A hand-edit fails that test loudly.",
+    "",
+    "What this does and does not guarantee: it converts a silent edit into a deliberate one. A",
+    "determined editor can update both the file and this manifest -- but that shows up in review",
+    "as a package change with no dispatch behind it, which is exactly the thing worth noticing.",
+    "It replaces the chmod 444 convention, which git does not track and a fresh clone loses.",
+    "",
+    "AFTER A SKILL REGENERATION: run app/packages/tooling/loom_ux_judges/tool/update_community_provenance.dart and commit the result",
+    "in the same commit as the package."
+  ],
+  "algorithm": "sha-256",
+  "packages": {
+    "Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc": {
+      "sha256": "c74e8edf6fef9081e6ecc35d9cecb28126f51c758e203d86897698e453f5928b",
+      "bytes": 82412,
+      "authoredBy": "loom-calendar-experience-authoring",
+      "lastCommit": "ccdd4136",
+      "lastCommitDate": "2026-08-25",
+      "lastCommitSubject": "fix(ad-free): community funding is Owner work -- converge the doc's contradiction in the doc's favou"
+    },
+    "Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc": {
+      "sha256": "40860f71c195713b2edfad95a1aa7f38ece056ba7fedc1531d529ed36d8d1ad5",
+      "bytes": 61602,
+      "authoredBy": "loom-calendar-experience-authoring",
+      "lastCommit": "01343d7b",
+      "lastCommitDate": "2026-08-19",
+      "lastCommitSubject": "feat(communities): regenerate Camera Club at specVersion 4 (3 of 11)"
+    },
+    "Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc": {
+      "sha256": "26375be19363e6d0ba90ca967d6666f0824d9446d36e0eb8b2dd8f37b64aacbf",
+      "bytes": 101999,
+      "authoredBy": "loom-calendar-experience-authoring",
+      "lastCommit": "f08a105d",
+      "lastCommitDate": "2026-08-27",
+      "lastCommitSubject": "feat(cedar): the reservation reminder is declared, not computed"
+    },
+    "Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc": {
+      "sha256": "55f32b25e7bbd0d0d77b24170232986386cba7296a25c356325ba3395295dedf",
+      "bytes": 85166,
+      "authoredBy": "loom-calendar-experience-authoring",
+      "lastCommit": "15b57445",
+      "lastCommitDate": "2026-08-24",
+      "lastCommitSubject": "feat(chess): converge Chess Club onto the reserved owner role -- RED, follow-up dispatched"
+    },
+    "Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc": {
+      "sha256": "7f6af5b6faed12924eecbb2d13cbc8aa3db3ce7baf62bbc744090276e241290c",
+      "bytes": 92937,
+      "authoredBy": "loom-calendar-experience-authoring",
+      "lastCommit": "4528c8d0",
+      "lastCommitDate": "2026-08-19",
+      "lastCommitSubject": "feat(communities): regenerate Data Portability Community at specVersion 4 (5 of 11)"
+    },
+    "Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc": {
+      "sha256": "1d4211b5d3c1ad070a944ffd2e91063825ec5ae2406997d9a2010c0f66801312",
+      "bytes": 105174,
+      "authoredBy": "loom-calendar-experience-authoring",
+      "lastCommit": "654d3467",
+      "lastCommitDate": "2026-08-27",
+      "lastCommitSubject": "fix(gardenclub): declare the reminder, and name the writers honestly"
+    },
+    "Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc": {
+      "sha256": "0186f2cb9beb789004e14aba632ee62bb25868b9a1a851307d834c0017830917",
+      "bytes": 91986,
+      "authoredBy": "loom-calendar-experience-authoring",
+      "lastCommit": "04eb71ad",
+      "lastCommitDate": "2026-08-27",
+      "lastCommitSubject": "fix(mosque): declare the event reminder, and name the writers honestly"
+    },
+    "Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc": {
+      "sha256": "a98e16c8e3f4c5ab6f75dcce2758d850f8eac97b8269a89f669624d8fe1ad740",
+      "bytes": 45031,
+      "authoredBy": "loom-calendar-experience-authoring",
+      "lastCommit": "f69604aa",
+      "lastCommitDate": "2026-08-22",
+      "lastCommitSubject": "fix(community): Member Social Space -- the last pinned renderer in the corpus"
+    },
+    "Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc": {
+      "sha256": "07a3959bfdfecee2fe27090d2a09c8f3fdf5ab8ffbfba145deb03508d63f2a4b",
+      "bytes": 74537,
+      "authoredBy": "loom-calendar-experience-authoring",
+      "lastCommit": "9b596e93",
+      "lastCommitDate": "2026-08-27",
+      "lastCommitSubject": "docs(skill): the reminder migration as a worked before/after, not a rule"
+    },
+    "Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc": {
+      "sha256": "b24c1f564f9498f04e2b1bc2f1e7fcac449bd8e8e7d08fbb5fe868d67b36812a",
+      "bytes": 131183,
+      "authoredBy": "loom-calendar-experience-authoring",
+      "lastCommit": "a0184b0c",
+      "lastCommitDate": "2026-08-22",
+      "lastCommitSubject": "fix(community): Tabletop declares deliver_reminder on its send-reminder transition"
+    },
+    "Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc": {
+      "sha256": "37e07f4c1eaf6caaeb7b6b76155ecfb2daf2d05dfaa8a9b737f2bbd7f469e7e7",
+      "bytes": 107638,
+      "authoredBy": "loom-calendar-experience-authoring",
+      "lastCommit": "bfb1fabd",
+      "lastCommitDate": "2026-08-27",
+      "lastCommitSubject": "fix(youth-soccer): the waiver library publishes links, so it stops calling it upload"
+    }
+  }
+}
