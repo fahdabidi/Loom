@@ -38,13 +38,13 @@ When a requirement needs one of these:
 | **Payment processing** | Calls a payment gateway | `paymentCheckout` | ❌ Not implemented — demo would stub canned success |
 | **ID generation** | An opaque unique id is not a field value | Receipts, export ids | ❌ Not implemented |
 | **External search / AI answer** | Calls an index or an LLM | `searchAiAnswer` | ❌ Not implemented — demo would return a canned answer for seeded queries |
-| **Checksum / integrity hash** | A hash, not arithmetic | `exportWizard` | ❌ Not implemented |
+| **Checksum / integrity hash** | A hash, not arithmetic | `exportWizard` | ✅ **REAL** since 2026-08-27 — a real SHA-256 over the bytes the export bundle service serves |
 
 **This list is closed.** If a requirement seems to need a *seventh* kind of service, re-read
 [`formulas.md`](./formulas.md) and [`effects.md`](./effects.md) first — it is very likely expressible.
 If it genuinely is not, **stop and report it** rather than inventing a mechanism.
 
-## Two that are already REAL and usable from JSON
+## Three that are already REAL and usable from JSON
 
 ### Scheduled notifications
 
@@ -65,6 +65,31 @@ timezone — see [`workflow-grammar.md`](./workflow-grammar.md)'s `reminder` sec
 "dueAt":          { "type": "date" },     // deadline minus the reminder offset
 "isExpiringSoon": { "type": "bool", "formula": "isPast(dueAt)" }
 ```
+
+### Export bundles and their checksum
+
+Real as of 2026-08-27, and previously the clearest example of why a fabricated value is worse than an
+absent one: the only implementation used to return the string
+`checksum_<communityId>_<documentCount>_<r|full>`, which hashes nothing.
+
+`docs/API/OpenAPI/community-surfaces/export-bundle-api.openapi.yaml` specifies four operations —
+generate, read metadata, download, verify. The workflow service serialises the instance's export scope
+canonically, stores the octets, and returns a SHA-256 **over the bytes it actually serves**. Verifying
+re-reads those bytes and hashes them again rather than returning the stored value, so a truncated or
+replaced bundle fails.
+
+So a `checksum` field is `writableBy: "platform"` — the platform genuinely writes it:
+
+```jsonc
+"checksum":         { "type": "text?", "writableBy": "platform" },
+"checksumVerified": { "type": "bool",  "writableBy": "platform" }
+```
+
+Two constraints worth knowing before authoring against it. Every operation is gated on the caller
+being able to invoke a `download` transition, and the bundle is generated when a transition lands the
+instance in a state that exposes `download` — so a workflow with no `download` transition never
+generates one, by design. And **ID generation is still not implemented**: a receipt id or transfer id
+sitting beside a checksum is not covered by this and must still be left unset.
 
 ### Cross-instance eligibility
 Fully expressible in JSON — see [`guards.md`](./guards.md) §5. No service call needed.

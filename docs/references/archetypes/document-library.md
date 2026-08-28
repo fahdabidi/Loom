@@ -143,10 +143,18 @@ Three things, and only the first is new:
 ],
 
 "instanceDataSchema": {
-  // 2. The field the stored document fills. `writableBy: "effect"` because the
-  //    platform writes it and a member must not be able to type into it -- that
-  //    is the difference between a stored document and a linked one.
-  "documentUrl": { "type": "url", "writableBy": "effect", "storage": "inline" }
+  // 2. The field the stored document fills. `writableBy: "platform"` because the
+  //    Document Library API writes it when the bytes land, and a member must not
+  //    be able to type into it -- that is the difference between a stored
+  //    document and a linked one.
+  //
+  //    `platform`, NOT `effect`. This said `effect` until 2026-08-27, when the
+  //    grammar gained a value for "something outside the package writes this".
+  //    No JSON effect can fill this field: effects move values around and cannot
+  //    hold bytes or mint a URL. The app locates a stored document by looking for
+  //    exactly `platform`, so an `effect`-declared field renders as a link
+  //    library that never shows the uploaded file.
+  "documentUrl": { "type": "url", "writableBy": "platform", "storage": "inline" }
 }
 ```
 
@@ -159,7 +167,7 @@ readable by everyone the workflow admits.
 
 **A stored library must not also require a member-supplied URL.** If `documentUrl` is `required` and
 `writableBy: "formEntry"`, a member cannot create the document without typing an address, and the
-upload has nothing left to do. Make the content field `writableBy: "effect"` and never `required`.
+upload has nothing left to do. Make the content field `writableBy: "platform"` and never `required`.
 
 ### Reading a stored document
 

@@ -135,10 +135,23 @@ are not. If you believe an existing one is genuinely wrong, say so in Gaps/assum
    that correctly gained a wire look identical in the report. The validator counts what is declared;
    only the product doc says what is owed.
 
+   **Connecting the wire is in scope, and may mean adding an effect.** If the doc promises the
+   capability and the only thing missing is that no transition writes the field, add the write to the
+   transition that should have been doing it — a board's decision transition stamping `reviewerFanId`,
+   `reviewDate` and its comments, say. That completes the requirement rather than expanding it, and
+   rule 5d's "change only what the requirement names" does not forbid it: the requirement names the
+   field. Declaring such a field `platform` when no platform service writes it is the wrong repair,
+   and leaving it `effect` with nothing writing it is no repair at all. If you cannot tell which
+   transition owns the write, say so in Gaps/assumptions and name the candidates rather than guessing.
+
 5a. **Document libraries hold stored files or links — decide which, from the product doc.** A
    `documentLibrary` workflow is one or the other and the package must say so, because the two differ
    in who holds the bytes. If the doc says members or admins *upload* or *add a file*, declare an
-   `upload` transition and make the content field `writableBy: "effect"` and never `required`. If the
+   `upload` transition and make the content field `writableBy: "platform"` and never `required`.
+   **`platform`, not `effect`** — the Document Library API writes that field when the bytes land, and
+   no JSON effect can, since effects cannot hold bytes or mint a URL. This changed when `platform`
+   entered the grammar; the app finds a stored document by looking for exactly that value, so an
+   `effect`-declared upload field renders as a link library that never shows the uploaded file. If the
    doc talks about a *source*, a *provider*, an *external link* or *opening* something hosted
    elsewhere, it is a link library: a member-writable `url` field and no `upload` action.
    [`document-library.md` §3a](../../../docs/references/archetypes/document-library.md) is the
