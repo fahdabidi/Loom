@@ -26,8 +26,8 @@
       "lastCommitSubject": "fix(ad-free): community funding is Owner work -- converge the doc's contradiction in the doc's favou"
     },
     "Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc": {
-      "sha256": "40860f71c195713b2edfad95a1aa7f38ece056ba7fedc1531d529ed36d8d1ad5",
-      "bytes": 61602,
+      "sha256": "2f40067ef7af7acb7104003130902719bac62a3cd6b1226202b632a33dbec8c1",
+      "bytes": 61620,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "01343d7b",
       "lastCommitDate": "2026-08-19",
@@ -101,9 +101,9 @@
       "sha256": "92c79cd4b950a144745198b5f7a6d96aba0a22c357a957adb4016571d8694c39",
       "bytes": 107477,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "bfb1fabd",
-      "lastCommitDate": "2026-08-27",
-      "lastCommitSubject": "fix(youth-soccer): the waiver library publishes links, so it stops calling it upload"
+      "lastCommit": "76233ee1",
+      "lastCommitDate": "2026-08-28",
+      "lastCommitSubject": "fix(youthsoccer): name the writers, declare the practice reminder"
     }
   }
 }

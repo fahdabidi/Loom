@@ -740,7 +740,7 @@
           "authorFanId": {
             "type": "fanId",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "storage": "inline",
             "displayIcon": "person_outline",
             "labelTemplate": "By {value}",
@@ -773,7 +773,7 @@
           },
           "comments": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "storage": "inline",
             "displayIcon": "comment",
             "displayContexts": ["detail"]
@@ -1269,7 +1269,7 @@
           "ownerFanId": {
             "type": "fanId",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "storage": "inline",
             "displayIcon": "person_outline",
             "labelTemplate": "Owner: {value}",
@@ -1278,7 +1278,7 @@
           "availabilityState": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "storage": "inline",
             "displayIcon": "info_outline",
             "labelTemplate": "Status: {value}",
@@ -1313,7 +1313,7 @@
           },
           "custodyHistory": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "storage": "inline",
             "displayIcon": "history",
             "labelTemplate": "{value.length} custody events",
@@ -1321,7 +1321,7 @@
           },
           "borrowerClaimHistory": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "storage": "inline",
             "displayIcon": "groups_outlined",
             "labelTemplate": "{value.length} borrowers or claimants",
@@ -1329,7 +1329,7 @@
           },
           "issueLog": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "storage": "inline",
             "displayIcon": "report_problem",
             "labelTemplate": "{value.length} reported issues",
@@ -1552,7 +1552,7 @@
           "authorFanId": {
             "type": "fanId",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "storage": "inline",
             "displayIcon": "person_outline",
             "labelTemplate": "Posted by {value}",
@@ -1561,7 +1561,7 @@
           "publishedAt": {
             "type": "date",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "storage": "inline",
             "sortable": true,
             "displayIcon": "schedule",
