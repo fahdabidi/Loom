@@ -39,6 +39,56 @@ known answer for every kind of thing it claims to find, not just one.**
 
 ## Open
 
+### BACKEND SERVICES BUILD-OUT — the autonomous queue, in order (armed 2026-08-28)
+
+Each loop tick reports position in THIS list. A service is not "done" until it is built, deployed,
+reachable from the app, and a member-visible behaviour depends on it.
+
+**B1. Item queue — deploy and wire.** IN PROGRESS.
+- [x] service built, 12 tests, workflow service 89 → 107
+- [x] startup no longer gated on the offer-hold config (`b9df5a35`)
+- [ ] build `loom-workflow-service:0.5.0` — failed once (I ran `docker image prune` mid-build), rebuilding
+- [ ] manifest: image tag + `LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS` in `~/loom-backend/deploy/k8s/workflow-service.yaml`. **86400 in it is a flagged guess, not a product decision**
+- [ ] import image, apply, verify the six routes answer
+- [ ] app queue client — five operations. **`advance` stays server-side**: without notification delivery nobody can be told their turn came, and shipping it would be a button that silently does nothing
+- [ ] wire the `equipment-loan` surface: join, leave, position, queue length
+- [ ] regenerate Book Club, Camera, Garden so `join-queue`/`leave-queue` call the service. Until then the six transitions stay dead and `transition_has_no_observable_effect` correctly flags them
+
+**B2. Notification delivery.** Interface only — `LocalNotificationDeliveryService` is the sole
+implementation. Two built features are inert without it: the queue's "you're next", and the reminder
+sweep, which has never delivered to a real recipient. Needs a decision on channel (push? in-app
+inbox? both) before it can be specified.
+
+**B3. Instance versioning + per-viewer change feed.** Blocks session resume and offline browse.
+Instances carry no `version` or `updatedAt`; `GET /instances` has no `updatedSince`. **The feed must
+be per-viewer** — `readVisibleInstance(instanceId, fanId)` computes visibility per fan, so there is no
+community-wide answer to "what changed". Must report disappearances as events, and invalidate the
+cursor when the caller's roles change, or a replica is not merely stale but wrong.
+
+**B4. ID generation.** Smallest remaining. Receipt, transfer and export ids are declared across four
+communities and permanently unwritable. Removes the last `NEEDS IMPLEMENTATION` comments after
+checksum.
+
+**B5. Document member state + versioning.** Spec written (`document-library-api.openapi.yaml`), not
+built: service-assigned `version` bumping on revision, per-member `read`/`saved`/`acknowledged`,
+acknowledgement bound to the version so a revision invalidates it without rewriting a record.
+
+**B6. Session resume.** Depends on B3. App defaults to `LocalWorkflowEngineApi` over
+`WorkflowDatabase.memory()` — nothing survives a restart, and state is per-device.
+`RemoteWorkflowEngineApi` has no store, so it is dead offline. Target, by user decision: backend is
+source of truth, local DB is a **read-only** replica for offline browse. No outbox, no conflict
+resolution — the backend stays the only writer.
+
+**Deferred by user decision, not forgotten:** payment processing, external search/AI answer.
+
+### Cross-cutting, found while building the above
+
+- [ ] `new-ticket` — **community isolation is a `WHERE community_id = ?` clause.** Not schema-per-tenant, not row-level security; one missing predicate leaks across communities and nothing structural prevents it. Wants a test that runs every repository query against a two-community fixture
+- [ ] `new-ticket` — **idempotency is reimplemented per repository.** `document_repository`, the bundle repository and the queue repository each carry their own `idempotency_key` column and index. Three implementations of one contract will drift; wants one shared table keyed by `(community, route, key)`
+- [ ] `needs-spec-decision` — **do archetype backends stay in `loom_workflow_service`?** Three now live there beside the engine. They share one need — resolve permission by asking the engine "could this caller invoke action X" — so splitting means duplicating that or a call per request. The deciding factor is deployment independence, not tidiness
+
+
+
 ### 2026-08-28 — where the writer pass and the archetype backends actually stand
 
 **Writer-declaration pass — 7 of 10 installed.** Book Club (partially, see below), Garden, Mosque,
