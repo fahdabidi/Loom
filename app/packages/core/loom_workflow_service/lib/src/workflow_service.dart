@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_multipart/shelf_multipart.dart';
@@ -14,6 +15,7 @@ import 'definition_validation.dart';
 import 'document_access.dart';
 import 'document_object_store.dart';
 import 'document_repository.dart';
+import 'export_bundle_repository.dart';
 import 'identity.dart';
 
 /// Shelf HTTP adapter for the workflow-engine OpenAPI surface.
@@ -53,6 +55,7 @@ class WorkflowService {
   /// service failing to boot over a feature most requests never touch.
   final DocumentRepository? _documentRepository;
   final DocumentObjectStore? _documentObjectStore;
+  final ExportBundleRepository? _exportBundleRepository;
 
   // WorkflowDatabase's transaction boundary uses one externally-owned
   // PostgreSQL connection. Keep whole transitions sequential so statements
@@ -67,9 +70,11 @@ class WorkflowService {
     void Function(String)? unexpectedErrorLogSink,
     DocumentRepository? documentRepository,
     DocumentObjectStore? documentObjectStore,
+    ExportBundleRepository? exportBundleRepository,
   }) : _database = database,
        _documentRepository = documentRepository,
        _documentObjectStore = documentObjectStore,
+       _exportBundleRepository = exportBundleRepository,
        _identityExtractor = identityExtractor,
        _appAccessClient = appAccessClient,
        _communityGroupIdResolver = communityGroupIdResolver,
@@ -109,6 +114,20 @@ class WorkflowService {
     if (_matchesInstanceAction(segments, 'fields') &&
         request.method == 'PATCH') {
       return _updateInstanceFields(request, segments[2], segments[4]);
+    }
+    if (_matchesInstanceExportBundle(segments) && request.method == 'POST') {
+      return _generateExportBundle(request, segments[2], segments[4]);
+    }
+    if (_matchesExportBundle(segments) && request.method == 'GET') {
+      return _getExportBundle(request, segments[2], segments[4]);
+    }
+    if (_matchesExportBundleAction(segments, 'content') &&
+        request.method == 'GET') {
+      return _downloadExportBundle(request, segments[2], segments[4]);
+    }
+    if (_matchesExportBundleAction(segments, 'verification') &&
+        request.method == 'POST') {
+      return _verifyExportBundle(request, segments[2], segments[4]);
     }
     if (_matchesInstanceDocuments(segments)) {
       if (request.method == 'POST') {
@@ -1166,6 +1185,600 @@ class WorkflowService {
     }
   }
 
+  // ---------------------------------------------------------- export bundles
+  //
+  // The export wizard's integrity surface. Bundle bytes use the document
+  // object-store interface deliberately: storage is an implementation detail
+  // shared by both features, while export metadata is distinct from document
+  // metadata and must retain the checksum recorded at generation.
+
+  bool _matchesInstanceExportBundle(List<String> segments) =>
+      segments.length == 6 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'instances' &&
+      segments[4].isNotEmpty &&
+      segments[5] == 'export-bundle';
+
+  bool _matchesExportBundle(List<String> segments) =>
+      segments.length == 5 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'export-bundles' &&
+      segments[4].isNotEmpty;
+
+  bool _matchesExportBundleAction(List<String> segments, String action) =>
+      segments.length == 6 &&
+      segments[0] == 'v1' &&
+      segments[1] == 'communities' &&
+      segments[2].isNotEmpty &&
+      segments[3] == 'export-bundles' &&
+      segments[4].isNotEmpty &&
+      segments[5] == action;
+
+  Future<Response> _generateExportBundle(
+    Request request,
+    String communityId,
+    String instanceId,
+  ) => _withExportRequest(request, communityId, (context) async {
+    final idempotencyKey = request.headers['idempotency-key'];
+    if (idempotencyKey == null || idempotencyKey.trim().isEmpty) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_idempotency_key',
+        message: 'Idempotency-Key is required for export generation.',
+      );
+    }
+
+    late final _ExportBundleRequestBody body;
+    try {
+      body = await _readExportBundleRequestBody(request);
+    } on _EmptyExportComponentIds {
+      return _error(
+        request: request,
+        statusCode: 422,
+        code: 'export_scope_empty',
+        message: 'componentIds must not be empty.',
+      );
+    } on FormatException catch (error) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_export_bundle_request',
+        message: error.message,
+      );
+    }
+
+    final instance = await context.engine.readVisibleInstance(
+      instanceId: instanceId,
+      fanId: context.identity.fanId,
+    );
+    if (instance == null) return _exportBundleNotFound(request);
+
+    if (!await _mayAct(
+      engine: context.engine,
+      instance: instance,
+      fanId: context.identity.fanId,
+      action: 'run',
+    )) {
+      final runExistsInThisState = await _hasActionInCurrentState(
+        communityId: communityId,
+        instance: instance,
+        action: 'run',
+      );
+      return _error(
+        request: request,
+        statusCode: runExistsInThisState ? 403 : 409,
+        code: runExistsInThisState
+            ? 'export_bundle_generate_forbidden'
+            : 'export_bundle_state_conflict',
+        message: runExistsInThisState
+            ? 'A run transition is not available to this fan.'
+            : 'No run transition is available from the instance state.',
+      );
+    }
+
+    final existing = await context.repository.findByIdempotencyKey(
+      communityId: communityId,
+      idempotencyKey: idempotencyKey,
+    );
+    if (existing != null) {
+      return _exportBundleResponse(existing, context.correlationId, 200);
+    }
+
+    if (body.includeDocuments && context.documentRepository == null) {
+      return _error(
+        request: request,
+        statusCode: 503,
+        code: 'export_document_metadata_unavailable',
+        message: 'Document metadata is required when includeDocuments is true.',
+      );
+    }
+
+    final payload = await _buildExportPayload(
+      context: context,
+      communityId: communityId,
+      sourceInstance: instance,
+      body: body,
+    );
+    if (payload.recordCount == 0) {
+      return _error(
+        request: request,
+        statusCode: 422,
+        code: 'export_scope_empty',
+        message: 'The export scope selects no records.',
+      );
+    }
+
+    final exportId = 'export_${_newExportBundleId()}';
+    final bundle = StoredExportBundle(
+      exportId: exportId,
+      communityId: communityId,
+      instanceId: instanceId,
+      checksum: sha256.convert(payload.bytes).toString(),
+      checksumAlgorithm: 'sha-256',
+      byteSize: payload.bytes.length,
+      recordCount: payload.recordCount,
+      redacted: body.redactProtectedData,
+      generatedAt: DateTime.now().toUtc(),
+      objectKey: exportBundleObjectKey(
+        communityId: communityId,
+        instanceId: instanceId,
+        exportId: exportId,
+      ),
+    );
+
+    // Store exactly the bytes that were hashed. Download and verification read
+    // this object verbatim; neither is allowed to re-serialise the records.
+    await context.objectStore.put(
+      key: bundle.objectKey,
+      bytes: payload.bytes,
+      contentType: 'application/octet-stream',
+    );
+    await context.repository.insert(bundle, idempotencyKey: idempotencyKey);
+
+    // This is platform bookkeeping, not a member field edit. The checksum is
+    // intentionally written through the same merge path as document URLs.
+    final updates = <String, dynamic>{
+      'checksum': bundle.checksum,
+      'checksumAlgorithm': bundle.checksumAlgorithm,
+    };
+    if (await _declaresField(
+      communityId,
+      instance.workflowType,
+      'checksumVerified',
+    )) {
+      updates['checksumVerified'] = false;
+    }
+    await _database.mergeInstanceFields(
+      instanceId: instanceId,
+      fieldUpdates: updates,
+    );
+
+    return _exportBundleResponse(bundle, context.correlationId, 201);
+  });
+
+  Future<Response> _getExportBundle(
+    Request request,
+    String communityId,
+    String exportId,
+  ) => _withExportRequest(request, communityId, (context) async {
+    final found = await _readableExportBundle(context, communityId, exportId);
+    if (found == null) return _exportBundleNotFound(request);
+    if (!await _mayAct(
+      engine: context.engine,
+      instance: found.instance,
+      fanId: context.identity.fanId,
+      action: 'download',
+    )) {
+      return _exportBundleDownloadForbidden(request);
+    }
+    return _exportBundleResponse(found.bundle, context.correlationId, 200);
+  });
+
+  Future<Response> _downloadExportBundle(
+    Request request,
+    String communityId,
+    String exportId,
+  ) => _withExportRequest(request, communityId, (context) async {
+    final found = await _readableExportBundle(context, communityId, exportId);
+    if (found == null) return _exportBundleNotFound(request);
+    if (!await _mayAct(
+      engine: context.engine,
+      instance: found.instance,
+      fanId: context.identity.fanId,
+      action: 'download',
+    )) {
+      return _exportBundleDownloadForbidden(request);
+    }
+
+    final bytes = await context.objectStore.get(found.bundle.objectKey);
+    if (bytes == null) return _exportBundleContentMissing(request);
+    return Response.ok(
+      bytes,
+      headers: <String, String>{
+        'content-type': 'application/octet-stream',
+        'content-length': '${found.bundle.byteSize}',
+        'etag': '"${found.bundle.checksum}"',
+        'x-loom-correlation-id': context.correlationId,
+      },
+    );
+  });
+
+  Future<Response> _verifyExportBundle(
+    Request request,
+    String communityId,
+    String exportId,
+  ) => _withExportRequest(request, communityId, (context) async {
+    final found = await _readableExportBundle(context, communityId, exportId);
+    if (found == null) return _exportBundleNotFound(request);
+    if (!await _mayAct(
+      engine: context.engine,
+      instance: found.instance,
+      fanId: context.identity.fanId,
+      action: 'download',
+    )) {
+      return _exportBundleDownloadForbidden(request);
+    }
+
+    final bytes = await context.objectStore.get(found.bundle.objectKey);
+    if (bytes == null) return _exportBundleContentMissing(request);
+
+    // This must be freshly computed from storage. Reading the recorded value
+    // here would make a replacement or truncation verify unconditionally.
+    final observedChecksum = sha256.convert(bytes).toString();
+    final verified =
+        observedChecksum == found.bundle.checksum &&
+        bytes.length == found.bundle.byteSize;
+    if (await _declaresField(
+      communityId,
+      found.instance.workflowType,
+      'checksumVerified',
+    )) {
+      await _database.mergeInstanceFields(
+        instanceId: found.instance.instanceId,
+        fieldUpdates: <String, dynamic>{'checksumVerified': verified},
+      );
+    }
+
+    return Response.ok(
+      jsonEncode(<String, dynamic>{
+        'exportId': found.bundle.exportId,
+        'verified': verified,
+        'recordedChecksum': found.bundle.checksum,
+        'observedChecksum': observedChecksum,
+        'checksumAlgorithm': found.bundle.checksumAlgorithm,
+        'recordedByteSize': found.bundle.byteSize,
+        'observedByteSize': bytes.length,
+        'verifiedAt': DateTime.now().toUtc().toIso8601String(),
+      }),
+      headers: <String, String>{
+        ..._jsonHeaders,
+        'x-loom-correlation-id': context.correlationId,
+      },
+    );
+  });
+
+  Future<_ExportPayload> _buildExportPayload({
+    required _ExportRequestContext context,
+    required String communityId,
+    required WorkflowInstance sourceInstance,
+    required _ExportBundleRequestBody body,
+  }) async {
+    final definitions = await _database.loadDefinitionsForCommunity(
+      communityId,
+    );
+    final protectedFields = _protectedFieldNames(
+      definitions: definitions,
+      exportInstanceData: sourceInstance.instanceData,
+    );
+    final sourceScope = _componentIdsAllowedByExport(
+      sourceInstance.instanceData,
+    );
+    final componentIds = sourceScope == null
+        ? body.componentIds
+        : body.componentIds == null
+        ? sourceScope
+        : body.componentIds!
+              .where(sourceScope.contains)
+              .toList(growable: false);
+    final rows = await _database.queryInstancesKeyset(
+      communityId: communityId,
+      limit: 1 << 30,
+      sortKey: 'instanceId',
+    );
+    final records = <Map<String, dynamic>>[];
+    final documents = <Map<String, dynamic>>[];
+    for (final row in rows) {
+      // Never serialise the export-control record into the bundle it creates:
+      // generation stamps its checksum, which would make a second generation
+      // over otherwise unchanged data non-deterministic.
+      if (row.instanceId == sourceInstance.instanceId) continue;
+      if (componentIds != null && !componentIds.contains(row.workflowType)) {
+        continue;
+      }
+      final instance = await context.engine.readVisibleInstance(
+        instanceId: row.instanceId,
+        fanId: context.identity.fanId,
+      );
+      if (instance == null) continue;
+
+      final data = Map<String, dynamic>.from(instance.instanceData);
+      if (body.redactProtectedData) {
+        data.removeWhere((field, _) => protectedFields.contains(field));
+      }
+      records.add(<String, dynamic>{
+        'instanceId': instance.instanceId,
+        'workflowType': instance.workflowType,
+        'currentState': instance.currentState,
+        'createdByFanId': instance.createdByFanId,
+        'instanceData': data,
+      });
+
+      if (!body.includeDocuments) continue;
+      final repository = context.documentRepository;
+      if (repository == null) continue;
+      final boundDocuments = await repository.listForInstance(
+        communityId: communityId,
+        instanceId: instance.instanceId,
+      );
+      for (final document in boundDocuments) {
+        final bytes = await context.objectStore.get(document.objectKey);
+        if (bytes == null) {
+          throw StateError(
+            'Document ${document.documentId} is missing its stored bytes.',
+          );
+        }
+        documents.add(<String, dynamic>{
+          'documentId': document.documentId,
+          'instanceId': document.instanceId,
+          'filename': document.filename,
+          'contentType': document.contentType,
+          'contentBase64': base64Encode(bytes),
+        });
+      }
+    }
+    records.sort((a, b) {
+      final byType = (a['workflowType'] as String).compareTo(
+        b['workflowType'] as String,
+      );
+      if (byType != 0) return byType;
+      return (a['instanceId'] as String).compareTo(b['instanceId'] as String);
+    });
+    documents.sort(
+      (a, b) =>
+          (a['documentId'] as String).compareTo(b['documentId'] as String),
+    );
+
+    final canonical = _canonicalJson(<String, dynamic>{
+      'format': 'loom-export-bundle-v1',
+      'communityId': communityId,
+      'sourceInstanceId': sourceInstance.instanceId,
+      'redacted': body.redactProtectedData,
+      'records': records,
+      if (body.includeDocuments) 'documents': documents,
+    });
+    return _ExportPayload(
+      bytes: utf8.encode(canonical),
+      recordCount: records.length,
+    );
+  }
+
+  Set<String> _protectedFieldNames({
+    required Map<String, Map<String, dynamic>> definitions,
+    required Map<String, dynamic> exportInstanceData,
+  }) {
+    final result = <String>{};
+    for (final definition in definitions.values) {
+      final schema = definition['instanceDataSchema'];
+      if (schema is! Map<String, dynamic>) continue;
+      for (final entry in schema.entries) {
+        final field = entry.value;
+        if (field is! Map<String, dynamic>) continue;
+        if (field['protected'] == true ||
+            field['isProtected'] == true ||
+            field['redactOnExport'] == true ||
+            field['visibility'] == 'protected') {
+          result.add(entry.key);
+        }
+      }
+    }
+    // Existing export workflows commonly carry an explicit list of protected
+    // field names. Respect it as export-scoped policy in addition to schema
+    // annotations, while ignoring non-string labels safely.
+    for (final key in const <String>[
+      'protectedFields',
+      'redactedFields',
+      'protectedFieldLabels',
+    ]) {
+      final values = exportInstanceData[key];
+      if (values is Iterable) {
+        result.addAll(values.whereType<String>());
+      }
+    }
+    return result;
+  }
+
+  /// The request can narrow an export, but cannot widen the scope configured
+  /// on its owning export instance. The corpus uses several historical names
+  /// for that list, so preserve all established shapes rather than guessing
+  /// from a label or accepting a client-provided role list.
+  List<String>? _componentIdsAllowedByExport(
+    Map<String, dynamic> instanceData,
+  ) {
+    for (final key in const <String>[
+      'componentIds',
+      'exportScope',
+      'scope',
+      'selectedSchemaIds',
+      'selectedScope',
+      'includedComponents',
+    ]) {
+      final value = instanceData[key];
+      if (value is! List) continue;
+      if (value.any((component) => component is! String)) continue;
+      return value.cast<String>();
+    }
+    return null;
+  }
+
+  Future<bool> _hasActionInCurrentState({
+    required String communityId,
+    required WorkflowInstance instance,
+    required String action,
+  }) async {
+    final definitions = await _database.loadDefinitionsForCommunity(
+      communityId,
+    );
+    final definition = definitions[instance.workflowType];
+    if (definition == null) return false;
+    final machine = LoomWorkflowStateMachine.fromJson(
+      definition,
+      instance.workflowType,
+    );
+    return machine
+        .transitionsFrom(instance.currentState)
+        .any((transition) => transition.action == action);
+  }
+
+  Future<_ReadableExportBundle?> _readableExportBundle(
+    _ExportRequestContext context,
+    String communityId,
+    String exportId,
+  ) async {
+    final bundle = await context.repository.findById(
+      communityId: communityId,
+      exportId: exportId,
+    );
+    if (bundle == null) return null;
+    final instance = await context.engine.readVisibleInstance(
+      instanceId: bundle.instanceId,
+      fanId: context.identity.fanId,
+    );
+    if (instance == null) return null;
+    return _ReadableExportBundle(bundle: bundle, instance: instance);
+  }
+
+  Future<_ExportBundleRequestBody> _readExportBundleRequestBody(
+    Request request,
+  ) async {
+    final contentType = request.headers['content-type'];
+    if (contentType == null ||
+        !contentType.toLowerCase().startsWith('application/json')) {
+      throw const FormatException('Content-Type must be application/json.');
+    }
+    final decoded = await _readJsonObject(request);
+    const allowed = <String>{
+      'redactProtectedData',
+      'componentIds',
+      'includeDocuments',
+    };
+    if (decoded.keys.any((key) => !allowed.contains(key))) {
+      throw const FormatException(
+        'The export bundle request contains an unknown field.',
+      );
+    }
+    final redactProtectedData = decoded['redactProtectedData'];
+    if (redactProtectedData is! bool) {
+      throw const FormatException('redactProtectedData must be a boolean.');
+    }
+    final rawComponentIds = decoded['componentIds'];
+    List<String>? componentIds;
+    if (rawComponentIds != null) {
+      if (rawComponentIds is! List ||
+          rawComponentIds.any((value) => value is! String || value.isEmpty)) {
+        throw const FormatException(
+          'componentIds must be an array of non-empty strings.',
+        );
+      }
+      if (rawComponentIds.isEmpty) {
+        throw const _EmptyExportComponentIds();
+      }
+      componentIds = rawComponentIds.cast<String>();
+    }
+    final includeDocuments = decoded['includeDocuments'];
+    if (includeDocuments != null && includeDocuments is! bool) {
+      throw const FormatException('includeDocuments must be a boolean.');
+    }
+    return _ExportBundleRequestBody(
+      redactProtectedData: redactProtectedData,
+      componentIds: componentIds,
+      includeDocuments: includeDocuments as bool? ?? true,
+    );
+  }
+
+  String _canonicalJson(Object? value) {
+    if (value == null || value is bool || value is num)
+      return jsonEncode(value);
+    if (value is DateTime) return jsonEncode(value.toUtc().toIso8601String());
+    if (value is String) return jsonEncode(_normaliseTimestamp(value));
+    if (value is List) {
+      return '[${value.map(_canonicalJson).join(',')}]';
+    }
+    if (value is Map) {
+      final keys = value.keys.cast<Object?>().map((key) {
+        if (key is! String)
+          throw StateError('Export JSON object keys must be strings.');
+        return key;
+      }).toList()..sort();
+      return '{${keys.map((key) => '${jsonEncode(key)}:${_canonicalJson(value[key])}').join(',')}}';
+    }
+    throw StateError(
+      'Export payload contains unsupported value ${value.runtimeType}.',
+    );
+  }
+
+  String _normaliseTimestamp(String value) {
+    final timestampPattern = RegExp(
+      r'^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$',
+    );
+    if (!timestampPattern.hasMatch(value)) return value;
+    final parsed = DateTime.tryParse(value);
+    return parsed == null ? value : parsed.toUtc().toIso8601String();
+  }
+
+  Response _exportBundleNotFound(Request request) => _error(
+    request: request,
+    statusCode: 404,
+    code: 'export_bundle_not_found',
+    message: 'The requested export bundle was not found.',
+  );
+
+  Response _exportBundleDownloadForbidden(Request request) => _error(
+    request: request,
+    statusCode: 403,
+    code: 'export_bundle_download_forbidden',
+    message: 'A download transition is not available to this fan.',
+  );
+
+  Response _exportBundleContentMissing(Request request) => _error(
+    request: request,
+    statusCode: 410,
+    code: 'export_bundle_content_missing',
+    message: 'The export bundle record exists but its bytes are gone.',
+  );
+
+  Response _exportBundleResponse(
+    StoredExportBundle bundle,
+    String correlationId,
+    int statusCode,
+  ) => Response(
+    statusCode,
+    body: jsonEncode(bundle.toJson()),
+    headers: <String, String>{
+      ..._jsonHeaders,
+      'x-loom-correlation-id': correlationId,
+    },
+  );
+
+  static String _newExportBundleId() {
+    final bytes = List<int>.generate(16, (_) => _secureRandom.nextInt(256));
+    return bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+  }
+
   // --------------------------------------------------------------- documents
   //
   // Bytes for the `documentLibrary` archetype. Every access decision here is
@@ -1516,6 +2129,86 @@ class WorkflowService {
       },
     );
   });
+
+  /// Shared export preamble: correlation id, identity, storage and roles.
+  ///
+  /// It intentionally validates the correlation header before reporting an
+  /// unavailable storage dependency. A malformed request must not become a
+  /// false storage-success signal merely because the deployment is incomplete.
+  Future<Response> _withExportRequest(
+    Request request,
+    String communityId,
+    Future<Response> Function(_ExportRequestContext context) body,
+  ) async {
+    final correlationId = request.headers['x-loom-correlation-id'];
+    if (correlationId == null || !_uuidPattern.hasMatch(correlationId)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_correlation_id',
+        message: 'X-Loom-Correlation-Id must be a UUID.',
+      );
+    }
+
+    final repository = _exportBundleRepository;
+    final objectStore = _documentObjectStore;
+    if (repository == null || objectStore == null) {
+      return _error(
+        request: request,
+        statusCode: 503,
+        code: 'export_bundle_storage_unavailable',
+        message: 'This deployment has no export bundle storage configured.',
+      );
+    }
+
+    final identity = await _identityExtractor.extract(request);
+    if (identity == null) {
+      return _error(
+        request: request,
+        statusCode: 401,
+        code: 'authentication_required',
+        message: 'An authenticated fan identity is required.',
+      );
+    }
+
+    final groupId = await _communityGroupIdResolver.resolveGroupId(communityId);
+    if (groupId == null || groupId.trim().isEmpty) {
+      return _authorizationServiceUnavailable(request);
+    }
+
+    try {
+      return await _databaseSerialExecutor.run(() async {
+        final engine = _authoritativeEngine(communityId);
+        final roleResolutionError = await _resolveRolesForRequest(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          engine: engine,
+        );
+        if (roleResolutionError != null) return roleResolutionError;
+
+        return body(
+          _ExportRequestContext(
+            identity: identity,
+            correlationId: correlationId,
+            engine: engine,
+            repository: repository,
+            objectStore: objectStore,
+            documentRepository: _documentRepository,
+          ),
+        );
+      });
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'The export bundle request could not be completed.',
+      );
+    }
+  }
 
   /// Shared preamble: correlation id, identity, storage, roles and membership.
   Future<Response> _withDocumentRequest(
@@ -2311,6 +3004,29 @@ class _ReplaceWorkflowDefinitionsBody {
   });
 }
 
+class _ExportBundleRequestBody {
+  const _ExportBundleRequestBody({
+    required this.redactProtectedData,
+    required this.componentIds,
+    required this.includeDocuments,
+  });
+
+  final bool redactProtectedData;
+  final List<String>? componentIds;
+  final bool includeDocuments;
+}
+
+class _EmptyExportComponentIds extends FormatException {
+  const _EmptyExportComponentIds() : super('componentIds must not be empty.');
+}
+
+class _ExportPayload {
+  const _ExportPayload({required this.bytes, required this.recordCount});
+
+  final List<int> bytes;
+  final int recordCount;
+}
+
 class _SerialExecutor {
   Future<void> _tail = Future<void>.value();
 
@@ -2344,6 +3060,32 @@ class _DocumentRequestContext {
   final LocalWorkflowEngineApi engine;
   final DocumentRepository repository;
   final DocumentObjectStore objectStore;
+}
+
+/// Everything an export bundle handler needs, resolved once by its preamble.
+class _ExportRequestContext {
+  const _ExportRequestContext({
+    required this.identity,
+    required this.correlationId,
+    required this.engine,
+    required this.repository,
+    required this.objectStore,
+    required this.documentRepository,
+  });
+
+  final WorkflowRequestIdentity identity;
+  final String correlationId;
+  final LocalWorkflowEngineApi engine;
+  final ExportBundleRepository repository;
+  final DocumentObjectStore objectStore;
+  final DocumentRepository? documentRepository;
+}
+
+class _ReadableExportBundle {
+  const _ReadableExportBundle({required this.bundle, required this.instance});
+
+  final StoredExportBundle bundle;
+  final WorkflowInstance instance;
 }
 
 class _ReadableDocument {

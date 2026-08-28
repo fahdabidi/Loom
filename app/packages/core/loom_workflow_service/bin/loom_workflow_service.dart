@@ -58,6 +58,7 @@ Future<void> main() async {
   // over a feature most of its traffic never touches.
   DocumentRepository? documentRepository;
   DocumentObjectStore? documentObjectStore;
+  ExportBundleRepository? exportBundleRepository;
   final minioEndpoint = environment['LOOM_MINIO_ENDPOINT'];
   final minioAccessKey = environment['LOOM_MINIO_ACCESS_KEY'];
   final minioSecretKey = environment['LOOM_MINIO_SECRET_KEY'];
@@ -82,13 +83,16 @@ Future<void> main() async {
     await store.ensureBucket();
     final repository = PostgresDocumentRepository(postgres.connection);
     await repository.migrate();
+    final exportRepository = PostgresExportBundleRepository(
+      postgres.connection,
+    );
+    await exportRepository.migrate();
     documentObjectStore = store;
     documentRepository = repository;
+    exportBundleRepository = exportRepository;
     stdout.writeln('Document storage ready on $minioEndpoint.');
   } else {
-    stdout.writeln(
-      'LOOM_MINIO_* not set: document endpoints will answer 503.',
-    );
+    stdout.writeln('LOOM_MINIO_* not set: document endpoints will answer 503.');
   }
 
   final identityExtractor = JwtWorkflowIdentityExtractor(
@@ -104,6 +108,7 @@ Future<void> main() async {
     ),
     documentRepository: documentRepository,
     documentObjectStore: documentObjectStore,
+    exportBundleRepository: exportBundleRepository,
   );
   final server = await shelf_io.serve(
     service.handler,
