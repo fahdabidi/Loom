@@ -1221,6 +1221,10 @@ String _valueText(Object? rawValue) {
         .join(', ');
   }
   if (rawValue is String) {
+    // A digest is evidence, not an identifier for display. Humanizing a
+    // lowercase SHA-256 value changes its first character and makes the value
+    // impossible to compare to the downloaded bytes.
+    if (RegExp(r'^[a-fA-F0-9]{64}$').hasMatch(rawValue)) return rawValue;
     return _looksLikeIdentifierValue(rawValue)
         ? humanizeIdentifierValue(rawValue)
         : rawValue;

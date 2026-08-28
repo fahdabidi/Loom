@@ -203,11 +203,12 @@ List<String> _followUpActionLabelsFor(
       'Open sources',
       'Share answer',
     ],
-    _RichWorkflowLayout.exportWizard => const [
-      'Download file',
-      'Verify checksum',
-      'Rollback',
-    ],
+    // Export actions are not catalog prose. The engine-native export surface
+    // renders the transitions currently declared by the community (including
+    // each package's own run/download ids), and invokes verification only for
+    // a real server-returned bundle. A static preview list would advertise
+    // actions that may not exist in the workflow currently being shown.
+    _RichWorkflowLayout.exportWizard => const [],
     _RichWorkflowLayout.messageThread => const [
       'Reply',
       'Mute thread',

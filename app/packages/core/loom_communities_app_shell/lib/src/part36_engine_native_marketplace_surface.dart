@@ -1195,12 +1195,15 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
   bool _loadingActions = true;
   bool _mutating = false;
   String? _error;
+  LoomExportBundleVerification? _verification;
+  int? _downloadedByteSize;
   int _actionRequest = 0;
 
   @override
   void initState() {
     super.initState();
     _instance = widget.resolved.instance;
+    _clearExportOperationStatus();
     _loadActions();
   }
 
@@ -1215,6 +1218,7 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
         oldWidget.fanId != widget.fanId ||
         oldWidget.engine != widget.engine) {
       _instance = newInstance;
+      _clearExportOperationStatus();
       _loadActions();
     }
   }
@@ -1270,20 +1274,43 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
       _error = null;
     });
     try {
-      final result = await widget.engine.applyTransition(
-        workflowType: _instance.workflowType,
-        instanceId: _instance.instanceId,
-        transitionId: transition.id,
-        fanId: widget.fanId,
-        inputs: inputs,
-      );
-      final next = WorkflowInstance(
-        instanceId: _instance.instanceId,
-        workflowType: _instance.workflowType,
-        currentState: result.newState,
-        instanceData: result.newInstanceData,
-        createdByFanId: _instance.createdByFanId,
-      );
+      final client = _exportClient;
+      final isRemoteChecksumExport =
+          _isChecksumExport && widget.engine is RemoteWorkflowEngineApi;
+      if (isRemoteChecksumExport &&
+          client == null &&
+          (transition.action == 'run' || transition.action == 'download')) {
+        throw const _ExportBundleServiceUnavailable();
+      }
+      if (_isChecksumExport && client != null && transition.action == 'run') {
+        // The service authorizes the current state's run transition, so it
+        // must generate before this card advances that transition. The service
+        // writes checksum fields; this card accepts only the engine result and
+        // never mirrors the returned checksum into instance data itself.
+        final bundle = await client.generate(
+          communityId: _communityId!,
+          instanceId: _instance.instanceId,
+          redactProtectedData: _redactProtectedData,
+        );
+        rememberLoomExportBundleForCurrentAppSession(bundle);
+      }
+      if (_isChecksumExport &&
+          client != null &&
+          transition.action == 'download') {
+        final bundle = _knownBundle;
+        if (bundle == null) {
+          throw const _ExportBundleHandleUnavailable();
+        }
+        final bytes = await client.download(
+          communityId: _communityId!,
+          exportId: bundle.exportId,
+        );
+        if (mounted) {
+          setState(() => _downloadedByteSize = bytes.length);
+        }
+      }
+
+      final next = await _applyWorkflowTransition(transition, inputs);
       if (!mounted) return;
       setState(() {
         _instance = next;
@@ -1292,11 +1319,154 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
       widget.onInstanceChanged(next);
       await _loadActions();
       if (!mounted) return;
+    } on _ExportBundleHandleUnavailable {
+      if (!mounted) return;
+      setState(() {
+        _mutating = false;
+        _error =
+            'Export download is unavailable until this app session '
+            'generates a bundle.';
+      });
+    } on _ExportBundleServiceUnavailable {
+      if (!mounted) return;
+      setState(() {
+        _mutating = false;
+        _error =
+            'Checksum is unavailable because this connected community '
+            'has no export service configured.';
+      });
+    } on LoomExportBundleException catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _mutating = false;
+        _error = 'Checksum is unavailable because the export service failed.';
+      });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _mutating = false;
         _error = 'Could not update this listing.';
+      });
+    }
+  }
+
+  Future<WorkflowInstance> _applyWorkflowTransition(
+    LoomWorkflowTransition transition,
+    Map<String, dynamic> inputs,
+  ) async {
+    final result = await widget.engine.applyTransition(
+      workflowType: _instance.workflowType,
+      instanceId: _instance.instanceId,
+      transitionId: transition.id,
+      fanId: widget.fanId,
+      inputs: inputs,
+    );
+    return WorkflowInstance(
+      instanceId: _instance.instanceId,
+      workflowType: _instance.workflowType,
+      currentState: result.newState,
+      instanceData: result.newInstanceData,
+      createdByFanId: _instance.createdByFanId,
+    );
+  }
+
+  bool get _isChecksumExport =>
+      widget.resolved.machine.instanceDataSchema.containsKey('checksum');
+
+  String? get _communityId {
+    final engine = widget.engine;
+    return engine is RemoteWorkflowEngineApi ? engine.communityId : null;
+  }
+
+  LoomExportBundleClient? get _exportClient {
+    if (!_isChecksumExport || widget.engine is! RemoteWorkflowEngineApi) {
+      return null;
+    }
+    return resolveLoomExportBundleClient();
+  }
+
+  LoomExportBundle? get _knownBundle {
+    final communityId = _communityId;
+    if (communityId == null) return null;
+    return rememberedLoomExportBundleForCurrentAppSession(
+      communityId: communityId,
+      instanceId: _instance.instanceId,
+    );
+  }
+
+  void _clearExportOperationStatus() {
+    _verification = null;
+    _downloadedByteSize = null;
+  }
+
+  bool get _redactProtectedData {
+    // Current packages expose an approved redaction decision under several
+    // field names. Use its declared data shape rather than a workflow-id list.
+    // With no such declaration, requesting a full bundle is the only truthful
+    // choice; a client must not claim it redacted data it did not request.
+    for (final entry in _instance.instanceData.entries) {
+      if (!entry.key.toLowerCase().contains('redact')) continue;
+      final value = entry.value;
+      if (value == true) return true;
+      if (value is Iterable && value.whereType<String>().isNotEmpty)
+        return true;
+      if (value is String) {
+        final normalized = value.trim().toLowerCase();
+        if (normalized.isNotEmpty &&
+            normalized != 'false' &&
+            normalized != 'none' &&
+            normalized != 'not-requested') {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  Future<void> _verifyChecksum() async {
+    if (_mutating) return;
+    final client = _exportClient;
+    final communityId = _communityId;
+    final bundle = _knownBundle;
+    if (client == null || communityId == null) {
+      setState(() => _error = 'Checksum is unavailable in this local build.');
+      return;
+    }
+    if (bundle == null) {
+      setState(() {
+        _error =
+            'Checksum verification is unavailable until this app session '
+            'generates a bundle.';
+      });
+      return;
+    }
+    setState(() {
+      _mutating = true;
+      _error = null;
+    });
+    try {
+      final verification = await client.verify(
+        communityId: communityId,
+        exportId: bundle.exportId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _verification = verification;
+        _mutating = false;
+      });
+    } on LoomExportBundleException catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _mutating = false;
+        _error =
+            'Checksum verification is unavailable because the export '
+            'service could not compare the stored bytes.';
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _mutating = false;
+        _error = 'Checksum verification is unavailable.';
       });
     }
   }
@@ -1572,6 +1742,46 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(_error!),
                 ),
+              if (_downloadedByteSize != null)
+                Padding(
+                  key: ValueKey(
+                    'export-wizard-download-${_instance.instanceId}',
+                  ),
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text('Downloaded $_downloadedByteSize bytes.'),
+                ),
+              if (_verification != null)
+                Padding(
+                  key: ValueKey(
+                    'export-wizard-verification-${_instance.instanceId}',
+                  ),
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    _verification!.verified
+                        ? 'Checksum verified.'
+                        : 'Checksum mismatch.',
+                    style: TextStyle(
+                      color: _verification!.verified
+                          ? Colors.green.shade700
+                          : Colors.red.shade700,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              if (_isChecksumExport && _knownBundle != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: OutlinedButton.icon(
+                    key: ValueKey(
+                      'export-wizard-verify-${_instance.instanceId}',
+                    ),
+                    onPressed: _mutating
+                        ? null
+                        : () => unawaited(_verifyChecksum()),
+                    icon: const Icon(Icons.verified_outlined),
+                    label: const Text('Verify checksum'),
+                  ),
+                ),
               if (!_loadingActions)
                 WorkflowActionButtonRow(
                   surface: widget.displayContext == 'detail'
@@ -1595,6 +1805,14 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
       ),
     );
   }
+}
+
+final class _ExportBundleHandleUnavailable implements Exception {
+  const _ExportBundleHandleUnavailable();
+}
+
+final class _ExportBundleServiceUnavailable implements Exception {
+  const _ExportBundleServiceUnavailable();
 }
 
 /// Bespoke rendering for the searchAiAnswer card family.
