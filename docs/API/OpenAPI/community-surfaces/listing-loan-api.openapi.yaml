@@ -1,0 +1,399 @@
+openapi: 3.1.0
+info:
+  title: Loom Listing & Loan API
+  version: 0.1.0
+  summary: The runtime behind the `equipment-loan` archetype — listings, queues, custody and loans.
+  description: >-
+    Backs the `equipment-loan` archetype: an item somebody lists, other people queue for, borrow, hold
+    and return. Thirteen render bindings across the corpus use that archetype and none of them has a
+    service behind it.
+
+
+    **Read this section before implementing any of it: most of this already works.** Measured across
+    the four lending workflows that ship today — Book Club `book-shared-library-item`, Camera Club
+    `gear-loan-request`, Garden Club `garden-tool-loan` and `garden-tool-giveaway` — the loan lifecycle
+    is implemented in workflow JSON and functions. `request-loan` carries between two and seven
+    effects, `approve-loan` three to five, `return-item` three to eight, `claim-giveaway` one to six.
+    Custody handoff, due dates, pause and resume, delisting, damage and lost reports all write real
+    instance data through real effects.
+
+
+    Exactly two transitions are empty, and they are empty in **all three** lending communities:
+    `join-queue` and `leave-queue`, zero effects each. Six dead buttons. The queue is the only part of
+    this archetype that has never worked.
+
+
+    Each section below is therefore marked **NEW** or **MIGRATION**. A `NEW` section builds something
+    that does not exist. A `MIGRATION` section moves behaviour out of workflow JSON that currently
+    works, and is worth doing only for a reason better than symmetry — the JSON version is not broken,
+    and moving it trades a working implementation for a better-placed one. Build the `NEW` parts first
+    and let the migrations be a separate, deliberate decision.
+
+
+    **Why the queue cannot stay in workflow JSON, when the rest can.** An ordered `fanId[]` on the
+    instance, appended and removed by effects, would work for membership and position — the engine
+    wraps every transition in a real database transaction, so two people joining at once serialise
+    correctly, and `indexOf(queuedFanIds, $viewer)` computes a position. That much is genuinely fine,
+    and `solved-patterns.md` §2 already describes it.
+
+    Four things it cannot do:
+
+      1. **Tell the next person.** When a holder returns an item, whoever is at the head of the queue
+         needs notifying. Effects move data; they cannot call a notification service, and nothing
+         watches a list for changes.
+      2. **Answer "what am I queued for?"** That question spans items. Instance data is per-instance,
+         so answering it means loading every listing in the community and scanning each list.
+      3. **Say when someone joined.** A bare `fanId[]` preserves order and not time, so "I was skipped"
+         has no evidence either way.
+      4. **Survive a listing being revised.** The queue's relationship to the item is implicit in a
+         field that any effect may rewrite.
+
+
+    **Identity comes from the token, never the request.** A caller cannot queue on someone else's
+    behalf, or dequeue them. Permissions derive from `action` + `allowedRoleIds` in the community's
+    JSON exactly as they do for documents and export bundles: joining requires that the caller could
+    invoke a transition whose `action` is `join_queue` on that instance, leaving requires
+    `leave_queue`, and administering the queue requires `decide_request`.
+servers:
+  - url: https://communities.loom.example
+security:
+  - LoomUserOAuth:
+      - community.workflow
+  - LoomServiceAuth: []
+x-loom-api-owner: community-surfaces/workflow-engine
+x-loom-archetype: equipment-loan
+x-loom-architecture-docs:
+  - ../../../references/archetypes/equipment-loan.md
+  - ../../../references/reference/solved-patterns.md
+  - ../../../references/reference/permissions.md
+x-loom-upstream-apis:
+  - ./workflow-engine-api.openapi.yaml
+  - ./document-library-api.openapi.yaml
+
+tags:
+  - name: Queue
+    description: 'NEW — waiting for an item. The only part of this archetype that has never worked.'
+  - name: Custody
+    description: 'MIGRATION — who holds the item now. Works today in workflow JSON.'
+  - name: Loans
+    description: 'MIGRATION — request, borrow, renew, return, overdue. Works today in workflow JSON.'
+
+paths:
+  /v1/communities/{communityId}/instances/{instanceId}/queue:
+    get:
+      tags: [Queue]
+      operationId: getItemQueue
+      summary: 'NEW: the queue for one item, and the caller''s place in it.'
+      description: >-
+        Everyone who may see the item may see the queue's shape — length, and their own position.
+        Seeing *who* else is waiting requires administering the item, because a lending queue is not a
+        public list of who wants what.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/InstanceId'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: The queue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemQueue'
+        '403':
+          description: The caller may not read this item.
+        '404':
+          description: No such instance in this community.
+
+    post:
+      tags: [Queue]
+      operationId: joinItemQueue
+      summary: 'NEW: take a place in the queue.'
+      description: >-
+        Requires that the caller could invoke a transition whose `action` is `join_queue` on this
+        instance. Appends the caller at the tail and records when.
+
+
+        **Idempotent by identity, not by key.** A member already in the queue keeps their existing
+        place and receives `200` rather than moving to the back. Re-tapping a button must never cost
+        someone their position, and a double submission is indistinguishable from an impatient one.
+
+
+        Refuses when the caller already holds the item: queueing for something you have is a
+        request nobody can satisfy.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/InstanceId'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '201':
+          description: Joined; the entry names the position.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueueEntry'
+        '200':
+          description: Already queued. The existing entry, unchanged.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueueEntry'
+        '403':
+          description: The caller could not invoke a `join_queue` transition on this instance.
+        '409':
+          description: The caller currently holds this item.
+
+    delete:
+      tags: [Queue]
+      operationId: leaveItemQueue
+      summary: 'NEW: give up a place in the queue.'
+      description: >-
+        Requires `leave_queue`. Removes the caller and closes the gap, so everyone behind them moves up
+        by exactly one.
+
+
+        Leaving a queue you are not in is `204`, not `404`. The caller's intent — "I am not waiting for
+        this" — is satisfied either way, and a client that lost track of its own state should not be
+        made to care.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/InstanceId'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '204':
+          description: Not in the queue, now or before.
+        '403':
+          description: The caller could not invoke a `leave_queue` transition on this instance.
+
+  /v1/communities/{communityId}/instances/{instanceId}/queue/{fanId}:
+    delete:
+      tags: [Queue]
+      operationId: removeFromItemQueue
+      summary: 'NEW: remove someone else from the queue.'
+      description: >-
+        Requires `decide_request` — the permission that already governs approving and declining loans.
+        For an owner clearing a stale entry, or removing a member who has left the community.
+
+
+        Distinguished from `leaveItemQueue` deliberately, rather than allowing a `fanId` on that one:
+        an endpoint that accepts an identity is an endpoint someone will pass the wrong identity to.
+        Self-service and administration are different permissions and are different routes.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/InstanceId'
+        - $ref: '#/components/parameters/FanId'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '204':
+          description: Removed, or was not queued.
+        '403':
+          description: The caller does not administer this item.
+
+  /v1/communities/{communityId}/queue-memberships:
+    get:
+      tags: [Queue]
+      operationId: listMyQueueMemberships
+      summary: 'NEW: every item the caller is waiting for.'
+      description: >-
+        The cross-item view, and the clearest thing instance data cannot provide: answering it from
+        per-instance lists means loading every listing in the community and scanning each one.
+
+
+        Returns the caller's own memberships only. There is no parameter for asking about another
+        member — that is a different question with a different answer, and this endpoint does not
+        answer it.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Every queue the caller is in, with position.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [fanId, memberships]
+                properties:
+                  fanId:
+                    type: string
+                  memberships:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/QueueMembership'
+
+  /v1/communities/{communityId}/instances/{instanceId}/queue/advance:
+    post:
+      tags: [Queue]
+      operationId: advanceItemQueue
+      summary: 'NEW: the item is free — offer it to whoever is next.'
+      description: >-
+        Called when an item returns to available. Takes the member at the head of the queue, records
+        that they were offered it, and returns them so a notification can be sent. **This is the
+        capability that motivates the whole service**: nothing in workflow JSON can tell the next
+        person their turn has come, because effects move data and cannot call a notification service.
+
+
+        An offer expires. `offerExpiresAt` is set from the community's configured hold window, and a
+        lapsed offer passes to the next member rather than blocking the queue forever — a queue whose
+        head has stopped reading their notifications is otherwise a queue that never moves again.
+
+
+        Requires `decide_request`. Returns `204` when the queue is empty, which is a normal outcome
+        and not an error.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/InstanceId'
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: The member now holding the offer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueueOffer'
+        '204':
+          description: The queue is empty. Nobody to offer it to.
+        '403':
+          description: The caller does not administer this item.
+
+components:
+  parameters:
+    CommunityId:
+      name: communityId
+      in: path
+      required: true
+      description: >-
+        The workflow service's own community key, underscored — `community_garden_club`, not the
+        hyphenated group handle. Two identifiers for the same community, neither derivable from the
+        other.
+      schema:
+        type: string
+        pattern: '^[a-z0-9_]+$'
+    InstanceId:
+      name: instanceId
+      in: path
+      required: true
+      schema:
+        type: string
+    FanId:
+      name: fanId
+      in: path
+      required: true
+      schema:
+        type: string
+    CorrelationId:
+      name: X-Loom-Correlation-Id
+      in: header
+      required: true
+      description: Required on every workflow-service route; absent is `400 invalid_correlation_id`.
+      schema:
+        type: string
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    ItemQueue:
+      type: object
+      additionalProperties: false
+      required: [instanceId, length, viewerPosition]
+      properties:
+        instanceId:
+          type: string
+        length:
+          type: integer
+        viewerPosition:
+          type: integer
+          description: >-
+            The caller's own place, 1-based. **Zero means not queued**, matching the convention the
+            shipped packages already use for `myQueuePosition`, so a surface written against the old
+            formula reads the new value the same way.
+        entries:
+          type: array
+          description: >-
+            Present only for a caller who administers the item. Omitted — not empty — for everyone
+            else, so a client cannot mistake "not allowed to see" for "nobody is waiting".
+          items:
+            $ref: '#/components/schemas/QueueEntry'
+
+    QueueEntry:
+      type: object
+      additionalProperties: false
+      required: [fanId, position, joinedAt]
+      properties:
+        fanId:
+          type: string
+        position:
+          type: integer
+          description: 1-based, contiguous. Removing an entry closes the gap.
+        joinedAt:
+          type: string
+          format: date-time
+          description: >-
+            What a bare `fanId[]` could not record. Without it, "I was skipped" is unanswerable in
+            either direction.
+        offeredAt:
+          type: string
+          format: date-time
+        offerExpiresAt:
+          type: string
+          format: date-time
+
+    QueueMembership:
+      type: object
+      additionalProperties: false
+      required: [instanceId, position, joinedAt]
+      properties:
+        instanceId:
+          type: string
+        itemTitle:
+          type: string
+          description: Denormalised for display, so a "what am I waiting for" list needs no second call per row.
+        position:
+          type: integer
+        length:
+          type: integer
+        joinedAt:
+          type: string
+          format: date-time
+
+    QueueOffer:
+      type: object
+      additionalProperties: false
+      required: [instanceId, fanId, offeredAt, offerExpiresAt]
+      properties:
+        instanceId:
+          type: string
+        fanId:
+          type: string
+        offeredAt:
+          type: string
+          format: date-time
+        offerExpiresAt:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+  securitySchemes:
+    LoomUserOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.loom.example/realms/loom/protocol/openid-connect/auth
+          tokenUrl: https://auth.loom.example/realms/loom/protocol/openid-connect/token
+          scopes:
+            community.workflow: Act on workflow instances in a community.
+    LoomServiceAuth:
+      type: http
+      scheme: bearer
