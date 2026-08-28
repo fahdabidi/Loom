@@ -37,13 +37,13 @@
       "sha256": "b6e8cfa52b9d9f2a35e315222d0f137007053850eda8a83c87eb90e53d1fae41",
       "bytes": 102880,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "f08a105d",
+      "lastCommit": "a453dd25",
       "lastCommitDate": "2026-08-27",
-      "lastCommitSubject": "feat(cedar): the reservation reminder is declared, not computed"
+      "lastCommitSubject": "fix(cedar): platform writers, upload metadata, and the checksum gate its doc always required"
     },
     "Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc": {
-      "sha256": "2aebba46df1204c4d01f4b89b346a7648cc669d4aa07bbc838a2dd0cbfa995ad",
-      "bytes": 87542,
+      "sha256": "f00570f0cf3db30ff6335136071a8828b7e5a19986eb7249dd1767beb7e97813",
+      "bytes": 87560,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "c86ab744",
       "lastCommitDate": "2026-08-27",

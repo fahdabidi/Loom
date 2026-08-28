@@ -9,7 +9,7 @@
     "accentColor": "#6B4F2A"
   },
   "seedDataFiles": [],
-  "idempotencyKey": "chess-club-spec-v4-writer-tabs-convergence-2026-08-27",
+  "idempotencyKey": "chess-club-spec-v4-tab-audience-checksum-2026-08-28",
   "experience": {
     "displayName": "Chess Club",
     "tagline": "Ladder matches, club nights, pairings, standings, and rules for local chess players.",
@@ -1816,7 +1816,7 @@
               {
                 "op": "set",
                 "key": "statusMessage",
-                "value": "Export generated; checksum pending platform verification"
+                "value": "Export generated; integrity metadata is platform-managed"
               },
               {
                 "op": "set",
@@ -2055,7 +2055,7 @@
               "detail"
             ]
           },
-          // NEEDS IMPLEMENTATION (platform service): checksum / integrity-hash generation is not implemented; this field is declared and never written by an effect.
+          // Export bundle service writes the real SHA-256 checksum over the bytes it serves.
           "checksum": {
             "type": "text?",
             "writableBy": "platform",
@@ -3094,7 +3094,11 @@
         "tabId": "admin",
         "label": "Admin",
         "iconKey": "admin_panel_settings",
-        "description": "Pairing queues, result disputes, rankings, and export controls."
+        "description": "Pairing queues, result disputes, rankings, and export controls.",
+        "visibleRoleIds": [
+          "chess-organizer",
+          "chess-owner"
+        ]
       }
     ]
   }
