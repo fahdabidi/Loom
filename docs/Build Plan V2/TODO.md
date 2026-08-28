@@ -54,10 +54,36 @@ reachable from the app, and a member-visible behaviour depends on it.
 - [ ] wire the `equipment-loan` surface: join, leave, position, queue length
 - [ ] regenerate Book Club, Camera, Garden so `join-queue`/`leave-queue` call the service. Until then the six transitions stay dead and `transition_has_no_observable_effect` correctly flags them
 
-**B2. Notification delivery.** Interface only — `LocalNotificationDeliveryService` is the sole
-implementation. Two built features are inert without it: the queue's "you're next", and the reminder
-sweep, which has never delivered to a real recipient. Needs a decision on channel (push? in-app
-inbox? both) before it can be specified.
+**B2. Notification channels — CORRECTED 2026-08-28, the gap is much smaller than first recorded.**
+
+My original entry said delivery was "interface only" and that the reminder sweep "has never delivered
+to a real recipient". Both were wrong, and wrong the same way: I read names and inferred instead of
+reading code.
+
+Already built and working:
+- **In-app inbox** — `notificationInbox` is a real archetype with **20 render bindings across 7
+  communities**. Its 🟡 GENERIC marking means it renders through the shared card template rather than a
+  bespoke widget, not that it is unbuilt.
+- **Device notification** — `LocalNotificationDeliveryService` calls
+  `FlutterLocalNotificationsPlugin.show()` with a real channel, initialised for Android, iOS, macOS and
+  Linux. "Local" means device-local, not fake.
+- **The sweep that feeds them** — `part44_reminder_sweeper.dart` already calls
+  `dueNotifications({asOf})` and delivers what members scheduled.
+
+Actually missing, and this is the whole of B2:
+- [ ] `new-ticket` — **per-member notification preference.** No per-member preference storage exists
+  anywhere in the app or services. By user decision it belongs on **fan-passport**, which already owns
+  per-fan follows, consent grants and `creator-category-permission-policies` — a `PUT` settings shape
+  it can follow. Per fan, per community, choosing among channels that already work. **Both specs must
+  change together**: `~/loom-backend/spec/identity/fan-passport-api.openapi.yaml` and
+  `~/Loom/docs/API/OpenAPI/identity/fan-passport-api.openapi.yaml` are byte-identical today
+- [ ] `new-ticket` — **server-initiated push**, for the closed-app case: the device path only fires
+  while the app is running. By user decision, spec it **provider-agnostic** — a swappable interface and
+  no vendor, the way `messaging-api.openapi.yaml` marks a boundary without committing
+- [ ] `needs-verification` — **delivery failures are currently invisible.** The service swallows every
+  platform error by design ("best-effort", so a denied permission never reaches the engine). Correct
+  for the engine; it also means a failed delivery is indistinguishable from a successful one, which
+  matters once anything depends on delivery having happened
 
 **B3. Instance versioning + per-viewer change feed.** Blocks session resume and offline browse.
 Instances carry no `version` or `updatedAt`; `GET /instances` has no `updatedSince`. **The feed must
