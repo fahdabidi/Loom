@@ -56,6 +56,12 @@
       "garden-event-rsvp": {
         "initialState": "open",
         "visibility": { "default": "public" },
+        "reminder": {
+          "anchorDateField": "eventDate",
+          "anchorTimeField": "eventTime",
+          "leadHours": 24,
+          "leadHoursField": "reminderOffsetHours"
+        },
         "states": {
           "open": {
             "label": "RSVP open",
@@ -267,7 +273,7 @@
           "coordinatorFanId": {
             "type": "fanId",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "storage": "inline",
             "displayContexts": []
           },
@@ -287,13 +293,6 @@
             "storage": "inline",
             "displayIcon": "notifications_active",
             "labelTemplate": "Default reminder: {value} hours before",
-            "displayContexts": ["detail"]
-          },
-          "reminderAt": {
-            "type": "date",
-            "formula": "subtractHours(combineDateAndTime(eventDate, eventTime), reminderOffsetHours)",
-            "displayIcon": "alarm",
-            "labelTemplate": "Default reminder at {value}",
             "displayContexts": ["detail"]
           },
           "responses": {
@@ -884,7 +883,7 @@
           "ownerFanId": {
             "type": "fanId",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "storage": "inline",
             "displayIcon": "person_outline",
             "labelTemplate": "Submitted by {value}",
@@ -1443,7 +1442,7 @@
           "mode": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "swap_horiz",
             "labelTemplate": "Mode: {value}",
             "displayContexts": ["tile", "detail"]
@@ -1451,7 +1450,7 @@
           "ownerFanId": {
             "type": "fanId",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "person_outline",
             "labelTemplate": "Owner: {value}",
             "displayContexts": ["detail"]
@@ -1470,7 +1469,7 @@
           },
           "availabilityState": {
             "type": "text?",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "inventory_2",
             "labelTemplate": "Availability: {value}",
             "hideWhenEmpty": true,
@@ -1526,7 +1525,7 @@
           "conditionState": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "verified_outlined",
             "labelTemplate": "Condition: {value}",
             "displayContexts": ["tile", "detail"]
@@ -1826,7 +1825,7 @@
           "mode": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "redeem",
             "labelTemplate": "Mode: {value}",
             "displayContexts": ["tile", "detail"]
@@ -1834,7 +1833,7 @@
           "ownerFanId": {
             "type": "fanId",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "person_outline",
             "labelTemplate": "Owner: {value}",
             "displayContexts": ["detail"]
@@ -1853,7 +1852,7 @@
           },
           "availabilityState": {
             "type": "text?",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "inventory_2",
             "labelTemplate": "Availability: {value}",
             "hideWhenEmpty": true,
@@ -1862,7 +1861,7 @@
           "conditionState": {
             "type": "text",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "verified_outlined",
             "labelTemplate": "Condition: {value}",
             "displayContexts": ["tile", "detail"]
@@ -2327,7 +2326,7 @@
           "ownerFanId": {
             "type": "fanId",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "admin_panel_settings",
             "labelTemplate": "Export owner: {value}",
             "displayContexts": ["detail"]
@@ -2341,40 +2340,40 @@
             "displayContexts": ["detail"]
           },
           // NEEDS IMPLEMENTATION (platform service): checksum/integrity-hash
-          // generation is Not implemented. Declared and never written by an effect.
+          // generation is Not implemented. Platform-written; no JSON effect fabricates it.
           "checksum": {
             "type": "text?",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "fingerprint",
             "labelTemplate": "Checksum: {value}",
             "hideWhenEmpty": true,
             "displayContexts": ["tile", "detail"]
           },
           // NEEDS IMPLEMENTATION (platform service): checksum verification is
-          // unavailable with the checksum service. Declared and never effect-written.
+          // unavailable with the checksum service. Platform-written; no JSON effect fabricates it.
           "checksumVerified": {
             "type": "bool",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "verified",
             "labelTemplate": "Checksum verified: {value}",
             "hideWhenEmpty": true,
             "displayContexts": ["tile", "detail"]
           },
           // NEEDS IMPLEMENTATION (platform service): opaque export/transfer ID
-          // generation is Not implemented. Declared and never written by an effect.
+          // generation is Not implemented. Platform-written; no JSON effect fabricates it.
           "transferId": {
             "type": "text?",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "tag",
             "labelTemplate": "Transfer ID: {value}",
             "hideWhenEmpty": true,
             "displayContexts": ["detail"]
           },
           // NEEDS IMPLEMENTATION (platform service): opaque receipt ID generation
-          // is Not implemented. Declared and never written by an effect.
+          // is Not implemented. Platform-written; no JSON effect fabricates it.
           "receiptId": {
             "type": "text?",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "receipt_long",
             "labelTemplate": "Receipt ID: {value}",
             "hideWhenEmpty": true,
@@ -2689,13 +2688,13 @@
           "coordinatorFanId": {
             "type": "fanId",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayContexts": []
           },
           "signedUpFanIds": {
             "type": "fanId[]",
             "required": true,
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayContexts": []
           },
           "signedUpCount": {
