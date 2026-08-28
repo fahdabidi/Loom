@@ -113,6 +113,24 @@ class WorkflowValidator {
     'image?',
   };
 
+  /// Actions that the client completes without a workflow JSON mutation.
+  static const Set<String> _clientPerformedActions = <String>{
+    // Opens the client surface; there is no instance-data change to record.
+    'open',
+    // Invokes the client share sheet; it does not mutate the instance.
+    'share',
+    // Starts a client download; the instance legitimately remains unchanged.
+    'download',
+    // Renders client-only preview UI without changing the instance.
+    'preview',
+  };
+
+  /// Actions whose observable write is completed by a platform service.
+  static const Set<String> _platformCompletedActions = <String>{
+    // The Document Library API writes uploaded content outside workflow JSON.
+    'upload',
+  };
+
   /// Templates map: templateName → { "slots": ["WorkflowActionButtonRow", ...] }
   /// Used by the action-button-row check (§7d).
   final Map<String, Map<String, dynamic>>? templates;
@@ -163,6 +181,7 @@ class WorkflowValidator {
       _checkGuardFormulas(machine, findings);
       _checkUnknownInputTypes(machine, findings);
       _checkInputReferences(machine, findings);
+      _checkTransitionsHaveObservableEffect(machine, findings);
       _checkContextReferenceOutsideInstanceAction(machine, findings);
       _checkSourceQueries(machine, workflows, findings);
       _checkItemActionsInputs(machine, workflows, findings);
@@ -1400,6 +1419,49 @@ class WorkflowValidator {
       if ((color[node] ?? white) == white) {
         dfs(node);
       }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Observable transition effects: a successful action must either move the
+  // instance or record what it did. Client- and platform-completed actions are
+  // intentionally exempt because their legitimate effect is outside JSON.
+  // ---------------------------------------------------------------------------
+  void _checkTransitionsHaveObservableEffect(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    for (final transition in machine.transitions) {
+      final leavesStateUnchanged =
+          transition.to == null ||
+          (transition.from.length == 1 &&
+              transition.to == transition.from.single);
+      if (!leavesStateUnchanged || transition.effects.isNotEmpty) continue;
+
+      final action = transition.action;
+      if (_clientPerformedActions.contains(action) ||
+          _platformCompletedActions.contains(action)) {
+        continue;
+      }
+
+      findings.add(
+        ValidationFinding(
+          type: 'transition_has_no_observable_effect',
+          isWarning: true,
+          message:
+              'Transition "${transition.id}" in workflow '
+              '"${machine.workflowType}" leaves the instance unchanged when '
+              'applied, so nothing records that the action happened. Add an '
+              'effect that writes what the action means (for example, append '
+              r'$actor for a join or acknowledge, or set a status), or make a '
+              'state change. If this transition is genuinely display-only, '
+              'justify it in Gaps naming '
+              'transition_has_no_observable_effect.',
+          location:
+              'experience/workflowDefinitions/${machine.workflowType}/'
+              'transitions/${transition.id}',
+        ),
+      );
     }
   }
 

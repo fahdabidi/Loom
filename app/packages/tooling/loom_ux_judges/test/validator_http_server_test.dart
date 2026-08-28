@@ -204,13 +204,14 @@ void main() {
       expect(response.statusCode, HttpStatus.ok);
       final json = await readJson(response);
       expect(json['status'], 'pass', reason: 'warnings never block pass');
-      expect(json['warningCount'], 2);
+      expect(json['warningCount'], 3);
       final types = (json['findings'] as List)
           .map((f) => (f as Map<String, dynamic>)['type'])
           .toSet();
       expect(types, {
         'editable_fields_without_edit_guard',
         'no_creation_path_for_editable_type',
+        'transition_has_no_observable_effect',
       });
     });
 

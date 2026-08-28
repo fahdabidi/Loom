@@ -197,7 +197,11 @@ void main() {
         ),
         hasLength(1),
       );
-      expect(report.warnings, hasLength(1));
+      expect(report.warnings, hasLength(2));
+      expect(
+        _hasWarning(report, 'transition_has_no_observable_effect'),
+        isTrue,
+      );
       expect(report.passed, isTrue, reason: 'warnings never block pass');
     });
 
@@ -230,7 +234,11 @@ void main() {
       });
 
       expect(_hasWarning(report, 'no_read_visibility_declared'), isFalse);
-      expect(report.warnings, isEmpty);
+      expect(report.warnings, hasLength(1));
+      expect(
+        _hasWarning(report, 'transition_has_no_observable_effect'),
+        isTrue,
+      );
     });
   });
 

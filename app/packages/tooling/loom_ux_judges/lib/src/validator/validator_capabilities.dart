@@ -98,6 +98,7 @@ const Set<String> communityPackageValidatorFindingCodes = <String>{
   'sortable_column_without_backing_field',
   'stuck_state',
   'tab_action_cannot_be_button',
+  'transition_has_no_observable_effect',
   'tab_declares_permission',
   'transition_action_cannot_be_tab_scoped',
   'transition_action_cannot_set_by_persona_ids',
