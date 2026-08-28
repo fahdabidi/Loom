@@ -45,15 +45,32 @@ info:
     that fails against its own download.
 
 
-    **Generation is a workflow action, not a file operation.** Generating requires that the caller
-    could invoke a transition whose `action` is `run` on that instance; downloading requires
-    `download`. Neither permission is granted or configured here -- both come from `action` +
+    **Every operation here is gated on `download`.** Generating, reading metadata, downloading and
+    verifying all require that the caller could invoke a transition whose `action` is `download` on
+    that instance. The permission is not granted or configured here -- it comes from `action` +
     `allowedRoleIds` in the community's JSON, derived exactly as
     `../../../references/reference/permissions.md` describes and as
-    `./document-library-api.openapi.yaml` already does for uploads. Verification is deliberately not
-    gated on its own action: a community whose workflow offers `record-checksum-pass` needs to observe
-    the result before recording it, and reading an integrity result reveals nothing the downloader
-    could not compute themselves.
+    `./document-library-api.openapi.yaml` already does for uploads.
+
+
+    **Why generation is gated on `download` and not on `run`.** An earlier draft of this spec required
+    `run` for generation, by analogy with the document library requiring `upload`. Measured against the
+    shipped corpus, that rule cannot work. `run` is a generic "start a long operation" action: Garden
+    Club uses it for `start-export`, `start-transfer` and `start-import` alike, and Book Club uses it
+    only for transfer, so it neither identifies the generating transition nor is reliably available
+    when generation is due. In seven of the eight checksum-bearing workflows the transition that
+    completes an export is `record_outcome`, and the state it lands in has no `run` available at all --
+    so a `run` rule would have returned `403` for most of the corpus while looking correctly specified.
+
+    Gating on `download` is also the honest rule rather than merely the workable one. Generation
+    exposes nothing that downloading does not: the bundle's contents are exactly what
+    `downloadExportBundle` returns, and its scope comes from the instance rather than from the caller.
+    Whoever may read the artifact may cause it to exist. The cost of generation is bounded by
+    idempotency, so this does not hand a reader an unbounded amount of work to trigger.
+
+    Verification is gated the same way. A community whose workflow offers `record-checksum-pass` needs
+    to observe the result before recording it, and an integrity result reveals nothing the downloader
+    could not compute for themselves from the bytes.
 
 
     **The bundle belongs to one workflow instance.** There is no way to generate an archive that
@@ -90,8 +107,8 @@ paths:
       operationId: generateExportBundle
       summary: Serialise the instance's export scope, store the bytes, and hash them.
       description: >-
-        Requires that the caller could invoke a transition whose `action` is `run` on this instance.
-        Serialises the records the instance's scope selects, applies redaction when asked, writes the
+        Requires that the caller could invoke a transition whose `action` is `download` on this
+        instance -- see the `run` note in this document's description. Serialises the records the instance's scope selects, applies redaction when asked, writes the
         resulting octets to object storage, and returns the digest of exactly those octets.
 
 
@@ -125,15 +142,16 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '403':
           description: >-
-            The caller could not invoke a `run` transition on this instance. Deliberately not
+            The caller could not invoke a `download` transition on this instance. Deliberately not
             distinguished from a non-existent instance, so this endpoint cannot be used to discover
             which instances exist.
         '404':
           description: No such community, or no such instance within it.
         '409':
           description: >-
-            The instance is in a state with no `run` transition available -- an export already
-            generating, or one already complete and not reopened.
+            The instance already holds a bundle for this scope and has not been reopened.
+            Regenerating would publish a second valid checksum for different bytes, leaving nothing
+            downstream able to say which was authoritative.
         '422':
           description: >-
             The scope selects no records. An empty archive has a well-formed digest and no meaning,
