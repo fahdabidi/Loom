@@ -20,15 +20,18 @@ void main() {
         find.byKey(const ValueKey('community-tab-calendar')),
         findsOneWidget,
       );
-      expect(find.byKey(const ValueKey('community-tab-admin')), findsOneWidget);
+      expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
       expect(
         find.byKey(const ValueKey('community-tab-messages')),
         findsOneWidget,
       );
-      expect(find.byKey(const ValueKey('community-tab-matches')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('community-tab-matches')),
+        findsOneWidget,
+      );
       expect(
         find.byKey(const ValueKey('community-tab-rankings')),
-        findsNothing,
+        findsOneWidget,
       );
 
       await _selectTab(tester, 'home');
@@ -40,14 +43,11 @@ void main() {
         find.byKey(const ValueKey('engine-native-list-root-home')),
         findsOneWidget,
       );
-      expect(
-        find.byKey(
-          const ValueKey('workflow-table-grid-home-chess-rankings-table'),
-        ),
-        findsOneWidget,
+      await _selectTab(tester, 'documents');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-documents')),
       );
-      expect(find.text('Maya Patel'), findsWidgets);
-      expect(find.text('Jordan Lee'), findsWidgets);
       expect(
         find.byKey(
           const ValueKey('document-library-facts-chess-rules-rapid-tile'),
@@ -55,6 +55,39 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Club rapid and ladder rules'), findsWidgets);
+
+      await _selectTab(tester, 'rankings');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-rankings')),
+      );
+      expect(
+        find.byKey(
+          const ValueKey('workflow-table-grid-rankings-chess-rankings-table'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Maya Patel'), findsWidgets);
+      expect(find.text('Jordan Lee'), findsWidgets);
+
+      await _selectTab(tester, 'matches');
+      await _waitForFinder(
+        tester,
+        find.byKey(const ValueKey('engine-native-list-root-matches')),
+      );
+      expect(
+        find.byKey(
+          const ValueKey('generic-instance-card-chess-meetup-maya-jordan'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        _engineAction('chess-meetup-maya-jordan', 'decline-match'),
+        findsNothing,
+        reason:
+            'The visible seeded match remains read-only for a fresh member '
+            'who is neither Maya nor Jordan.',
+      );
 
       await _selectTab(tester, 'calendar');
       await _waitForFinder(
@@ -69,12 +102,6 @@ void main() {
       );
       expect(find.text('Friday rapid club night'), findsWidgets);
       expect(find.text('August open Swiss tournament'), findsWidgets);
-      expect(
-        find.byKey(
-          const ValueKey('generic-instance-card-chess-meetup-maya-jordan'),
-        ),
-        findsOneWidget,
-      );
       expect(
         _engineAction('chess-night-august-14', 'rsvp-club-night'),
         findsOneWidget,
@@ -103,14 +130,6 @@ void main() {
         _engineAction('chess-night-august-14', 'rsvp-club-night'),
         findsOneWidget,
       );
-      expect(
-        _engineAction('chess-meetup-maya-jordan', 'decline-match'),
-        findsNothing,
-        reason:
-            'The visible seeded match remains read-only for a fresh member '
-            'who is neither Maya nor Jordan.',
-      );
-
       await _selectTab(tester, 'messages');
       await _waitForFinder(
         tester,

@@ -611,8 +611,8 @@ class LoomAppShellTabSpec {
     if (tabId == 'home' || tabId == 'messages') {
       return true;
     }
-    if (visibleRoleIds.isNotEmpty && !visibleRoleIds.contains(roleId)) {
-      return false;
+    if (visibleRoleIds.isNotEmpty) {
+      return visibleRoleIds.contains(roleId);
     }
     if (!enforceRequiredPermission || experience == null) {
       return true;

@@ -7,6 +7,7 @@ export 'src/evaluator/binding_resolver.dart';
 export 'src/evaluator/effect_evaluator.dart';
 export 'src/evaluator/formula_evaluator.dart';
 export 'src/evaluator/guard_evaluator.dart';
+export 'src/evaluator/read_visibility_resolver.dart';
 export 'src/evaluator/recurrence_evaluator.dart';
 export 'src/evaluator/role_resolver.dart';
 export 'src/evaluator/transition_evaluator.dart';

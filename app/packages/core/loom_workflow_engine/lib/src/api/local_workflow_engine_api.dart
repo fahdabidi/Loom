@@ -6,6 +6,7 @@ import '../archetypes/archetype_resolver.dart';
 import '../evaluator/effect_evaluator.dart';
 import '../evaluator/formula_evaluator.dart';
 import '../evaluator/guard_evaluator.dart';
+import '../evaluator/read_visibility_resolver.dart';
 import '../evaluator/recurrence_evaluator.dart';
 import '../evaluator/source_query.dart';
 import '../evaluator/transition_evaluator.dart' as trans_eval;
@@ -568,51 +569,23 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     if (_isVisibleThroughArchetype(instance, machine, fanId)) {
       return true;
     }
-    // A state's own readGuard narrows, whatever the workflow's default is.
-    //
-    // This used to be consulted only under `guarded`, so a state guard declared
-    // alongside a `public` or `membersOnly` default was parsed, stored, and
-    // silently ignored. Three shipped workflows relied on it: Cedar Commons
-    // HOA kept draft, archived and deleted documents to `hoa-board` under a
-    // `membersOnly` default, and Book Club kept nomination and selection drafts
-    // to a role under a `public` one -- which made those drafts readable by
-    // anyone at all.
-    //
-    // The packages were authored correctly. `document-library.md` §3 states
-    // that "per-state read guards already exist ... which the engine prefers
-    // over the workflow-level guard", and pairs a `membersOnly` default with
-    // board-only state guards in its worked example. The engine simply did not
-    // implement the contract its own reference described.
-    //
-    // Narrowing only. Creator and archetype-share visibility are decided above
-    // this and still apply, so an author can always read their own draft.
+    // The shared resolver owns the workflow default and state guard order.
+    // Creator and archetype-share visibility were decided above and still
+    // apply, so an author can always read their own draft.
     final stateGuard = machine.states[instance.currentState]?.readGuard;
-    if (stateGuard != null) {
-      return evaluateGuard(
-        stateGuard,
-        fanId,
-        instance.instanceData,
-        roleIds: _roleIdsByFanId[fanId],
-        clock: _clock,
-      );
-    }
-
-    switch (machine.visibility.defaultValue) {
-      case WorkflowVisibilityDefault.public:
-        return true;
-      case WorkflowVisibilityDefault.membersOnly:
-        return activeMembership();
-      case WorkflowVisibilityDefault.guarded:
-        final readGuard = machine.visibility.readGuard;
-        if (readGuard == null) return false;
-        return evaluateGuard(
-          readGuard,
-          fanId,
-          instance.instanceData,
-          roleIds: _roleIdsByFanId[fanId],
-          clock: _clock,
-        );
-    }
+    final needsMembership =
+        stateGuard == null &&
+        machine.visibility.defaultValue ==
+            WorkflowVisibilityDefault.membersOnly;
+    return workflowReadVisibilityAllows(
+      machine: machine,
+      currentState: instance.currentState,
+      fanId: fanId,
+      instanceData: instance.instanceData,
+      isActiveMember: needsMembership ? await activeMembership() : false,
+      roleIds: _roleIdsByFanId[fanId],
+      clock: _clock,
+    );
   }
 
   /// Which transitions [fanId] may invoke because a document was shared with

@@ -551,15 +551,19 @@ bool _roleCanAdministerAnyWorkflow(
   });
 }
 
-/// Derives whether a role can act in a workflow-backed surface.
+/// Derives whether a role can reach a workflow-backed surface.
 ///
 /// A role is admitted when it appears in a transition's `allowedRoleIds` or
 /// in a render binding's `kind: create` action `byRoleIds`. An unguarded or
 /// runtime-only guarded transition also admits the role: per-instance guards
 /// cannot be resolved before rows are loaded, so the engine's instance
-/// filtering must produce the empty state. The derivation scans every
-/// transition and create action on every workflow bound to the requested tab,
-/// including response workflows reached through `responseTable`.
+/// filtering must produce the empty state.
+///
+/// Roles that cannot act are still admitted when the engine's read-visibility
+/// resolver admits them to content bound to the surface. The derivation scans
+/// every transition, create action, and read policy on every workflow bound to
+/// the requested tab, including response workflows reached through
+/// `responseTable`.
 bool roleHasPermission(
   LoomExperienceDefinition experience,
   String roleId, {
@@ -582,7 +586,15 @@ bool roleHasPermission(
   }
 
   var hasRoleGuard = false;
+  var hasReadVisibilityRestriction = false;
   for (final definition in definitions) {
+    if (_roleCanReadDefinitionOnSurface(definition, roleId, tabId: tabId)) {
+      return true;
+    }
+    hasReadVisibilityRestriction =
+        hasReadVisibilityRestriction ||
+        _hasReadVisibilityRestrictionOnSurface(definition, tabId: tabId);
+
     for (final transition in definition.transitions) {
       final allowedRoleIds = transition.guard.allowedRoleIds;
       if (allowedRoleIds == null || allowedRoleIds.isEmpty) {
@@ -607,7 +619,54 @@ bool roleHasPermission(
     }
   }
 
-  return !hasRoleGuard;
+  return !hasRoleGuard && !hasReadVisibilityRestriction;
+}
+
+/// Asks the engine's shared resolver whether [roleId] can read any state that
+/// renders on this surface. Tab admission has no instance yet, so guards that
+/// depend on instance data deliberately fail closed; role-only guards resolve
+/// exactly as they do when the engine filters a loaded instance.
+bool _roleCanReadDefinitionOnSurface(
+  LoomWorkflowStateMachine definition,
+  String roleId, {
+  required String? tabId,
+}) {
+  final candidateStateIds = _surfaceStateIds(definition, tabId: tabId);
+
+  return candidateStateIds.any(
+    (stateId) => workflowReadVisibilityAllows(
+      machine: definition,
+      currentState: stateId,
+      fanId: roleId,
+      instanceData: const <String, dynamic>{},
+      // A selected app-shell role belongs to this community. The runtime
+      // engine still checks active membership for each actual instance read.
+      isActiveMember: true,
+      roleIds: {roleId},
+    ),
+  );
+}
+
+bool _hasReadVisibilityRestrictionOnSurface(
+  LoomWorkflowStateMachine definition, {
+  required String? tabId,
+}) =>
+    definition.visibility.defaultValue != WorkflowVisibilityDefault.public ||
+    _surfaceStateIds(
+      definition,
+      tabId: tabId,
+    ).any((stateId) => definition.states[stateId]?.readGuard != null);
+
+Set<String> _surfaceStateIds(
+  LoomWorkflowStateMachine definition, {
+  required String? tabId,
+}) {
+  final boundStateIds = <String>{
+    if (tabId != null)
+      for (final binding in definition.renderBindings)
+        if (binding.tabId == tabId) ...binding.states,
+  };
+  return boundStateIds.isEmpty ? definition.states.keys.toSet() : boundStateIds;
 }
 
 List<LoomWorkflowStateMachine> _surfaceWorkflowDefinitions(

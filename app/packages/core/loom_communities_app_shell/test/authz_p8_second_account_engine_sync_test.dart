@@ -27,7 +27,12 @@ LocalInstalledCommunity _communityFixture() => const LocalInstalledCommunity(
   specVersion: currentCommunitySpecVersion,
   appShellConfiguration: <String, Object?>{
     'tabs': <Object?>[
-      <String, Object?>{'tabId': 'admin', 'label': 'Admin', 'iconKey': 'admin'},
+      <String, Object?>{
+        'tabId': 'admin',
+        'label': 'Admin',
+        'iconKey': 'admin',
+        'visibleRoleIds': <String>[_boardRoleId],
+      },
     ],
   },
   experienceConfiguration: <String, Object?>{

@@ -142,6 +142,10 @@ void main() {
       'calendar-workflow': _machine(
         workflowType: 'calendar-workflow',
         tabId: 'calendar',
+        visibility: const WorkflowVisibility(
+          defaultValue: WorkflowVisibilityDefault.guarded,
+          readGuard: WorkflowGuard(allowedRoleIds: ['member']),
+        ),
         transitions: const [
           LoomWorkflowTransition(
             id: 'publish',
@@ -166,6 +170,10 @@ void main() {
       'creatable-workflow': _machine(
         workflowType: 'creatable-workflow',
         tabId: 'calendar',
+        visibility: const WorkflowVisibility(
+          defaultValue: WorkflowVisibilityDefault.guarded,
+          readGuard: WorkflowGuard(allowedRoleIds: ['member']),
+        ),
         actions: const [
           WorkflowAction(kind: 'create', byRoleIds: ['member']),
         ],
@@ -283,7 +291,7 @@ void main() {
     },
   );
 
-  test('roleHasPermission ignores read visibility and uses any transition', () {
+  test('roleHasPermission combines acting and read visibility', () {
     final experience = _experience({
       'guarded-workflow': _machine(
         workflowType: 'guarded-workflow',
@@ -310,24 +318,58 @@ void main() {
     expect(roleHasPermission(experience, 'member', tabId: 'calendar'), isTrue);
     expect(
       roleHasPermission(experience, 'outsider', tabId: 'calendar'),
+      isTrue,
+    );
+    final publicExperience = _experience({
+      'rankings-workflow': _machine(
+        workflowType: 'rankings-workflow',
+        tabId: 'rankings',
+      ),
+    });
+
+    expect(
+      roleHasPermission(publicExperience, 'member', tabId: 'rankings'),
+      isTrue,
+    );
+    expect(
+      roleHasPermission(publicExperience, 'outsider', tabId: 'rankings'),
+      isTrue,
+    );
+
+    final guardedExperience = _experience({
+      'private-workflow': _machine(
+        workflowType: 'private-workflow',
+        tabId: 'private-surface',
+        visibility: const WorkflowVisibility(
+          defaultValue: WorkflowVisibilityDefault.guarded,
+          readGuard: WorkflowGuard(allowedRoleIds: ['member']),
+        ),
+      ),
+    });
+
+    expect(
+      roleHasPermission(guardedExperience, 'member', tabId: 'private-surface'),
+      isTrue,
+    );
+    expect(
+      roleHasPermission(
+        guardedExperience,
+        'outsider',
+        tabId: 'private-surface',
+      ),
       isFalse,
     );
   });
 
-  test('tab visibility enforces derived role guards by default', () {
+  test('tab visibleRoleIds overrides workflow read visibility', () {
     final experience = _experience({
       'guarded-workflow': _machine(
         workflowType: 'guarded-workflow',
         tabId: 'private-surface',
-        transitions: const [
-          LoomWorkflowTransition(
-            id: 'publish',
-            label: 'Publish',
-            from: ['open'],
-            to: 'open',
-            guard: WorkflowGuard(allowedRoleIds: ['member']),
-          ),
-        ],
+        visibility: const WorkflowVisibility(
+          defaultValue: WorkflowVisibilityDefault.guarded,
+          readGuard: WorkflowGuard(allowedRoleIds: ['member']),
+        ),
       ),
     });
     const tab = LoomAppShellTabSpec(
@@ -335,27 +377,15 @@ void main() {
       label: 'Private surface',
       icon: Icons.folder_open_outlined,
       description: 'Private member content.',
-      visibleRoleIds: ['member', 'outsider'],
-    );
-    const narrowedTab = LoomAppShellTabSpec(
-      tabId: 'private-surface',
-      label: 'Narrowed private surface',
-      icon: Icons.folder_open_outlined,
-      description: 'Explicitly narrowed private member content.',
       visibleRoleIds: ['outsider'],
     );
 
-    expect(tab.isVisibleFor('member', experience: experience), isTrue);
-    expect(tab.isVisibleFor('outsider', experience: experience), isFalse);
-    expect(narrowedTab.isVisibleFor('member', experience: experience), isFalse);
     expect(
-      tab.isVisibleFor(
-        'outsider',
-        experience: experience,
-        enforceRequiredPermission: false,
-      ),
-      isTrue,
+      roleHasPermission(experience, 'outsider', tabId: 'private-surface'),
+      isFalse,
     );
+    expect(tab.isVisibleFor('member', experience: experience), isFalse);
+    expect(tab.isVisibleFor('outsider', experience: experience), isTrue);
   });
 
   test('runtime-only actor guards leave a bound tab visible', () {
@@ -402,6 +432,10 @@ void main() {
         'transition-workflow': _machine(
           workflowType: 'transition-workflow',
           tabId: 'admin',
+          visibility: const WorkflowVisibility(
+            defaultValue: WorkflowVisibilityDefault.guarded,
+            readGuard: WorkflowGuard(allowedRoleIds: ['visibility-reader']),
+          ),
           transitions: [
             const LoomWorkflowTransition(
               id: 'publish',
@@ -418,6 +452,10 @@ void main() {
         'edit-workflow': _machine(
           workflowType: 'edit-workflow',
           tabId: 'admin',
+          visibility: const WorkflowVisibility(
+            defaultValue: WorkflowVisibilityDefault.guarded,
+            readGuard: WorkflowGuard(allowedRoleIds: ['visibility-reader']),
+          ),
           editGuard: const WorkflowGuard(
             allowedRoleIds: ['edit-actorIdentity'],
           ),
@@ -425,6 +463,10 @@ void main() {
         'creation-workflow': _machine(
           workflowType: 'creation-workflow',
           tabId: 'admin',
+          visibility: const WorkflowVisibility(
+            defaultValue: WorkflowVisibilityDefault.guarded,
+            readGuard: WorkflowGuard(allowedRoleIds: ['visibility-reader']),
+          ),
           creationGuard: const WorkflowGuard(
             allowedRoleIds: ['creation-actorIdentity'],
           ),
@@ -432,6 +474,10 @@ void main() {
         'create-action-workflow': _machine(
           workflowType: 'create-action-workflow',
           tabId: 'admin',
+          visibility: const WorkflowVisibility(
+            defaultValue: WorkflowVisibilityDefault.guarded,
+            readGuard: WorkflowGuard(allowedRoleIds: ['visibility-reader']),
+          ),
           actions: const [
             WorkflowAction(
               kind: 'create',
@@ -539,12 +585,28 @@ void main() {
       expect(guardianTabs.map((tab) => tab.tabId), contains('giving'));
       expect(guardianTabs.map((tab) => tab.tabId), isNot(contains('admin')));
       expect(coachTabs.map((tab) => tab.tabId), contains('admin'));
+      expect(
+        roleHasPermission(
+          installed.experience,
+          'soccer-guardian',
+          tabId: 'admin',
+        ),
+        isTrue,
+        reason:
+            'The package-declared visibleRoleIds, rather than workflow guards, '
+            'keeps this otherwise readable admin tab off the guardian rail.',
+      );
     },
   );
 
   test('home and messages remain present without derivable role guards', () {
     final experience = _experience(const {});
 
+    expect(roleHasPermission(experience, 'outsider', tabId: 'home'), isTrue);
+    expect(
+      roleHasPermission(experience, 'outsider', tabId: 'messages'),
+      isTrue,
+    );
     final tabs = appShellTabsFor(experience: experience, roleId: 'outsider');
 
     expect(tabs.map((tab) => tab.tabId), ['home', 'messages']);
