@@ -210,3 +210,60 @@ evidence.
 The UX judge and the live walkthrough are the **final polish**, run once all backend services are
 wired and integrated — not as progress checks along the way. The production bar is the B25 addendum
 table: 79 rows, each proven by live walkthrough *and* UX judge.
+
+## Disk hygiene — check it before it stops the VM
+
+**A full host disk pauses the VM, and it does not look like a disk problem.** VirtualBox pauses a
+guest whose backing store cannot grow. `ssh` times out exactly as it does for a wedged VM, so the
+recovery instructions above appear to apply and do not work: resume succeeds, the guest writes, it
+pauses again within seconds. `loom-vm.ps1 status` reporting `paused` rather than `running` is the
+only thing that distinguishes the two. Check free space before power-cycling anything.
+
+The VM's disk lives at `D:\VirtualBox\ubuntu-24.04.4-loom\ubuntu-24.04.4-loom.vdi`. **D: is not a
+data drive** — it holds an old Windows installation plus that VDI, and it hit 0 bytes free on
+2026-08-28.
+
+**Check monthly, or after any long autonomous run:**
+
+```powershell
+Get-PSDrive D | Select-Object @{n='FreeGB';e={[math]::Round($_.Free/1GB,2)}}
+```
+
+Below ~20 GB, act. The VDI grows and never shrinks, so this only goes one way on its own.
+
+### Safe to delete on the host
+
+- Archive files anywhere on D: — `*.zip *.rar *.7z *.tar *.gz *.xz`. Freed 70 GB in one pass.
+- `D:\Users\fahd_\Downloads` — everything.
+- `D:\Users\fahd_\OneDrive` — an **orphaned copy** from the old install. OneDrive syncs
+  `C:\Users\fahd_\OneDrive` only; verify with
+  `Get-ChildItem HKCU:\SOFTWARE\Microsoft\OneDrive\Accounts | ForEach-Object { (Get-ItemProperty $_.PSPath).UserFolder }`
+  before deleting, because if that ever changes, deleting there propagates to the cloud and every
+  synced machine.
+- The D: recycle bin: `Clear-RecycleBin -DriveLetter D -Force`.
+
+### Needs an elevated shell, which this session does not have
+
+`D:\Windows` (71.6 GB), `D:\Program Files` (9.7 GB) and `D:\$WINDOWS.~BT` (5.9 GB) are TrustedInstaller-owned
+leftovers from an April-2024 install. `takeown` and `icacls` both fail from a normal session, and the
+agent harness independently blocks `Remove-Item` on those paths. **~87 GB, and the only durable fix
+short of moving the VDI.** E: has 344 GB free and G: has 3.3 TB — relocating the VDI solves this
+permanently rather than repeatedly.
+
+### Safe to delete on the VM
+
+Do **not** touch a `/tmp/tmp.*` staging directory while an image build is running — `build.sh` copies
+`~/.pub-cache` and `~/Loom/app` into one.
+
+```bash
+ls -t ~/Loom/.codex-logs/*.log | tail -n +11 | xargs -r rm -f   # keep the 10 newest
+rm -rf ~/Loom/app/apps/loom_communities_demo/build              # rebuildable
+docker rmi loom-workflow-service:<superseded-tags>              # keep the deployed one
+docker image prune -f
+```
+
+That freed 59 GB on 2026-08-28: 94 dispatch logs, a 2.5 GB build directory, four old images.
+
+**Cleaning the VM does not reclaim host space.** The VDI is grown, not shrunk, by guest activity —
+freeing space inside the guest prevents further growth and returns nothing to D:. Only deleting on the
+host, or compacting the VDI offline, moves that number.
