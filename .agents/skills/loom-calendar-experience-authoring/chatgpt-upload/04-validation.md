@@ -175,6 +175,26 @@ If an error genuinely cannot be fixed within the grammar, **stop and report the 
 | `missing_action_button_row` | A `primary` binding's surface has no action row | Use `summary`, or a surface that supports actions |
 | `binding_cap_exceeded` (warning) | >32 bindings or >16 roles | A smell — likely two workflows. Split. |
 
+### Transitions that do nothing (added 2026-08-28)
+
+| Code | Meaning | Fix |
+| --- | --- | --- |
+| `transition_has_no_observable_effect` *(warning)* | A transition changes no state (`to` is null or equals its own `from`) and declares no effects, so applying it leaves the instance exactly as it was. The button works, the action succeeds, and nothing anywhere records that it happened. | Give it an observable result: an effect that writes what the action means — `append $actor` for a join or acknowledge, `set` for a status — or a state change. **Exempt**, and not reported: an action the client performs itself (`open`, `share`, `download`, `preview`), and one a platform service completes (`upload`, where the Document Library API writes the field). If a transition is genuinely display-only, say so in Gaps naming this code. |
+
+`transition_has_no_observable_effect` exists because this class is invisible from every other angle.
+The transition is well-formed, its guard is correct, it appears in the UI, it applies without error,
+and the instance is unchanged afterwards. A walkthrough records the tap as a success. The defect is
+only visible by asking what the instance looked like before and after, which nothing did until this
+rule.
+
+Measured at introduction, 2026-08-28: **37 transitions across 6 communities** — Book Club 14, Cedar 7,
+Member Social Space 7, Masjid Nur 5, Camera Club 2, Garden Club 2 — carrying actions including
+`join_queue`, `leave_queue`, `acknowledge`, `save`, `request_access` and `grant_access`. Five more are
+exempt client-side actions and are not counted.
+
+A warning, not an error, on the same reasoning as the writer rules: the packages did not break, the
+grammar learned to ask a question it had never asked. Promote once the corpus has moved.
+
 ### Field writers (added 2026-08-27)
 
 | Code | Meaning | Fix |
