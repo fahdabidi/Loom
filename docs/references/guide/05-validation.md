@@ -175,6 +175,22 @@ If an error genuinely cannot be fixed within the grammar, **stop and report the 
 | `missing_action_button_row` | A `primary` binding's surface has no action row | Use `summary`, or a surface that supports actions |
 | `binding_cap_exceeded` (warning) | >32 bindings or >16 roles | A smell — likely two workflows. Split. |
 
+### Capabilities that do not exist yet (added 2026-08-28)
+
+| Code | Meaning | Fix |
+| --- | --- | --- |
+| `messaging_feature_not_available` *(warning)* | A transition manages **thread** state — muting, unmuting, or moving a read position on a discussion or message thread — which belongs to the messaging tab. That tab is not built, and no service answers for it, so the transition cannot do anything. Today these render as buttons that change nothing. | Do not model thread state as workflow data. Remove the transition and record the requirement in Gaps, citing this code and `docs/API/OpenAPI/community-surfaces/messaging-api.openapi.yaml`, which marks the boundary. The messages themselves stay a workflow where a community models discussion that way — this is about state *about* a thread, not its content. |
+
+**Why this warns rather than asking for a workaround.** The honest implementation does not exist yet.
+Fourteen transitions across Book Club, Member Social Space and Masjid Nur already declare no action,
+change no state and carry no effects — they are buttons that do nothing, and each was a reasonable
+attempt to express a real requirement with no place to put it. Member Social Space went further and
+modelled per-member unread state as `unreadForA` / `unreadForB`: two fields that work for exactly two
+participants and cannot generalise to three.
+
+Naming the gap is worth more than another workaround. A package that says "this belongs to messaging"
+in its Gaps section is accurate; one that ships a dead mute button is not, and looks finished.
+
 ### Transitions that do nothing (added 2026-08-28)
 
 | Code | Meaning | Fix |

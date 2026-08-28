@@ -99,6 +99,7 @@ const Set<String> communityPackageValidatorFindingCodes = <String>{
   'stuck_state',
   'tab_action_cannot_be_button',
   'transition_has_no_observable_effect',
+  'messaging_feature_not_available',
   'tab_declares_permission',
   'transition_action_cannot_be_tab_scoped',
   'transition_action_cannot_set_by_persona_ids',

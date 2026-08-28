@@ -70,6 +70,13 @@ class WorkflowValidator {
     r'(?:delist|remove|cancel|delete|archive|withdraw-listing)',
     caseSensitive: false,
   );
+  static final RegExp _threadStateIntentPattern = RegExp(
+    r'(?<![A-Za-z0-9])(?:unmute|mute)(?![A-Za-z0-9])'
+    r'|(?<![A-Za-z0-9])mark(?:[-_\s]+[A-Za-z0-9]+){0,3}'
+    r'[-_\s]+(?:unread|read)(?![A-Za-z0-9])'
+    r'|(?<![A-Za-z0-9])read[-_\s]+position(?![A-Za-z0-9])',
+    caseSensitive: false,
+  );
 
   static const _fabricatedIdentifierKeys = <String>{
     'checksum',
@@ -182,6 +189,7 @@ class WorkflowValidator {
       _checkUnknownInputTypes(machine, findings);
       _checkInputReferences(machine, findings);
       _checkTransitionsHaveObservableEffect(machine, findings);
+      _checkThreadStateRequiresMessaging(machine, findings);
       _checkContextReferenceOutsideInstanceAction(machine, findings);
       _checkSourceQueries(machine, workflows, findings);
       _checkItemActionsInputs(machine, workflows, findings);
@@ -1464,6 +1472,63 @@ class WorkflowValidator {
       );
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Per-member thread state belongs to the Messaging service, not workflow
+  // instance data. The workflow-type check is a fallback for older packages
+  // that identify a thread in its name instead of its card-surface archetype.
+  // ---------------------------------------------------------------------------
+  void _checkThreadStateRequiresMessaging(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    final isDiscussionThread = machine.renderBindings.any(
+      (binding) => binding.cardSurfaceFamily == 'discussionThread',
+    );
+    final isThreadLike =
+        isDiscussionThread ||
+        RegExp(
+          r'thread|message',
+          caseSensitive: false,
+        ).hasMatch(machine.workflowType);
+    if (!isThreadLike) return;
+
+    for (final transition in machine.transitions) {
+      if (!_hasThreadStateIntent(transition) ||
+          !_leavesStateUnchanged(transition) ||
+          transition.effects.isNotEmpty) {
+        continue;
+      }
+
+      findings.add(
+        ValidationFinding(
+          type: 'messaging_feature_not_available',
+          isWarning: true,
+          message:
+              'Transition "${transition.id}" in workflow '
+              '"${machine.workflowType}" manages per-member thread state '
+              '(mute or read position). That state belongs to the messaging '
+              'tab, which is not implemented, so this transition cannot do '
+              'anything. Remove it and record the requirement in Gaps, citing '
+              'messaging_feature_not_available and '
+              'docs/API/OpenAPI/community-surfaces/messaging-api.openapi.yaml '
+              '(the placeholder spec). The messages themselves stay a workflow; '
+              'this rule is only about state about a thread.',
+          location:
+              'experience/workflowDefinitions/${machine.workflowType}/'
+              'transitions/${transition.id}',
+        ),
+      );
+    }
+  }
+
+  bool _hasThreadStateIntent(LoomWorkflowTransition transition) =>
+      _threadStateIntentPattern.hasMatch(transition.id) ||
+      _threadStateIntentPattern.hasMatch(transition.label);
+
+  bool _leavesStateUnchanged(LoomWorkflowTransition transition) =>
+      transition.to == null ||
+      (transition.from.length == 1 && transition.to == transition.from.single);
 
   // ---------------------------------------------------------------------------
   // AP-13: a workflow type with real (formEntry) content fields that no
