@@ -113,6 +113,21 @@ reminder case and `reminder` gained a declarative block.
 | Community `*.jsonc` | the Skill only, via `data/call_skill_authoring_agent.sh`; copy its output byte-identically. Files are `chmod 444`; lift, copy, restore |
 | Product docs, reference docs, Skill instructions | me, directly |
 | Root-causing a stubborn defect | `data/call_root_cause_agent.sh` |
+
+**Pass `--fresh` unless you mean to continue the same work.** `call_implementation_agent.sh`
+defaults to `resume --last` — it hardcodes that, and nothing checks whether resuming is appropriate:
+no session-age test, no staleness check, no cache inspection. The choice is entirely the caller's, so
+not passing the flag IS a choice, and it silently carries the previous ticket's context into an
+unrelated one.
+
+- **`--fresh`** for a new ticket. This is the normal case.
+- **resume** (omit the flag) only when the dispatch genuinely continues the previous one — a retry
+  after a crash, or a follow-up that should remember what the last attempt already did. Say so in the
+  ticket when you rely on it.
+
+Measured 2026-08-27: seven consecutive dispatches ran `resume --last` because the flag was omitted,
+and unrelated fan-profile context surfaced in a checksum ticket. Nothing broke, but the logs reached
+3–5 MB each and the agent was reasoning with a context it had no reason to hold.
 | UX judging (Sonnet, needs images) | `data/call_ux_judge_agent.sh` |
 | Live walkthrough (Opus) | `data/call_live_verification_agent.sh` |
 
