@@ -112,8 +112,8 @@ void main() {
     final response = await _upload(service, _boardFan, instanceId);
     expect(response.statusCode, 201);
 
-    final body = jsonDecode(await response.readAsString())
-        as Map<String, dynamic>;
+    final body =
+        jsonDecode(await response.readAsString()) as Map<String, dynamic>;
     expect(body['fieldName'], 'attachmentUrl');
     expect(body['ownerFanId'], _boardFan);
     expect(body['byteSize'], _fileBytes.length);
@@ -128,21 +128,23 @@ void main() {
     expect(objectStore.objects[key], _fileBytes);
   });
 
-  test('uploading publishes the reference into the named instance field',
-      () async {
-    final instanceId = await _createInstance(service, _boardFan);
-    final response = await _upload(service, _boardFan, instanceId);
-    expect(response.statusCode, 201);
-    final body = jsonDecode(await response.readAsString())
-        as Map<String, dynamic>;
+  test(
+    'uploading publishes the reference into the named instance field',
+    () async {
+      final instanceId = await _createInstance(service, _boardFan);
+      final response = await _upload(service, _boardFan, instanceId);
+      expect(response.statusCode, 201);
+      final body =
+          jsonDecode(await response.readAsString()) as Map<String, dynamic>;
 
-    // The card surface renders from instance data, so bytes alone are not a
-    // visible document. Read the stored instance rather than the response.
-    final stored = await database.readInstance(instanceId);
-    final data = jsonDecode(stored!.instanceData) as Map<String, dynamic>;
-    expect(data['attachmentUrl'], body['contentUrl']);
-    expect(data['attachmentUrl'], contains(body['documentId']));
-  });
+      // The card surface renders from instance data, so bytes alone are not a
+      // visible document. Read the stored instance rather than the response.
+      final stored = await database.readInstance(instanceId);
+      final data = jsonDecode(stored!.instanceData) as Map<String, dynamic>;
+      expect(data['attachmentUrl'], body['contentUrl']);
+      expect(data['attachmentUrl'], contains(body['documentId']));
+    },
+  );
 
   test('a member without an upload transition is refused', () async {
     final instanceId = await _createInstance(service, _boardFan);
@@ -166,8 +168,8 @@ void main() {
     );
 
     expect(response.statusCode, 400);
-    final body = jsonDecode(await response.readAsString())
-        as Map<String, dynamic>;
+    final body =
+        jsonDecode(await response.readAsString()) as Map<String, dynamic>;
     expect(body['code'], 'unknown_document_field');
     expect(objectStore.objects, isEmpty);
   });
@@ -221,6 +223,198 @@ void main() {
     expect(response.headers['content-disposition'], startsWith('attachment'));
   });
 
+  test(
+    'a revision advances exactly one version and retains version one bytes',
+    () async {
+      final instanceId = await _createInstance(service, _boardFan);
+      final documentId = await _uploadAndReadId(service, instanceId);
+      final firstRevision = await repository.findRevision(
+        communityId: _communityId,
+        documentId: documentId,
+        version: 1,
+      );
+      expect(firstRevision, isNotNull);
+
+      final response = await _revision(service, _boardFan, documentId);
+      expect(response.statusCode, 201);
+      final body =
+          jsonDecode(await response.readAsString()) as Map<String, dynamic>;
+      expect(body['version'], 2);
+
+      final current = await repository.findById(
+        communityId: _communityId,
+        documentId: documentId,
+      );
+      expect(current!.version, 2);
+      expect(await objectStore.get(current.objectKey), _revisionBytes);
+
+      // The old object key was not overwritten. Acknowledgements can therefore
+      // still be tied to bytes that are independently retrievable.
+      final retained = await repository.findRevision(
+        communityId: _communityId,
+        documentId: documentId,
+        version: 1,
+      );
+      expect(retained!.objectKey, firstRevision!.objectKey);
+      expect(await objectStore.get(retained.objectKey), _fileBytes);
+    },
+  );
+
+  test('a caller-supplied document version is rejected', () async {
+    final instanceId = await _createInstance(service, _boardFan);
+    final documentId = await _uploadAndReadId(service, instanceId);
+
+    final response = await _revision(
+      service,
+      _boardFan,
+      documentId,
+      suppliedVersion: '99',
+    );
+    expect(response.statusCode, 400);
+    final body =
+        jsonDecode(await response.readAsString()) as Map<String, dynamic>;
+    expect(body['code'], 'document_version_client_controlled');
+    expect(
+      (await repository.findById(
+        communityId: _communityId,
+        documentId: documentId,
+      ))!.version,
+      1,
+    );
+  });
+
+  test(
+    'an acknowledgement remains historical and becomes stale on a revision',
+    () async {
+      final instanceId = await _createInstance(service, _boardFan);
+      final documentId = await _uploadAndReadId(service, instanceId);
+
+      final acknowledged = await _setDocumentState(
+        service,
+        _boardFan,
+        documentId,
+        {'acknowledged': true},
+      );
+      expect(acknowledged.statusCode, 200);
+      final before =
+          jsonDecode(await acknowledged.readAsString()) as Map<String, dynamic>;
+      expect(before['acknowledged'], isTrue);
+      expect(before['acknowledgedVersion'], 1);
+
+      expect((await _revision(service, _boardFan, documentId)).statusCode, 201);
+
+      final state = await _getDocumentState(service, _boardFan, documentId);
+      expect(state.statusCode, 200);
+      final after =
+          jsonDecode(await state.readAsString()) as Map<String, dynamic>;
+      expect(after['acknowledged'], isTrue);
+      expect(after['acknowledgedVersion'], 1);
+      expect(after['currentVersion'], 2);
+
+      final allAcknowledgements = await _acknowledgements(
+        service,
+        _boardFan,
+        documentId,
+      );
+      expect(allAcknowledgements.statusCode, 200);
+      final all =
+          jsonDecode(await allAcknowledgements.readAsString())
+              as Map<String, dynamic>;
+      expect(all['currentVersion'], 2);
+      expect(all['acknowledgements'], [containsPair('version', 1)]);
+      expect(
+        ((all['acknowledgements'] as List).single as Map)['stale'],
+        isTrue,
+      );
+
+      final currentAcknowledgements = await _acknowledgements(
+        service,
+        _boardFan,
+        documentId,
+        currentVersionOnly: true,
+      );
+      final current =
+          jsonDecode(await currentAcknowledgements.readAsString())
+              as Map<String, dynamic>;
+      expect(current['acknowledgements'], isEmpty);
+    },
+  );
+
+  test('member state is caller-owned and absent state is false', () async {
+    final instanceId = await _createInstance(service, _boardFan);
+    final documentId = await _uploadAndReadId(service, instanceId);
+    await _publish(service, instanceId);
+
+    final updated = await _setDocumentState(service, _memberFan, documentId, {
+      'read': true,
+      'saved': true,
+    });
+    expect(updated.statusCode, 200);
+    final memberState =
+        jsonDecode(await updated.readAsString()) as Map<String, dynamic>;
+    expect(memberState['fanId'], _memberFan);
+    expect(memberState['read'], isTrue);
+    expect(memberState['saved'], isTrue);
+
+    final boardState = await _getDocumentState(service, _boardFan, documentId);
+    expect(boardState.statusCode, 200);
+    final board =
+        jsonDecode(await boardState.readAsString()) as Map<String, dynamic>;
+    expect(board['fanId'], _boardFan);
+    expect(board['read'], isFalse);
+    expect(board['saved'], isFalse);
+    expect(board['acknowledged'], isFalse);
+    expect(board.containsKey('readAt'), isFalse);
+    expect(board.containsKey('savedAt'), isFalse);
+    expect(board.containsKey('acknowledgedAt'), isFalse);
+    expect(board.containsKey('acknowledgedVersion'), isFalse);
+  });
+
+  test('readers cannot list other members acknowledgements', () async {
+    final instanceId = await _createInstance(service, _boardFan);
+    final documentId = await _uploadAndReadId(service, instanceId);
+    await _publish(service, instanceId);
+
+    final response = await _acknowledgements(service, _memberFan, documentId);
+    expect(response.statusCode, 403);
+  });
+
+  test('a readable caller without upload permission cannot revise', () async {
+    final instanceId = await _createInstance(service, _boardFan);
+    final documentId = await _uploadAndReadId(service, instanceId);
+    await _publish(service, instanceId);
+
+    final response = await _revision(service, _memberFan, documentId);
+    expect(response.statusCode, 403);
+    expect(
+      (await repository.findById(
+        communityId: _communityId,
+        documentId: documentId,
+      ))!.version,
+      1,
+    );
+  });
+
+  test('document member state requires a correlation id', () async {
+    final instanceId = await _createInstance(service, _boardFan);
+    final documentId = await _uploadAndReadId(service, instanceId);
+
+    final response = await service.handler(
+      Request(
+        'GET',
+        Uri.parse(
+          'http://localhost/v1/communities/$_communityId/documents/'
+          '$documentId/state',
+        ),
+        headers: {HeaderWorkflowIdentityExtractor.defaultHeaderName: _boardFan},
+      ),
+    );
+    expect(response.statusCode, 400);
+    final body =
+        jsonDecode(await response.readAsString()) as Map<String, dynamic>;
+    expect(body['code'], 'invalid_correlation_id');
+  });
+
   test('access reports the resolved reader set and why', () async {
     final instanceId = await _createInstance(service, _boardFan);
     final documentId = await _uploadAndReadId(service, instanceId);
@@ -237,8 +431,8 @@ void main() {
       ),
     );
     expect(response.statusCode, 200);
-    final body = jsonDecode(await response.readAsString())
-        as Map<String, dynamic>;
+    final body =
+        jsonDecode(await response.readAsString()) as Map<String, dynamic>;
 
     expect(body['instanceState'], 'published');
     expect(body['readFanIds'], containsAll(<String>[_boardFan, _memberFan]));
@@ -249,9 +443,9 @@ void main() {
     // The published state declares no readGuard, so the workflow's applies.
     expect((derivation['byDefault'] as Map)['guardState'], 'workflow');
     final byRole = (derivation['byDefault'] as Map)['byRole'] as List<dynamic>;
-    final memberRole = byRole.firstWhere(
-      (entry) => (entry as Map)['roleId'] == 'hoa-member',
-    ) as Map<String, dynamic>;
+    final memberRole =
+        byRole.firstWhere((entry) => (entry as Map)['roleId'] == 'hoa-member')
+            as Map<String, dynamic>;
     expect(memberRole['fanIds'], containsAll(<String>[_boardFan, _memberFan]));
     expect(derivation['byOwner'], [_boardFan]);
 
@@ -261,65 +455,71 @@ void main() {
     expect(body['writeFanIds'], isEmpty);
   });
 
-  test('access reports the board as a writer while the document is a draft',
-      () async {
-    final instanceId = await _createInstance(service, _boardFan);
-    final documentId = await _uploadAndReadId(service, instanceId);
+  test(
+    'access reports the board as a writer while the document is a draft',
+    () async {
+      final instanceId = await _createInstance(service, _boardFan);
+      final documentId = await _uploadAndReadId(service, instanceId);
 
-    final response = await service.handler(
-      Request(
-        'GET',
-        Uri.parse(
-          'http://localhost/v1/communities/$_communityId/documents/'
-          '$documentId/access',
+      final response = await service.handler(
+        Request(
+          'GET',
+          Uri.parse(
+            'http://localhost/v1/communities/$_communityId/documents/'
+            '$documentId/access',
+          ),
+          headers: _headers(_boardFan),
         ),
-        headers: _headers(_boardFan),
-      ),
-    );
-    expect(response.statusCode, 200);
-    final body = jsonDecode(await response.readAsString())
-        as Map<String, dynamic>;
+      );
+      expect(response.statusCode, 200);
+      final body =
+          jsonDecode(await response.readAsString()) as Map<String, dynamic>;
 
-    expect(body['instanceState'], 'draft');
-    // The board may upload and delete here, so they are a writer.
-    expect(body['writeFanIds'], [_boardFan]);
-    // And the member cannot read a draft, so they are not a reader -- the
-    // state readGuard narrowing the workflow guard.
-    expect(body['readFanIds'], [_boardFan]);
-    final byDefault =
-        (body['derivation'] as Map<String, dynamic>)['byDefault']
-            as Map<String, dynamic>;
-    expect(byDefault['guardState'], 'state');
-  });
+      expect(body['instanceState'], 'draft');
+      // The board may upload and delete here, so they are a writer.
+      expect(body['writeFanIds'], [_boardFan]);
+      // And the member cannot read a draft, so they are not a reader -- the
+      // state readGuard narrowing the workflow guard.
+      expect(body['readFanIds'], [_boardFan]);
+      final byDefault =
+          (body['derivation'] as Map<String, dynamic>)['byDefault']
+              as Map<String, dynamic>;
+      expect(byDefault['guardState'], 'state');
+    },
+  );
 
-  test('a deployment without storage answers 503 rather than failing', () async {
-    final storageless = WorkflowService(
-      database: database,
-      identityExtractor: const HeaderWorkflowIdentityExtractor(),
-      appAccessClient: appAccessClient,
-      communityGroupIdResolver: MapCommunityGroupIdResolver({
-        _communityId: _groupId,
-      }),
-    );
+  test(
+    'a deployment without storage answers 503 rather than failing',
+    () async {
+      final storageless = WorkflowService(
+        database: database,
+        identityExtractor: const HeaderWorkflowIdentityExtractor(),
+        appAccessClient: appAccessClient,
+        communityGroupIdResolver: MapCommunityGroupIdResolver({
+          _communityId: _groupId,
+        }),
+      );
 
-    final response = await storageless.handler(
-      Request(
-        'GET',
-        Uri.parse(
-          'http://localhost/v1/communities/$_communityId/documents/doc_x',
+      final response = await storageless.handler(
+        Request(
+          'GET',
+          Uri.parse(
+            'http://localhost/v1/communities/$_communityId/documents/doc_x',
+          ),
+          headers: _headers(_boardFan),
         ),
-        headers: _headers(_boardFan),
-      ),
-    );
+      );
 
-    expect(response.statusCode, 503);
-    final body = jsonDecode(await response.readAsString())
-        as Map<String, dynamic>;
-    expect(body['code'], 'document_storage_unavailable');
-  });
+      expect(response.statusCode, 503);
+      final body =
+          jsonDecode(await response.readAsString()) as Map<String, dynamic>;
+      expect(body['code'], 'document_storage_unavailable');
+    },
+  );
 }
 
 const _fileBytes = <int>[37, 80, 68, 70, 45, 49, 46, 55, 10, 255, 0, 17];
+const _revisionBytes = <int>[37, 80, 68, 70, 45, 50, 46, 48, 10, 1, 2, 3];
 const _boundary = 'loomtestboundary';
 
 Future<String> _createInstance(WorkflowService service, String fanId) async {
@@ -385,10 +585,106 @@ Future<String> _uploadAndReadId(
 ) async {
   final response = await _upload(service, _boardFan, instanceId);
   expect(response.statusCode, 201);
-  final body = jsonDecode(await response.readAsString())
-      as Map<String, dynamic>;
+  final body =
+      jsonDecode(await response.readAsString()) as Map<String, dynamic>;
   return body['documentId'] as String;
 }
+
+Future<Response> _revision(
+  WorkflowService service,
+  String fanId,
+  String documentId, {
+  String? suppliedVersion,
+}) async {
+  final head = StringBuffer()
+    ..write('--$_boundary\r\n')
+    ..write(
+      'content-disposition: form-data; name="file"; '
+      'filename="board-minutes-revised.pdf"\r\n',
+    )
+    ..write('content-type: application/pdf\r\n\r\n');
+  final tail = StringBuffer()
+    ..write('\r\n--$_boundary\r\n')
+    ..write('content-disposition: form-data; name="changeNote"\r\n\r\n')
+    ..write('Clarified the policy.')
+    ..write('\r\n');
+  if (suppliedVersion != null) {
+    tail
+      ..write('--$_boundary\r\n')
+      ..write('content-disposition: form-data; name="version"\r\n\r\n')
+      ..write(suppliedVersion)
+      ..write('\r\n');
+  }
+  tail.write('--$_boundary--\r\n');
+
+  return service.handler(
+    Request(
+      'POST',
+      Uri.parse(
+        'http://localhost/v1/communities/$_communityId/documents/'
+        '$documentId/revisions',
+      ),
+      headers: {
+        ..._headers(fanId),
+        'content-type': 'multipart/form-data; boundary=$_boundary',
+      },
+      body: <int>[
+        ...utf8.encode(head.toString()),
+        ..._revisionBytes,
+        ...utf8.encode(tail.toString()),
+      ],
+    ),
+  );
+}
+
+Future<Response> _getDocumentState(
+  WorkflowService service,
+  String fanId,
+  String documentId,
+) async => await service.handler(
+  Request(
+    'GET',
+    Uri.parse(
+      'http://localhost/v1/communities/$_communityId/documents/'
+      '$documentId/state',
+    ),
+    headers: _headers(fanId),
+  ),
+);
+
+Future<Response> _setDocumentState(
+  WorkflowService service,
+  String fanId,
+  String documentId,
+  Map<String, dynamic> body,
+) async => await service.handler(
+  Request(
+    'PUT',
+    Uri.parse(
+      'http://localhost/v1/communities/$_communityId/documents/'
+      '$documentId/state',
+    ),
+    headers: _headers(fanId),
+    body: jsonEncode(body),
+  ),
+);
+
+Future<Response> _acknowledgements(
+  WorkflowService service,
+  String fanId,
+  String documentId, {
+  bool currentVersionOnly = false,
+}) async => await service.handler(
+  Request(
+    'GET',
+    Uri.parse(
+      'http://localhost/v1/communities/$_communityId/documents/'
+      '$documentId/acknowledgements'
+      '${currentVersionOnly ? '?currentVersionOnly=true' : ''}',
+    ),
+    headers: _headers(fanId),
+  ),
+);
 
 Future<void> _publish(WorkflowService service, String instanceId) async {
   final response = await service.handler(

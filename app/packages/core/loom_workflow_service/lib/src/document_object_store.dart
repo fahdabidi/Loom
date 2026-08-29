@@ -138,3 +138,15 @@ String documentObjectKey({
   required String instanceId,
   required String documentId,
 }) => 'communities/$communityId/instances/$instanceId/$documentId';
+
+/// The object key for an immutable replacement of an existing document.
+///
+/// A revision never reuses [documentObjectKey]: acknowledgements reference a
+/// version, and replacing its bytes would make that record unverifiable.
+String documentRevisionObjectKey({
+  required String communityId,
+  required String instanceId,
+  required String documentId,
+  required int version,
+}) =>
+    'communities/$communityId/instances/$instanceId/$documentId/revisions/$version';

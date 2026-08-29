@@ -194,6 +194,22 @@ class WorkflowService {
     if (_matchesDocumentAction(segments, 'access') && request.method == 'GET') {
       return _getDocumentAccess(request, segments[2], segments[4]);
     }
+    if (_matchesDocumentAction(segments, 'revisions') &&
+        request.method == 'POST') {
+      return _addDocumentRevision(request, segments[2], segments[4]);
+    }
+    if (_matchesDocumentAction(segments, 'state')) {
+      if (request.method == 'GET') {
+        return _getDocumentMemberState(request, segments[2], segments[4]);
+      }
+      if (request.method == 'PUT') {
+        return _setDocumentMemberState(request, segments[2], segments[4]);
+      }
+    }
+    if (_matchesDocumentAction(segments, 'acknowledgements') &&
+        request.method == 'GET') {
+      return _listDocumentAcknowledgements(request, segments[2], segments[4]);
+    }
     if (_matchesNotificationsDue(segments) && request.method == 'GET') {
       return _dueNotifications(request, segments[2]);
     }
@@ -1321,7 +1337,10 @@ class WorkflowService {
   /// reminders if returned as-is. Both shipped notification workflows already
   /// declare `readGuard` on their recipient field, so asking the engine who may
   /// read each one is the same answer, derived rather than duplicated.
-  Future<Response> _dueNotifications(Request request, String communityId) async {
+  Future<Response> _dueNotifications(
+    Request request,
+    String communityId,
+  ) async {
     final correlationId = request.headers['x-loom-correlation-id'];
     if (correlationId == null || !_uuidPattern.hasMatch(correlationId)) {
       return _error(
@@ -1387,10 +1406,7 @@ class WorkflowService {
         }
 
         return Response.ok(
-          jsonEncode({
-            'asOf': asOf.toIso8601String(),
-            'items': visible,
-          }),
+          jsonEncode({'asOf': asOf.toIso8601String(), 'items': visible}),
           headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
         );
       });
@@ -2662,8 +2678,7 @@ class WorkflowService {
                 request: request,
                 statusCode: 413,
                 code: 'document_too_large',
-                message:
-                    'The file exceeds $_maxDocumentUploadBytes bytes.',
+                message: 'The file exceeds $_maxDocumentUploadBytes bytes.',
               );
             }
           }
@@ -2717,8 +2732,7 @@ class WorkflowService {
           ? (filename ?? documentId)
           : title,
       filename: filename ?? documentId,
-      contentType:
-          (bodyContentType != null && bodyContentType.isNotEmpty)
+      contentType: (bodyContentType != null && bodyContentType.isNotEmpty)
           ? bodyContentType
           : (partContentType ?? 'application/octet-stream'),
       byteSize: bytes.length,
@@ -2737,7 +2751,8 @@ class WorkflowService {
     );
     await context.repository.insert(
       document,
-      idempotencyKey: (idempotencyKey != null && idempotencyKey.trim().isNotEmpty)
+      idempotencyKey:
+          (idempotencyKey != null && idempotencyKey.trim().isNotEmpty)
           ? idempotencyKey
           : null,
     );
@@ -2780,9 +2795,7 @@ class WorkflowService {
       instanceId: instanceId,
     );
     return Response.ok(
-      jsonEncode({
-        'documents': documents.map((d) => d.toJson()).toList(),
-      }),
+      jsonEncode({'documents': documents.map((d) => d.toJson()).toList()}),
       headers: {
         ..._jsonHeaders,
         'x-loom-correlation-id': context.correlationId,
@@ -2857,11 +2870,17 @@ class WorkflowService {
       );
     }
 
+    final revisions = await context.repository.listRevisions(
+      communityId: communityId,
+      documentId: documentId,
+    );
     await context.repository.delete(
       communityId: communityId,
       documentId: documentId,
     );
-    await context.objectStore.delete(found.document.objectKey);
+    for (final revision in revisions) {
+      await context.objectStore.delete(revision.objectKey);
+    }
     return Response(
       204,
       headers: {'x-loom-correlation-id': context.correlationId},
@@ -2906,6 +2925,328 @@ class WorkflowService {
 
     return Response.ok(
       jsonEncode(access.toJson()),
+      headers: {
+        ..._jsonHeaders,
+        'x-loom-correlation-id': context.correlationId,
+      },
+    );
+  });
+
+  Future<Response> _addDocumentRevision(
+    Request request,
+    String communityId,
+    String documentId,
+  ) => _withDocumentRequest(request, communityId, (context) async {
+    final found = await _documentWithOwningInstance(
+      context,
+      communityId,
+      documentId,
+    );
+    if (found == null) return _documentNotFound(request);
+
+    if (!await _mayAct(
+      engine: context.engine,
+      instance: found.instance,
+      fanId: context.identity.fanId,
+      action: 'upload',
+    )) {
+      return _error(
+        request: request,
+        statusCode: 403,
+        code: 'document_revision_forbidden',
+        message: 'An upload transition is not available to this fan.',
+      );
+    }
+
+    final idempotencyKey = request.headers['idempotency-key']?.trim();
+    if (idempotencyKey == null || idempotencyKey.isEmpty) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'missing_idempotency_key',
+        message: 'Idempotency-Key is required when adding a document revision.',
+      );
+    }
+    final existing = await context.repository.findRevisionByIdempotencyKey(
+      communityId: communityId,
+      documentId: documentId,
+      idempotencyKey: idempotencyKey,
+    );
+    if (existing != null) {
+      return _documentResponse(existing, context.correlationId, 201);
+    }
+
+    final form = request.formData();
+    if (form == null) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_document_revision',
+        message: 'A multipart/form-data body is required.',
+      );
+    }
+
+    List<int>? bytes;
+    String? filename;
+    String? contentType;
+    String? changeNote;
+    var suppliedVersion = false;
+    await for (final data in form.formData) {
+      switch (data.name) {
+        case 'file':
+          filename = data.filename;
+          contentType = data.part.headers['content-type'];
+          final builder = BytesBuilder(copy: false);
+          await for (final chunk in data.part) {
+            builder.add(chunk);
+            if (builder.length > _maxDocumentUploadBytes) {
+              return _error(
+                request: request,
+                statusCode: 413,
+                code: 'document_too_large',
+                message: 'The file exceeds $_maxDocumentUploadBytes bytes.',
+              );
+            }
+          }
+          bytes = builder.takeBytes();
+        case 'changeNote':
+          changeNote = (await data.part.readString()).trim();
+        case 'version':
+          // A presence check, rather than a value check: an empty client value
+          // is still an attempt to control a service-assigned version.
+          suppliedVersion = true;
+          await data.part.drain<void>();
+        default:
+          await data.part.drain<void>();
+      }
+    }
+
+    if (suppliedVersion) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'document_version_client_controlled',
+        message: 'Document version is assigned by the service.',
+      );
+    }
+    if (bytes == null) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_document_revision',
+        message: 'A file part is required.',
+      );
+    }
+
+    final version = found.document.version + 1;
+    final revision = found.document.withRevision(
+      version: version,
+      title: found.document.title,
+      filename: filename ?? found.document.filename,
+      contentType: contentType ?? found.document.contentType,
+      byteSize: bytes.length,
+      objectKey: documentRevisionObjectKey(
+        communityId: communityId,
+        instanceId: found.document.instanceId,
+        documentId: documentId,
+        version: version,
+      ),
+      revisedAt: _clock().toUtc(),
+      changeNote: changeNote == null || changeNote.isEmpty ? null : changeNote,
+    );
+
+    await context.objectStore.put(
+      key: revision.objectKey,
+      bytes: bytes,
+      contentType: revision.contentType,
+    );
+    await context.repository.addRevision(
+      revision,
+      idempotencyKey: idempotencyKey,
+    );
+    return _documentResponse(revision, context.correlationId, 201);
+  });
+
+  Future<Response> _getDocumentMemberState(
+    Request request,
+    String communityId,
+    String documentId,
+  ) => _withDocumentRequest(request, communityId, (context) async {
+    final found = await _documentWithOwningInstance(
+      context,
+      communityId,
+      documentId,
+    );
+    if (found == null) return _documentNotFound(request);
+    if (!await _mayReadDocument(context, found.instance)) {
+      return _documentStateForbidden(request);
+    }
+    final state =
+        await context.repository.findMemberState(
+          communityId: communityId,
+          documentId: documentId,
+          fanId: context.identity.fanId,
+        ) ??
+        StoredDocumentMemberState(
+          documentId: documentId,
+          fanId: context.identity.fanId,
+        );
+    return _documentMemberStateResponse(
+      state,
+      currentVersion: found.document.version,
+      correlationId: context.correlationId,
+    );
+  });
+
+  Future<Response> _setDocumentMemberState(
+    Request request,
+    String communityId,
+    String documentId,
+  ) => _withDocumentRequest(request, communityId, (context) async {
+    final found = await _documentWithOwningInstance(
+      context,
+      communityId,
+      documentId,
+    );
+    if (found == null) return _documentNotFound(request);
+    if (!await _mayReadDocument(context, found.instance)) {
+      return _documentStateForbidden(request);
+    }
+
+    final _DocumentMemberStateUpdate update;
+    try {
+      update = await _readDocumentMemberStateUpdate(request);
+    } on FormatException catch (error) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_document_member_state',
+        message: error.message,
+      );
+    }
+    if (update.acknowledged == false) {
+      return _error(
+        request: request,
+        statusCode: 409,
+        code: 'document_acknowledgement_irreversible',
+        message:
+            'Acknowledgements cannot be cleared; publish a revision instead.',
+      );
+    }
+
+    final existing = await context.repository.findMemberState(
+      communityId: communityId,
+      documentId: documentId,
+      fanId: context.identity.fanId,
+    );
+    final now = _clock().toUtc();
+    final read = update.read ?? existing?.read ?? false;
+    final saved = update.saved ?? existing?.saved ?? false;
+    final acknowledgeNow =
+        update.acknowledged == true &&
+        existing?.acknowledgedVersion != found.document.version;
+    final state = StoredDocumentMemberState(
+      documentId: documentId,
+      fanId: context.identity.fanId,
+      read: read,
+      readAt: update.read == null
+          ? existing?.readAt
+          : (read ? existing?.readAt ?? now : null),
+      saved: saved,
+      savedAt: update.saved == null
+          ? existing?.savedAt
+          : (saved ? existing?.savedAt ?? now : null),
+      acknowledgedAt: acknowledgeNow ? now : existing?.acknowledgedAt,
+      acknowledgedVersion: acknowledgeNow
+          ? found.document.version
+          : existing?.acknowledgedVersion,
+    );
+    if (acknowledgeNow) {
+      await context.repository.recordAcknowledgement(
+        communityId: communityId,
+        acknowledgement: StoredDocumentAcknowledgement(
+          documentId: documentId,
+          fanId: context.identity.fanId,
+          version: found.document.version,
+          acknowledgedAt: now,
+        ),
+      );
+    }
+    await context.repository.saveMemberState(
+      communityId: communityId,
+      state: state,
+    );
+    return _documentMemberStateResponse(
+      state,
+      currentVersion: found.document.version,
+      correlationId: context.correlationId,
+    );
+  });
+
+  Future<Response> _listDocumentAcknowledgements(
+    Request request,
+    String communityId,
+    String documentId,
+  ) => _withDocumentRequest(request, communityId, (context) async {
+    final found = await _documentWithOwningInstance(
+      context,
+      communityId,
+      documentId,
+    );
+    if (found == null) return _documentNotFound(request);
+    final mayAdminister =
+        await _mayAct(
+          engine: context.engine,
+          instance: found.instance,
+          fanId: context.identity.fanId,
+          action: 'upload',
+        ) ||
+        await _mayAct(
+          engine: context.engine,
+          instance: found.instance,
+          fanId: context.identity.fanId,
+          action: 'grant_access',
+        );
+    if (!mayAdminister) {
+      return _error(
+        request: request,
+        statusCode: 403,
+        code: 'document_acknowledgements_forbidden',
+        message: 'The caller does not administer this document.',
+      );
+    }
+
+    final rawCurrentVersionOnly =
+        request.url.queryParameters['currentVersionOnly'];
+    if (rawCurrentVersionOnly != null &&
+        rawCurrentVersionOnly != 'true' &&
+        rawCurrentVersionOnly != 'false') {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_document_acknowledgements_query',
+        message: 'currentVersionOnly must be true or false.',
+      );
+    }
+    final currentVersionOnly = rawCurrentVersionOnly == 'true';
+    final acknowledgements = await context.repository.listAcknowledgements(
+      communityId: communityId,
+      documentId: documentId,
+      currentVersionOnly: currentVersionOnly,
+      currentVersion: found.document.version,
+    );
+    return Response.ok(
+      jsonEncode({
+        'documentId': documentId,
+        'currentVersion': found.document.version,
+        'acknowledgements': acknowledgements
+            .map(
+              (acknowledgement) => acknowledgement.toJson(
+                currentVersion: found.document.version,
+              ),
+            )
+            .toList(),
+      }),
       headers: {
         ..._jsonHeaders,
         'x-loom-correlation-id': context.correlationId,
@@ -3091,6 +3432,50 @@ class WorkflowService {
     return _ReadableDocument(document: document, instance: instance);
   }
 
+  /// Loads the owning instance without using its reader filter.
+  ///
+  /// Member state must turn an unreadable *existing* document into a 403, and
+  /// document administrators may be allowed to upload without also being
+  /// readers. Both behaviours require the engine to evaluate an action against
+  /// the owning instance before this service decides what to reveal.
+  Future<_DocumentWithOwningInstance?> _documentWithOwningInstance(
+    _DocumentRequestContext context,
+    String communityId,
+    String documentId,
+  ) async {
+    final document = await context.repository.findById(
+      communityId: communityId,
+      documentId: documentId,
+    );
+    if (document == null) return null;
+    final row = await _database.readInstance(document.instanceId);
+    if (row == null || row.communityId != communityId) return null;
+    final data = jsonDecode(row.instanceData);
+    if (data is! Map<String, dynamic>) {
+      throw StateError('Document instance data is not a JSON object.');
+    }
+    return _DocumentWithOwningInstance(
+      document: document,
+      instance: WorkflowInstance(
+        instanceId: row.instanceId,
+        workflowType: row.workflowType,
+        currentState: row.currentState,
+        instanceData: data,
+        createdByFanId: row.createdByFanId,
+      ),
+    );
+  }
+
+  Future<bool> _mayReadDocument(
+    _DocumentRequestContext context,
+    WorkflowInstance instance,
+  ) async =>
+      await context.engine.readVisibleInstance(
+        instanceId: instance.instanceId,
+        fanId: context.identity.fanId,
+      ) !=
+      null;
+
   /// Whether [fanId] could invoke a transition declaring [action].
   ///
   /// The engine's own guard evaluation, not a permission checked here. A
@@ -3131,6 +3516,13 @@ class WorkflowService {
     message: 'The requested document was not found.',
   );
 
+  Response _documentStateForbidden(Request request) => _error(
+    request: request,
+    statusCode: 403,
+    code: 'document_member_state_forbidden',
+    message: 'The caller may not read this document.',
+  );
+
   Response _documentResponse(
     StoredDocument document,
     String correlationId,
@@ -3141,11 +3533,43 @@ class WorkflowService {
     headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
   );
 
+  Response _documentMemberStateResponse(
+    StoredDocumentMemberState state, {
+    required int currentVersion,
+    required String correlationId,
+  }) => Response.ok(
+    jsonEncode(state.toJson(currentVersion: currentVersion)),
+    headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
+  );
+
+  Future<_DocumentMemberStateUpdate> _readDocumentMemberStateUpdate(
+    Request request,
+  ) async {
+    final body = await _readJsonObject(request);
+    const allowed = <String>{'read', 'saved', 'acknowledged'};
+    for (final entry in body.entries) {
+      if (!allowed.contains(entry.key)) {
+        throw FormatException('"${entry.key}" is not a document state field.');
+      }
+      if (entry.value is! bool) {
+        throw FormatException('"${entry.key}" must be a boolean.');
+      }
+    }
+    if (body.isEmpty) {
+      throw const FormatException(
+        'At least one document state field is required.',
+      );
+    }
+    return _DocumentMemberStateUpdate(
+      read: body['read'] as bool?,
+      saved: body['saved'] as bool?,
+      acknowledged: body['acknowledged'] as bool?,
+    );
+  }
+
   static String _newDocumentId() {
     final bytes = List<int>.generate(16, (_) => _secureRandom.nextInt(256));
-    return bytes
-        .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
-        .join();
+    return bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
   }
 
   /// Strips what a filename must not carry into a header.
@@ -3966,4 +4390,24 @@ class _ReadableDocument {
 
   final StoredDocument document;
   final WorkflowInstance instance;
+}
+
+/// A document and its raw owning instance for an action or state decision.
+class _DocumentWithOwningInstance {
+  const _DocumentWithOwningInstance({
+    required this.document,
+    required this.instance,
+  });
+
+  final StoredDocument document;
+  final WorkflowInstance instance;
+}
+
+/// A partial update of the calling member's document state.
+class _DocumentMemberStateUpdate {
+  const _DocumentMemberStateUpdate({this.read, this.saved, this.acknowledged});
+
+  final bool? read;
+  final bool? saved;
+  final bool? acknowledged;
 }
