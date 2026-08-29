@@ -319,6 +319,71 @@ void main() {
     },
   );
 
+  test(
+    'keyset pagination terminates through a same-millisecond collision',
+    () async {
+      appAccessClient.activeMembers.add('fan-member');
+      final instanceIds = [
+        'collision-a',
+        'collision-b',
+        'collision-c',
+        'collision-d',
+        'collision-e',
+      ];
+      for (final instanceId in instanceIds) {
+        await _insertInstance(
+          database,
+          instanceId: instanceId,
+          workflowType: _publicWorkflowType,
+          updatedAt: 8500,
+        );
+      }
+
+      var updatedSince = 0;
+      var afterInstanceId = '';
+      String? roleCursor;
+      var hasMore = true;
+      final pages = <List<String>>[];
+      final changedInstanceIds = <String>[];
+
+      for (var iteration = 0; iteration < 10 && hasMore; iteration++) {
+        final body = await _responseBody(
+          await service.handler(
+            _changesRequest(
+              fanId: 'fan-member',
+              updatedSince: updatedSince,
+              afterInstanceId: afterInstanceId,
+              roleCursor: roleCursor,
+              limit: 2,
+            ),
+          ),
+        );
+        final page = _changedIds(body);
+        pages.add(page);
+        changedInstanceIds.addAll(page);
+        updatedSince = body['nextUpdatedSince'] as int;
+        afterInstanceId = body['nextAfterInstanceId'] as String;
+        roleCursor = body['nextRoleCursor'] as String;
+        hasMore = body['hasMore'] as bool;
+      }
+
+      expect(
+        hasMore,
+        isFalse,
+        reason:
+            'Pagination did not terminate within 10 pages for rows at one timestamp.',
+      );
+      expect(changedInstanceIds, unorderedEquals(instanceIds));
+      for (var index = 1; index < pages.length; index++) {
+        expect(
+          pages[index],
+          isNot(equals(pages[index - 1])),
+          reason: 'Page $index repeated its predecessor.',
+        );
+      }
+    },
+  );
+
   test('a half timestamp cursor is rejected', () async {
     appAccessClient.activeMembers.add('fan-member');
 
