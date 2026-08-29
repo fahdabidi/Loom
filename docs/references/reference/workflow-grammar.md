@@ -488,6 +488,7 @@ Three kinds of field, and the distinction is load-bearing:
 |---|---|---|---|
 | **Form-entry** | `writableBy: "formEntry"` | The user, via `editableFields` | Yes |
 | **Effect** | `writableBy: "effect"` | Transition effects | Yes |
+| **Platform** | `writableBy: "platform"` + `platformSource` | A platform service | **No — the service writes it** |
 | **Computed** | `formula: "..."` | **Nobody** — derived on read | **No — error if you do** |
 
 **A computed field must never be seeded and never be written by an effect.** The validator rejects both
@@ -504,6 +505,31 @@ you get a value that is confidently wrong.
 Declaring `effect` for something only a service can produce — a checksum, an opaque id, a stored
 document's URL — names a writer that does not exist, and the validator reports it as
 `effect_writable_field_has_no_effect`. Effects are data-only.
+
+#### `platformSource` — *which* platform value the field receives
+
+`writableBy: "platform"` says only **that** a service writes the field. It does not say which one, and
+that is not enough to run anything: a `checksum` and a `receiptId` are both `"type": "text?"` with
+`"writableBy": "platform"` and are otherwise indistinguishable. `platformSource` names the mechanism.
+
+| `platformSource` | The platform writes | Written by |
+|---|---|---|
+| `checksum` | A SHA-256 over the bytes actually served | Export bundle service |
+| `opaqueId` | A fresh, unique, opaque identifier | Workflow service, at transition time |
+
+**Do not identify a platform field by its name.** The only field name that ever means anything is the
+one a community happened to choose; `documentUrl` is Cedar's spelling and nothing else's. The one
+platform writer that predates this — the stored-document uploader — resolves its field structurally
+and says so in its own comment, because reading meaning from an identifier's spelling is a mistake
+this project has already made.
+
+**An `opaqueId` is minted once and never rewritten.** It is minted on the first transition after which
+the field is declared and still empty, and it keeps that value for the life of the instance. An id
+that changes is not an identifier — every receipt, export and transfer that quoted the old value
+becomes unverifiable, which is the whole thing an id exists to prevent.
+
+**`platformSource` requires `writableBy: "platform"`**, and a field that declares one without the
+other is an error, not a shorthand.
 
 ## Complete worked example
 
