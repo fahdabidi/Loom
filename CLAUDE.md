@@ -59,6 +59,24 @@ An idle KVM-less emulator costs ~70% CPU on the VM and roughly quadruples Flutte
 a suite TIMEOUT under that load is environmental. Re-run the single test in isolation before
 calling it a regression. A failed `expect` is a different matter.
 
+## Launch dispatches detached, and confirm they are alive
+
+A dispatch backgrounded with plain `nohup ... &` inside an `ssh` command can die the moment the
+ssh session closes -- the same command succeeded twice and died once, so treat it as a race, not a
+setting. Launch with `setsid nohup ... < /dev/null &` and `disown`.
+
+**Then check that it is actually running**, because the failure is silent and mimics a healthy
+start: the wrapper prints its full banner (repo, prompt file, profile) and `codex exec` then writes
+nothing at all. A dead dispatch and a slow-starting one look identical. `dispatch_health.sh` reports
+`DEAD (no node process, and no exit line in the log)` -- believe it, and do not wait a further tick
+hoping output appears.
+
+    pgrep -fc "[c]odex exec"   # non-zero
+    wc -c /tmp/impl_<name>.log # growing
+
+Rule out resources before assuming a bad ticket: check `free -h` and `dmesg` for OOM kills. A
+15 GB VM with 12 GB available and no OOM lines did not fail for lack of memory.
+
 ## Evidence rules
 
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A
