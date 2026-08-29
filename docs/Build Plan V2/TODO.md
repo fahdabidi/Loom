@@ -52,7 +52,8 @@ reachable from the app, and a member-visible behaviour depends on it.
 - [ ] import image, apply, verify the six routes answer
 - [ ] app queue client — five operations. **`advance` stays server-side**: without notification delivery nobody can be told their turn came, and shipping it would be a button that silently does nothing
 - [ ] wire the `equipment-loan` surface: join, leave, position, queue length
-- [ ] regenerate Book Club, Camera, Garden so `join-queue`/`leave-queue` call the service. Until then the six transitions stay dead and `transition_has_no_observable_effect` correctly flags them
+- [x] app queue client + surface wiring (`3e5efcb6`) — app shell 320 → 325, resolves by `action` not transition id, UUID correlation ids, unavailable rendered distinctly from not-queued
+- [ ] **CORRECTED: the packages do NOT need regenerating.** This entry originally said to regenerate the three communities so the transitions "call the service". They already declare `action: join_queue`/`leave_queue`, and the app resolves the affordance by action and calls the service itself — so the transitions are correct as authored. What was actually needed is a validator exemption: `join_queue`/`leave_queue` join `upload` in `_platformCompletedActions`, because the queue service records membership outside workflow JSON exactly as the Document Library API writes uploaded content. **Regenerating them to append to a `queuedFanIds` instance field would have been actively wrong** — two sources of truth for queue membership, disagreeing the moment anything touched one and not the other
 
 **B2. Notification channels — CORRECTED 2026-08-28, the gap is much smaller than first recorded.**
 
@@ -133,7 +134,7 @@ MemberSocialSpace, Chess (twice: writers, then tab audiences), Cedar, Youth Socc
 - [ ] `new-ticket` — **the six dead queue transitions are still dead.** `join-queue`/`leave-queue` in Book Club, Camera and Garden have zero effects. The service exists; nothing points at it. Needs a Skill regeneration per community plus an app-shell client, neither started
 - [ ] `new-milestone` — **messaging is a boundary, not an implementation.** `messaging-api.openapi.yaml` is `0.0.0-placeholder`; `messaging_feature_not_available` warns on the 8 thread-state transitions that do nothing
 
-**Validator rules added this pass** — four defect classes that were previously invisible to every check: `effect_writable_field_has_no_effect` (60), `prefill_written_field_not_platform` (128), `transition_has_no_observable_effect` (37), `messaging_feature_not_available` (8). Judges 434 → 460.
+**Validator rules added this pass** — four defect classes that were previously invisible to every check: `effect_writable_field_has_no_effect` (60), `prefill_written_field_not_platform` (128), `transition_has_no_observable_effect` (36, now 30 after the queue exemption), `messaging_feature_not_available` (8). Judges 434 → 460.
 
 ### 2026-08-28 — the app's engine is in-memory, so nothing survives a restart
 

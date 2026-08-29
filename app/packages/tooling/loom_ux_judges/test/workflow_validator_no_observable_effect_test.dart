@@ -123,6 +123,16 @@ void main() {
       expect(_findings(_validate(action: 'upload')), isEmpty);
     });
 
+    test('is silent for platform-completed item queue actions', () {
+      for (final action in const ['join_queue', 'leave_queue']) {
+        expect(
+          _findings(_validate(action: action)),
+          isEmpty,
+          reason: '$action is completed by the item queue service.',
+        );
+      }
+    });
+
     test('is silent when the only write is under onSuccessEffects', () {
       final target = LoomWorkflowStateMachine.fromJson({
         'initialState': 'active',

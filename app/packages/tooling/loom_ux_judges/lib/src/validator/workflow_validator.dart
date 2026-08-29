@@ -136,6 +136,10 @@ class WorkflowValidator {
   static const Set<String> _platformCompletedActions = <String>{
     // The Document Library API writes uploaded content outside workflow JSON.
     'upload',
+    // The item queue service records queue membership, order and join time
+    // outside workflow JSON.
+    'join_queue',
+    'leave_queue',
   };
 
   /// Templates map: templateName → { "slots": ["WorkflowActionButtonRow", ...] }
