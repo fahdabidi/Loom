@@ -152,13 +152,18 @@ So what actually remains:
 
 - [ ] `new-ticket` — **expose `updatedAt` on the instance in the API response.** It is stored and never
   returned
-- [ ] `new-ticket` — **an `updatedSince` query on `GET /instances`**, so a replica asks for what changed
-  instead of refetching everything
-- [ ] `needs-spec-decision` — **`updated_at` is a millisecond timestamp, and a cursor wants a total
-  order.** Two instances updated in the same millisecond are indistinguishable, so a client resuming
+- [x] `DONE 2026-08-29` — **a changed-since query**, shipped as `GET /communities/{id}/changes`
+  rather than as a parameter on `GET /instances`
+- [x] `RESOLVED 2026-08-29` — **`updated_at` is a millisecond timestamp, and a cursor wants a total
+  order.** Decided: a keyset pair `(updatedAt, instanceId)`, ordered `updated_at ASC, instance_id`,
+  with a test that fails against the old timestamp-only cursor (`e969bd3a`). Original note follows.
+  **`updated_at` is a millisecond timestamp, and a cursor wants a total order.** Two instances updated in the same millisecond are indistinguishable, so a client resuming
   at that timestamp either repeats or skips. A monotonic per-community sequence would be exact; reusing
   the timestamp is cheaper and occasionally wrong. Worth deciding rather than discovering
-- [ ] `needs-spec-decision` — **the feed must be per-viewer, and that is the hard part.**
+- [x] `RESOLVED 2026-08-29` — **the feed must be per-viewer.** Built, deployed in `0.6.0`, resolves
+  through the engine's existing per-fan path; disappearance handled by returning the full
+  `visibleInstanceIds` set, cursor invalidated by `roleCursor`. Original note follows.
+  **the feed must be per-viewer, and that is the hard part.**
   `readVisibleInstance(instanceId, fanId)` resolves visibility per fan, so there is no community-wide
   answer to "what changed". It must report **disappearances** — an instance leaving your visibility is
   an event, not an absence — and invalidate the cursor when the caller's roles change, or a replica is
@@ -213,7 +218,8 @@ Per-fan isolation is enforced by the store, not by convention: a singleton row p
 file to one `(fanId, communityId)` pair and a mistaken reuse fails closed. Proven at both layers --
 querying Alice's replica as Bob throws, and reopening Alice's file as Bob throws.
 
-Still open: mounting it, which needs the same app-chrome decision B2's preference control needs.
+Still open: giving it a caller. **Not blocked** -- the app already runs on the backend by default,
+so this is a ticket about when to sync and when to read the replica, not an architecture decision.
 
 **Deferred by user decision, not forgotten:** payment processing, external search/AI answer.
 
@@ -307,20 +313,22 @@ B3 is dark for a different reason entirely, and the difference matters more than
 
 | | Client | Surface | What it needs |
 |---|---|---|---|
-| B3 change feed | built, referenced only by its own test | **none -- it is not a screen feature** | The engine-seam decision: when to sync, when to read the replica instead of the network |
+| B3 change feed | built, referenced only by its own test | **none -- it is not a screen feature** | A caller: something to decide when to sync and when to read the replica offline |
 | B5 document versioning | exists, missing 4 methods | **already live** | Add the methods, call them |
 
-B3 is infrastructure with no owner: nothing decides when to sync, because the app runs
-`LocalWorkflowEngineApi` over an in-memory database and every dispatch was forbidden from changing
-that seam. B5 needs no decision at all.
+B3 is infrastructure with no owner: nothing decides when to sync. **This is not an engine
+question** -- see the engine correction above; the app already targets the backend by default.
+Neither B3 nor B5 needs a decision.
 
 **B1 is the only one a member can use.** Do not write "done" for anything that is merely deployed --
 a service answering `401` to a probe proves the route exists, not that the product does anything.
 
-**One decision blocks four items.** There is no app-level settings or profile screen, so B2, B3, B5
-and B6 all have nowhere to live. Dispatches were deliberately forbidden from inventing one, because
-app-wide navigation is an architecture decision and making it inside a ticket makes it by accident.
-That decision is worth more than any remaining backend work.
+**SUPERSEDED 2026-08-29 — this no longer blocks four items.** It read: "One decision blocks four
+items. There is no app-level settings or profile screen, so B2, B3, B5 and B6 all have nowhere to
+live." Two things dissolved it. Notification delivery is package configuration beside `theme` (B8),
+not a settings screen. And B3/B5/B6 were never waiting on chrome -- B5's surface is already live and
+B3/B6 need a caller, not a screen. No app-level settings screen is required by anything currently
+open.
 
 **B7. DONE 2026-08-29 — publisher built (`21f4adc0`) and 82 definitions published live.**
 `bin/publish_workflow_definitions.dart`, dry-run by default, reading the same package assets the app
