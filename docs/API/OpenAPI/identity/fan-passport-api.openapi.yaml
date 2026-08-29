@@ -484,8 +484,21 @@ paths:
       operationId: listNotificationPreferences
       summary: How this fan wants to be notified, per community.
       description: >-
-        Returns the caller's own preferences for every community they belong to, plus the default
-        applied where they have expressed none.
+        Returns the preferences this fan has actually stored, plus the platform default applied
+        wherever they have expressed none.
+
+
+        **It does not enumerate the fan's communities, and cannot.** An earlier version of this
+        description said it returned an entry "for every community they belong to". Fan passport holds
+        no membership data — `app-access` owns it (`GroupMembershipEntity`, `AppGroupEntity`) — and
+        there is no mapping here from an App Access group handle to the underscored workflow-community
+        key this API uses. Promising the enumeration forced an implementation to invent a
+        `platform_default` pseudo-community to satisfy the shape, which is exactly the kind of
+        plausible-looking fabricated identifier this codebase removes on sight.
+
+
+        A client that wants "my preference for community X" reads `platformDefault` when X is absent
+        from `preferences`. That is one branch in a client, against a cross-service join here.
 
 
         **Why this lives on the passport rather than in a community package.** A community's JSON
@@ -1229,6 +1242,26 @@ components:
           format: date-time
           description: Absent when `source` is `default`, because nothing was stored.
 
+    PlatformNotificationDefault:
+      type: object
+      additionalProperties: false
+      required: [channels, muted]
+      description: >-
+        What a fan receives in a community where they have chosen nothing. **It has no
+        `communityId`** — it is not a preference for any particular community, and typing it as one
+        forced an implementation to invent a `platform_default` pseudo-key to fill a required field.
+        A schema that demands an identifier for something with no identity produces a fabricated
+        identifier every time.
+      properties:
+        channels:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/NotificationChannel'
+        muted:
+          type: boolean
+
     NotificationPreferenceSet:
       type: object
       additionalProperties: false
@@ -1241,7 +1274,7 @@ components:
           items:
             $ref: '#/components/schemas/CommunityNotificationPreference'
         platformDefault:
-          $ref: '#/components/schemas/CommunityNotificationPreference'
+          $ref: '#/components/schemas/PlatformNotificationDefault'
 
     NotificationPreferenceUpdate:
       type: object
