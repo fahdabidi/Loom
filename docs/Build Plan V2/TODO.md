@@ -228,7 +228,36 @@ Confirms the 2026-08-29 entry below and adds the numbers.
   later: two `loom_communities_b3-e2e-*` groups with 1 member each, and
   `loom_communities_verify_tabletop_club`.
 
-### 2026-08-29 — nothing authoritatively maps a group to a community
+### 2026-08-29 — CORRECTED: the mapping exists, and it selects the group holding only the test fan
+
+**My earlier heading here said "nothing authoritatively maps a group to a community". That was
+wrong**, and wrong in the direction that wastes the most work: it framed a decision as missing when
+it had already been made and deployed. `LOOM_COMMUNITY_GROUP_IDS` is a required env var on
+workflow-service, supplied from the `workflow-service-config` secret as `community-group-ids`, and
+it maps **all 11 communities**. `community_group_id_resolver.dart` states the rule outright: a
+community id and handle cannot be derived from one another, so callers must supply an explicit
+mapping. I looked only at `app_group.external_resource_*`, found NULLs, and concluded nothing
+existed.
+
+**The live mapping selects the hyphenated Cedar group, and that has a consequence:**
+
+| group | mapped? | members |
+|---|---|---|
+| `loom_communities_cedar-commons-hoa` | **yes** | `fan-test-alice` |
+| `loom_communities_cedar_commons_hoa` | no | `fan_alice`, `fan_bob` |
+
+So the workflow service recognises exactly **one** Cedar member, and it is the end-to-end test fan.
+The two seeded members are in the group nothing points at, and are invisible to every per-member
+backend feature -- the change feed included. The duplicate spellings are two naming conventions
+(hyphenated live/test, underscored seed/demo) that were never reconciled, not an ambiguity.
+
+`community_verify_tabletop_club` is also in the live mapping, so test residue has reached
+production config.
+
+The open question is therefore **not** "who owns the mapping write" but "which group is canonical
+per community, and who moves the members" -- a smaller and much better-posed question.
+
+#### Superseded framing, kept for the reasoning it contains
 
 Found while trying to mount the notification-preference control, which must show a member their
 communities. It blocks more than that: **any** per-member, per-community feature needs this, including
