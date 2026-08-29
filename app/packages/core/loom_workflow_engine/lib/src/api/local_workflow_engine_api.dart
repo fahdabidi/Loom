@@ -2448,6 +2448,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             'type': v.type,
             if (v.required) 'required': v.required,
             if (v.writableBy != null) 'writableBy': v.writableBy,
+            if (v.platformSource != null) 'platformSource': v.platformSource,
             if (v.storage != null) 'storage': v.storage,
             if (v.storageTarget != null) 'storageTarget': v.storageTarget,
             if (v.searchable) 'searchable': v.searchable,

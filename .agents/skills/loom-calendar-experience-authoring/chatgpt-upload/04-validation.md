@@ -218,6 +218,26 @@ grammar learned to ask a question it had never asked. Promote once the corpus ha
 | `effect_writable_field_has_no_effect` *(warning)* | A field declares `writableBy: "effect"` and no effect anywhere in the package writes it — not in its own workflow, and not through a `createInstance` from another. It names a writer that does not exist, so the field stays empty forever. | Say who actually writes it. A platform service — a checksum, an opaque receipt or transfer id, a stored document's URL — is `writableBy: "platform"`. A member is `"formEntry"`. Nothing is `writableBy` omitted entirely. **Not** by adding an effect that sets a placeholder: a fabricated value is worse than an empty field, because it looks real. |
 | `prefill_written_field_not_platform` *(warning)* | A field is stamped by a create-action `prefill` — `"ownerFanId": "$actor"`, or a literal starting value — no state lists it in `editableFields`, and its `writableBy` is anything other than `platform`. The platform writes it at creation, so `effect` is false (prefill is not an effect), `formEntry` is false (no member types it, and on an identity field that claim is actively wrong), and omitting the key is false too (something does write it). | Declare `writableBy: "platform"`. If instead the prefill is seeding a **default a member then edits**, the field belongs in that state's `editableFields` and `"formEntry"` is correct — the rule stays silent in that case, and it is the case worth checking first. |
 
+### Platform sources (added 2026-08-29)
+
+| Code | Meaning | Fix |
+| --- | --- | --- |
+| `platform_source_requires_platform_writer` *(error)* | A field declares `platformSource` without `writableBy: "platform"`. It is not a shorthand for both. | Add `"writableBy": "platform"`, or drop the `platformSource`. |
+| `unknown_platform_source` *(error)* | A `platformSource` outside the closed set `{checksum, opaqueId}`. A new mechanism is a grammar decision, not something a package may invent. | Use a defined value, or report the gap rather than inventing one. |
+| `platform_writable_field_missing_platform_source` *(warning)* | A field declares `writableBy: "platform"` but never says *which* value it receives. | Add the `platformSource`. Regeneration closes these. |
+
+The third is a warning **on purpose**. `writableBy: "platform"` shipped before `platformSource`
+existed, so 138 fields across the shipped corpus declare the first and not the second. Making that
+fatal would have invalidated every shipped community in the same commit that added the rule, and a
+validator that fails the corpus it ships with teaches everyone to ignore it. It becomes an error once
+the corpus has moved -- the same staging `effect_writable_field_has_no_effect` went through.
+
+Why the distinction is worth a rule at all: `writableBy: "platform"` says only *that* a service
+writes the field. A `checksum` and a `receiptId` are both `"type": "text?"` with
+`"writableBy": "platform"` and are otherwise identical, so nothing could decide which value either
+was owed. Matching on the field's name is the one thing this project forbids -- see
+[`solved-patterns.md`](../reference/solved-patterns.md) § 20.
+
 `prefill_written_field_not_platform` is a warning about honesty rather than behaviour. A field is
 editable only when a state lists it in `editableFields`, and the engine checks that membership
 *before* it consults `writableBy`, so a misdeclared prefill field is not editable today whatever it

@@ -91,6 +91,8 @@ class WorkflowValidator {
     'tracking_number',
   };
 
+  static const _knownPlatformSources = <String>{'checksum', 'opaqueId'};
+
   static const _knownInputTypes = <String>{
     'text',
     'textarea',
@@ -233,6 +235,7 @@ class WorkflowValidator {
     _checkDependencyCycles(workflows, findings);
     _checkNoCreationPathForEditableTypes(workflows, findings);
     _checkEffectWritableFieldsHaveWriters(workflows, findings);
+    _checkPlatformSourceDeclarations(workflows, findings);
     _checkPrefillWrittenFieldsUsePlatformWriter(workflows, findings);
 
     return ValidationReport(findings);
@@ -1614,6 +1617,82 @@ class WorkflowValidator {
         );
       }
     }
+  }
+
+  /// Platform writers name the service mechanism that supplies their value.
+  ///
+  /// The missing-source case is deliberately a single warning for this
+  /// package, rather than an error per field. Existing shipped packages use
+  /// the old grammar, and failing all of them at once would make the new rule
+  /// less trustworthy than the incomplete declarations it is identifying.
+  void _checkPlatformSourceDeclarations(
+    Map<String, LoomWorkflowStateMachine> workflows,
+    List<ValidationFinding> findings,
+  ) {
+    final fieldsMissingSource = <(String workflowType, String fieldName)>[];
+
+    for (final workflow in workflows.entries) {
+      for (final schemaEntry in workflow.value.instanceDataSchema.entries) {
+        final field = schemaEntry.value;
+        final platformSource = field.platformSource;
+        final location =
+            'experience/workflowDefinitions/${workflow.key}/'
+            'instanceDataSchema/${schemaEntry.key}/platformSource';
+
+        if (platformSource != null && field.writableBy != 'platform') {
+          findings.add(
+            ValidationFinding(
+              type: 'platform_source_requires_platform_writer',
+              message:
+                  'Field "${schemaEntry.key}" in workflow "${workflow.key}" '
+                  'declares platformSource "$platformSource", but '
+                  'platformSource requires writableBy: "platform". It is not '
+                  'a shorthand for the writer.',
+              location: location,
+            ),
+          );
+        }
+
+        if (platformSource != null &&
+            !_knownPlatformSources.contains(platformSource)) {
+          findings.add(
+            ValidationFinding(
+              type: 'unknown_platform_source',
+              message:
+                  'Field "${schemaEntry.key}" in workflow "${workflow.key}" '
+                  'declares unknown platformSource "$platformSource". '
+                  'Allowed values are checksum and opaqueId; a new mechanism '
+                  'is a grammar decision, not a package-local value.',
+              location: location,
+            ),
+          );
+        }
+
+        if (field.writableBy == 'platform' && platformSource == null) {
+          fieldsMissingSource.add((workflow.key, schemaEntry.key));
+        }
+      }
+    }
+
+    if (fieldsMissingSource.isEmpty) return;
+
+    final first = fieldsMissingSource.first;
+    final count = fieldsMissingSource.length;
+    findings.add(
+      ValidationFinding(
+        type: 'platform_writable_field_missing_platform_source',
+        isWarning: true,
+        message:
+            '$count ${count == 1 ? 'field is' : 'fields are'} declared '
+            'writableBy "platform" without platformSource. Those declarations '
+            'are incomplete because the service cannot tell which value each '
+            'field is owed. This is intentionally non-fatal while shipped '
+            'packages use the old grammar; regeneration is what closes it.',
+        location:
+            'experience/workflowDefinitions/${first.$1}/'
+            'instanceDataSchema/${first.$2}/writableBy',
+      ),
+    );
   }
 
   /// A create-action prefill is a platform write at instance creation.

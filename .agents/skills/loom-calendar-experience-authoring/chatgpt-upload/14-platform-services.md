@@ -36,7 +36,7 @@ When a requirement needs one of these:
 | **Scheduled notifications** — `dueNotifications({asOf})` | Needs a clock/scheduler | Any deadline/reminder | ✅ **REAL** — the engine implements a genuine `dueAt <= asOf` query |
 | **Cross-instance eligibility** | Needs another instance's state | Ballot eligibility | ✅ **REAL** — expressible in JSON as the `relatedListMembership` guard |
 | **Payment processing** | Calls a payment gateway | `paymentCheckout` | ❌ Not implemented — demo would stub canned success |
-| **ID generation** | An opaque unique id is not a field value | Receipts, export ids | ❌ Not implemented |
+| **ID generation** | An opaque unique id is not a field value | Receipts, export ids | 🚧 Grammar defined 2026-08-29 (`platformSource: "opaqueId"`); export/transfer ids being built, payment receipts deferred with payment |
 | **External search / AI answer** | Calls an index or an LLM | `searchAiAnswer` | ❌ Not implemented — demo would return a canned answer for seeded queries |
 | **Checksum / integrity hash** | A hash, not arithmetic | `exportWizard` | ✅ **REAL** since 2026-08-27 — a real SHA-256 over the bytes the export bundle service serves |
 
@@ -88,8 +88,33 @@ So a `checksum` field is `writableBy: "platform"` — the platform genuinely wri
 Two constraints worth knowing before authoring against it. Every operation is gated on the caller
 being able to invoke a `download` transition, and the bundle is generated when a transition lands the
 instance in a state that exposes `download` — so a workflow with no `download` transition never
-generates one, by design. And **ID generation is still not implemented**: a receipt id or transfer id
-sitting beside a checksum is not covered by this and must still be left unset.
+generates one, by design. And a receipt or transfer id sitting beside a checksum is a **different**
+platform service, covered below — not by this one.
+
+### Opaque ids
+
+A `checksum` and a `receiptId` are both `"type": "text?"` with `"writableBy": "platform"`. Nothing in
+that distinguishes them, so the platform cannot know which value a field is owed. `platformSource`
+does:
+
+```jsonc
+"checksum":   { "type": "text?", "writableBy": "platform", "platformSource": "checksum" },
+"transferId": { "type": "text?", "writableBy": "platform", "platformSource": "opaqueId" }
+```
+
+The workflow service mints an `opaqueId` **once**, on the first transition after which the field is
+declared and still empty, and never rewrites it. An id that changes is not an identifier: everything
+that quoted the previous value silently stops matching.
+
+**Scope, and why it is not all of them.** Only ids for things that actually happen are minted:
+`transferId` and `exportReceiptId`, where a bundle really is produced. `receiptId`,
+`paymentConfirmationId` and `settlementId` stay declared-and-unwritten alongside **payment
+processing**, which is deferred. A receipt id for a payment that never occurred is a confirmation
+number for a transaction that did not happen — the same fabrication the canned
+`checksum_<communityId>_<count>` string was, and worse, because it looks like proof of money moving.
+
+So a declared id field being empty is **correct** wherever payment is its trigger. Do not author
+around it, and do not add an effect to fill it in.
 
 ### Cross-instance eligibility
 Fully expressible in JSON — see [`guards.md`](./guards.md) §5. No service call needed.

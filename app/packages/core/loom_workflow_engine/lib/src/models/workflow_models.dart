@@ -1009,6 +1009,7 @@ class InstanceDataField {
     'type',
     'required',
     'writableBy',
+    'platformSource',
     'storage',
     'storageTarget',
     'searchable',
@@ -1027,6 +1028,7 @@ class InstanceDataField {
 
   final String type;
   final bool required;
+
   /// Who writes this field.
   ///
   /// | value | meaning |
@@ -1044,6 +1046,12 @@ class InstanceDataField {
   /// effect writes this effect-writable field" becomes a checkable defect
   /// instead of an ambiguity.
   final String? writableBy;
+
+  /// The mechanism that supplies a platform-written field.
+  ///
+  /// Services resolve this declaration structurally, never from the authored
+  /// field name.
+  final String? platformSource;
 
   /// Whether a member may type into this field.
   ///
@@ -1093,6 +1101,7 @@ class InstanceDataField {
     required this.type,
     this.required = false,
     this.writableBy,
+    this.platformSource,
     this.storage,
     this.storageTarget,
     this.searchable = false,
@@ -1114,6 +1123,7 @@ class InstanceDataField {
       type: json['type'] as String,
       required: json['required'] as bool? ?? false,
       writableBy: json['writableBy'] as String?,
+      platformSource: json['platformSource'] as String?,
       storage: json['storage'] as String?,
       storageTarget: json['storageTarget'] as String?,
       searchable: json['searchable'] as bool? ?? false,

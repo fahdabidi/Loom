@@ -827,3 +827,76 @@ mistakes — no JSON-level fix exists for either until the underlying engine tic
   and Member Social Space already ship with — there's no need to retrofit them now that CJM.6 is fixed,
   since pattern 7 has no functional downside, but new workflows can use either `$actor`-in-`prefill` or
   pattern 7 going forward.
+
+## 20. A platform-written field names **which** platform value it gets — and an id for something that never happened stays empty
+
+`writableBy: "platform"` says a service writes the field. It does not say *which* service or *what
+value*, and without that nothing can run: these two are byte-identical apart from the field name, and
+the field name is exactly what must never be read for meaning.
+
+```jsonc
+// Indistinguishable. One wants a hash of bytes; the other wants a minted id.
+"checksum":   { "type": "text?", "writableBy": "platform" },
+"transferId": { "type": "text?", "writableBy": "platform" }
+```
+
+`platformSource` is the discriminator.
+
+### Before — declared, and permanently unwritable
+
+Taken from `DataPortabilityCommunity`, where the field carried a `NEEDS IMPLEMENTATION` comment and
+no writer at all. It renders, it is never filled, and nothing in the JSON says why.
+
+```jsonc
+// NEEDS IMPLEMENTATION (platform service): opaque export transfer-ID generation is not implemented.
+"transferId": {
+  "type": "text?",
+  "displayIcon": "confirmation_number",
+  "labelTemplate": "Transfer: {value}",
+  "hideWhenEmpty": true
+}
+```
+
+### After — a named mechanism
+
+```jsonc
+"transferId": {
+  "type": "text?",
+  "writableBy": "platform",
+  "platformSource": "opaqueId",
+  "displayIcon": "confirmation_number",
+  "labelTemplate": "Transfer: {value}",
+  "hideWhenEmpty": true
+}
+```
+
+The comment goes with it. A `NEEDS IMPLEMENTATION` note that outlives its implementation is worse than
+no note, because the next reader trusts it and re-reports a closed gap.
+
+### The counter-example that matters more
+
+**Do not do this to a payment receipt.**
+
+```jsonc
+// WRONG. Payment processing is deferred, so nothing charges anyone.
+"receiptId": { "type": "text?", "writableBy": "platform", "platformSource": "opaqueId" }
+```
+
+A minted id here is a confirmation number for a transaction that never happened. It is unique, it is
+well-formed, it is displayed to a member as evidence of a payment — and no money moved. That is the
+same failure as the old canned `checksum_<communityId>_<count>` string, which hashed nothing while
+looking exactly like a checksum, except that this one looks like proof of money changing hands.
+
+`receiptId`, `paymentConfirmationId` and `settlementId` stay **declared and unwritten** until payment
+is real. Leave them exactly as they are: no `writableBy`, no `platformSource`, comment intact. An
+empty field is a true statement about the world. **Prefer the absent value to the fabricated one** —
+the same rule that governs checksums, for the same reason.
+
+### How to tell which case you are in
+
+Ask what would have to have happened for the id to be meaningful, and whether it did.
+
+| Field | Real event behind it | Mint? |
+|---|---|---|
+| `transferId`, `exportReceiptId` | A bundle was generated and stored | **Yes** |
+| `receiptId`, `paymentConfirmationId`, `settlementId` | Money moved | **No — deferred with payment** |

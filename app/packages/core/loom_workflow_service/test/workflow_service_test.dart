@@ -1232,6 +1232,143 @@ void main() {
     },
   );
 
+  test('applyTransition fills an empty declared opaqueId field', () async {
+    await _seedPlatformSourceInstance(database);
+
+    final response = await service.handler(
+      _transitionRequest(fanId: 'fan-owner', body: {'transitionId': 'record'}),
+    );
+
+    expect(response.statusCode, 200);
+    final instanceData =
+        (jsonDecode(await response.readAsString())
+                as Map<String, dynamic>)['instanceData']
+            as Map<String, dynamic>;
+    expect(instanceData['transferReference'], matches(_uuidV4Pattern));
+    final stored =
+        jsonDecode((await database.readInstance(_instanceId))!.instanceData)
+            as Map<String, dynamic>;
+    expect(stored['transferReference'], instanceData['transferReference']);
+  });
+
+  test('applyTransition never rewrites an opaqueId', () async {
+    await _seedPlatformSourceInstance(database);
+
+    final first = await service.handler(
+      _transitionRequest(fanId: 'fan-owner', body: {'transitionId': 'record'}),
+    );
+    expect(first.statusCode, 200);
+    final firstId =
+        ((jsonDecode(await first.readAsString())
+                as Map<String, dynamic>)['instanceData']
+            as Map<String, dynamic>)['transferReference'];
+
+    final second = await service.handler(
+      _transitionRequest(
+        fanId: 'fan-owner',
+        idempotencyKey: 'second-opaque-id-transition',
+        body: {'transitionId': 'record'},
+      ),
+    );
+    expect(second.statusCode, 200);
+    final secondId =
+        ((jsonDecode(await second.readAsString())
+                as Map<String, dynamic>)['instanceData']
+            as Map<String, dynamic>)['transferReference'];
+
+    expect(secondId, firstId);
+  });
+
+  test('applyTransition does not mint a checksum field', () async {
+    await _seedPlatformSourceInstance(database);
+
+    final response = await service.handler(
+      _transitionRequest(fanId: 'fan-owner', body: {'transitionId': 'record'}),
+    );
+
+    expect(response.statusCode, 200);
+    final instanceData =
+        (jsonDecode(await response.readAsString())
+                as Map<String, dynamic>)['instanceData']
+            as Map<String, dynamic>;
+    expect(instanceData, isNot(contains('servedBundleChecksum')));
+  });
+
+  test(
+    'applyTransition mints unique opaqueIds across an instance batch',
+    () async {
+      await _installPlatformSourceDefinition(database);
+      const batchSize = 24;
+      final instanceIds = List<String>.generate(
+        batchSize,
+        (index) => 'opaque-batch-instance-$index',
+      );
+      for (final instanceId in instanceIds) {
+        await database.insertInstance(
+          instanceId: instanceId,
+          communityId: _communityId,
+          workflowType: _workflowType,
+          currentState: 'draft',
+          instanceData: const {'ownerFanId': 'fan-owner'},
+          createdByFanId: 'fan-owner',
+        );
+      }
+
+      for (final (index, instanceId) in instanceIds.indexed) {
+        final response = await service.handler(
+          _transitionRequest(
+            fanId: 'fan-owner',
+            instanceId: instanceId,
+            idempotencyKey: 'opaque-batch-transition-$index',
+            body: {'transitionId': 'record'},
+          ),
+        );
+        expect(response.statusCode, 200);
+      }
+
+      final ids = <String>{
+        for (final instanceId in instanceIds)
+          (jsonDecode((await database.readInstance(instanceId))!.instanceData)
+                  as Map<String, dynamic>)['transferReference']
+              as String,
+      };
+      expect(ids, hasLength(batchSize));
+    },
+  );
+
+  test('applyTransition opaqueIds do not encode request context', () async {
+    final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+    await _seedPlatformSourceInstance(
+      database,
+      instanceData: {
+        'ownerFanId': 'fan-owner',
+        'batchCounter': 'batch-counter-00001',
+        'transitionTimestamp': timestamp,
+      },
+    );
+
+    final response = await service.handler(
+      _transitionRequest(fanId: 'fan-owner', body: {'transitionId': 'record'}),
+    );
+    expect(response.statusCode, 200);
+    final opaqueId =
+        ((jsonDecode(await response.readAsString())
+                    as Map<String, dynamic>)['instanceData']
+                as Map<String, dynamic>)['transferReference']
+            as String;
+
+    for (final forbiddenSubstring in [
+      _communityId,
+      _instanceId,
+      _workflowType,
+      'fan-owner',
+      'batch-counter-00001',
+      timestamp,
+    ]) {
+      expect(opaqueId, isNot(contains(forbiddenSubstring)));
+    }
+  });
+
   test('applyTransition accepts a role guard resolved by App Access', () async {
     await _seedRoleGuardedTransition(database);
     appAccessClient.roleIds = {'hoa-board'};
@@ -1361,6 +1498,56 @@ Future<void> _seed(WorkflowDatabase database) async {
     currentState: 'draft',
     instanceData: {'ownerFanId': 'fan-owner'},
     createdByFanId: 'fan-owner',
+  );
+}
+
+const _uuidV4Pattern =
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$';
+
+Future<void> _seedPlatformSourceInstance(
+  WorkflowDatabase database, {
+  Map<String, dynamic> instanceData = const {'ownerFanId': 'fan-owner'},
+}) async {
+  await _installPlatformSourceDefinition(database);
+  await database.insertInstance(
+    instanceId: _instanceId,
+    communityId: _communityId,
+    workflowType: _workflowType,
+    currentState: 'draft',
+    instanceData: instanceData,
+    createdByFanId: 'fan-owner',
+  );
+}
+
+Future<void> _installPlatformSourceDefinition(WorkflowDatabase database) async {
+  final definition = _definitionMap();
+  definition['transitions'] = [
+    {
+      'id': 'record',
+      'label': 'Record',
+      'from': ['draft', 'recorded'],
+      'to': 'recorded',
+      'guard': {
+        'actorEqualsField': {'key': 'ownerFanId'},
+      },
+    },
+  ];
+  final schema = definition['instanceDataSchema'] as Map<String, dynamic>;
+  schema['transferReference'] = {
+    'type': 'text?',
+    'writableBy': 'platform',
+    'platformSource': 'opaqueId',
+  };
+  schema['servedBundleChecksum'] = {
+    'type': 'text?',
+    'writableBy': 'platform',
+    'platformSource': 'checksum',
+  };
+  await database.upsertDefinition(
+    definitionId: '${_communityId}_$_workflowType',
+    workflowType: _workflowType,
+    definitionJson: jsonEncode(definition),
+    version: 4,
   );
 }
 
@@ -1608,6 +1795,7 @@ Request _aggregateRequest({
 
 Request _transitionRequest({
   String? fanId,
+  String instanceId = _instanceId,
   String correlationId = _correlationId,
   String idempotencyKey = 'unit-test-key',
   required Map<String, dynamic> body,
@@ -1615,7 +1803,7 @@ Request _transitionRequest({
   'POST',
   Uri.parse(
     'http://localhost/v1/communities/$_communityId/instances/'
-    '$_instanceId/transitions',
+    '$instanceId/transitions',
   ),
   headers: {
     ..._headers(fanId),

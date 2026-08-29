@@ -4037,15 +4037,30 @@ class WorkflowService {
             'Workflow instance disappeared after a successful transition',
           );
         }
+        final mintedOpaqueIds = await _mintOpaqueIdsForTransition(
+          communityId: communityId,
+          workflowType: before.workflowType,
+          instanceId: instanceId,
+          currentState: after.currentState,
+          storedInstanceData: after.instanceData,
+        );
+        final persistedAfter = mintedOpaqueIds.isEmpty
+            ? after
+            : await _database.readInstance(instanceId);
+        if (persistedAfter == null) {
+          throw StateError(
+            'Workflow instance disappeared while minting opaque identifiers',
+          );
+        }
 
         return Response.ok(
           jsonEncode({
             'instanceId': instanceId,
             'workflowType': before.workflowType,
             'currentState': result.newState,
-            'instanceData': result.newInstanceData,
+            'instanceData': {...result.newInstanceData, ...mintedOpaqueIds},
             'updatedAt': DateTime.fromMillisecondsSinceEpoch(
-              after.updatedAt,
+              persistedAfter.updatedAt,
               isUtc: true,
             ).toIso8601String(),
           }),
@@ -4064,6 +4079,56 @@ class WorkflowService {
       );
     }
   }
+
+  /// Mints values only for fields whose schema explicitly names `opaqueId`.
+  ///
+  /// A field's spelling is intentionally irrelevant. `documentUrl` is Cedar's
+  /// spelling, not a protocol; the declaration is the durable contract a
+  /// service can safely act on.
+  Future<Map<String, dynamic>> _mintOpaqueIdsForTransition({
+    required String communityId,
+    required String workflowType,
+    required String instanceId,
+    required String currentState,
+    required String storedInstanceData,
+  }) async {
+    final definitions = await _database.loadDefinitionsForCommunity(
+      communityId,
+    );
+    final rawDefinition = definitions[workflowType];
+    if (rawDefinition == null) {
+      throw StateError('Unknown workflow type: $workflowType');
+    }
+    final definition = LoomWorkflowStateMachine.fromJson(
+      rawDefinition,
+      workflowType,
+    );
+    final storedData = Map<String, dynamic>.from(
+      jsonDecode(storedInstanceData) as Map,
+    );
+    final minted = <String, dynamic>{};
+
+    for (final field in definition.instanceDataSchema.entries) {
+      if (field.value.writableBy != 'platform' ||
+          field.value.platformSource != 'opaqueId' ||
+          !_isEmptyOpaqueIdField(storedData[field.key])) {
+        continue;
+      }
+      minted[field.key] = _newOpaqueId();
+    }
+
+    if (minted.isEmpty) return minted;
+
+    await _database.updateInstanceState(
+      instanceId: instanceId,
+      newState: currentState,
+      newInstanceData: {...storedData, ...minted},
+    );
+    return minted;
+  }
+
+  bool _isEmptyOpaqueIdField(Object? value) =>
+      value == null || (value is String && value.isEmpty);
 
   Future<_ApplyTransitionBody> _readApplyTransitionBody(Request request) async {
     final contentType = request.headers['content-type'];
@@ -4193,6 +4258,12 @@ class WorkflowService {
   }
 
   String _newCorrelationId() {
+    return _newUuidV4();
+  }
+
+  static String _newOpaqueId() => _newUuidV4();
+
+  static String _newUuidV4() {
     final bytes = List<int>.generate(16, (_) => _secureRandom.nextInt(256));
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
