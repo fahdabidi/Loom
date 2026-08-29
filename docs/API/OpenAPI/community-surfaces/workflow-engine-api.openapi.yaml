@@ -381,6 +381,87 @@ paths:
               schema:
                 $ref: '../_shared/errors.yaml#/components/schemas/ApiError'
 
+  /v1/communities/{communityId}/changes:
+    get:
+      tags: [Sync]
+      operationId: listVisibleChanges
+      summary: What changed for this caller since their cursor, and what they can still see.
+      description: >-
+        Feeds a read-only local replica. Returns the instances visible to **this caller** that changed
+        since `updatedSince`, together with the complete set of instance ids the caller can currently
+        see.
+
+
+        **The feed is per-viewer, and that is not an implementation detail.**
+        `readVisibleInstance(instanceId, fanId)` resolves visibility per fan — creator, archetype
+        share, then `visibility.default` and the state's `readGuard`. There is therefore no
+        community-wide answer to "what changed": two members syncing the same community at the same
+        cursor legitimately receive different sets. Anything that computes this once and serves it to
+        everyone is a leak.
+
+
+        **Why `visibleInstanceIds` is returned rather than tombstones.** An instance can leave a
+        caller's view without changing at all — someone else's transition moves it to a state whose
+        `readGuard` excludes them, or their own role changes. The server cannot emit "this left your
+        view" as an event, because it never recorded what your view previously was. So the response
+        carries the full id set the caller can see now, and the replica deletes anything local that is
+        absent from it. Ids are small; the alternative is a client that silently keeps rows it may no
+        longer read.
+
+
+        **A role change invalidates the cursor.** If the caller's roles differ from when the cursor was
+        issued, `resyncRequired` is true and the client must discard its replica and start from no
+        cursor. Instances the caller could not see before may now be visible and will not appear in a
+        `updatedSince` window, because they did not change — only the caller's right to see them did. A
+        replica that ignored this would be missing data it believes it has, which is worse than being
+        behind.
+
+
+        **`updatedSince` is inclusive, and that is deliberate.** `workflow_instances.updated_at` is a
+        millisecond timestamp, so two instances written in the same millisecond are indistinguishable
+        to a cursor. An exclusive bound would skip the second one permanently; an inclusive bound
+        repeats the boundary instance on the next call. A replica is a keyed overwrite, so a repeat is
+        idempotent and a skip is data loss. **Prefer the harmless failure.**
+
+
+        This trades exactness for simplicity, and the alternative is worth naming: a monotonic
+        per-community sequence would make the cursor total-ordered and avoid the repeat. It is the more
+        correct design and costs a new column, a writer, and a migration. Revisit if the boundary
+        repeat ever becomes measurable.
+      parameters:
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: updatedSince
+          in: query
+          required: false
+          description: >-
+            Epoch milliseconds, **inclusive**. Omitted means a full sync of everything the caller can
+            see.
+          schema:
+            type: integer
+            format: int64
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 200
+            maximum: 500
+      responses:
+        '200':
+          description: >-
+            Changes for this caller. `nextUpdatedSince` is the cursor for the following call; when
+            `hasMore` is true the caller should immediately request again rather than waiting, because
+            the page boundary is not a consistent point in time.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisibleChangePage'
+        '400':
+          description: Malformed cursor, or a missing correlation id.
+        '403':
+          description: The caller is not a member of this community.
+
 components:
   parameters:
     CommunityId:
@@ -611,6 +692,73 @@ components:
             $ref: '#/components/schemas/WorkflowInstance'
         pageInfo:
           $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+
+    VisibleChangePage:
+      type: object
+      additionalProperties: false
+      required: [communityId, changed, visibleInstanceIds, nextUpdatedSince, hasMore, resyncRequired]
+      properties:
+        communityId:
+          type: string
+        changed:
+          type: array
+          description: >-
+            Instances visible to this caller whose `updatedAt` is at or after the cursor. Each carries
+            its full current state, so the replica overwrites by `instanceId` and a repeated boundary
+            instance is harmless.
+          items:
+            $ref: '#/components/schemas/WorkflowInstanceSnapshot'
+        visibleInstanceIds:
+          type: array
+          description: >-
+            Every instance id the caller can see **right now**, changed or not. The replica deletes
+            any local instance absent from this list. This is how disappearance is communicated: the
+            server cannot emit a "no longer visible" event because it never recorded what the caller
+            could previously see.
+          items:
+            type: string
+        nextUpdatedSince:
+          type: integer
+          format: int64
+          description: >-
+            The cursor for the next call. Equals the highest `updatedAt` in this page, and is passed
+            back inclusively — see the endpoint description for why repeating a boundary instance is
+            preferred to skipping one.
+        hasMore:
+          type: boolean
+        resyncRequired:
+          type: boolean
+          description: >-
+            True when the caller's roles have changed since the cursor was issued. The client must
+            discard its replica and sync again with no cursor. An instance that became visible without
+            changing will never appear in an `updatedSince` window, so continuing would leave the
+            replica confidently incomplete.
+
+    WorkflowInstanceSnapshot:
+      type: object
+      additionalProperties: false
+      required: [instanceId, workflowType, currentState, instanceData, updatedAt]
+      properties:
+        instanceId:
+          type: string
+        workflowType:
+          type: string
+        currentState:
+          type: string
+        instanceData:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+          description: >-
+            Epoch milliseconds. Already stored and maintained on every transition; this exposes it,
+            which nothing previously did.
+        createdByFanId:
+          type: string
 
   securitySchemes:
     LoomUserOAuth:
