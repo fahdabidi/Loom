@@ -134,7 +134,7 @@ MemberSocialSpace, Chess (twice: writers, then tab audiences), Cedar, Youth Socc
 - [ ] `new-ticket` — **the six dead queue transitions are still dead.** `join-queue`/`leave-queue` in Book Club, Camera and Garden have zero effects. The service exists; nothing points at it. Needs a Skill regeneration per community plus an app-shell client, neither started
 - [ ] `new-milestone` — **messaging is a boundary, not an implementation.** `messaging-api.openapi.yaml` is `0.0.0-placeholder`; `messaging_feature_not_available` warns on the 8 thread-state transitions that do nothing
 
-**Validator rules added this pass** — four defect classes that were previously invisible to every check: `effect_writable_field_has_no_effect` (60), `prefill_written_field_not_platform` (128), `transition_has_no_observable_effect` (36, now 30 after the queue exemption), `messaging_feature_not_available` (8). Judges 434 → 460.
+**Validator rules added this pass** — four defect classes that were previously invisible to every check: `effect_writable_field_has_no_effect` (60), `prefill_written_field_not_platform` (128), `transition_has_no_observable_effect` (36 measured — my ad-hoc scan said 37; now **30** after `join_queue`/`leave_queue` became platform-completed), `messaging_feature_not_available` (8). Judges 434 → 461.
 
 ### 2026-08-28 — the app's engine is in-memory, so nothing survives a restart
 
