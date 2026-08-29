@@ -113,6 +113,20 @@ class WorkflowDatabase {
       CREATE INDEX IF NOT EXISTS idx_instances_lookup
         ON workflow_instances (community_id, workflow_type, current_state);
     ''');
+    // A file-backed workflow database can also be a server-fed, read-only
+    // replica. There is exactly one replica owner per database file: callers
+    // select a distinct file for each fan/community pair and this row makes a
+    // mistaken reuse fail closed instead of exposing another fan's rows.
+    await _db.runCustom('''
+      CREATE TABLE IF NOT EXISTS workflow_replica_state (
+        singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+        fan_id TEXT NOT NULL,
+        community_id TEXT NOT NULL,
+        next_updated_since ${_dialect.isSqlite ? 'INTEGER' : 'BIGINT'},
+        next_after_instance_id TEXT,
+        next_role_cursor TEXT
+      );
+    ''');
   }
 
   /// Renames the one historical creator column to its current name.
@@ -515,6 +529,269 @@ class WorkflowDatabase {
     await _db.runCustom('DELETE FROM workflow_definitions');
   }
 
+  // ── Read-only replica state ───────────────────────────────────────────
+
+  /// Claims this database file for the given viewer/community replica.
+  ///
+  /// A replica is deliberately not a multi-viewer cache. Visibility is
+  /// resolved by the server for one fan, so reusing a file for another fan or
+  /// community is refused before any rows can be read or written.
+  Future<WorkflowReplicaCursor> claimReplica({
+    required String fanId,
+    required String communityId,
+  }) async {
+    _requireReplicaIdentity(fanId: fanId, communityId: communityId);
+    await _ensureOpenAndMigrated();
+    final existing = await _readReplicaCursorRow();
+    if (existing != null) {
+      _requireReplicaOwner(existing, fanId: fanId, communityId: communityId);
+      return existing;
+    }
+    await _db.runCustom(
+      _dialect.isSqlite
+          ? 'INSERT INTO workflow_replica_state '
+                '(singleton, fan_id, community_id) VALUES (?, ?, ?)'
+          : r'INSERT INTO workflow_replica_state '
+                r'(singleton, fan_id, community_id) VALUES ($1, $2, $3)',
+      [1, fanId, communityId],
+    );
+    return WorkflowReplicaCursor(fanId: fanId, communityId: communityId);
+  }
+
+  /// Returns the persisted change-feed cursor after confirming ownership.
+  Future<WorkflowReplicaCursor> readReplicaCursor({
+    required String fanId,
+    required String communityId,
+  }) async {
+    _requireReplicaIdentity(fanId: fanId, communityId: communityId);
+    await _ensureOpenAndMigrated();
+    final existing = await _readReplicaCursorRow();
+    if (existing == null) {
+      throw StateError(
+        'This workflow database has not been claimed as an offline replica.',
+      );
+    }
+    _requireReplicaOwner(existing, fanId: fanId, communityId: communityId);
+    return existing;
+  }
+
+  /// Applies one server change-feed page and its next cursor atomically.
+  ///
+  /// [visibleInstanceIds] is authoritative. Rows absent from it are deleted
+  /// even if they do not appear in [snapshots], because a visibility change
+  /// need not update the instance itself.
+  Future<void> replaceReplicaPage({
+    required String fanId,
+    required String communityId,
+    required List<WorkflowInstanceRow> snapshots,
+    required Set<String> visibleInstanceIds,
+    required int nextUpdatedSince,
+    required String nextAfterInstanceId,
+    required String nextRoleCursor,
+  }) async {
+    _requireReplicaIdentity(fanId: fanId, communityId: communityId);
+    if (snapshots.any((snapshot) => snapshot.communityId != communityId)) {
+      throw ArgumentError.value(
+        snapshots,
+        'snapshots',
+        'must all belong to the replica community',
+      );
+    }
+    final snapshotIds = <String>{};
+    for (final snapshot in snapshots) {
+      if (snapshot.instanceId.isEmpty ||
+          !snapshotIds.add(snapshot.instanceId)) {
+        throw ArgumentError.value(
+          snapshots,
+          'snapshots',
+          'must have non-empty, unique instance ids',
+        );
+      }
+      if (!visibleInstanceIds.contains(snapshot.instanceId)) {
+        throw ArgumentError.value(
+          snapshots,
+          'snapshots',
+          'must be contained in visibleInstanceIds',
+        );
+      }
+    }
+
+    await _executeTx(() async {
+      final state = await _readReplicaCursorRow();
+      if (state == null) {
+        throw StateError(
+          'This workflow database has not been claimed as an offline replica.',
+        );
+      }
+      _requireReplicaOwner(state, fanId: fanId, communityId: communityId);
+
+      for (final snapshot in snapshots) {
+        await _upsertReplicaSnapshot(snapshot);
+      }
+
+      final localRows = await queryCommunityInstancesByUpdatedAt(
+        communityId: communityId,
+      );
+      for (final localRow in localRows) {
+        if (visibleInstanceIds.contains(localRow.instanceId)) continue;
+        await _db.runCustom(
+          _dialect.isSqlite
+              ? 'DELETE FROM workflow_instances WHERE instance_id = ?'
+              : r'DELETE FROM workflow_instances WHERE instance_id = $1',
+          [localRow.instanceId],
+        );
+      }
+
+      await _db.runCustom(
+        _dialect.isSqlite
+            ? 'UPDATE workflow_replica_state SET next_updated_since = ?, '
+                  'next_after_instance_id = ?, next_role_cursor = ? '
+                  'WHERE singleton = ?'
+            : r'UPDATE workflow_replica_state SET next_updated_since = $1, '
+                  r'next_after_instance_id = $2, next_role_cursor = $3 '
+                  r'WHERE singleton = $4',
+        [nextUpdatedSince, nextAfterInstanceId, nextRoleCursor, 1],
+      );
+    });
+  }
+
+  /// Discards every replicated row and cursor while preserving its owner.
+  ///
+  /// This is used only when the server says a role change invalidated the
+  /// cursor. It intentionally does not merge a newly visible page into old
+  /// state: a role change can reveal rows that have never changed.
+  Future<void> clearReplica({
+    required String fanId,
+    required String communityId,
+  }) async {
+    _requireReplicaIdentity(fanId: fanId, communityId: communityId);
+    await _executeTx(() async {
+      final state = await _readReplicaCursorRow();
+      if (state == null) {
+        throw StateError(
+          'This workflow database has not been claimed as an offline replica.',
+        );
+      }
+      _requireReplicaOwner(state, fanId: fanId, communityId: communityId);
+      await _db.runCustom(
+        _dialect.isSqlite
+            ? 'DELETE FROM workflow_instances WHERE community_id = ?'
+            : r'DELETE FROM workflow_instances WHERE community_id = $1',
+        [communityId],
+      );
+      await _db.runCustom(
+        _dialect.isSqlite
+            ? 'UPDATE workflow_replica_state SET next_updated_since = NULL, '
+                  'next_after_instance_id = NULL, next_role_cursor = NULL '
+                  'WHERE singleton = ?'
+            : r'UPDATE workflow_replica_state SET next_updated_since = NULL, '
+                  r'next_after_instance_id = NULL, next_role_cursor = NULL '
+                  r'WHERE singleton = $1',
+        const [1],
+      );
+    });
+  }
+
+  Future<WorkflowReplicaCursor?> _readReplicaCursorRow() async {
+    final rows = await _db.runSelect(
+      'SELECT fan_id, community_id, next_updated_since, '
+      'next_after_instance_id, next_role_cursor '
+      'FROM workflow_replica_state WHERE singleton = ${_dialect.isSqlite ? '?' : r'$1'}',
+      const [1],
+    );
+    if (rows.isEmpty) return null;
+    final row = rows.single;
+    final updatedSince = row['next_updated_since'];
+    final afterInstanceId = row['next_after_instance_id'];
+    final roleCursor = row['next_role_cursor'];
+    if (row['fan_id'] is! String ||
+        row['community_id'] is! String ||
+        updatedSince != null && updatedSince is! int ||
+        afterInstanceId != null && afterInstanceId is! String ||
+        roleCursor != null && roleCursor is! String) {
+      throw StateError('Offline replica state has an invalid stored shape.');
+    }
+    if ((updatedSince == null) != (afterInstanceId == null)) {
+      throw StateError('Offline replica state has an incomplete cursor.');
+    }
+    return WorkflowReplicaCursor(
+      fanId: row['fan_id']! as String,
+      communityId: row['community_id']! as String,
+      nextUpdatedSince: updatedSince as int?,
+      nextAfterInstanceId: afterInstanceId as String?,
+      nextRoleCursor: roleCursor as String?,
+    );
+  }
+
+  Future<void> _upsertReplicaSnapshot(WorkflowInstanceRow snapshot) {
+    final values = <Object?>[
+      snapshot.instanceId,
+      snapshot.communityId,
+      snapshot.workflowType,
+      snapshot.currentState,
+      snapshot.instanceData,
+      snapshot.createdAt,
+      snapshot.updatedAt,
+      snapshot.createdByFanId,
+    ];
+    return _db.runCustom(
+      _dialect.isSqlite
+          ? 'INSERT INTO workflow_instances '
+                '(instance_id, community_id, workflow_type, current_state, '
+                'instance_data, created_at, updated_at, created_by_fan_id) '
+                'VALUES (?, ?, ?, ?, ?, ?, ?, ?) '
+                'ON CONFLICT(instance_id) DO UPDATE SET '
+                'community_id = excluded.community_id, '
+                'workflow_type = excluded.workflow_type, '
+                'current_state = excluded.current_state, '
+                'instance_data = excluded.instance_data, '
+                'created_at = excluded.created_at, '
+                'updated_at = excluded.updated_at, '
+                'created_by_fan_id = excluded.created_by_fan_id'
+          : r'INSERT INTO workflow_instances '
+                r'(instance_id, community_id, workflow_type, current_state, '
+                r'instance_data, created_at, updated_at, created_by_fan_id) '
+                r'VALUES ($1, $2, $3, $4, $5, $6, $7, $8) '
+                r'ON CONFLICT(instance_id) DO UPDATE SET '
+                r'community_id = EXCLUDED.community_id, '
+                r'workflow_type = EXCLUDED.workflow_type, '
+                r'current_state = EXCLUDED.current_state, '
+                r'instance_data = EXCLUDED.instance_data, '
+                r'created_at = EXCLUDED.created_at, '
+                r'updated_at = EXCLUDED.updated_at, '
+                r'created_by_fan_id = EXCLUDED.created_by_fan_id',
+      values,
+    );
+  }
+
+  void _requireReplicaIdentity({
+    required String fanId,
+    required String communityId,
+  }) {
+    if (fanId.trim().isEmpty) {
+      throw ArgumentError.value(fanId, 'fanId', 'must not be empty');
+    }
+    if (communityId.trim().isEmpty) {
+      throw ArgumentError.value(
+        communityId,
+        'communityId',
+        'must not be empty',
+      );
+    }
+  }
+
+  void _requireReplicaOwner(
+    WorkflowReplicaCursor state, {
+    required String fanId,
+    required String communityId,
+  }) {
+    if (state.fanId == fanId && state.communityId == communityId) return;
+    throw StateError(
+      'This offline replica belongs to a different member or community and '
+      'cannot be opened here.',
+    );
+  }
+
   /// Runs [action] inside a single transaction (explicit BEGIN/COMMIT/ROLLBACK).
   Future<void> transaction(Future<void> Function() action) async {
     await _executeTx(action);
@@ -632,4 +909,26 @@ class WorkflowInstanceRow {
       createdByFanId: row['created_by_fan_id'] as String,
     );
   }
+}
+
+/// The durable, opaque position of one viewer's workflow change feed.
+///
+/// `nextUpdatedSince` and `nextAfterInstanceId` are a pair. `nextRoleCursor`
+/// is opaque server state and must only be sent back to the service.
+class WorkflowReplicaCursor {
+  const WorkflowReplicaCursor({
+    required this.fanId,
+    required this.communityId,
+    this.nextUpdatedSince,
+    this.nextAfterInstanceId,
+    this.nextRoleCursor,
+  });
+
+  final String fanId;
+  final String communityId;
+  final int? nextUpdatedSince;
+  final String? nextAfterInstanceId;
+  final String? nextRoleCursor;
+
+  bool get isInitial => nextUpdatedSince == null;
 }

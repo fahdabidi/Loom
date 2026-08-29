@@ -63,6 +63,7 @@ part 'src/part44_reminder_sweeper.dart';
 part 'src/part45_export_bundle_client.dart';
 part 'src/part46_item_queue_client.dart';
 part 'src/part47_notification_preferences_client.dart';
+part 'src/part48_visible_change_replica.dart';
 part 'src/part38_production_login_screen.dart';
 part 'src/instance_scoped_action_context.dart';
 part 'src/repeater_surface.dart';
