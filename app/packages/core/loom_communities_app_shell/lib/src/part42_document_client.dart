@@ -20,25 +20,45 @@ final class LoomDocument {
     required this.byteSize,
     required this.ownerFanId,
     required this.uploadedAt,
+    required this.version,
+    this.revisedAt,
     required this.contentUrl,
+    this.changeNote,
   });
 
-  factory LoomDocument.fromJson(Map<String, Object?> json) => LoomDocument(
-    documentId: json['documentId']! as String,
-    communityId: json['communityId']! as String,
-    instanceId: json['instanceId']! as String,
-    workflowType: json['workflowType']! as String,
-    fieldName: json['fieldName']! as String,
-    title: json['title']! as String,
-    filename: json['filename']! as String,
-    contentType: json['contentType']! as String,
-    byteSize: (json['byteSize']! as num).toInt(),
-    ownerFanId: json['ownerFanId']! as String,
-    uploadedAt:
-        DateTime.tryParse(json['uploadedAt'] as String? ?? '') ??
-        DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
-    contentUrl: json['contentUrl'] as String? ?? '',
-  );
+  factory LoomDocument.fromJson(Map<String, Object?> json) {
+    final version = json['version'];
+    final revisedAt = _optionalDocumentDateTime(json['revisedAt']);
+    if (version is! num || version < 1) {
+      throw const FormatException(
+        'Document response is missing a service-assigned version.',
+      );
+    }
+    if (json.containsKey('revisedAt') && revisedAt == null) {
+      throw const FormatException(
+        'Document response has an invalid revisedAt.',
+      );
+    }
+    return LoomDocument(
+      documentId: json['documentId']! as String,
+      communityId: json['communityId']! as String,
+      instanceId: json['instanceId']! as String,
+      workflowType: json['workflowType']! as String,
+      fieldName: json['fieldName']! as String,
+      title: json['title']! as String,
+      filename: json['filename']! as String,
+      contentType: json['contentType']! as String,
+      byteSize: (json['byteSize']! as num).toInt(),
+      ownerFanId: json['ownerFanId']! as String,
+      uploadedAt:
+          DateTime.tryParse(json['uploadedAt'] as String? ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      version: version.toInt(),
+      revisedAt: revisedAt?.toUtc(),
+      contentUrl: json['contentUrl'] as String? ?? '',
+      changeNote: json['changeNote'] as String?,
+    );
+  }
 
   final String documentId;
   final String communityId;
@@ -54,6 +74,15 @@ final class LoomDocument {
   final int byteSize;
   final String ownerFanId;
   final DateTime uploadedAt;
+
+  /// Service-assigned version of the bytes currently stored for this document.
+  final int version;
+
+  /// When the current version was published.
+  final DateTime? revisedAt;
+
+  /// Optional explanation supplied with the current revision.
+  final String? changeNote;
 
   /// Relative path of the content endpoint.
   ///
@@ -118,6 +147,160 @@ final class LoomDocumentAccess {
       : const [];
 }
 
+/// The calling member's state for one shared document.
+///
+/// This belongs to the workflow service, never to workflow instance data: one
+/// document has one independently durable state for every reader.
+final class LoomDocumentMemberState {
+  const LoomDocumentMemberState({
+    required this.documentId,
+    required this.fanId,
+    required this.currentVersion,
+    required this.read,
+    required this.acknowledged,
+    required this.saved,
+    this.readAt,
+    this.savedAt,
+    this.acknowledgedAt,
+    this.acknowledgedVersion,
+  });
+
+  factory LoomDocumentMemberState.fromJson(Map<String, Object?> json) {
+    final documentId = json['documentId'];
+    final fanId = json['fanId'];
+    final currentVersion = json['currentVersion'];
+    final read = json['read'];
+    final acknowledged = json['acknowledged'];
+    final saved = json['saved'];
+    final readAt = _optionalDocumentDateTime(json['readAt']);
+    final savedAt = _optionalDocumentDateTime(json['savedAt']);
+    final acknowledgedAt = _optionalDocumentDateTime(json['acknowledgedAt']);
+    final acknowledgedVersion = json['acknowledgedVersion'];
+    if (documentId is! String ||
+        fanId is! String ||
+        currentVersion is! num ||
+        read is! bool ||
+        acknowledged is! bool ||
+        saved is! bool ||
+        (json.containsKey('readAt') && readAt == null) ||
+        (json.containsKey('savedAt') && savedAt == null) ||
+        (json.containsKey('acknowledgedAt') && acknowledgedAt == null) ||
+        (acknowledgedVersion != null && acknowledgedVersion is! num)) {
+      throw const FormatException(
+        'Document member state has an invalid response shape.',
+      );
+    }
+    return LoomDocumentMemberState(
+      documentId: documentId,
+      fanId: fanId,
+      currentVersion: currentVersion.toInt(),
+      read: read,
+      acknowledged: acknowledged,
+      saved: saved,
+      readAt: readAt?.toUtc(),
+      savedAt: savedAt?.toUtc(),
+      acknowledgedAt: acknowledgedAt?.toUtc(),
+      acknowledgedVersion: (acknowledgedVersion as num?)?.toInt(),
+    );
+  }
+
+  final String documentId;
+  final String fanId;
+  final int currentVersion;
+  final bool read;
+  final DateTime? readAt;
+  final bool acknowledged;
+  final DateTime? acknowledgedAt;
+  final int? acknowledgedVersion;
+  final bool saved;
+  final DateTime? savedAt;
+
+  /// True only when the service record is for the bytes currently shown.
+  bool get hasAcknowledgedCurrentVersion =>
+      acknowledged && acknowledgedVersion == currentVersion;
+
+  /// A historical acknowledgement is not a current acknowledgement.
+  bool get acknowledgementIsStale =>
+      acknowledged &&
+      acknowledgedVersion != null &&
+      acknowledgedVersion! < currentVersion;
+}
+
+/// One immutable acknowledgement in the document's audit record.
+final class LoomDocumentAcknowledgement {
+  const LoomDocumentAcknowledgement({
+    required this.fanId,
+    required this.version,
+    required this.acknowledgedAt,
+    this.stale,
+  });
+
+  factory LoomDocumentAcknowledgement.fromJson(Map<String, Object?> json) {
+    final fanId = json['fanId'];
+    final version = json['version'];
+    final acknowledgedAt = _optionalDocumentDateTime(json['acknowledgedAt']);
+    final stale = json['stale'];
+    if (fanId is! String ||
+        version is! num ||
+        acknowledgedAt == null ||
+        (stale != null && stale is! bool)) {
+      throw const FormatException(
+        'Document acknowledgement has an invalid response shape.',
+      );
+    }
+    return LoomDocumentAcknowledgement(
+      fanId: fanId,
+      version: version.toInt(),
+      acknowledgedAt: acknowledgedAt.toUtc(),
+      stale: stale as bool?,
+    );
+  }
+
+  final String fanId;
+  final int version;
+  final DateTime acknowledgedAt;
+
+  /// The service's current-version comparison, when requested in a list.
+  final bool? stale;
+}
+
+/// The acknowledgements a document administrator may inspect.
+final class LoomDocumentAcknowledgements {
+  const LoomDocumentAcknowledgements({
+    required this.documentId,
+    required this.currentVersion,
+    required this.acknowledgements,
+  });
+
+  factory LoomDocumentAcknowledgements.fromJson(Map<String, Object?> json) {
+    final documentId = json['documentId'];
+    final currentVersion = json['currentVersion'];
+    final acknowledgements = json['acknowledgements'];
+    if (documentId is! String ||
+        currentVersion is! num ||
+        acknowledgements is! List) {
+      throw const FormatException(
+        'Document acknowledgements have an invalid response shape.',
+      );
+    }
+    return LoomDocumentAcknowledgements(
+      documentId: documentId,
+      currentVersion: currentVersion.toInt(),
+      acknowledgements: acknowledgements
+          .map(
+            (acknowledgement) => LoomDocumentAcknowledgement.fromJson(
+              _documentObject(acknowledgement, 'Document acknowledgements'),
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+
+  final String documentId;
+  final int currentVersion;
+  final List<LoomDocumentAcknowledgement> acknowledgements;
+}
+
 /// Reads and writes the bytes behind `documentLibrary` workflows.
 ///
 /// Holds no access rules of its own. Every refusal comes from the service,
@@ -159,10 +342,9 @@ final class LoomDocumentClient {
     if (title != null && title.isNotEmpty) {
       request.fields['title'] = title;
     }
-    // The media type travels as the `contentType` form field rather than on
-    // the file part. Setting it on the part needs http_parser's MediaType, and
-    // the service already prefers the field over the part's own header -- so
-    // this avoids a dependency to say the same thing twice.
+    // Initial uploads deliberately use the API's `contentType` form field.
+    // Revision uploads use their file-part media type instead, as that route's
+    // contract defines.
     request.files.add(
       http.MultipartFile.fromBytes('file', bytes, filename: filename),
     );
@@ -176,6 +358,46 @@ final class LoomDocumentClient {
     if (response.statusCode != 201 && response.statusCode != 200) {
       throw LoomDocumentException(
         'Uploading "$filename" failed',
+        statusCode: response.statusCode,
+        body: response.body,
+      );
+    }
+    return LoomDocument.fromJson(
+      jsonDecode(response.body) as Map<String, Object?>,
+    );
+  }
+
+  /// Replaces the bytes of an existing document and lets the service assign
+  /// the next version. A caller must never send a version of its own.
+  Future<LoomDocument> addRevision({
+    required String communityId,
+    required String documentId,
+    required String filename,
+    required List<int> bytes,
+    String? changeNote,
+    String contentType = 'application/octet-stream',
+  }) async {
+    final uri = _documentUri(communityId, documentId, 'revisions');
+    final request = http.MultipartRequest('POST', uri)
+      ..headers.addAll(await _headers(mutating: true));
+    if (changeNote != null && changeNote.trim().isNotEmpty) {
+      request.fields['changeNote'] = changeNote.trim();
+    }
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'file',
+        bytes,
+        filename: filename,
+        contentType: MediaType.parse(contentType),
+      ),
+    );
+
+    final response = await http.Response.fromStream(
+      await _httpClient.send(request),
+    );
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw LoomDocumentException(
+        'Adding a revision to "$filename" failed',
         statusCode: response.statusCode,
         body: response.body,
       );
@@ -236,6 +458,67 @@ final class LoomDocumentClient {
     );
   }
 
+  /// Reads only the calling member's state for [documentId].
+  Future<LoomDocumentMemberState> getDocumentMemberState({
+    required String communityId,
+    required String documentId,
+  }) async {
+    final response = await _send(
+      'GET',
+      _documentUri(communityId, documentId, 'state'),
+    );
+    return LoomDocumentMemberState.fromJson(
+      jsonDecode(response.body) as Map<String, Object?>,
+    );
+  }
+
+  /// Updates only the member facts supplied by the caller.
+  ///
+  /// `acknowledged` may be sent only as `true`; the service binds that record
+  /// to its own current version.
+  Future<LoomDocumentMemberState> setDocumentMemberState({
+    required String communityId,
+    required String documentId,
+    bool? read,
+    bool? acknowledged,
+    bool? saved,
+  }) async {
+    if (read == null && acknowledged == null && saved == null) {
+      throw ArgumentError(
+        'At least one document member-state fact is required.',
+      );
+    }
+    final response = await _send(
+      'PUT',
+      _documentUri(communityId, documentId, 'state'),
+      jsonBody: <String, Object?>{
+        if (read != null) 'read': read,
+        if (acknowledged != null) 'acknowledged': acknowledged,
+        if (saved != null) 'saved': saved,
+      },
+    );
+    return LoomDocumentMemberState.fromJson(
+      jsonDecode(response.body) as Map<String, Object?>,
+    );
+  }
+
+  /// Lists the immutable acknowledgements available to a document
+  /// administrator. Ordinary readers are correctly refused by the service.
+  Future<LoomDocumentAcknowledgements> listDocumentAcknowledgements({
+    required String communityId,
+    required String documentId,
+    bool currentVersionOnly = false,
+  }) async {
+    final baseUri = _documentUri(communityId, documentId, 'acknowledgements');
+    final uri = currentVersionOnly
+        ? baseUri.replace(queryParameters: const {'currentVersionOnly': 'true'})
+        : baseUri;
+    final response = await _send('GET', uri);
+    return LoomDocumentAcknowledgements.fromJson(
+      jsonDecode(response.body) as Map<String, Object?>,
+    );
+  }
+
   /// Removes the document.
   Future<void> delete({
     required String communityId,
@@ -251,6 +534,12 @@ final class LoomDocumentClient {
       expectedStatusCodes: const {204},
     );
   }
+
+  Uri _documentUri(String communityId, String documentId, String action) =>
+      _baseUri.resolve(
+        'v1/communities/${Uri.encodeComponent(communityId)}/documents/'
+        '${Uri.encodeComponent(documentId)}/$action',
+      );
 
   void close() => _httpClient.close();
 
@@ -268,10 +557,15 @@ final class LoomDocumentClient {
     String method,
     Uri uri, {
     bool mutating = false,
+    Map<String, Object?>? jsonBody,
     Set<int> expectedStatusCodes = const {200},
   }) async {
     final request = http.Request(method, uri)
       ..headers.addAll(await _headers(mutating: mutating));
+    if (jsonBody != null) {
+      request.headers['content-type'] = 'application/json';
+      request.body = jsonEncode(jsonBody);
+    }
     final response = await http.Response.fromStream(
       await _httpClient.send(request),
     );
@@ -284,6 +578,16 @@ final class LoomDocumentClient {
     }
     return response;
   }
+}
+
+DateTime? _optionalDocumentDateTime(Object? value) {
+  if (value == null || value is! String) return null;
+  return DateTime.tryParse(value);
+}
+
+Map<String, Object?> _documentObject(Object? value, String source) {
+  if (value is Map) return Map<String, Object?>.from(value);
+  throw FormatException('$source must be a JSON object.');
 }
 
 /// A document operation the service refused or could not complete.

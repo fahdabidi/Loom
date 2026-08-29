@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:loom_auth_session/loom_auth_session.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';

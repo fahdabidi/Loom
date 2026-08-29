@@ -1053,15 +1053,24 @@ class _DocumentLibraryArchetypeCardState
   late WorkflowInstance _instance;
   List<LoomWorkflowTransition> _actions = const [];
   bool _loadingActions = true;
+  LoomDocument? _document;
+  LoomDocumentMemberState? _memberState;
+  bool _loadingMemberState = false;
+  bool _memberStateUnavailable = false;
+  String? _memberStateUnavailableDetail;
+  bool _documentLookupComplete = false;
+  bool _documentAmbiguous = false;
   bool _mutating = false;
   String? _error;
   int _actionRequest = 0;
+  int _memberStateRequest = 0;
 
   @override
   void initState() {
     super.initState();
     _instance = widget.resolved.instance;
     _loadActions();
+    _loadDocumentMemberState();
   }
 
   @override
@@ -1076,12 +1085,14 @@ class _DocumentLibraryArchetypeCardState
         oldWidget.engine != widget.engine) {
       _instance = newInstance;
       _loadActions();
+      _loadDocumentMemberState();
     }
   }
 
   @override
   void dispose() {
     _actionRequest++;
+    _memberStateRequest++;
     super.dispose();
   }
 
@@ -1121,7 +1132,9 @@ class _DocumentLibraryArchetypeCardState
       .map(
         (action) => WorkflowActionButtonTransition(
           id: action.id,
-          label: action.label,
+          label: action.action == 'upload' && _document != null
+              ? 'Add revision'
+              : action.label,
           iconName: action.icon,
           tone: _toneFor(action.tone),
         ),
@@ -1133,6 +1146,188 @@ class _DocumentLibraryArchetypeCardState
     'destructive' => WorkflowActionTone.destructive,
     _ => WorkflowActionTone.primary,
   };
+
+  static const _memberStateActions = <String>{
+    'open',
+    'mark_read',
+    'mark_unread',
+    'acknowledge',
+    'save',
+  };
+
+  bool get _declaresMemberStateAction => widget.resolved.machine.transitions
+      .any((transition) => _memberStateActions.contains(transition.action));
+
+  bool get _declaresUpload => widget.resolved.machine.transitions.any(
+    (transition) => transition.action == 'upload',
+  );
+
+  List<String> get _storedDocumentFields =>
+      storedDocumentFieldNames(widget.resolved.machine);
+
+  bool get _usesServiceDocument =>
+      widget.engine is RemoteWorkflowEngineApi &&
+      (_declaresMemberStateAction ||
+          (_storedDocumentFields.length == 1 && _declaresUpload));
+
+  LoomDocumentClient? get _documentClient =>
+      _usesServiceDocument ? resolveLoomDocumentClient() : null;
+
+  String? get _documentCommunityId {
+    final engine = widget.engine;
+    return engine is RemoteWorkflowEngineApi ? engine.communityId : null;
+  }
+
+  String? get _documentStateConfigurationProblem {
+    if (!_declaresMemberStateAction) return null;
+    if (widget.engine is! RemoteWorkflowEngineApi) {
+      return 'Member state is available when connected to a community.';
+    }
+    return null;
+  }
+
+  Future<void> _loadDocumentMemberState() async {
+    final request = ++_memberStateRequest;
+    final configurationProblem = _documentStateConfigurationProblem;
+    if (!_usesServiceDocument) {
+      if (!mounted || request != _memberStateRequest) return;
+      if (configurationProblem != null) {
+        setState(() {
+          _document = null;
+          _memberState = null;
+          _loadingMemberState = false;
+          _memberStateUnavailable = true;
+          _memberStateUnavailableDetail = configurationProblem;
+          _documentLookupComplete = false;
+          _documentAmbiguous = false;
+        });
+      }
+      return;
+    }
+
+    final client = _documentClient;
+    final communityId = _documentCommunityId;
+    if (client == null || communityId == null) {
+      if (!mounted || request != _memberStateRequest) return;
+      setState(() {
+        _document = null;
+        _memberState = null;
+        _loadingMemberState = false;
+        _memberStateUnavailable = true;
+        _memberStateUnavailableDetail = 'The document service is unavailable.';
+        _documentLookupComplete = false;
+        _documentAmbiguous = false;
+      });
+      return;
+    }
+
+    if (mounted) {
+      // Never leave an old member answer visible while a fresh document lookup
+      // is in flight. A prior acknowledgement is not an estimate of this one.
+      setState(() {
+        _document = null;
+        _memberState = null;
+        _loadingMemberState = true;
+        _memberStateUnavailable = false;
+        _memberStateUnavailableDetail = null;
+        _documentLookupComplete = false;
+        _documentAmbiguous = false;
+      });
+    }
+    try {
+      final documents = await client.listForInstance(
+        communityId: communityId,
+        instanceId: _instance.instanceId,
+      );
+      if (!mounted || request != _memberStateRequest) return;
+      if (documents.isEmpty) {
+        setState(() {
+          _document = null;
+          _memberState = null;
+          _loadingMemberState = false;
+          _memberStateUnavailable = false;
+          _memberStateUnavailableDetail = null;
+          _documentLookupComplete = true;
+          _documentAmbiguous = false;
+        });
+        return;
+      }
+      if (documents.length > 1) {
+        setState(() {
+          _document = null;
+          _memberState = null;
+          _loadingMemberState = false;
+          _memberStateUnavailable = true;
+          _memberStateUnavailableDetail =
+              'This library has multiple stored documents. Loom cannot choose '
+              'which one to update.';
+          _documentLookupComplete = true;
+          _documentAmbiguous = true;
+        });
+        return;
+      }
+
+      final document = documents.single;
+      setState(() {
+        _document = document;
+        _loadingMemberState = true;
+        _documentLookupComplete = true;
+      });
+      final state = await client.getDocumentMemberState(
+        communityId: communityId,
+        documentId: document.documentId,
+      );
+      if (!mounted || request != _memberStateRequest) return;
+      setState(() {
+        _memberState = state;
+        _loadingMemberState = false;
+        _memberStateUnavailable = false;
+        _memberStateUnavailableDetail = null;
+      });
+    } catch (_) {
+      if (!mounted || request != _memberStateRequest) return;
+      setState(() {
+        _memberState = null;
+        _loadingMemberState = false;
+        _memberStateUnavailable = true;
+        _memberStateUnavailableDetail = 'The document service is unavailable.';
+        _documentLookupComplete = false;
+        _documentAmbiguous = false;
+      });
+    }
+  }
+
+  Map<String, bool>? _memberStateUpdateFor(String? action) => switch (action) {
+    'open' || 'mark_read' => const {'read': true},
+    'mark_unread' => const {'read': false},
+    'acknowledge' => const {'acknowledged': true},
+    'save' => const {'saved': true},
+    _ => null,
+  };
+
+  Future<void> _recordDocumentMemberState(Map<String, bool> update) async {
+    final client = _documentClient;
+    final communityId = _documentCommunityId;
+    final document = _document;
+    if (client == null || communityId == null || document == null) {
+      throw StateError(
+        'A stored document could not be resolved for this action.',
+      );
+    }
+    final state = await client.setDocumentMemberState(
+      communityId: communityId,
+      documentId: document.documentId,
+      read: update['read'],
+      acknowledged: update['acknowledged'],
+      saved: update['saved'],
+    );
+    if (!mounted) return;
+    setState(() {
+      _memberState = state;
+      _memberStateUnavailable = false;
+      _memberStateUnavailableDetail = null;
+    });
+  }
 
   Map<String, WorkflowFactPillFieldSchema> _factSchema() {
     final schema = <String, WorkflowFactPillFieldSchema>{};
@@ -1203,6 +1398,13 @@ class _DocumentLibraryArchetypeCardState
       return;
     }
 
+    if (!_documentLookupComplete || _documentAmbiguous) {
+      setState(
+        () => _error = 'Could not determine which stored document to update.',
+      );
+      return;
+    }
+
     final engine = widget.engine as RemoteWorkflowEngineApi;
     final client = resolveLoomDocumentClient()!;
     final fieldName = storedDocumentFieldName(widget.resolved.machine)!;
@@ -1224,15 +1426,24 @@ class _DocumentLibraryArchetypeCardState
       _error = null;
     });
     try {
-      final document = await client.upload(
-        communityId: engine.communityId,
-        instanceId: _instance.instanceId,
-        fieldName: fieldName,
-        filename: picked.filename,
-        bytes: picked.bytes,
-        contentType: picked.contentType,
-        title: _instance.instanceData['title'] as String?,
-      );
+      final existing = _document;
+      final document = existing == null
+          ? await client.upload(
+              communityId: engine.communityId,
+              instanceId: _instance.instanceId,
+              fieldName: fieldName,
+              filename: picked.filename,
+              bytes: picked.bytes,
+              contentType: picked.contentType,
+              title: _instance.instanceData['title'] as String?,
+            )
+          : await client.addRevision(
+              communityId: engine.communityId,
+              documentId: existing.documentId,
+              filename: picked.filename,
+              bytes: picked.bytes,
+              contentType: picked.contentType,
+            );
 
       // The service already wrote this exact value into the instance. Mirroring
       // it locally rather than refetching keeps the card in step without a
@@ -1255,6 +1466,7 @@ class _DocumentLibraryArchetypeCardState
       });
       widget.onInstanceChanged(next);
       await _loadActions();
+      await _loadDocumentMemberState();
     } on LoomDocumentException catch (error) {
       if (!mounted) return;
       setState(() {
@@ -1294,6 +1506,34 @@ class _DocumentLibraryArchetypeCardState
       _mutating = true;
       _error = null;
     });
+    final memberStateUpdate = _memberStateUpdateFor(transition.action);
+    if (memberStateUpdate != null && _usesServiceDocument) {
+      if (_loadingMemberState || _memberStateUnavailable || _document == null) {
+        setState(() {
+          _mutating = false;
+          _error = 'Could not record your document state. It is unavailable.';
+        });
+        return;
+      }
+      try {
+        // Resolve semantic behavior from `action`, not an author-owned id:
+        // acknowledge-material and acknowledge-document describe the same
+        // member fact even though their communities name the transitions
+        // differently.
+        await _recordDocumentMemberState(memberStateUpdate);
+      } catch (_) {
+        if (!mounted) return;
+        setState(() {
+          _mutating = false;
+          _memberState = null;
+          _memberStateUnavailable = true;
+          _memberStateUnavailableDetail =
+              'The document service is unavailable.';
+          _error = 'Could not record your document state.';
+        });
+        return;
+      }
+    }
     try {
       final result = await widget.engine.applyTransition(
         workflowType: _instance.workflowType,
@@ -1316,6 +1556,7 @@ class _DocumentLibraryArchetypeCardState
       });
       widget.onInstanceChanged(next);
       await _loadActions();
+      await _loadDocumentMemberState();
       if (!mounted) return;
       if (transition.effects.any(
             (effect) => effect.op == 'removeFromTileGrid',
@@ -1330,6 +1571,67 @@ class _DocumentLibraryArchetypeCardState
         _error = 'Could not update this document.';
       });
     }
+  }
+
+  Widget _memberStateStatus(BuildContext context, Color foreground) {
+    final instanceId = _instance.instanceId;
+    if (_loadingMemberState) {
+      return const Padding(
+        key: ValueKey('document-library-member-state-loading'),
+        padding: EdgeInsets.only(top: 10),
+        child: Text('Loading document state…'),
+      );
+    }
+    if (_memberStateUnavailable) {
+      return Padding(
+        key: ValueKey('document-library-member-state-unavailable-$instanceId'),
+        padding: const EdgeInsets.only(top: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Member state unavailable.'),
+            if (_memberStateUnavailableDetail != null)
+              Text(_memberStateUnavailableDetail!),
+          ],
+        ),
+      );
+    }
+    if (_document == null && _documentLookupComplete) {
+      return const Padding(
+        key: ValueKey('document-library-no-stored-document'),
+        padding: EdgeInsets.only(top: 10),
+        child: Text('No stored document yet.'),
+      );
+    }
+    final state = _memberState;
+    if (state == null) return const SizedBox();
+    final acknowledgement = state.hasAcknowledgedCurrentVersion
+        ? 'Acknowledgement: current (version ${state.acknowledgedVersion}).'
+        : state.acknowledgementIsStale
+        ? 'Acknowledgement: stale (version ${state.acknowledgedVersion}; '
+              'current version ${state.currentVersion}).'
+        : state.acknowledged
+        ? 'Acknowledgement: record unavailable.'
+        : 'Acknowledgement: not acknowledged.';
+    return Padding(
+      key: ValueKey('document-library-member-state-$instanceId'),
+      padding: const EdgeInsets.only(top: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Document version: ${state.currentVersion}',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: foreground,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(state.read ? 'Read' : 'Unread'),
+          Text(state.saved ? 'Saved' : 'Not saved'),
+          Text(acknowledgement),
+        ],
+      ),
+    );
   }
 
   @override
@@ -1354,6 +1656,8 @@ class _DocumentLibraryArchetypeCardState
                 foreground: foreground,
                 accent: widget.accent,
               ),
+              if (_declaresMemberStateAction || _document != null)
+                _memberStateStatus(context, foreground),
               if (_loadingActions || _mutating)
                 Padding(
                   padding: const EdgeInsets.only(top: 10),

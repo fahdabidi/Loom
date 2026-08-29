@@ -65,6 +65,19 @@ void main() {
       });
       expect(storedDocumentFieldName(machine), 'documentUrl');
     });
+
+    test('refuses to pick between multiple platform-owned document fields', () {
+      final machine = _machine({
+        'policyUrl': {'type': 'url', 'writableBy': 'platform'},
+        'minutesUrl': {'type': 'url?', 'writableBy': 'platform'},
+      });
+
+      expect(storedDocumentFieldNames(machine), <String>[
+        'policyUrl',
+        'minutesUrl',
+      ]);
+      expect(storedDocumentFieldName(machine), isNull);
+    });
   });
 
   group('upload blockers', () {

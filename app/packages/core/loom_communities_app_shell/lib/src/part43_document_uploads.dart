@@ -62,13 +62,27 @@ Future<LoomPickedDocument?> pickLoomDocumentFromDevice() async {
 /// library stores bytes in a real service; an in-memory engine has nowhere to
 /// put them, and pretending otherwise is the kind of fake this migration exists
 /// to remove.
+LoomDocumentClient? _documentClientOverrideForTesting;
+
 LoomDocumentClient? resolveLoomDocumentClient() {
+  final override = _documentClientOverrideForTesting;
+  if (override != null) return override;
   final configuration = loomRemoteServiceConfiguration;
   if (configuration == null) return null;
   return LoomDocumentClient(
     workflowServiceBaseUri: configuration.workflowServiceBaseUri,
     session: configuration.session,
   );
+}
+
+@visibleForTesting
+void overrideLoomDocumentClientForTesting(LoomDocumentClient? client) {
+  _documentClientOverrideForTesting = client;
+}
+
+@visibleForTesting
+void resetLoomDocumentClientForTesting() {
+  _documentClientOverrideForTesting = null;
 }
 
 /// The instance field a stored document fills, or null for a link library.
@@ -78,15 +92,20 @@ LoomDocumentClient? resolveLoomDocumentClient() {
 /// Not matched by name — `documentUrl` is what Cedar happens to call it, and
 /// reading meaning from an identifier's spelling is a mistake this project has
 /// made before.
-String? storedDocumentFieldName(LoomWorkflowStateMachine machine) {
+List<String> storedDocumentFieldNames(LoomWorkflowStateMachine machine) {
+  final fields = <String>[];
   for (final entry in machine.instanceDataSchema.entries) {
     final field = entry.value;
     final type = field.type;
-    if (type != 'url' && type != 'url?') continue;
-    if (field.writableBy != 'platform') continue;
-    return entry.key;
+    if ((type == 'url' || type == 'url?') && field.writableBy == 'platform')
+      fields.add(entry.key);
   }
-  return null;
+  return List.unmodifiable(fields);
+}
+
+String? storedDocumentFieldName(LoomWorkflowStateMachine machine) {
+  final fields = storedDocumentFieldNames(machine);
+  return fields.length == 1 ? fields.single : null;
 }
 
 /// Why an upload could not start. Null means it can.
@@ -105,7 +124,12 @@ String? loomDocumentUploadBlocker({
   if (resolveLoomDocumentClient() == null) {
     return 'This community has no document storage configured.';
   }
-  if (storedDocumentFieldName(machine) == null) {
+  final storedFields = storedDocumentFieldNames(machine);
+  if (storedFields.length > 1) {
+    return 'This document library declares multiple stored document fields. '
+        'It cannot choose a document safely.';
+  }
+  if (storedFields.isEmpty) {
     return 'This document library holds links rather than stored files.';
   }
   return null;
