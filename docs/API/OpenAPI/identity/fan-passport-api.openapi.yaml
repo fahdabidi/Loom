@@ -478,6 +478,94 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListCreatorCategoryPermissionPoliciesResponse'
+  /v1/fan-passports/{fanId}/notification-preferences:
+    get:
+      tags: [Notification preferences]
+      operationId: listNotificationPreferences
+      summary: How this fan wants to be notified, per community.
+      description: >-
+        Returns the caller's own preferences for every community they belong to, plus the default
+        applied where they have expressed none.
+
+
+        **Why this lives on the passport rather than in a community package.** A community's JSON
+        declares what the community does; this declares what one member wants. The distinction is the
+        same one the document library draws between a document and a member's `read`/`acknowledged`
+        state: the workflow instance has one state, and a per-member fact needs somewhere else to
+        live. Putting it here also means it survives a reinstall and follows the member across
+        devices, which a local setting would not.
+
+
+        **A preference is not permission.** It selects among channels a member may already receive on;
+        it never grants access to anything. Muting every channel does not stop a notification instance
+        being created, and does not remove it from the in-app inbox where it remains readable — it
+        stops the member being interrupted. Anything that treats a preference as an authorization
+        decision has misread it.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The caller's preferences, and the default for anything unset.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferenceSet'
+        '403':
+          description: >-
+            A fan may read only their own preferences. Not distinguished from a non-existent passport,
+            so this endpoint cannot be used to discover which fans exist.
+        '404':
+          description: No such fan passport.
+
+    put:
+      tags: [Notification preferences]
+      operationId: setCommunityNotificationPreference
+      summary: Choose how this fan is notified in one community.
+      description: >-
+        Sets the caller's own preference for a single community. Identity comes from the token; a fan
+        cannot set another fan's preference, and the `fanId` in the path must match the token or the
+        request is refused.
+
+
+        **Unset is a real state, distinct from any explicit choice.** A member who has never chosen
+        gets the platform default and continues to get it if that default changes; a member who has
+        explicitly selected the same channels keeps them regardless. Storing the default eagerly on
+        first read would erase that difference permanently and silently, so preferences are written
+        only when a member actually chooses.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPreferenceUpdate'
+      responses:
+        '200':
+          description: The stored preference for that community.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityNotificationPreference'
+        '400':
+          description: >-
+            An unknown channel, or an empty `channels` array. Silence is expressed as
+            `channels: ["inbox"]` with `muted: true`, never as an absent list — an empty array reads
+            as "no opinion" to a client and as "no delivery" to a server, and those must not be the
+            same value.
+        '403':
+          description: The caller is not this fan.
+
 components:
   securitySchemes:
     LoomUserOAuth:
@@ -1087,3 +1175,88 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CreatorCategoryPermissionPolicy'
+    NotificationChannel:
+      type: string
+      enum: [inbox, push]
+      description: >-
+        `inbox` is the in-app notification list — the `notificationInbox` archetype, which already
+        renders notification instances in 20 bindings across 7 communities. `push` is a
+        device-delivered alert.
+
+
+        Both already have working delivery paths on a running device
+        (`FlutterLocalNotificationsPlugin`); what a preference adds is the member's say in which they
+        get. Server-initiated push, for a member whose app is closed, is a separate and
+        currently-unimplemented capability — see `push-delivery-api.openapi.yaml`.
+
+    CommunityNotificationPreference:
+      type: object
+      additionalProperties: false
+      required: [communityId, channels, muted, source]
+      properties:
+        communityId:
+          type: string
+          description: >-
+            The workflow service's underscored community key, not the hyphenated group handle. The two
+            are different identifiers for the same community and neither is derivable from the other.
+          pattern: '^[a-z0-9_]+$'
+        channels:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          description: >-
+            Which channels this member accepts. Never empty — see the `400` on the PUT for why
+            silence is `muted`, not an absent list.
+          items:
+            $ref: '#/components/schemas/NotificationChannel'
+        muted:
+          type: boolean
+          description: >-
+            Suppresses interruption while leaving the notification readable in the inbox. A muted
+            member still has notifications created and still sees them when they look; they are not
+            told. This is deliberately not the same as removing `inbox` from `channels`, which would
+            hide the record itself.
+        source:
+          type: string
+          enum: [member, default]
+          description: >-
+            `member` when this fan chose it; `default` when nothing is stored and the platform default
+            is being reported. A client showing a settings screen needs the difference — "you have not
+            chosen" and "you chose exactly this" look identical in the values alone, and one of them
+            should follow a changed default while the other must not.
+        updatedAt:
+          type: string
+          format: date-time
+          description: Absent when `source` is `default`, because nothing was stored.
+
+    NotificationPreferenceSet:
+      type: object
+      additionalProperties: false
+      required: [fanId, preferences, platformDefault]
+      properties:
+        fanId:
+          type: string
+        preferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommunityNotificationPreference'
+        platformDefault:
+          $ref: '#/components/schemas/CommunityNotificationPreference'
+
+    NotificationPreferenceUpdate:
+      type: object
+      additionalProperties: false
+      required: [communityId, channels]
+      properties:
+        communityId:
+          type: string
+          pattern: '^[a-z0-9_]+$'
+        channels:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/NotificationChannel'
+        muted:
+          type: boolean
+          default: false
