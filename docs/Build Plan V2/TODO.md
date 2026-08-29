@@ -44,7 +44,7 @@ known answer for every kind of thing it claims to find, not just one.**
 Each loop tick reports position in THIS list. A service is not "done" until it is built, deployed,
 reachable from the app, and a member-visible behaviour depends on it.
 
-**B1. Item queue — deploy and wire.** IN PROGRESS.
+**B1. Item queue — deploy and wire. DONE 2026-08-28.** Service built, deployed as `loom-workflow-service:0.5.0`, routes verified live with a negative control, app client and surface wired, and `join_queue`/`leave_queue` exempted from `transition_has_no_observable_effect` because the service now completes them. Six dead buttons are live.
 - [x] service built, 12 tests, workflow service 89 → 107
 - [x] startup no longer gated on the offer-hold config (`b9df5a35`)
 - [ ] build `loom-workflow-service:0.5.0` — failed once (I ran `docker image prune` mid-build), rebuilding
@@ -55,7 +55,30 @@ reachable from the app, and a member-visible behaviour depends on it.
 - [x] app queue client + surface wiring (`3e5efcb6`) — app shell 320 → 325, resolves by `action` not transition id, UUID correlation ids, unavailable rendered distinctly from not-queued
 - [ ] **CORRECTED: the packages do NOT need regenerating.** This entry originally said to regenerate the three communities so the transitions "call the service". They already declare `action: join_queue`/`leave_queue`, and the app resolves the affordance by action and calls the service itself — so the transitions are correct as authored. What was actually needed is a validator exemption: `join_queue`/`leave_queue` join `upload` in `_platformCompletedActions`, because the queue service records membership outside workflow JSON exactly as the Document Library API writes uploaded content. **Regenerating them to append to a `queuedFanIds` instance field would have been actively wrong** — two sources of truth for queue membership, disagreeing the moment anything touched one and not the other
 
-**B2. Notification channels — CORRECTED 2026-08-28, the gap is much smaller than first recorded.**
+**B2. Notification channels — preference store DEPLOYED, app integration outstanding.**
+
+Status 2026-08-28: fan-passport `0.3.1` is live with the two preference operations. Verified against
+the database rather than the rollout: `flyway_schema_history` shows V3 applied,
+`notification_preference` and `notification_preference_channel` exist with the right columns, and the
+`inbox|push` CHECK constraint is enforced by Postgres and not only by the API.
+
+- [x] spec on fan-passport, both copies byte-identical
+- [x] implementation, 31/31 tests
+- [x] `platform_default` pseudo-key removed — it existed only because I typed `platformDefault` as
+      `CommunityNotificationPreference`, which requires a `communityId` that a platform default does
+      not have. A schema demanding an identifier for something with no identity produces a fabricated
+      identifier every time
+- [x] deployed and migration verified in the live database
+- [ ] **app client + settings surface — nothing in the app reads or writes a preference yet.** Deployed
+      is not integrated
+- [ ] **provider-agnostic push contract**, for the closed-app case. The device path only fires while
+      the app runs
+
+**Also true, and easy to lose:** delivery failures are invisible. The delivery service swallows every
+platform error by design ("best-effort"), so a failed delivery is indistinguishable from a successful
+one. Fine until something depends on delivery having happened — the queue's "you're next" will.
+
+**CORRECTED 2026-08-28 — the original entry overstated this gap.**
 
 My original entry said delivery was "interface only" and that the reminder sweep "has never delivered
 to a real recipient". Both were wrong, and wrong the same way: I read names and inferred instead of
