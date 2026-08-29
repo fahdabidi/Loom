@@ -263,12 +263,30 @@ B2 was written as "mounting blocked" and B3 as "done, deployed" while both were 
 | B1 item queue | yes | yes | yes -- `part36` | **yes** |
 | B2 notification preferences | yes | yes | no | no |
 | B3 change feed | yes | yes | no | no |
-| B5 document versioning | yes | yes | **no client exists** | no |
+| B5 document versioning | yes | yes | client exists, **missing 4 methods** | no |
 | B6 replica | yes | n/a | no | no |
 
 `LoomItemQueueClient` and `LoomExportBundleClient` are called from
 `part36_engine_native_marketplace_surface.dart`. `NotificationPreferencesClient` and
 `LoomWorkflowReplica` are referenced by nothing outside their own part files.
+
+**CORRECTION 2026-08-29: "app dark" is not one condition, and B5 is the cheapest item here, not a
+blocked one.** I had recorded B5 as having no client at all. `part42_document_client.dart` exists
+with `upload`, `download`, `access` and `delete`, and `LoomDocumentClient` is called from
+`part36_engine_native_marketplace_surface.dart` -- members use the document library today. What is
+missing is four client methods for B5's new operations plus the surface calls. Purely additive, no
+decision required.
+
+B3 is dark for a different reason entirely, and the difference matters more than the shared label:
+
+| | Client | Surface | What it needs |
+|---|---|---|---|
+| B3 change feed | built, referenced only by its own test | **none -- it is not a screen feature** | The engine-seam decision: when to sync, when to read the replica instead of the network |
+| B5 document versioning | exists, missing 4 methods | **already live** | Add the methods, call them |
+
+B3 is infrastructure with no owner: nothing decides when to sync, because the app runs
+`LocalWorkflowEngineApi` over an in-memory database and every dispatch was forbidden from changing
+that seam. B5 needs no decision at all.
 
 **B1 is the only one a member can use.** Do not write "done" for anything that is merely deployed --
 a service answering `401` to a probe proves the route exists, not that the product does anything.
