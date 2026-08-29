@@ -470,7 +470,40 @@ B3's per-viewer change feed.
 
 - [ ] `new-ticket` — **community isolation is a `WHERE community_id = ?` clause.** Not schema-per-tenant, not row-level security; one missing predicate leaks across communities and nothing structural prevents it. Wants a test that runs every repository query against a two-community fixture
 - [ ] `new-ticket` — **idempotency is reimplemented per repository.** `document_repository`, the bundle repository and the queue repository each carry their own `idempotency_key` column and index. Three implementations of one contract will drift; wants one shared table keyed by `(community, route, key)`
-- [ ] `needs-spec-decision` — **do archetype backends stay in `loom_workflow_service`?** Three now live there beside the engine. They share one need — resolve permission by asking the engine "could this caller invoke action X" — so splitting means duplicating that or a call per request. The deciding factor is deployment independence, not tidiness
+- [x] `DECIDED 2026-08-29` — **archetype backends stay in `loom_workflow_service`, with enforced
+  module boundaries.** User direction: "We are making all code production ready. So implement this in
+  the most robust production ready way. With no shortcuts."
+
+  **Robust points at staying together here, and that is the argument, not convenience.** 15 call
+  sites resolve permission by asking the engine "could this caller invoke action X". Splitting leaves
+  two options and both are worse: duplicate the authorization logic, giving **two sources of truth
+  about who may do what** — divergence there is a security bug, not a wrong answer — or an
+  authorization round-trip per request, which adds a failure mode and latency while keeping the
+  coupling. One in-process authorization path is the safer system.
+
+  Obligations that come with the decision, so "keep together" is not "leave alone":
+  - module boundaries enforced (separate libraries, no cross-imports) so extraction stays mechanical
+  - `workflow_service.dart` is **4,484 lines** of an 8,075-line package; decompose per domain
+  - revisit only on a real operational difference (bundle downloads saturating the pod), never on
+    "documents are a different noun"
+
+### PRODUCTION READINESS — measured 2026-08-29, not assumed
+
+- [ ] **workflow-service has no liveness or readiness probe, and no health endpoint.** `/health`,
+  `/healthz`, `/readyz` all `404`. It is the **only** application service without them; app-access,
+  fan-passport and keycloak have both, postgres has `pg_isready`. **Four rollouts happened today and
+  every one put the pod into service before it had connected to Postgres** — they looked clean only
+  because the service wins that race when starting fast. Dispatched.
+- [ ] **`LOOM_POSTGRES_DATABASE` defaults to `loom_app_access`** in both the service entrypoint and
+  the publisher CLI, while definitions live in `loom_workflow_service`. Production is correct only
+  because the manifest overrides it; a manual publisher run without it hits the wrong database.
+  Dispatched with the probes.
+- [ ] **Every service runs a single replica**, so any restart is downtime. Separate decision:
+  replica counts, PDBs and whether the Dart service is safe to run concurrently.
+- [ ] **minio has no liveness probe.**
+- [ ] TLS: a JWT crosses the dev link in plaintext, with an Android cleartext exemption that must not
+  outlive it. Already on the pre-GA list; restated here because "production ready" now includes it.
+
 
 
 
