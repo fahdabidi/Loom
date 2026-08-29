@@ -217,6 +217,38 @@ Still open: mounting it, which needs the same app-chrome decision B2's preferenc
 
 **Deferred by user decision, not forgotten:** payment processing, external search/AI answer.
 
+### Status vocabulary — four states, because "done" was hiding the difference
+
+Measured 2026-08-29 by looking for real call sites, after the labels in my own reports drifted apart:
+B2 was written as "mounting blocked" and B3 as "done, deployed" while both were in the **same** state.
+
+| Term | Means |
+|---|---|
+| **Built** | In `main`, suites green |
+| **Deployed** | Answering in the cluster (backend only) |
+| **Wired** | An app client exists **and something calls it** |
+| **Reachable** | A member can get to it from a surface |
+
+| | Built | Deployed | Wired | Reachable |
+|---|---|---|---|---|
+| B1 item queue | yes | yes | yes -- `part36` | **yes** |
+| B2 notification preferences | yes | yes | no | no |
+| B3 change feed | yes | yes | no | no |
+| B5 document versioning | yes | yes | **no client exists** | no |
+| B6 replica | yes | n/a | no | no |
+
+`LoomItemQueueClient` and `LoomExportBundleClient` are called from
+`part36_engine_native_marketplace_surface.dart`. `NotificationPreferencesClient` and
+`LoomWorkflowReplica` are referenced by nothing outside their own part files.
+
+**B1 is the only one a member can use.** Do not write "done" for anything that is merely deployed --
+a service answering `401` to a probe proves the route exists, not that the product does anything.
+
+**One decision blocks four items.** There is no app-level settings or profile screen, so B2, B3, B5
+and B6 all have nowhere to live. Dispatches were deliberately forbidden from inventing one, because
+app-wide navigation is an architecture decision and making it inside a ticket makes it by accident.
+That decision is worth more than any remaining backend work.
+
 **B7. DONE 2026-08-29 — publisher built (`21f4adc0`) and 82 definitions published live.**
 `bin/publish_workflow_definitions.dart`, dry-run by default, reading the same package assets the app
 ships. All 10 communities, 82 workflows; the tool round-trips each community through
