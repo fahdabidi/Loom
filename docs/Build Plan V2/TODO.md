@@ -109,11 +109,33 @@ Actually missing, and this is the whole of B2:
   for the engine; it also means a failed delivery is indistinguishable from a successful one, which
   matters once anything depends on delivery having happened
 
-**B3. Instance versioning + per-viewer change feed.** Blocks session resume and offline browse.
-Instances carry no `version` or `updatedAt`; `GET /instances` has no `updatedSince`. **The feed must
-be per-viewer** — `readVisibleInstance(instanceId, fanId)` computes visibility per fan, so there is no
-community-wide answer to "what changed". Must report disappearances as events, and invalidate the
-cursor when the caller's roles change, or a replica is not merely stale but wrong.
+**B3. Per-viewer change feed — CORRECTED 2026-08-29, twice smaller than recorded.**
+
+I wrote that "instances carry no `version` or `updatedAt`". Wrong: `workflow_instances.updated_at`
+exists as a BIGINT and is genuinely maintained — the engine writes it on every transition
+(`SET current_state = ?, instance_data = ?, updated_at = ?`), and live data confirms it moves
+independently of `created_at`. I had read `database.dart`, seen `version` only on definitions, and
+generalised.
+
+I also wrote that B3 depends on the group→community mapping gap. It does not.
+`RemoteWorkflowEngineApi` is constructed with a `communityId`, so a feed is scoped by its caller and
+never has to enumerate a viewer's communities. That blocker belongs to the settings surface alone.
+
+So what actually remains:
+
+- [ ] `new-ticket` — **expose `updatedAt` on the instance in the API response.** It is stored and never
+  returned
+- [ ] `new-ticket` — **an `updatedSince` query on `GET /instances`**, so a replica asks for what changed
+  instead of refetching everything
+- [ ] `needs-spec-decision` — **`updated_at` is a millisecond timestamp, and a cursor wants a total
+  order.** Two instances updated in the same millisecond are indistinguishable, so a client resuming
+  at that timestamp either repeats or skips. A monotonic per-community sequence would be exact; reusing
+  the timestamp is cheaper and occasionally wrong. Worth deciding rather than discovering
+- [ ] `needs-spec-decision` — **the feed must be per-viewer, and that is the hard part.**
+  `readVisibleInstance(instanceId, fanId)` resolves visibility per fan, so there is no community-wide
+  answer to "what changed". It must report **disappearances** — an instance leaving your visibility is
+  an event, not an absence — and invalidate the cursor when the caller's roles change, or a replica is
+  not merely stale but wrong
 
 **B4. ID generation.** Smallest remaining. Receipt, transfer and export ids are declared across four
 communities and permanently unwritable. Removes the last `NEEDS IMPLEMENTATION` comments after
