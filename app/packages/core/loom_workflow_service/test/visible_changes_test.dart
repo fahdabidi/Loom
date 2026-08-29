@@ -54,12 +54,20 @@ void main() {
 
       final board = await _responseBody(
         await service.handler(
-          _changesRequest(fanId: 'fan-board', updatedSince: 1000),
+          _changesRequest(
+            fanId: 'fan-board',
+            updatedSince: 1000,
+            afterInstanceId: '',
+          ),
         ),
       );
       final member = await _responseBody(
         await service.handler(
-          _changesRequest(fanId: 'fan-member', updatedSince: 1000),
+          _changesRequest(
+            fanId: 'fan-member',
+            updatedSince: 1000,
+            afterInstanceId: '',
+          ),
         ),
       );
 
@@ -87,7 +95,11 @@ void main() {
 
     final body = await _responseBody(
       await service.handler(
-        _changesRequest(fanId: 'fan-member', updatedSince: 2000),
+        _changesRequest(
+          fanId: 'fan-member',
+          updatedSince: 2000,
+          afterInstanceId: '',
+        ),
       ),
     );
 
@@ -111,12 +123,17 @@ void main() {
 
       final body = await _responseBody(
         await service.handler(
-          _changesRequest(fanId: 'fan-member', updatedSince: 3000),
+          _changesRequest(
+            fanId: 'fan-member',
+            updatedSince: 3000,
+            afterInstanceId: '',
+          ),
         ),
       );
 
       expect(_changedIds(body), isEmpty);
       expect(_visibleIds(body), isEmpty);
+      expect(body['nextAfterInstanceId'], '');
     },
   );
 
@@ -133,13 +150,18 @@ void main() {
 
       final body = await _responseBody(
         await service.handler(
-          _changesRequest(fanId: 'fan-member', updatedSince: 4001),
+          _changesRequest(
+            fanId: 'fan-member',
+            updatedSince: 4001,
+            afterInstanceId: '',
+          ),
         ),
       );
 
       expect(_changedIds(body), isEmpty);
       expect(_visibleIds(body), ['unchanged-visible']);
       expect(body['nextUpdatedSince'], 4001);
+      expect(body['nextAfterInstanceId'], '');
     },
   );
 
@@ -168,7 +190,8 @@ void main() {
         await service.handler(
           _changesRequest(
             fanId: 'fan-board',
-            updatedSince: 5001,
+            updatedSince: initial['nextUpdatedSince'] as int,
+            afterInstanceId: initial['nextAfterInstanceId'] as String,
             roleCursor: priorRoleCursor,
           ),
         ),
@@ -202,6 +225,7 @@ void main() {
     expect(_changedIds(body), ['full-public', 'full-board']);
     expect(_visibleIds(body), unorderedEquals(['full-public', 'full-board']));
     expect(body['nextUpdatedSince'], 6001);
+    expect(body['nextAfterInstanceId'], 'full-board');
     expect(body['hasMore'], isFalse);
     expect(body['resyncRequired'], isFalse);
   });
@@ -234,20 +258,79 @@ void main() {
     expect(_visibleIds(first), hasLength(3));
     expect(first['hasMore'], isTrue);
     expect(first['nextUpdatedSince'], 7001);
+    expect(first['nextAfterInstanceId'], 'boundary-repeat');
 
     final second = await _responseBody(
       await service.handler(
         _changesRequest(
           fanId: 'fan-member',
           updatedSince: first['nextUpdatedSince'] as int,
+          afterInstanceId: first['nextAfterInstanceId'] as String,
           roleCursor: first['nextRoleCursor'] as String,
           limit: 2,
         ),
       ),
     );
-    expect(_changedIds(second), ['boundary-repeat', 'second-page']);
+    expect(_changedIds(second), ['second-page']);
     expect(_visibleIds(second), hasLength(3));
     expect(second['hasMore'], isFalse);
+  });
+
+  test(
+    'more same-millisecond rows than fit in a page progress without repeats',
+    () async {
+      appAccessClient.activeMembers.add('fan-member');
+      for (final instanceId in ['same-a', 'same-b', 'same-c', 'same-d']) {
+        await _insertInstance(
+          database,
+          instanceId: instanceId,
+          workflowType: _publicWorkflowType,
+          updatedAt: 8000,
+        );
+      }
+
+      final first = await _responseBody(
+        await service.handler(_changesRequest(fanId: 'fan-member', limit: 2)),
+      );
+      expect(_changedIds(first), ['same-a', 'same-b']);
+      expect(first['nextUpdatedSince'], 8000);
+      expect(first['nextAfterInstanceId'], 'same-b');
+      expect(first['hasMore'], isTrue);
+
+      final second = await _responseBody(
+        await service.handler(
+          _changesRequest(
+            fanId: 'fan-member',
+            updatedSince: first['nextUpdatedSince'] as int,
+            afterInstanceId: first['nextAfterInstanceId'] as String,
+            roleCursor: first['nextRoleCursor'] as String,
+            limit: 2,
+          ),
+        ),
+      );
+      expect(_changedIds(second), ['same-c', 'same-d']);
+      expect(second['nextUpdatedSince'], 8000);
+      expect(second['nextAfterInstanceId'], 'same-d');
+      expect(second['hasMore'], isFalse);
+      expect(
+        [..._changedIds(first), ..._changedIds(second)],
+        ['same-a', 'same-b', 'same-c', 'same-d'],
+      );
+    },
+  );
+
+  test('a half timestamp cursor is rejected', () async {
+    appAccessClient.activeMembers.add('fan-member');
+
+    final onlyTimestamp = await service.handler(
+      _changesRequest(fanId: 'fan-member', updatedSince: 9000),
+    );
+    final onlyInstanceId = await service.handler(
+      _changesRequest(fanId: 'fan-member', afterInstanceId: 'same-a'),
+    );
+
+    expect(onlyTimestamp.statusCode, 400);
+    expect(onlyInstanceId.statusCode, 400);
   });
 
   test(
@@ -338,6 +421,7 @@ Future<void> _insertInstance(
 Request _changesRequest({
   required String fanId,
   int? updatedSince,
+  String? afterInstanceId,
   String? roleCursor,
   int? limit,
 }) => Request(
@@ -348,6 +432,7 @@ Request _changesRequest({
     path: '/v1/communities/$_communityId/changes',
     queryParameters: {
       if (updatedSince != null) 'updatedSince': '$updatedSince',
+      if (afterInstanceId != null) 'afterInstanceId': afterInstanceId,
       if (roleCursor != null) 'roleCursor': roleCursor,
       if (limit != null) 'limit': '$limit',
     },

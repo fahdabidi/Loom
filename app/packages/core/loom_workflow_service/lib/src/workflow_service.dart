@@ -878,6 +878,22 @@ class WorkflowService {
       );
     }
 
+    // A timestamp by itself cannot make progress through more rows than fit
+    // in one page when they share a millisecond. Treat the timestamp and id as
+    // one cursor, rather than accepting a half-cursor that means a subtly
+    // different position.
+    final hasUpdatedSince = params.containsKey('updatedSince');
+    final hasAfterInstanceId = params.containsKey('afterInstanceId');
+    if (hasUpdatedSince != hasAfterInstanceId) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_request',
+        message: 'updatedSince and afterInstanceId must be supplied together.',
+      );
+    }
+    final afterInstanceId = params['afterInstanceId'];
+
     final rawLimit = params['limit'];
     final limit = rawLimit == null ? 200 : int.tryParse(rawLimit);
     if (limit == null || limit < 1 || limit > 500) {
@@ -923,8 +939,8 @@ class WorkflowService {
           engine.roleIdsForFan(identity.fanId),
         );
         final resyncRequired =
-            (roleCursor != null && roleCursor != currentRoleCursor) ||
-            (updatedSince != null && roleCursor == null);
+            updatedSince != null &&
+            (roleCursor == null || roleCursor != currentRoleCursor);
 
         // Read all candidate rows so visibleInstanceIds remains the complete
         // current set even while `changed` is paged. The engine rehydrates and
@@ -947,7 +963,15 @@ class WorkflowService {
         final changed = updatedSince == null
             ? visible
             : visible
-                  .where((candidate) => candidate.row.updatedAt >= updatedSince)
+                  .where(
+                    (candidate) =>
+                        candidate.row.updatedAt > updatedSince ||
+                        (candidate.row.updatedAt == updatedSince &&
+                            candidate.row.instanceId.compareTo(
+                                  afterInstanceId!,
+                                ) >
+                                0),
+                  )
                   .toList(growable: false);
         final hasMore = changed.length > limit;
         final page = hasMore
@@ -959,6 +983,9 @@ class WorkflowService {
         final nextUpdatedSince = page.isEmpty
             ? updatedSince ?? 0
             : page.last.row.updatedAt;
+        final nextAfterInstanceId = page.isEmpty
+            ? ''
+            : page.last.row.instanceId;
 
         return Response.ok(
           jsonEncode({
@@ -966,6 +993,7 @@ class WorkflowService {
             'changed': page.map(_visibleChangeInstanceJson).toList(),
             'visibleInstanceIds': visibleInstanceIds,
             'nextUpdatedSince': nextUpdatedSince,
+            'nextAfterInstanceId': nextAfterInstanceId,
             'nextRoleCursor': currentRoleCursor,
             'hasMore': hasMore,
             'resyncRequired': resyncRequired,
