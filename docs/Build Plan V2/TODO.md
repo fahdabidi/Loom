@@ -194,7 +194,26 @@ Still open: mounting it, which needs the same app-chrome decision B2's preferenc
 
 **Deferred by user decision, not forgotten:** payment processing, external search/AI answer.
 
-**B7. The services are built; the content is not loaded.** Measured against the live cluster
+**B7. DONE 2026-08-29 — publisher built (`21f4adc0`) and 82 definitions published live.**
+`bin/publish_workflow_definitions.dart`, dry-run by default, reading the same package assets the app
+ships. All 10 communities, 82 workflows; the tool round-trips each community through
+`loadDefinitionsForCommunity` after writing, which is the only way to catch the silent failure --
+an id that is not exactly `{communityId}_{workflowType}` yields an empty community and no error.
+
+Live state now: **82 definitions across 10 communities**, up from 7 across 1.
+
+**Cedar's rows were not identical to the shipped package.** 6 of its 7 definitions changed hash on
+publish; only `hoa-committee-decision` was unchanged. I kept only md5s beforehand, not the original
+JSON, so **whether that is semantic drift or serialisation differences is not established** -- do
+not repeat this claim in the stronger form. The lesson is to snapshot content, not hashes, before
+overwriting anything. The backend now matches the shipped package by construction either way.
+
+**Latent hazard, not introduced here:** both the publisher CLI and the service entrypoint default
+`LOOM_POSTGRES_DATABASE` to `loom_app_access`, while definitions live in `loom_workflow_service`.
+Production is correct only because the manifest sets it explicitly. A manual CLI run without that
+variable would target the wrong database -- and a manual run is exactly what this tool is for.
+
+_Superseded description:_ The services are built; the content is not loaded. Measured against the live cluster
 2026-08-29, not inferred:
 
 - `workflow_definitions` holds **7 rows, every one of them Cedar** (`hoa-architectural-request`,
