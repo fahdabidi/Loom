@@ -9,4 +9,5 @@ export 'src/identity.dart';
 export 'src/item_queue_repository.dart';
 export 'src/jwt_identity_extractor.dart';
 export 'src/postgres_connection.dart';
+export 'src/service_health.dart';
 export 'src/workflow_service.dart';

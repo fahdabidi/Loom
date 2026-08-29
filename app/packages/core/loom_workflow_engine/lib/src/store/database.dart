@@ -71,6 +71,12 @@ class WorkflowDatabase {
     return WorkflowDatabase._(executor, dialect);
   }
 
+  /// Opens the underlying database and completes all engine-owned migrations.
+  ///
+  /// Server startup calls this explicitly so readiness cannot report success
+  /// before its workflow tables and compatibility migrations exist.
+  Future<void> initialize() => _ensureOpenAndMigrated();
+
   bool get isSqliteBacked => _dialect.isSqlite;
 
   String get storageBackend =>

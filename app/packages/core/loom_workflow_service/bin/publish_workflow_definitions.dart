@@ -43,7 +43,7 @@ Future<void> main(List<String> arguments) async {
     host:
         environment['LOOM_POSTGRES_HOST'] ?? 'postgres.loom.svc.cluster.local',
     port: int.parse(environment['LOOM_POSTGRES_PORT'] ?? '5432'),
-    databaseName: environment['LOOM_POSTGRES_DATABASE'] ?? 'loom_app_access',
+    databaseName: workflowPostgresDatabaseName(environment),
     username: environment['LOOM_POSTGRES_USERNAME'] ?? 'loom',
     password: password,
   );

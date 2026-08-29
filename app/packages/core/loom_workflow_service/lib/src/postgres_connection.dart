@@ -2,6 +2,12 @@ import 'package:drift_postgres/drift_postgres.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:postgres/postgres.dart' as pg;
 
+const workflowPostgresDefaultDatabaseName = 'loom_workflow_service';
+
+String workflowPostgresDatabaseName(Map<String, String> environment) =>
+    environment['LOOM_POSTGRES_DATABASE'] ??
+    workflowPostgresDefaultDatabaseName;
+
 /// Owns the PostgreSQL connection and the shared engine database wrapper.
 class WorkflowPostgresConnection {
   final pg.Connection _connection;
@@ -40,6 +46,9 @@ class WorkflowPostgresConnection {
     );
     return WorkflowPostgresConnection._(connection, workflowDatabase);
   }
+
+  /// Completes migrations owned by the shared workflow engine.
+  Future<void> migrateWorkflowSchema() => database.initialize();
 
   Future<void> close() async {
     database.close();
