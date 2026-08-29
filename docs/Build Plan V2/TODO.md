@@ -622,7 +622,15 @@ in a separate repository this tracker cannot see.
 - [ ] `new-ticket` — **`_updateInstanceFields` resolves no roles**, unlike the four read/execute paths the membership fix covered — separate question, untouched (`3bbda3f9`)
 - [ ] `new-ticket` — **`SurfaceQuery.dateWindowStart/End` is declared and never plumbed**: the service builds `SurfaceQuery(sort:)` only and the calendar pages every instance and filters on device — a community with years of events transfers all of them to draw one month
 - [ ] `new-ticket` — **the engine's `workflowType == 'notification'` delivery branch is dead and mistimed**; no package uses that type and it fires at creation, ignoring `dueAt`. Left in place with the finding recorded at the site; deleting it is separate work (`bf1acf6d`)
-- [ ] `needs-spec-decision` — **recurrence has no scheduled top-up**: `generateRecurringInstances` runs only when a transition is applied, so a series never extends itself. Whether that is a defect depends on whether series are finite — unmeasured
+- [x] `CLOSED ON MEASUREMENT 2026-08-29` — **recurrence has no scheduled top-up.** Measured, and it is
+  not a defect: **series cannot be infinite.** The validator requires `recurrenceRule.count`
+  (`missing_recurrence_count`) and bounds it to 1-366 (`invalid_recurrence_count`), so the grammar
+  cannot express an open-ended series. The three packages that use the effect -- Garden, Book Club,
+  Tabletop -- all pass `count` as a **required transition input**, so an organiser says "weekly, N
+  times" and N instances are generated at once. Nothing needs topping up. The original note read:
+  "`generateRecurringInstances` runs only when a transition is applied, so a series never extends
+  itself. Whether that is a defect depends on whether series are finite — unmeasured." The answer is
+  finite, by enforcement rather than by convention.
 
 - [ ] `new-ticket` — **`b25_capture_workflow_screenshots.dart` uninstalls the demo app on teardown**, so the next capture run finds nothing installed. `flutter drive` rebuilds and reinstalls, so a run recovers on its own — but any check of `adb shell pm list packages` between runs will correctly report the app absent, which reads like a broken environment. Either stop uninstalling or say so in the capture output
 - [ ] `needs-debug-agent` — CJM.16 Messages-tab fix, landing with Phase F rather than as its own dispatch — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
