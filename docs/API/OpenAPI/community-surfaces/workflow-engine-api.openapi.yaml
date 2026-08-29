@@ -417,17 +417,27 @@ paths:
         behind.
 
 
-        **`updatedSince` is inclusive, and that is deliberate.** `workflow_instances.updated_at` is a
-        millisecond timestamp, so two instances written in the same millisecond are indistinguishable
-        to a cursor. An exclusive bound would skip the second one permanently; an inclusive bound
-        repeats the boundary instance on the next call. A replica is a keyed overwrite, so a repeat is
-        idempotent and a skip is data loss. **Prefer the harmless failure.**
+        **The cursor is a pair: `updatedSince` plus `afterInstanceId`.** Results are ordered by
+        `(updatedAt, instanceId)` and a page resumes strictly after that pair.
 
 
-        This trades exactness for simplicity, and the alternative is worth naming: a monotonic
-        per-community sequence would make the cursor total-ordered and avoid the repeat. It is the more
-        correct design and costs a new column, a writer, and a migration. Revisit if the boundary
-        repeat ever becomes measurable.
+        An earlier draft used `updatedSince` alone, inclusive, reasoning that a repeated boundary
+        instance is idempotent against a keyed replica while an exclusive bound would permanently skip
+        a second instance written in the same millisecond. The first half was right and the bound was
+        wrong: when **more** instances share a millisecond than fit in one page, an inclusive
+        timestamp-only cursor cannot advance past them at all, and the client re-requests the same
+        first page forever. That is not a duplicate, it is a loop, and it was found by an
+        implementation refusing to invent a hidden tie-breaker to escape it.
+
+
+        `instanceId` breaks the tie because it is unique and stable, which makes `(updatedAt,
+        instanceId)` a total order over the rows without a new column, a writer, or a migration. A
+        monotonic per-community sequence would also work and costs all three.
+
+
+        On a first sync both are omitted. Afterwards both come back from the previous response and are
+        passed together; sending one without the other is a `400`, because a half-cursor silently
+        reads as a different position rather than an error.
       parameters:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
@@ -440,6 +450,16 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: afterInstanceId
+          in: query
+          required: false
+          description: >-
+            The `nextAfterInstanceId` from the previous response. Together with `updatedSince` it
+            forms the position: results resume strictly after `(updatedSince, afterInstanceId)` in
+            `(updatedAt, instanceId)` order. Omitted on a first sync; required whenever
+            `updatedSince` is present.
+          schema:
+            type: string
         - name: roleCursor
           in: query
           required: false
@@ -720,7 +740,7 @@ components:
     VisibleChangePage:
       type: object
       additionalProperties: false
-      required: [communityId, changed, visibleInstanceIds, nextUpdatedSince, nextRoleCursor, hasMore, resyncRequired]
+      required: [communityId, changed, visibleInstanceIds, nextUpdatedSince, nextAfterInstanceId, nextRoleCursor, hasMore, resyncRequired]
       properties:
         communityId:
           type: string
@@ -748,6 +768,11 @@ components:
             The cursor for the next call. Equals the highest `updatedAt` in this page, and is passed
             back inclusively — see the endpoint description for why repeating a boundary instance is
             preferred to skipping one.
+        nextAfterInstanceId:
+          type: string
+          description: >-
+            The `instanceId` of the last row in this page. Passed back with `nextUpdatedSince` as a
+            pair. Empty string when the page is empty, which a client passes back unchanged.
         nextRoleCursor:
           type: string
           description: >-
