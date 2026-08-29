@@ -440,6 +440,30 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: roleCursor
+          in: query
+          required: false
+          description: >-
+            The `nextRoleCursor` from the previous response, passed back unchanged.
+
+
+            **Opaque, and deliberately so.** It binds a cursor to the role set the caller held when it
+            was issued, which is the only way `resyncRequired` can be computed: the server cannot
+            otherwise know what the caller could see then. Clients must not parse, construct or
+            compare it — it exists to be handed back.
+
+
+            Omitted on a first sync. **Omitted on a resumed sync is not an error**, but the response
+            will set `resyncRequired` true, because a cursor with no role binding cannot be shown to
+            still be valid, and assuming it is would leave a replica confidently incomplete.
+
+
+            It carries no role identifiers in the clear. An earlier draft of this endpoint required
+            `resyncRequired` while providing nothing to compute it from — the effect was specified and
+            the mechanism was not, and an implementation refused to build it rather than invent an
+            undocumented parameter.
+          schema:
+            type: string
         - name: limit
           in: query
           required: false
@@ -696,7 +720,7 @@ components:
     VisibleChangePage:
       type: object
       additionalProperties: false
-      required: [communityId, changed, visibleInstanceIds, nextUpdatedSince, hasMore, resyncRequired]
+      required: [communityId, changed, visibleInstanceIds, nextUpdatedSince, nextRoleCursor, hasMore, resyncRequired]
       properties:
         communityId:
           type: string
@@ -724,6 +748,12 @@ components:
             The cursor for the next call. Equals the highest `updatedAt` in this page, and is passed
             back inclusively — see the endpoint description for why repeating a boundary instance is
             preferred to skipping one.
+        nextRoleCursor:
+          type: string
+          description: >-
+            Pass back as `roleCursor` on the next call. Opaque; do not parse it. Returned on every
+            response, including one that set `resyncRequired`, so a client recovering from a resync
+            has a valid cursor to continue from.
         hasMore:
           type: boolean
         resyncRequired:
