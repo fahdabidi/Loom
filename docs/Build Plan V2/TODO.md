@@ -109,7 +109,30 @@ Actually missing, and this is the whole of B2:
   for the engine; it also means a failed delivery is indistinguishable from a successful one, which
   matters once anything depends on delivery having happened
 
-**B3. Per-viewer change feed — CORRECTED 2026-08-29, twice smaller than recorded.**
+**B3. Per-viewer change feed — BUILT 2026-08-29, cursor amendment in flight.**
+
+`GET /communities/{id}/changes` is implemented in the workflow service (`86f79b0d`), workflow service
+107 → 115. It resolves visibility through the engine's existing per-fan path rather than
+reimplementing it, and exposes `updatedAt`, which had been stored and maintained on every transition
+all along and never returned.
+
+**The endpoint surfaced two holes in its own spec, both by an implementation refusing to build around
+them.** Worth recording because both would have shipped as working-looking code:
+
+1. `resyncRequired` was required and nothing was provided to compute it from — the request carried no
+   role information and the response was closed. Fixed by an opaque `roleCursor`/`nextRoleCursor` pair.
+2. An inclusive timestamp-only cursor **cannot advance** when more instances share a millisecond than
+   fit in a page — the client re-requests page one forever. I had reasoned about exactly this collision
+   and chose inclusive anyway, having considered only the single-instance case. Fixed by making the
+   cursor the pair `(updatedSince, afterInstanceId)` ordered by `(updatedAt, instanceId)`, which is a
+   total order needing no new column, writer or migration.
+
+- [x] spec, including the per-viewer semantics and `visibleInstanceIds` for disappearance
+- [x] implementation, 8 tests, all five suites green
+- [ ] cursor amended to a keyset pair — spec landed `033371c3`, implementation re-dispatched
+- [ ] not deployed; it ships with the next workflow-service image
+
+**Superseded 2026-08-29 (kept for the reasoning):**
 
 I wrote that "instances carry no `version` or `updatedAt`". Wrong: `workflow_instances.updated_at`
 exists as a BIGINT and is genuinely maintained — the engine writes it on every transition
