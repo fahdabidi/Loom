@@ -164,11 +164,34 @@ So what actually remains:
   an event, not an absence — and invalidate the cursor when the caller's roles change, or a replica is
   not merely stale but wrong
 
-**B4. ID generation.** Smallest remaining. Receipt, transfer and export ids are declared across four
-communities and permanently unwritable. Removes the last `NEEDS IMPLEMENTATION` comments after
-checksum.
+**B4. ID generation — GRAMMAR + SERVICE BUILT 2026-08-29 (`ac01492a`, `a0349863`). Packages not yet
+regenerated.**
 
-**B5. Document member state + versioning — BUILT 2026-08-29 (`6099d40f`), not yet deployed.**
+Decided with the user: a `platformSource` key, and **export/transfer ids only**.
+
+`writableBy: "platform"` said only *that* a service writes a field -- a `checksum` and a `receiptId`
+are both `"type": "text?"` with `"writableBy": "platform"` and otherwise identical. `platformSource`
+names the mechanism (`checksum` | `opaqueId`). Minting is server-side, once, into a declared empty
+field, never rewritten, encoding nothing readable.
+
+**Scope is narrower than the markers suggest, on purpose.** Only `transferId` and `exportReceiptId`
+are minted, where a bundle really is produced. `receiptId`, `paymentConfirmationId` and
+`settlementId` stay declared-and-unwritten alongside payment, which is deferred: a receipt id for a
+payment that never happened is a confirmation number for a transaction that did not occur. An empty
+field there is a true statement about the world.
+
+The missing-`platformSource` finding is a **warning, not an error**, because 138 shipped fields
+declare `writableBy: "platform"` without one. A validator that fails the corpus it ships with teaches
+everyone to ignore it. Promote once regeneration has moved the corpus.
+
+- [ ] regenerate the 5 affected packages via the Skill (Book Club, Cedar, DataPortability, Youth
+      Soccer, Garden) -- **verify Book Club against `c0e0355b^`, not HEAD**
+- [ ] build and deploy `0.8.0`; minting is in `main` but not in the deployed `0.7.0`
+
+**B5. Document member state + versioning — DONE 2026-08-29.** Built (`6099d40f`), deployed in
+`loom-workflow-service:0.7.0` and verified live by method: POST `/revisions` answers 401 while a fake
+sibling answers 404. A GET against `/revisions` also answers 404 and is *correct* -- the route is
+POST-only -- so probing with the wrong verb would have produced a false defect report.
 Service-assigned `version` (a caller-supplied one is rejected, not ignored), per-member
 `read`/`saved`/`acknowledged`, and acknowledgements bound to the version. Workflow service 113 -> 125.
 
