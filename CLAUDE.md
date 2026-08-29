@@ -181,6 +181,33 @@ skippable because the change was "just JSON".
 Update these numbers when a suite legitimately grows; a baseline nobody maintains stops being
 evidence.
 
+### When writing a spec: never specify an effect without its mechanism
+
+Twice in one session I wrote a contract that required something the contract itself made impossible
+to compute, and both times an implementation agent refused rather than inventing a way.
+
+- `platformDefault` was typed as `CommunityNotificationPreference`, which requires a `communityId`. A
+  platform-wide default has no community, so satisfying the required field produced a `platform_default`
+  pseudo-key. **A schema that demands an identifier for something with no identity gets a fabricated
+  identifier.**
+- The change feed required `resyncRequired`, which needs to know the caller's roles when the cursor was
+  issued — and the request carried no such field while the response was closed with
+  `additionalProperties: false`. **The effect was specified and the mechanism was not.**
+
+Both refusals were correct and both were cheap. The failure mode when an agent *doesn't* refuse is
+much worse: an endpoint that looks implemented, returns plausible values, and is wrong in a way no
+test written from the same spec would catch.
+
+So before finishing any spec, take each field that asserts something about state and ask what it is
+computed *from*, and whether the contract actually carries that. If it does not, either add the input
+or delete the field — a field nobody can compute is worse than an absent one, because it will be
+filled in with something.
+
+The same check applies to a field whose value must come from another service. `listNotificationPreferences`
+promised an entry "for every community they belong to", and fan-passport holds no membership data at
+all — `app-access` owns it. Nothing in the contract was wrong on its face; it was simply unkeepable,
+and only reading the other service's schema showed that.
+
 ### Ordering rules that have bitten
 
 - **A new validator finding code is a documentation change first.** `05-validation.md` is hard-locked
