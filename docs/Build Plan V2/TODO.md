@@ -221,6 +221,36 @@ querying Alice's replica as Bob throws, and reopening Alice's file as Bob throws
 Still open: giving it a caller. **Not blocked** -- the app already runs on the backend by default,
 so this is a ticket about when to sync and when to read the replica, not an architecture decision.
 
+**P1. PARKED until after production — everything that is a member's own choice.** User decision
+2026-08-29: "Lets park everything that is a members choice for the moment. Put this into the tracker
+as an item we will get back to after production as a separate effort."
+
+**Parked, and deliberately NOT deleted.** All of it is built, tested and in some cases deployed and
+serving. Nothing here is a gap to close before production; it is finished work waiting for a product
+moment.
+
+| Thing | State | Where |
+|---|---|---|
+| Per-member notification preferences | **deployed and serving** | fan-passport `0.3.1`, tables `notification_preference` + `notification_preference_channel` (Flyway `V3`) |
+| Preference API | live | `listNotificationPreferences`, `setCommunityNotificationPreference` |
+| App client | built, uncalled | `part47_notification_preferences_client.dart` |
+| Preference control widget | built, unmounted | `CommunityNotificationPreferenceControl` |
+| `source: member \| default` distinction | implemented | distinguishes "chose these values" from "never chose", which the platform default later diverges from |
+
+**Do not delete or roll back the `V3` migration.** It is additive, it costs nothing at rest, and
+removing it would destroy the distinction above, which cannot be reconstructed once lost -- a member
+who never chose and a member who chose today's default look identical afterwards.
+
+**Do not "finish" this by mounting the control.** It is parked, not unfinished.
+
+**Boundary, stated because it is easy to over-apply.** Parked means a member's *preference* -- a
+setting they configure. It does **not** cover per-member workflow records: B5's document
+`read`/`saved`/`acknowledged` state stays in scope, because "who acknowledged the current version of
+the CC&Rs" is a record with product and legal meaning, not a choice about how the app behaves.
+
+**Consequence for B8:** notification delivery becomes **community configuration only** -- what the
+community offers and its default. No per-member overlay is read while this is parked.
+
 **Deferred by user decision, not forgotten:** payment processing, external search/AI answer.
 
 **B8. Notification delivery is community CONFIGURATION, in the package JSON.** User direction
@@ -247,10 +277,13 @@ A community package is identical for every member, so a per-member preference ca
 The JSON supplies the offered channels and the default; the store records one member's departure
 from it. The earlier decision to put per-member preferences on fan-passport stands.
 
+**Scope narrowed 2026-08-29:** community configuration only. The per-member overlay is parked (P1),
+so the app reads the community default and stops there.
+
 - [ ] design `experience.notifications` and add it to the grammar docs
 - [ ] validator: known keys + a closed channel set
 - [ ] regenerate packages through the Skill
-- [ ] app reads the community default, overlaid with the member's stored preference
+- [ ] app reads the community default. **No member overlay** -- that is parked in P1
 
 ### Status vocabulary — four states, because "done" was hiding the difference
 
