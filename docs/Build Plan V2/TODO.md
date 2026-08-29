@@ -47,13 +47,13 @@ reachable from the app, and a member-visible behaviour depends on it.
 **B1. Item queue — deploy and wire. DONE 2026-08-28.** Service built, deployed as `loom-workflow-service:0.5.0`, routes verified live with a negative control, app client and surface wired, and `join_queue`/`leave_queue` exempted from `transition_has_no_observable_effect` because the service now completes them. Six dead buttons are live.
 - [x] service built, 12 tests, workflow service 89 → 107
 - [x] startup no longer gated on the offer-hold config (`b9df5a35`)
-- [ ] build `loom-workflow-service:0.5.0` — failed once (I ran `docker image prune` mid-build), rebuilding
-- [ ] manifest: image tag + `LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS` in `~/loom-backend/deploy/k8s/workflow-service.yaml`. **86400 in it is a flagged guess, not a product decision**
-- [ ] import image, apply, verify the six routes answer
-- [ ] app queue client — five operations. **`advance` stays server-side**: without notification delivery nobody can be told their turn came, and shipping it would be a button that silently does nothing
-- [ ] wire the `equipment-loan` surface: join, leave, position, queue length
+- [x] build `loom-workflow-service:0.5.0` — failed once (I ran `docker image prune` mid-build), rebuilding
+- [x] manifest: image tag + `LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS` in `~/loom-backend/deploy/k8s/workflow-service.yaml`. **86400 in it is a flagged guess, not a product decision**
+- [x] import image, apply, verify the six routes answer
+- [x] app queue client — five operations. **`advance` stays server-side**: without notification delivery nobody can be told their turn came, and shipping it would be a button that silently does nothing
+- [x] wire the `equipment-loan` surface: join, leave, position, queue length
 - [x] app queue client + surface wiring (`3e5efcb6`) — app shell 320 → 325, resolves by `action` not transition id, UUID correlation ids, unavailable rendered distinctly from not-queued
-- [ ] **CORRECTED: the packages do NOT need regenerating.** This entry originally said to regenerate the three communities so the transitions "call the service". They already declare `action: join_queue`/`leave_queue`, and the app resolves the affordance by action and calls the service itself — so the transitions are correct as authored. What was actually needed is a validator exemption: `join_queue`/`leave_queue` join `upload` in `_platformCompletedActions`, because the queue service records membership outside workflow JSON exactly as the Document Library API writes uploaded content. **Regenerating them to append to a `queuedFanIds` instance field would have been actively wrong** — two sources of truth for queue membership, disagreeing the moment anything touched one and not the other
+- **CORRECTED (a note, not a task): the packages do NOT need regenerating.** This entry originally said to regenerate the three communities so the transitions "call the service". They already declare `action: join_queue`/`leave_queue`, and the app resolves the affordance by action and calls the service itself — so the transitions are correct as authored. What was actually needed is a validator exemption: `join_queue`/`leave_queue` join `upload` in `_platformCompletedActions`, because the queue service records membership outside workflow JSON exactly as the Document Library API writes uploaded content. **Regenerating them to append to a `queuedFanIds` instance field would have been actively wrong** — two sources of truth for queue membership, disagreeing the moment anything touched one and not the other
 
 **B2. Notification channels — preference store DEPLOYED, app integration outstanding.**
 
@@ -109,10 +109,10 @@ Actually missing, and this is the whole of B2:
   for the engine; it also means a failed delivery is indistinguishable from a successful one, which
   matters once anything depends on delivery having happened
 
-**B3. Per-viewer change feed — BUILT 2026-08-29, cursor amendment in flight.**
+**B3. Per-viewer change feed — BUILT AND TESTED 2026-08-29. Deploying as `0.6.0`.**
 
 `GET /communities/{id}/changes` is implemented in the workflow service (`86f79b0d`), workflow service
-107 → 115. It resolves visibility through the engine's existing per-fan path rather than
+107 → 113. It resolves visibility through the engine's existing per-fan path rather than
 reimplementing it, and exposes `updatedAt`, which had been stored and maintained on every transition
 all along and never returned.
 
