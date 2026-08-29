@@ -29,9 +29,9 @@
       "sha256": "2f40067ef7af7acb7104003130902719bac62a3cd6b1226202b632a33dbec8c1",
       "bytes": 61620,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "01343d7b",
-      "lastCommitDate": "2026-08-19",
-      "lastCommitSubject": "feat(communities): regenerate Camera Club at specVersion 4 (3 of 11)"
+      "lastCommit": "bba5aac2",
+      "lastCommitDate": "2026-08-28",
+      "lastCommitSubject": "fix(cameraclub): name the writers, and keep the per-member reminder this time"
     },
     "Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc": {
       "sha256": "b6e8cfa52b9d9f2a35e315222d0f137007053850eda8a83c87eb90e53d1fae41",
@@ -98,8 +98,8 @@
       "lastCommitSubject": "fix(community): Tabletop declares deliver_reminder on its send-reminder transition"
     },
     "Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc": {
-      "sha256": "92c79cd4b950a144745198b5f7a6d96aba0a22c357a957adb4016571d8694c39",
-      "bytes": 107477,
+      "sha256": "f32f949eb72031f8a8850697f3afeba0ae92b29d55200a58e237d32f60405f1a",
+      "bytes": 107343,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "76233ee1",
       "lastCommitDate": "2026-08-28",

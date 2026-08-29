@@ -1183,11 +1183,9 @@
           "redactionConfirmed": { "type": "bool", "required": true, "writableBy": "platform", "displayIcon": "verified_user", "labelTemplate": "Redaction approved: {value}", "displayContexts": ["tile", "detail"] },
           "operationMode": { "type": "text", "writableBy": "effect", "displayIcon": "swap_horiz", "labelTemplate": "Mode: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "downloadUrl": { "type": "url", "writableBy": "platform", "openMode": "external", "displayIcon": "download", "labelTemplate": "Download: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "checksum": { "type": "text", "writableBy": "platform", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          // NEEDS IMPLEMENTATION (platform service): transfer provider must allocate and populate transferId.
-          "transferId": { "type": "text", "writableBy": "platform", "displayIcon": "swap_horiz", "labelTemplate": "Transfer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          // NEEDS IMPLEMENTATION (platform service): export service must allocate and populate exportReceiptId.
-          "exportReceiptId": { "type": "text", "writableBy": "platform", "displayIcon": "receipt_long", "labelTemplate": "Export receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "checksum": { "type": "text", "writableBy": "platform", "platformSource": "checksum", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "transferId": { "type": "text", "writableBy": "platform", "platformSource": "opaqueId", "displayIcon": "swap_horiz", "labelTemplate": "Transfer: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "exportReceiptId": { "type": "text", "writableBy": "platform", "platformSource": "opaqueId", "displayIcon": "receipt_long", "labelTemplate": "Export receipt: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Started {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "completedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "task_alt", "labelTemplate": "Completed {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "downloadedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "download_done", "labelTemplate": "Downloaded {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
