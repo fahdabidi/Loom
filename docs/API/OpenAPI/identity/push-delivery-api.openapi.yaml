@@ -1,0 +1,164 @@
+openapi: 3.1.0
+info:
+  title: Loom Push Delivery API
+  version: 0.0.0-placeholder
+  summary: >-
+    PLACEHOLDER. Server-initiated push for members whose app is closed. No provider is chosen and
+    nothing implements this.
+  description: >-
+    **Nothing here is implemented.** No service answers these paths and no client calls them. The
+    version stays `0.0.0-placeholder` until something does.
+
+
+    **What already works, so this is not confused for the whole of notifications.** Two delivery paths
+    exist and are live. The in-app inbox is the `notificationInbox` archetype, with 20 render bindings
+    across 7 communities. Device notification is `LocalNotificationDeliveryService`, which calls
+    `FlutterLocalNotificationsPlugin.show()` on Android, iOS, macOS and Linux. The reminder sweep
+    (`part44_reminder_sweeper.dart`) already delivers what members schedule, and fan-passport `0.3.1`
+    stores which channels a member wants.
+
+
+    The single gap this fills: **all of that requires the app to be running.** A member whose app is
+    closed is never told anything. That is what server-initiated push means here, and it is the only
+    thing this API is for.
+
+
+    **Provider-agnostic by decision, not by indecision.** No vendor is named. The contract describes
+    what Loom needs — deliver this payload to this fan's devices, tell me which tokens are dead — and a
+    provider adapter satisfies it. Writing FCM into the contract would make the vendor choice by
+    accident, and the shape of that choice (a Firebase project, credentials in the cluster, app-side
+    token registration) is a commitment worth making deliberately.
+
+
+    **Push is gated on preference, and the gate belongs to the sender.** A member whose fan-passport
+    preference omits `push` must not receive one. This API does not consult that store itself: it
+    delivers what it is asked to deliver, and the caller is responsible for having checked. Stated
+    plainly because the alternative — a delivery API that quietly filters — makes it impossible to
+    tell "the member did not want this" from "delivery failed", which is exactly the ambiguity the
+    current best-effort delivery already suffers from.
+
+
+    **A token is not an identity.** Device tokens rotate, expire, and are reassigned by the platform
+    to a different app install. A token that stops working means the device is gone, not the fan, and
+    a dead token must never be treated as a signal about the member.
+servers:
+  - url: https://communities.loom.example
+security:
+  - LoomUserOAuth:
+      - community.notifications
+  - LoomServiceAuth: []
+x-loom-api-owner: identity/fan-passport
+x-loom-status: placeholder-not-implemented
+x-loom-architecture-docs:
+  - ./fan-passport-api.openapi.yaml
+
+tags:
+  - name: Devices
+    description: NOT IMPLEMENTED. Where a fan can be reached.
+  - name: Delivery
+    description: NOT IMPLEMENTED. Sending a payload to those devices.
+
+paths:
+  /v1/fan-passports/{fanId}/devices:
+    put:
+      tags: [Devices]
+      operationId: registerPushDevice
+      summary: NOT IMPLEMENTED — register or refresh this device's push token.
+      description: >-
+        Would record a device token for the calling fan. Idempotent on the device id: re-registering
+        the same device replaces its token rather than adding a second row, because a platform may
+        reissue a token at any time and the old one is then worthless.
+
+
+        A fan has many devices and each must be reachable independently. Modelling this as one token
+        per fan would silently drop every device but the last one registered.
+      responses:
+        '501':
+          description: Not implemented. No push provider is configured.
+
+    get:
+      tags: [Devices]
+      operationId: listPushDevices
+      summary: NOT IMPLEMENTED — the caller's own registered devices.
+      description: >-
+        Would list the caller's devices so a member can see where they are being reached and revoke a
+        device they no longer have. Returns the caller's own devices only.
+      responses:
+        '501':
+          description: Not implemented.
+
+  /v1/fan-passports/{fanId}/devices/{deviceId}:
+    delete:
+      tags: [Devices]
+      operationId: revokePushDevice
+      summary: NOT IMPLEMENTED — stop reaching this device.
+      responses:
+        '501':
+          description: Not implemented.
+
+  /v1/push-deliveries:
+    post:
+      tags: [Delivery]
+      operationId: deliverPush
+      summary: NOT IMPLEMENTED — deliver a payload to a fan's devices.
+      description: >-
+        Service-to-service only; never called by a member's client. Delivers to every registered
+        device for the fan and reports per-device outcome.
+
+
+        **Reports failure rather than swallowing it.** The existing device-local delivery service
+        catches every platform error by design, so a failed delivery is indistinguishable from a
+        successful one. That is tolerable while nothing depends on delivery having happened; it stops
+        being tolerable the moment a queue offer expires because the member was never told. This
+        endpoint returns which devices accepted and which did not, and a caller that ignores the
+        result has made that choice explicitly.
+
+
+        **Dead tokens are reported, not hidden.** A provider will say a token is permanently invalid;
+        that device should then be pruned. Leaving dead tokens in place makes every future delivery
+        look partially failed and trains whoever reads it to ignore the signal.
+      responses:
+        '501':
+          description: Not implemented. No push provider is configured.
+
+components:
+  schemas:
+    PushDevice:
+      type: object
+      description: Sketch. Not agreed.
+      additionalProperties: false
+      required: [deviceId, platform, registeredAt]
+      properties:
+        deviceId:
+          type: string
+          description: >-
+            Stable per install, chosen by the client. Not the push token — the token rotates and the
+            device does not, and keying on the token would create a new device row on every rotation.
+        platform:
+          type: string
+          enum: [android, ios, macos, linux, web]
+        registeredAt:
+          type: string
+          format: date-time
+        lastDeliveryAt:
+          type: string
+          format: date-time
+        lastDeliveryFailed:
+          type: boolean
+          description: >-
+            Whether the most recent attempt failed. Distinct from the device being invalid — one
+            failure is a network blip, a permanent-invalid response from the provider is a reason to
+            prune.
+
+  securitySchemes:
+    LoomUserOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.loom.example/realms/loom/protocol/openid-connect/auth
+          tokenUrl: https://auth.loom.example/realms/loom/protocol/openid-connect/token
+          scopes:
+            community.notifications: Manage a fan's notification devices.
+    LoomServiceAuth:
+      type: http
+      scheme: bearer
