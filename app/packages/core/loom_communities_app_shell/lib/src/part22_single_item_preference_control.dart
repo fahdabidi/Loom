@@ -18,11 +18,13 @@ class SingleItemPreferenceControl extends StatelessWidget {
     required this.options,
     required this.selectedValue,
     required this.onChanged,
+    this.direction = Axis.horizontal,
   });
 
   final List<SingleItemPreferenceOption> options;
   final String selectedValue;
   final ValueChanged<String> onChanged;
+  final Axis direction;
 
   @override
   Widget build(BuildContext context) => SegmentedButton<String>(
@@ -39,6 +41,7 @@ class SingleItemPreferenceControl extends StatelessWidget {
     emptySelectionAllowed: false,
     multiSelectionEnabled: false,
     showSelectedIcon: false,
+    direction: direction,
     onSelectionChanged: (selected) {
       if (selected.isNotEmpty) onChanged(selected.first);
     },
