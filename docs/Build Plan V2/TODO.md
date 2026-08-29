@@ -217,6 +217,35 @@ Still open: mounting it, which needs the same app-chrome decision B2's preferenc
 
 **Deferred by user decision, not forgotten:** payment processing, external search/AI answer.
 
+**B8. Notification delivery is community CONFIGURATION, in the package JSON.** User direction
+2026-08-29, and it dissolves the settings-screen blocker for the delivery half of B2:
+
+> "If by notification prefs you mean how to deliver notifications which we said was a configuration.
+> These should be implemented as JSON configuration settings. It belongs side by side with the
+> community `theme` i.e. where we store the communities Fab experience, the color scheme, text sizes
+> etc."
+
+`experience` already carries exactly this class of thing -- `theme` (`accent`, `tabThemes`) and
+`creatableAction` (`multiActionStyle`, `presentationStyle`, the FAB presentation). Delivery config
+sits beside them as `experience.notifications`.
+
+**This does not replace the per-member store, and must not be read as reversing it.** Those are two
+different facts:
+
+| Where | What it answers |
+|---|---|
+| `experience.notifications` (package JSON) | Which channels this community offers, and the default before anyone chooses |
+| fan-passport `0.3.1` (deployed) | This member's own deviation from that default |
+
+A community package is identical for every member, so a per-member preference cannot live in it.
+The JSON supplies the offered channels and the default; the store records one member's departure
+from it. The earlier decision to put per-member preferences on fan-passport stands.
+
+- [ ] design `experience.notifications` and add it to the grammar docs
+- [ ] validator: known keys + a closed channel set
+- [ ] regenerate packages through the Skill
+- [ ] app reads the community default, overlaid with the member's stored preference
+
 ### Status vocabulary — four states, because "done" was hiding the difference
 
 Measured 2026-08-29 by looking for real call sites, after the labels in my own reports drifted apart:

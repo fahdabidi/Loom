@@ -77,6 +77,28 @@ hoping output appears.
 Rule out resources before assuming a bad ticket: check `free -h` and `dmesg` for OOM kills. A
 15 GB VM with 12 GB available and no OOM lines did not fail for lack of memory.
 
+## The validator on :8787 answers happily while running last week's grammar
+
+`call_skill_authoring_agent.sh` checks that *something* responds on :8787 and reuses it. It never
+checks that it is running current code. On 2026-08-29 a Skill dispatch rejected the brand-new
+`platformSource` key as `unknown_key`, three errors, and the grammar looked broken. The server had
+been up since **2026-08-28 12:16**, predating the grammar entirely. Restarted, the same file
+validated `pass` with zero errors.
+
+**Restart it whenever the grammar, the validator or the engine models have changed since it started:**
+
+    ps -o lstart= -p $(pgrep -f "[v]alidator_server" | head -1)   # older than your change? restart
+    pkill -f "[v]alidator_server"
+    cd ~/Loom/app && dart run packages/tooling/loom_ux_judges/bin/validator_server.dart
+
+It takes ~60s to compile and serve, and a `setsid nohup ... &` that is not waited on can die with the
+ssh session -- confirm `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8787/health` is 200
+before trusting any result.
+
+This belongs to the same family as grep-gated commits and byte-identical doc mirrors: **a check that
+passes for the wrong reason**. A stale validator does not error, it disagrees -- and its disagreement
+reads exactly like a real finding against your work.
+
 ## Evidence rules
 
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A
