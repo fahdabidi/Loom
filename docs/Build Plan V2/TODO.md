@@ -177,11 +177,20 @@ invalidates acknowledgements **without rewriting any record**. Proven -- after a
 acknowledgement is still present at `version: 1` with `stale: true`, `currentVersion` reads 2, and a
 `currentVersionOnly` query returns empty. Ships in the next image alongside anything else pending.
 
-**B6. Session resume.** Depends on B3. App defaults to `LocalWorkflowEngineApi` over
-`WorkflowDatabase.memory()` — nothing survives a restart, and state is per-device.
-`RemoteWorkflowEngineApi` has no store, so it is dead offline. Target, by user decision: backend is
-source of truth, local DB is a **read-only** replica for offline browse. No outbox, no conflict
-resolution — the backend stays the only writer.
+**B6. Session resume — BUILT 2026-08-29 (`c7ca5900`), not yet mounted in the UI.**
+`LoomWorkflowReplica` over `WorkflowDatabase.file()` (which had existed all along and was called
+from nowhere), fed by B3's change feed, with a read-only facade. App shell 330 -> 337.
+
+The security property is the **deletion** rule, not the sync. An instance can leave a member's view
+without changing -- someone else's transition, or their own role changing -- so it never appears in
+an `updatedSince` window. Anything absent from `visibleInstanceIds` is deleted locally; a replica
+applying only `changed` would keep rows its owner may no longer read.
+
+Per-fan isolation is enforced by the store, not by convention: a singleton row pins each database
+file to one `(fanId, communityId)` pair and a mistaken reuse fails closed. Proven at both layers --
+querying Alice's replica as Bob throws, and reopening Alice's file as Bob throws.
+
+Still open: mounting it, which needs the same app-chrome decision B2's preference control needs.
 
 **Deferred by user decision, not forgotten:** payment processing, external search/AI answer.
 
