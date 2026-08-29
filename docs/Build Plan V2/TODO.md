@@ -270,6 +270,32 @@ B2 was written as "mounting blocked" and B3 as "done, deployed" while both were 
 `part36_engine_native_marketplace_surface.dart`. `NotificationPreferencesClient` and
 `LoomWorkflowReplica` are referenced by nothing outside their own part files.
 
+**CORRECTION 2026-08-29 (second, and larger): the app already runs on the backend by default.**
+
+I wrote that the app uses `LocalWorkflowEngineApi` over an in-memory database and that dispatches
+were forbidden from changing that seam because switching engines was an unmade architecture
+decision. All three parts were wrong.
+
+- `LOOM_ENV` defaults to **`dev`, the real backend**. `apps/loom_communities_demo/lib/main.dart`
+  calls `configureEngineNativeCommunityEngineFactoryForProduction(...)` with the remote factory
+  whenever the environment resolves. The in-memory engine is an explicit opt-in (`LOOM_ENV=local`),
+  tests force it via `debugForceLoomLocalBackend` from `flutter_test_config.dart`, and a typo'd
+  `LOOM_ENV` **throws** rather than falling back. `part40_service_environments.dart` says why: "a
+  capture that quietly ran against a local engine while appearing to prove the deployed stack is the
+  exact failure the backend migration exists to prevent."
+- The dispatch instruction "do not change the default engine seam" meant *do not break the local
+  path the tests run on*. I turned a test-compatibility constraint into an architectural blocker.
+- **`LocalWorkflowEngineApi` is the backend's own engine**, not a client stand-in. The workflow
+  service constructs it as `LocalWorkflowEngineApi(db: _database)` over Postgres; "local" means
+  in-process. Removing it would delete the live backend implementation.
+
+I found the third only because a case-sensitive grep for `engineNativeCommunityEngineFactory` missed
+`configureEngineNativeCommunityEngineFactoryForProduction` and told me nothing called it. **A grep
+that returns nothing is not evidence of absence.**
+
+Consequence: **B3 is not blocked on a decision.** The engine already points at the backend. It is
+dark only because `LoomWorkflowReplica` has no caller, which is a ticket.
+
 **CORRECTION 2026-08-29: "app dark" is not one condition, and B5 is the cheapest item here, not a
 blocked one.** I had recorded B5 as having no client at all. `part42_document_client.dart` exists
 with `upload`, `download`, `access` and `delete`, and `LoomDocumentClient` is called from
