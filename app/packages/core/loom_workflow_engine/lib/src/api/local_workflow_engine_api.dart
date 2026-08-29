@@ -176,6 +176,14 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     _roleIdsByFanId[fanId] = Set.unmodifiable(Set<String>.of(roleIds));
   }
 
+  /// The effective roles most recently registered for [fanId].
+  ///
+  /// Server adapters obtain these from their authorization boundary before
+  /// calling the engine. Returning a copy lets those adapters bind an opaque
+  /// sync cursor to the same role set visibility evaluation uses.
+  Set<String> roleIdsForFan(String fanId) =>
+      Set<String>.of(_roleIdsByFanId[fanId] ?? const <String>{});
+
   LocalWorkflowEngineApi({
     required WorkflowDatabase db,
     required String communityId,

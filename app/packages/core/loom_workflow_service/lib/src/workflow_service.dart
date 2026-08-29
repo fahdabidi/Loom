@@ -32,6 +32,7 @@ class WorkflowService {
   static final RegExp _uuidPattern = RegExp(
     r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$',
   );
+  static final RegExp _roleCursorPattern = RegExp(r'^[0-9a-f]{64}$');
   static final Random _secureRandom = Random.secure();
   static const _supportedAggregateOperations = {
     'count',
@@ -107,6 +108,9 @@ class WorkflowService {
     }
     if (_matchesInstancesAggregate(segments) && request.method == 'POST') {
       return _aggregate(request, segments[2]);
+    }
+    if (_matchesCollection(segments, 'changes') && request.method == 'GET') {
+      return _listVisibleChanges(request, segments[2]);
     }
     if (_matchesCollection(segments, 'instances')) {
       if (request.method == 'GET') {
@@ -828,6 +832,156 @@ class WorkflowService {
       workflowType: workflowType,
       initialInstanceDataList: initialInstanceDataList,
     );
+  }
+
+  /// Returns the viewer-scoped replica feed defined by `listVisibleChanges`.
+  ///
+  /// Visibility is deliberately resolved one instance at a time through the
+  /// engine. A community-wide cached answer would be wrong when two members
+  /// hold different roles, and could disclose an instance that only one of
+  /// them may read.
+  Future<Response> _listVisibleChanges(
+    Request request,
+    String communityId,
+  ) async {
+    final correlationId = request.headers['x-loom-correlation-id'];
+    if (correlationId == null || !_uuidPattern.hasMatch(correlationId)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_correlation_id',
+        message: 'X-Loom-Correlation-Id must be a UUID.',
+      );
+    }
+
+    final identity = await _identityExtractor.extract(request);
+    if (identity == null) {
+      return _error(
+        request: request,
+        statusCode: 401,
+        code: 'authentication_required',
+        message: 'An authenticated fan identity is required.',
+      );
+    }
+
+    final params = request.url.queryParameters;
+    final rawUpdatedSince = params['updatedSince'];
+    final updatedSince = rawUpdatedSince == null
+        ? null
+        : int.tryParse(rawUpdatedSince);
+    if (rawUpdatedSince != null && updatedSince == null) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_request',
+        message: 'updatedSince must be an epoch-millisecond integer.',
+      );
+    }
+
+    final rawLimit = params['limit'];
+    final limit = rawLimit == null ? 200 : int.tryParse(rawLimit);
+    if (limit == null || limit < 1 || limit > 500) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_request',
+        message: 'limit must be an integer between 1 and 500.',
+      );
+    }
+
+    final roleCursor = params['roleCursor'];
+    if (roleCursor != null && !_roleCursorPattern.hasMatch(roleCursor)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_request',
+        message: 'roleCursor is malformed.',
+      );
+    }
+
+    try {
+      return await _databaseSerialExecutor.run(() async {
+        final engine = _authoritativeEngine(communityId);
+        final roleResolutionError = await _resolveRolesForRequest(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          engine: engine,
+        );
+        if (roleResolutionError != null) return roleResolutionError;
+
+        final membershipError = await _requireActiveCommunityMembership(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+        );
+        if (membershipError != null) return membershipError;
+
+        final currentRoleCursor = _roleCursorFor(
+          engine.roleIdsForFan(identity.fanId),
+        );
+        final resyncRequired =
+            (roleCursor != null && roleCursor != currentRoleCursor) ||
+            (updatedSince != null && roleCursor == null);
+
+        // Read all candidate rows so visibleInstanceIds remains the complete
+        // current set even while `changed` is paged. The engine rehydrates and
+        // resolves each row for this specific fan; do not replace this with a
+        // SQL visibility predicate or a cross-caller cache.
+        final rows = await _database.queryCommunityInstancesByUpdatedAt(
+          communityId: communityId,
+        );
+        final visible = <_VisibleInstanceRow>[];
+        for (final row in rows) {
+          final instance = await engine.readVisibleInstance(
+            instanceId: row.instanceId,
+            fanId: identity.fanId,
+          );
+          if (instance != null) {
+            visible.add(_VisibleInstanceRow(row: row, instance: instance));
+          }
+        }
+
+        final changed = updatedSince == null
+            ? visible
+            : visible
+                  .where((candidate) => candidate.row.updatedAt >= updatedSince)
+                  .toList(growable: false);
+        final hasMore = changed.length > limit;
+        final page = hasMore
+            ? changed.take(limit).toList(growable: false)
+            : changed;
+        final visibleInstanceIds =
+            visible.map((candidate) => candidate.row.instanceId).toList()
+              ..sort();
+        final nextUpdatedSince = page.isEmpty
+            ? updatedSince ?? 0
+            : page.last.row.updatedAt;
+
+        return Response.ok(
+          jsonEncode({
+            'communityId': communityId,
+            'changed': page.map(_visibleChangeInstanceJson).toList(),
+            'visibleInstanceIds': visibleInstanceIds,
+            'nextUpdatedSince': nextUpdatedSince,
+            'nextRoleCursor': currentRoleCursor,
+            'hasMore': hasMore,
+            'resyncRequired': resyncRequired,
+          }),
+          headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
+        );
+      });
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'Visible workflow changes could not be queried.',
+      );
+    }
   }
 
   Future<Response> _queryInstances(Request request, String communityId) async {
@@ -3030,6 +3184,42 @@ class WorkflowService {
     }
   }
 
+  /// Makes membership an endpoint-level requirement for the replica feed.
+  ///
+  /// Per-instance visibility still goes through the engine afterwards. This
+  /// check simply prevents a former member from treating creator visibility as
+  /// a community replica entitlement.
+  Future<Response?> _requireActiveCommunityMembership({
+    required Request request,
+    required String communityId,
+    required WorkflowRequestIdentity identity,
+    required String correlationId,
+  }) async {
+    final groupId = await _communityGroupIdResolver.resolveGroupId(communityId);
+    if (groupId == null || groupId.trim().isEmpty) {
+      return _authorizationServiceUnavailable(request);
+    }
+    try {
+      final isActiveMember = await _appAccessClient.hasActiveMembership(
+        fanId: identity.fanId,
+        appId: _appId,
+        groupId: groupId,
+        correlationId: correlationId,
+      );
+      if (isActiveMember) return null;
+      return _error(
+        request: request,
+        statusCode: 403,
+        code: 'community_membership_required',
+        message: 'The change feed is available only to community members.',
+      );
+    } on AppAccessDecisionException catch (_) {
+      return _authorizationServiceUnavailable(request);
+    } on SocketException catch (_) {
+      return _authorizationServiceUnavailable(request);
+    }
+  }
+
   /// Teaches [engine] to answer "is this fan an active member?" for this request.
   ///
   /// Memoised per call, because read filtering asks once per instance and a
@@ -3071,11 +3261,31 @@ class WorkflowService {
     message: 'Workflow creation authorization is unavailable.',
   );
 
+  String _roleCursorFor(Set<String> roleIds) {
+    final sortedRoleIds = roleIds.toList()..sort();
+    // JSON's list encoding keeps role boundaries unambiguous: ['ab', 'c']
+    // cannot collide with ['a', 'bc']. SHA-256 keeps those ids out of the
+    // client-held cursor while leaving a deterministic opaque value to compare.
+    return sha256.convert(utf8.encode(jsonEncode(sortedRoleIds))).toString();
+  }
+
   Map<String, dynamic> _workflowInstanceJson(WorkflowInstance instance) => {
     'instanceId': instance.instanceId,
     'workflowType': instance.workflowType,
     'currentState': instance.currentState,
     'instanceData': instance.instanceData,
+  };
+
+  Map<String, dynamic> _visibleChangeInstanceJson(
+    _VisibleInstanceRow candidate,
+  ) => {
+    'instanceId': candidate.instance.instanceId,
+    'workflowType': candidate.instance.workflowType,
+    'currentState': candidate.instance.currentState,
+    'instanceData': candidate.instance.instanceData,
+    'createdAt': candidate.row.createdAt,
+    'updatedAt': candidate.row.updatedAt,
+    'createdByFanId': candidate.instance.createdByFanId,
   };
 
   Map<String, dynamic> _availableTransitionJson(
@@ -3709,6 +3919,17 @@ class _ReadableExportBundle {
   const _ReadableExportBundle({required this.bundle, required this.instance});
 
   final StoredExportBundle bundle;
+  final WorkflowInstance instance;
+}
+
+/// A persisted row and its viewer-resolved engine representation.
+///
+/// The row supplies authoritative timestamps; the engine representation
+/// supplies the exact instance data that the caller may read.
+class _VisibleInstanceRow {
+  const _VisibleInstanceRow({required this.row, required this.instance});
+
+  final WorkflowInstanceRow row;
   final WorkflowInstance instance;
 }
 

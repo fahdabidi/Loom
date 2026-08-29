@@ -465,6 +465,28 @@ class WorkflowDatabase {
     return result.first['c'] as int;
   }
 
+  /// Reads every persisted instance for one community in sync-feed order.
+  ///
+  /// The workflow service applies viewer-specific visibility after this read,
+  /// through the engine's shared visibility resolver; storing a visibility
+  /// decision in SQL would make it stale as soon as a caller's roles change.
+  Future<List<WorkflowInstanceRow>> queryCommunityInstancesByUpdatedAt({
+    required String communityId,
+  }) async {
+    await _ensureOpenAndMigrated();
+    final result = await _db.runSelect(
+      _dialect.isSqlite
+          ? 'SELECT * FROM workflow_instances '
+                'WHERE community_id = ? '
+                'ORDER BY updated_at ASC, instance_id ASC'
+          : r'SELECT * FROM workflow_instances '
+                r'WHERE community_id = $1 '
+                r'ORDER BY updated_at ASC, instance_id ASC',
+      [communityId],
+    );
+    return result.map((row) => WorkflowInstanceRow.fromRow(row)).toList();
+  }
+
   Future<List<WorkflowInstanceRow>> queryInstancesForFan({
     required String communityId,
     required String fanId,
