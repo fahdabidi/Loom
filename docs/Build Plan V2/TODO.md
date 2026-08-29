@@ -109,7 +109,11 @@ Actually missing, and this is the whole of B2:
   for the engine; it also means a failed delivery is indistinguishable from a successful one, which
   matters once anything depends on delivery having happened
 
-**B3. Per-viewer change feed — BUILT AND TESTED 2026-08-29. Deploying as `0.6.0`.**
+**B3. Per-viewer change feed — DONE 2026-08-29.** Deployed as `loom-workflow-service:0.6.0` and
+verified live: the real route answers `400 invalid_correlation_id` where an invented sibling path
+answers `404 route_not_found`, then `401` with a valid correlation id. The real-vs-fake comparison
+is the proof -- fan-passport answers `401` to routed and unrouted paths alike, so a bare probe of
+*that* service would have shown nothing.
 
 `GET /communities/{id}/changes` is implemented in the workflow service (`86f79b0d`), workflow service
 107 → 113. It resolves visibility through the engine's existing per-fan path rather than
@@ -164,9 +168,14 @@ So what actually remains:
 communities and permanently unwritable. Removes the last `NEEDS IMPLEMENTATION` comments after
 checksum.
 
-**B5. Document member state + versioning.** Spec written (`document-library-api.openapi.yaml`), not
-built: service-assigned `version` bumping on revision, per-member `read`/`saved`/`acknowledged`,
-acknowledgement bound to the version so a revision invalidates it without rewriting a record.
+**B5. Document member state + versioning — BUILT 2026-08-29 (`6099d40f`), not yet deployed.**
+Service-assigned `version` (a caller-supplied one is rejected, not ignored), per-member
+`read`/`saved`/`acknowledged`, and acknowledgements bound to the version. Workflow service 113 -> 125.
+
+The subtle one, and the one a green test could most easily have faked by deleting rows: a revision
+invalidates acknowledgements **without rewriting any record**. Proven -- after a bump the
+acknowledgement is still present at `version: 1` with `stale: true`, `currentVersion` reads 2, and a
+`currentVersionOnly` query returns empty. Ships in the next image alongside anything else pending.
 
 **B6. Session resume.** Depends on B3. App defaults to `LocalWorkflowEngineApi` over
 `WorkflowDatabase.memory()` — nothing survives a restart, and state is per-device.
