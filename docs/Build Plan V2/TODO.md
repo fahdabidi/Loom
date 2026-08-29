@@ -185,6 +185,40 @@ resolution — the backend stays the only writer.
 
 **Deferred by user decision, not forgotten:** payment processing, external search/AI answer.
 
+**B7. The services are built; the content is not loaded.** Measured against the live cluster
+2026-08-29, not inferred:
+
+- `workflow_definitions` holds **7 rows, every one of them Cedar** (`hoa-architectural-request`,
+  `-committee-decision`, `-dues-payment`, `-member-document`, `-facility-reservation`,
+  `-owner-notification`, `-export-evidence`), all at version 4.
+- `workflow_instances` holds **3 rows, all Cedar**, and those are residue from B3's own end-to-end
+  test.
+- `workflow_documents`, `workflow_item_queue_entries` and `workflow_export_bundles` are **empty**.
+
+So nine of the ten communities exist only as client-side JSON packages and are unknown to the
+backend. Every service route answers and every suite is green, which is exactly what makes this
+worth writing down: the backend can look finished while the product does nothing, because nothing
+has been published into it. A definition-publishing path is the missing piece, and it is a real
+item, not a cleanup.
+
+**Correction to my own reporting:** I first recorded `workflow_definitions` as empty. That query
+had errored on a column the table does not have, with stderr suppressed -- a failure and a zero
+look identical through `2>/dev/null`. The counts above were re-run with errors visible.
+
+### Group-to-community mapping: measured
+
+Confirms the 2026-08-29 entry below and adds the numbers.
+
+- 24 groups, **0** with `external_resource_type` and **0** with `external_resource_id`.
+- Most communities carry a duplicate pair of spellings (`...ad-free-community` and
+  `...ad_free_community`), and both are empty, so picking one is harmless there.
+- **Cedar is the exception and the reason this cannot be derived**:
+  `loom_communities_cedar_commons_hoa` has 2 members and `loom_communities_cedar-commons-hoa` has 1.
+  Both are real; nothing distinguishes which the workflow community means.
+- Test residue is in the same table and will be mistaken for product data by anyone who reads it
+  later: two `loom_communities_b3-e2e-*` groups with 1 member each, and
+  `loom_communities_verify_tabletop_club`.
+
 ### 2026-08-29 — nothing authoritatively maps a group to a community
 
 Found while trying to mount the notification-preference control, which must show a member their
