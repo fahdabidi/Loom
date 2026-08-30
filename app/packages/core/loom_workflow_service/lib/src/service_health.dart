@@ -13,11 +13,13 @@ class WorkflowServiceHealth {
 
   bool _postgresConnected = false;
   bool _migrationsComplete = false;
+  Future<void> Function()? _postgresReadinessCheck;
 
   bool get isReady => _postgresConnected && _migrationsComplete;
 
-  void markPostgresConnected() {
+  void markPostgresConnected({Future<void> Function()? readinessCheck}) {
     _postgresConnected = true;
+    _postgresReadinessCheck = readinessCheck;
   }
 
   void markMigrationsComplete() {
@@ -32,28 +34,53 @@ class WorkflowServiceHealth {
   void markPostgresUnavailable() {
     _postgresConnected = false;
     _migrationsComplete = false;
+    _postgresReadinessCheck = null;
   }
 
   Response livenessResponse() =>
       Response.ok(jsonEncode({'status': 'live'}), headers: _jsonHeaders);
 
-  Response readinessResponse() {
-    if (isReady) {
-      return Response.ok(
-        jsonEncode({'status': 'ready'}),
-        headers: _jsonHeaders,
-      );
+  Future<Response> readinessResponse() async {
+    if (!_postgresConnected) {
+      return _postgresUnavailableResponse();
+    }
+    if (!_migrationsComplete) {
+      return _postgresMigrationsPendingResponse();
     }
 
-    final migrationsArePending = _postgresConnected;
+    final readinessCheck = _postgresReadinessCheck;
+    if (readinessCheck != null) {
+      try {
+        await readinessCheck();
+      } catch (_) {
+        return _postgresUnavailableResponse(
+          message: 'Postgres is not reachable.',
+        );
+      }
+    }
+
+    return Response.ok(jsonEncode({'status': 'ready'}), headers: _jsonHeaders);
+  }
+
+  Response _postgresUnavailableResponse({
+    String message = 'Postgres is not connected.',
+  }) => Response(
+    503,
+    body: jsonEncode({
+      'status': 'not_ready',
+      'dependency': 'postgres',
+      'message': message,
+    }),
+    headers: _jsonHeaders,
+  );
+
+  Response _postgresMigrationsPendingResponse() {
     return Response(
       503,
       body: jsonEncode({
         'status': 'not_ready',
-        'dependency': migrationsArePending ? 'postgres_migrations' : 'postgres',
-        'message': migrationsArePending
-            ? 'Postgres migrations have not completed.'
-            : 'Postgres is not connected.',
+        'dependency': 'postgres_migrations',
+        'message': 'Postgres migrations have not completed.',
       }),
       headers: _jsonHeaders,
     );

@@ -67,7 +67,7 @@ abstract interface class ExportBundleRepository {
 class PostgresExportBundleRepository implements ExportBundleRepository {
   PostgresExportBundleRepository(this._connection);
 
-  final pg.Connection _connection;
+  final pg.Session _connection;
 
   Future<void> migrate() async {
     await _connection.execute('''

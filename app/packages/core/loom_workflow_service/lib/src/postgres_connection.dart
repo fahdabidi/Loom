@@ -4,23 +4,30 @@ import 'package:postgres/postgres.dart' as pg;
 
 const workflowPostgresDefaultDatabaseName = 'loom_workflow_service';
 
+/// A small service-side ceiling keeps one pod from consuming every database
+/// connection under a traffic burst.
+const workflowPostgresPoolMaxConnectionCount = 8;
+
+/// Bound both acquiring and opening a connection when PostgreSQL is down.
+const workflowPostgresConnectTimeout = Duration(seconds: 5);
+
 String workflowPostgresDatabaseName(Map<String, String> environment) =>
     environment['LOOM_POSTGRES_DATABASE'] ??
     workflowPostgresDefaultDatabaseName;
 
-/// Owns the PostgreSQL connection and the shared engine database wrapper.
+/// Owns the PostgreSQL pool and the shared engine database wrapper.
 class WorkflowPostgresConnection {
-  final pg.Connection _connection;
+  final pg.Pool<Object?> _connection;
   final WorkflowDatabase database;
 
   WorkflowPostgresConnection._(this._connection, this.database);
 
-  /// The raw connection, for tables the engine does not own.
+  /// The raw pooled session, for tables the engine does not own.
   ///
   /// Document metadata lives beside the engine's tables in the same database so
   /// a document and the instance it belongs to cannot end up in two databases
   /// that disagree, but it is not the engine's schema and is not managed by it.
-  pg.Connection get connection => _connection;
+  pg.Pool<Object?> get connection => _connection;
 
   static Future<WorkflowPostgresConnection> open({
     required String host,
@@ -29,26 +36,56 @@ class WorkflowPostgresConnection {
     required String username,
     required String password,
     pg.SslMode sslMode = pg.SslMode.disable,
+    Future<void> Function(pg.Connection connection)? onConnectionOpen,
   }) async {
-    final connection = await pg.Connection.open(
-      pg.Endpoint(
-        host: host,
-        port: port,
-        database: databaseName,
-        username: username,
-        password: password,
+    final connection = pg.Pool<Object?>.withEndpoints(
+      [
+        pg.Endpoint(
+          host: host,
+          port: port,
+          database: databaseName,
+          username: username,
+          password: password,
+        ),
+      ],
+      settings: pg.PoolSettings(
+        maxConnectionCount: workflowPostgresPoolMaxConnectionCount,
+        connectTimeout: workflowPostgresConnectTimeout,
+        sslMode: sslMode,
+        onOpen: onConnectionOpen,
       ),
-      settings: pg.ConnectionSettings(sslMode: sslMode),
     );
+    final pgDatabase = PgDatabase.opened(connection, enableMigrations: false);
     final workflowDatabase = WorkflowDatabase.withExecutor(
-      PgDatabase.opened(connection, enableMigrations: false),
+      pgDatabase,
       dialect: WorkflowSqlDialect.postgres,
+      transactionRunner: (action) async {
+        await connection.runTx((transaction) async {
+          final transactionDatabase = PgDatabase.opened(
+            transaction,
+            enableMigrations: false,
+          );
+          try {
+            await action(transactionDatabase);
+          } finally {
+            await transactionDatabase.close();
+          }
+        });
+      },
     );
     return WorkflowPostgresConnection._(connection, workflowDatabase);
   }
 
   /// Completes migrations owned by the shared workflow engine.
   Future<void> migrateWorkflowSchema() => database.initialize();
+
+  /// Throws when the database cannot accept a small, fresh query.
+  ///
+  /// A pool disposes a failed borrowed connection, so a later probe or request
+  /// opens a replacement after PostgreSQL returns.
+  Future<void> verifyReadiness() async {
+    await _connection.execute('SELECT 1');
+  }
 
   Future<void> close() async {
     database.close();

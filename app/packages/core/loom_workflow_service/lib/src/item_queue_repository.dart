@@ -100,7 +100,7 @@ abstract interface class ItemQueueRepository {
 class PostgresItemQueueRepository implements ItemQueueRepository {
   PostgresItemQueueRepository(this._connection);
 
-  final pg.Connection _connection;
+  final pg.Session _connection;
 
   Future<void> migrate() async {
     await _connection.execute('''

@@ -22,6 +22,17 @@ enum WorkflowSqlDialect {
   bool get isSqlite => this == WorkflowSqlDialect.sqlite;
 }
 
+/// Runs a workflow transaction with an executor bound to one database session.
+///
+/// Server adapters backed by a connection pool use this to keep all statements
+/// in a workflow transaction on the same borrowed PostgreSQL connection. The
+/// SQLite implementation continues to use its statement-based transaction
+/// path below.
+typedef WorkflowTransactionRunner =
+    Future<void> Function(
+      Future<void> Function(QueryExecutor transactionExecutor) action,
+    );
+
 /// Thin wrapper around a SQL connection with the two-table schema from §3d.
 ///
 /// Runs on SQLite on the device and on PostgreSQL server-side, over the same
@@ -33,13 +44,25 @@ enum WorkflowSqlDialect {
 /// engines require different spellings.
 class WorkflowDatabase {
   static bool _sqliteProcessSymbolsLoaded = false;
+  static final _transactionExecutorZoneKey = Object();
 
-  final QueryExecutor _db;
+  final QueryExecutor _baseDb;
   final WorkflowSqlDialect _dialect;
+  final WorkflowTransactionRunner? _transactionRunner;
   final _WorkflowDatabaseUser _user = _WorkflowDatabaseUser();
   Future<void>? _openAndMigrated;
 
-  WorkflowDatabase._(this._db, this._dialect);
+  WorkflowDatabase._(
+    this._baseDb,
+    this._dialect, {
+    WorkflowTransactionRunner? transactionRunner,
+  }) : _transactionRunner = transactionRunner;
+
+  /// The transaction-bound executor when an adapter supplies one, otherwise
+  /// the database's normal executor. Zones keep concurrent HTTP requests from
+  /// accidentally sharing one another's borrowed connection.
+  QueryExecutor get _db =>
+      Zone.current[_transactionExecutorZoneKey] as QueryExecutor? ?? _baseDb;
 
   /// Opens an in-memory SQLite database for tests and ephemeral demo state.
   factory WorkflowDatabase.memory() {
@@ -67,8 +90,13 @@ class WorkflowDatabase {
   factory WorkflowDatabase.withExecutor(
     QueryExecutor executor, {
     required WorkflowSqlDialect dialect,
+    WorkflowTransactionRunner? transactionRunner,
   }) {
-    return WorkflowDatabase._(executor, dialect);
+    return WorkflowDatabase._(
+      executor,
+      dialect,
+      transactionRunner: transactionRunner,
+    );
   }
 
   /// Opens the underlying database and completes all engine-owned migrations.
@@ -826,6 +854,18 @@ class WorkflowDatabase {
 
   Future<void> _executeTx(Future<void> Function() action) async {
     await _ensureOpenAndMigrated();
+    final transactionRunner = _transactionRunner;
+    if (transactionRunner != null) {
+      await transactionRunner((transactionExecutor) async {
+        await transactionExecutor.ensureOpen(_user);
+        await runZoned<Future<void>>(
+          action,
+          zoneValues: {_transactionExecutorZoneKey: transactionExecutor},
+        );
+      });
+      return;
+    }
+
     await _db.runCustom(_dialect.isSqlite ? 'BEGIN IMMEDIATE' : 'BEGIN');
     try {
       await action();

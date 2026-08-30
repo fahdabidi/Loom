@@ -250,7 +250,7 @@ abstract interface class DocumentRepository {
 class PostgresDocumentRepository implements DocumentRepository {
   PostgresDocumentRepository(this._connection);
 
-  final pg.Connection _connection;
+  final pg.Session _connection;
 
   /// Declares the schema, following the engine's `IF NOT EXISTS` convention so
   /// a redeploy against a populated database is a no-op rather than a wipe.

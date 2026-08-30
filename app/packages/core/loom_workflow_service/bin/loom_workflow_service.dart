@@ -112,7 +112,7 @@ Future<_StartedWorkflowService?> _startUntilReady({
         username: environment['LOOM_POSTGRES_USERNAME'] ?? 'loom',
         password: postgresPassword,
       );
-      health.markPostgresConnected();
+      health.markPostgresConnected(readinessCheck: postgres.verifyReadiness);
       await postgres.migrateWorkflowSchema();
 
       // Queue entries are core workflow-service state, not object storage.

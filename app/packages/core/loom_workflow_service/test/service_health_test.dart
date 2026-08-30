@@ -66,6 +66,55 @@ void main() {
   );
 
   test(
+    'readyz follows database reachability and healthz never probes it',
+    () async {
+      var databaseReachable = true;
+      var probeCalls = 0;
+      final health = WorkflowServiceHealth();
+      final router = WorkflowServiceProbeRouter(health: health);
+      health.markPostgresConnected(
+        readinessCheck: () async {
+          probeCalls++;
+          if (!databaseReachable) {
+            throw StateError('Postgres is unavailable for this probe.');
+          }
+        },
+      );
+      health.markMigrationsComplete();
+      router.activate((_) => Response.ok('application route'));
+
+      final live = await router.handler(
+        Request('GET', Uri.parse('http://localhost/healthz')),
+      );
+      expect(live.statusCode, 200);
+      expect(probeCalls, 0);
+
+      final initiallyReady = await router.handler(
+        Request('GET', Uri.parse('http://localhost/readyz')),
+      );
+      expect(initiallyReady.statusCode, 200);
+      expect(probeCalls, 1);
+
+      databaseReachable = false;
+      final unavailable = await router.handler(
+        Request('GET', Uri.parse('http://localhost/readyz')),
+      );
+      expect(unavailable.statusCode, 503);
+      expect(
+        jsonDecode(await unavailable.readAsString()),
+        containsPair('dependency', 'postgres'),
+      );
+
+      databaseReachable = true;
+      final recovered = await router.handler(
+        Request('GET', Uri.parse('http://localhost/readyz')),
+      );
+      expect(recovered.statusCode, 200);
+      expect(probeCalls, 3);
+    },
+  );
+
+  test(
     'both executable entrypoints use the workflow-service database default',
     () async {
       expect(
