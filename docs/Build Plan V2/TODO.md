@@ -488,6 +488,34 @@ B3's per-viewer change feed.
   - revisit only on a real operational difference (bundle downloads saturating the pod), never on
     "documents are a different noun"
 
+### 2026-08-29 — the Book Club "regression" has been overtaken by the backend
+
+`c0e0355b` removed eleven instance fields from Book Club while making an unrelated and correct
+change, and was recorded as a shipped regression. Re-examined today against `c0e0355b^`, the removal
+splits three ways and **only the first was ever wrong**:
+
+| Removed | Verdict now |
+|---|---|
+| `reminderAt`, `reminderSentAt` | **Correct** — the documented §15 conversion to a declared `reminder` block removes the formula field |
+| `acknowledgedByFanIds`, `savedByFanIds`, `accessRequestedFanIds`, `approvedFanIds` | **Correct now** — per-member document state is owned by the deployed member-state API |
+| `queuedFanIds`, `myQueuePosition`, `queueLength`, `currentHolderFanId`, `currentHolderDisplay` | **Correct now** — queue membership, position and custody are owned by the deployed item queue service |
+
+They were a regression **at the time** because they were removed before anything replaced them. B1
+and B5 have since shipped the services that own those facts, and B5's own spec names a `fanId[]` of
+readers as the anti-pattern it exists to replace: it grows without bound and rides along on every
+read of the instance.
+
+**So do not restore them.** Re-adding would create a second, diverging source of truth for who holds
+an item and who acknowledged a document. `verify_community_package.py` against `c0e0355b^` reports
+`VERIFY FAIL` and will keep doing so; that comparison is now the wrong baseline, and the standing
+instruction to "verify Book Club against `c0e0355b^`, not HEAD" is **retired** — HEAD is the correct
+baseline for this package again.
+
+Left open, and genuinely unresolved: the shared-library and reading-material surfaces still *declare*
+those experiences in the product doc while the JSON no longer carries the fields and the app does not
+yet call the services for this community. That is a wiring gap, not a data-loss gap, and it belongs
+with B3/B6-style app work rather than with a regeneration.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
