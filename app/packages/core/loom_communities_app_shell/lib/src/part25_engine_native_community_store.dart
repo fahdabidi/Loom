@@ -349,6 +349,42 @@ Future<WorkflowEngineApi> workflowEngineForExtensionId(
   return store.engine;
 }
 
+/// Opens the opt-in offline replica for the member currently entering a
+/// remote-backed community. It is a no-op for local engines and for hosts that
+/// did not configure an offline directory, preserving the previous path.
+Future<void> openOfflineReplicaForExtensionId({
+  required String extensionId,
+  required String fanId,
+}) async {
+  final engine = await workflowEngineForExtensionId(extensionId);
+  if (engine is! LoomReplicaFallbackWorkflowEngineApi) return;
+  final coordinator = loomWorkflowReplicaCoordinator;
+  if (coordinator == null) return;
+  await coordinator.open(
+    fanId: fanId,
+    communityId: engine.communityId,
+  );
+}
+
+/// Performs the explicit refresh requested by a surface for the active
+/// remote-backed community. There is intentionally no read-triggered or timed
+/// synchronization path.
+Future<void> refreshOfflineReplicaForExtensionId({
+  required String extensionId,
+}) async {
+  final engine = await workflowEngineForExtensionId(extensionId);
+  if (engine is! LoomReplicaFallbackWorkflowEngineApi) return;
+  final coordinator = loomWorkflowReplicaCoordinator;
+  if (coordinator == null) return;
+  if (coordinator.activeCommunityId != engine.communityId) {
+    throw StateError(
+      'No offline replica is open for "${engine.communityId}". Open the '
+      'community before refreshing it.',
+    );
+  }
+  await coordinator.refresh();
+}
+
 /// One reminder sweeper per community, built on first use.
 final Map<String, LoomReminderSweeper> _reminderSweepersByExtensionId = {};
 

@@ -9,13 +9,30 @@ const bool _preloadExampleCommunities = bool.fromEnvironment(
   'LOOM_PRELOAD_EXAMPLE_COMMUNITIES',
 );
 
+/// A host-injected writable directory for server-fed, per-member replicas.
+///
+/// It deliberately defaults to empty: without an explicit host value, the
+/// app keeps its existing remote-only behavior and does not probe a platform
+/// directory or add a path_provider dependency.
+const String _offlineReplicaDirectory = String.fromEnvironment(
+  'LOOM_OFFLINE_REPLICA_DIRECTORY',
+);
+
 void main() {
   final remoteServices = configureLoomRemoteServicesFromEnvironment();
   if (remoteServices != null) {
+    if (_offlineReplicaDirectory.isNotEmpty) {
+      configureLoomOfflineReplicaSupportForProduction(
+        databaseDirectory: _offlineReplicaDirectory,
+        remoteServices: remoteServices,
+        httpClient: http.Client(),
+      );
+    }
     configureEngineNativeCommunityEngineFactoryForProduction(
       createRemoteEngineNativeCommunityEngineFactoryForConfiguration(
         configuration: remoteServices,
         httpClient: http.Client(),
+        offlineReplicaCoordinator: loomWorkflowReplicaCoordinator,
       ),
     );
   }

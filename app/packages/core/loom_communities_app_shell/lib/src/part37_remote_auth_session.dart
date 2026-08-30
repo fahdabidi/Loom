@@ -275,14 +275,19 @@ createRemoteEngineNativeCommunityEngineFactory({
   required LoomAuthSession session,
   required Uri workflowServiceBaseUri,
   required http.Client httpClient,
-}) =>
-    ({required WorkflowDatabase database, required String extensionId}) =>
-        RemoteWorkflowEngineApi(
-          baseUri: workflowServiceBaseUri,
-          communityId: extensionId,
-          bearerTokenProvider: session.currentAccessToken,
-          httpClient: httpClient,
-        );
+  LoomWorkflowReplicaCoordinator? offlineReplicaCoordinator,
+}) => ({required WorkflowDatabase database, required String extensionId}) {
+  final remote = RemoteWorkflowEngineApi(
+    baseUri: workflowServiceBaseUri,
+    communityId: extensionId,
+    bearerTokenProvider: session.currentAccessToken,
+    httpClient: httpClient,
+  );
+  final coordinator = offlineReplicaCoordinator;
+  return coordinator == null
+      ? remote
+      : coordinator.wrap(remote, communityId: extensionId);
+};
 
 /// Builds the remote community-engine factory from the app's remote-service
 /// configuration.
@@ -293,10 +298,12 @@ EngineNativeCommunityEngineFactory
 createRemoteEngineNativeCommunityEngineFactoryForConfiguration({
   required LoomRemoteServiceConfiguration configuration,
   required http.Client httpClient,
+  LoomWorkflowReplicaCoordinator? offlineReplicaCoordinator,
 }) => createRemoteEngineNativeCommunityEngineFactory(
   session: configuration.session,
   workflowServiceBaseUri: configuration.workflowServiceBaseUri,
   httpClient: httpClient,
+  offlineReplicaCoordinator: offlineReplicaCoordinator,
 );
 
 /// Routes one community to the remote workflow engine.
@@ -310,6 +317,7 @@ void enableRemoteEngineForCommunity({
   required LoomAuthSession session,
   required Uri workflowServiceBaseUri,
   required http.Client httpClient,
+  LoomWorkflowReplicaCoordinator? offlineReplicaCoordinator,
 }) {
   _registerEngineNativeCommunityEngineFactory(
     extensionId: extensionId,
@@ -317,6 +325,7 @@ void enableRemoteEngineForCommunity({
       session: session,
       workflowServiceBaseUri: workflowServiceBaseUri,
       httpClient: httpClient,
+      offlineReplicaCoordinator: offlineReplicaCoordinator,
     ),
   );
 }

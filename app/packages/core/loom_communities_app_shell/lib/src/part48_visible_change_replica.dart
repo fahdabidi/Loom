@@ -327,6 +327,18 @@ final class LoomWorkflowReplica {
   final String databasePath;
   final String fanId;
   final String communityId;
+  bool _isClosed = false;
+
+  /// The message returned for every attempted mutation while browsing offline.
+  static const offlineWriteMessage =
+      'Offline browsing is read-only. Reconnect to make changes.';
+
+  /// Whether this replica's database handle has been closed.
+  ///
+  /// The coordinator uses this to make identity switches observable in tests
+  /// and to make clear that an active replica is a single live handle, not a
+  /// multi-member cache.
+  bool get isClosed => _isClosed;
 
   /// The API to give an offline view. It has no local mutation path.
   final ReadOnlyWorkflowReplicaApi engine;
@@ -379,7 +391,11 @@ final class LoomWorkflowReplica {
     }
   }
 
-  void close() => _database.close();
+  void close() {
+    if (_isClosed) return;
+    _isClosed = true;
+    _database.close();
+  }
 }
 
 /// A [WorkflowEngineApi] that only serves rows the server already authorized.
@@ -394,8 +410,7 @@ final class ReadOnlyWorkflowReplicaApi implements WorkflowEngineApi {
     required this.communityId,
   }) : _database = database;
 
-  static const offlineWriteMessage =
-      'Offline browsing is read-only. Reconnect to make changes.';
+  static const offlineWriteMessage = LoomWorkflowReplica.offlineWriteMessage;
 
   final WorkflowDatabase _database;
   final String fanId;

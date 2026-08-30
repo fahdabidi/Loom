@@ -306,6 +306,18 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       (account) => account.status == MembershipStatus.pendingApproval,
     );
     if (!mounted) return;
+    // This is the community-open lifecycle point for the remote replica. It
+    // runs before the engine-native surfaces receive their first read. Local
+    // engines and hosts without an injected offline directory are no-ops.
+    // An unavailable sync keeps an already stored replica available; a real
+    // response failure such as 403 continues to surface from this call.
+    if (hasActiveAccount) {
+      await openOfflineReplicaForExtensionId(
+        extensionId: community.extensionId,
+        fanId: signedInAccountId,
+      );
+      if (!mounted) return;
+    }
     setState(() {
       _communityEntryAllowed = hasActiveAccount;
       _entryGateHasPendingApproval = hasPendingApproval;
