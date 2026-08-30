@@ -814,9 +814,27 @@ the entire backend build-out and would have made a device test look successful w
 1. no authenticated session exists, so `RemoteWorkflowEngineApi` has no bearer token
 2. nothing navigated to a surface that lists workflow *instances*, which is what would fetch
 
-- [ ] `new-ticket` — **drive the app to an authenticated instance fetch on device.** Needs a sign-in
-  path: tapping the identity icon on the community screen changed nothing, and no login prompt
-  appeared at any point in this build. Until a member session exists on the device, the app-side link
+- [ ] `new-ticket` — **drive the app to an authenticated instance fetch on device.** The path exists
+  in code; I could not drive it blind through the UI. Entry points, for whoever does the walkthrough:
+
+  | Where | What |
+  |---|---|
+  | `part38_production_login_screen.dart` | `LoomProductionLoginScreen` — the real Keycloak login |
+  | `part01_local_extension_screen.dart:1088` | menu item `_production-login`, **gated on `productionAuthSession != null`** |
+  | `part01_local_extension_screen.dart:1090` | menu item `_sign-in-specific-person` → `LoomAuthScreen` |
+  | `part01_local_extension_screen.dart:347` | the `community-entry-gate` Scaffold, which embeds `LoomAuthScreen` |
+
+  Auth resolves to the **remote** implementation: `configureLoomRemoteServicesFromEnvironment` sets
+  `_loomRemoteServiceConfiguration` (part37:181), and `resolveLoomAuthApiForCommunity` returns
+  `RemoteLoomAuthApi` whenever that is non-null. So a sign-in on device would hit Keycloak at
+  `192.168.56.10:30082` rather than the local fake.
+
+  What I could not establish: why opening Cedar bypassed the entry gate, and which control opens the
+  identity menu — tapping the header identity icon and the roles card both did nothing. That is UI
+  archaeology better done by someone who can see the widget tree, not by tapping coordinates.
+
+  Original note follows: tapping the identity icon on the community screen changed nothing, and no
+  login prompt appeared at any point in this build. Until a member session exists on the device, the app-side link
   is verified only as far as "configured correctly and able to reach the services", which is short of
   the walkthrough the production bar asks for.
 
