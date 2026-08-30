@@ -65,30 +65,50 @@ class LoomCommunitiesHome extends StatefulWidget {
 }
 
 class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
-  late final LocalInAppBackend _backend;
-  late final Map<String, List<String>> _importedSeedFilesByCommunityId;
+  late LocalInAppBackend _backend;
+  late Map<String, List<String>> _importedSeedFilesByCommunityId;
   late final Map<String, LoomAuthApi> _authApisByCommunityId;
   late final ScrollController _communityScrollController;
   String? _lastLocalImportMessage;
   String? _focusedCommunityId;
+  String? _preloadError;
+  bool _isPreloadingExamples = false;
 
   @override
   void initState() {
     super.initState();
     _communityScrollController = ScrollController()
       ..addListener(_updateFocusedCommunityFromScroll);
-    _backend = LocalInAppBackend(
-      snapshot: _preloadExampleCommunities
-          ? preloadedExampleCommunitiesSnapshot()
-          : null,
-    );
-    _importedSeedFilesByCommunityId = _preloadExampleCommunities
-        ? preloadedSeedFilesByCommunityId()
-        : {};
+    _backend = LocalInAppBackend();
+    _importedSeedFilesByCommunityId = {};
     _authApisByCommunityId = {};
-    _lastLocalImportMessage = _preloadExampleCommunities
-        ? 'Loaded ${loomEvidenceTargets.length} example communities'
-        : null;
+    _lastLocalImportMessage = null;
+    if (_preloadExampleCommunities) {
+      _isPreloadingExamples = true;
+      _preloadBundledExampleCommunities();
+    }
+  }
+
+  Future<void> _preloadBundledExampleCommunities() async {
+    try {
+      final preload = await preloadBundledExampleCommunities();
+      if (!mounted) return;
+      setState(() {
+        _backend = LocalInAppBackend(snapshot: preload.snapshot);
+        _importedSeedFilesByCommunityId = Map.of(
+          preload.seedFilesByCommunityId,
+        );
+        _lastLocalImportMessage =
+            'Loaded ${preload.snapshot.communities.length} example communities';
+        _isPreloadingExamples = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _preloadError = 'Could not load bundled example communities: $error';
+        _isPreloadingExamples = false;
+      });
+    }
   }
 
   @override
@@ -160,11 +180,30 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
       appBar: AppBar(title: const Text('Loom Communities')),
       floatingActionButton: FloatingActionButton.extended(
         key: const ValueKey('add-community-button'),
-        onPressed: _showLocalPackageLoader,
+        onPressed: _isPreloadingExamples ? null : _showLocalPackageLoader,
         icon: const Icon(Icons.add),
         label: const Text('Add Community'),
       ),
-      body: communities.isEmpty
+      body: _preloadError != null
+          ? Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    _preloadError!,
+                    key: const ValueKey('bundled-community-preload-error'),
+                  ),
+                ),
+              ),
+            )
+          : _isPreloadingExamples
+          ? const Center(
+              child: CircularProgressIndicator(
+                key: ValueKey('bundled-community-preload-progress'),
+              ),
+            )
+          : communities.isEmpty
           ? Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 520),

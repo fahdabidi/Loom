@@ -245,6 +245,27 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         experience.workflowDefinitions!.isEmpty;
   }
 
+  /// A bundled community has an authoritative engine-native package. When a
+  /// remote host sees only its old catalog fallback, rendering that fallback
+  /// would make a local-looking community appear to be backed by the remote
+  /// services. Local-only builds retain the genuine legacy path below.
+  void _failClosedForMissingBundledPackageExperience(
+    LoomExperienceDefinition experience,
+  ) {
+    if (loomRemoteServiceConfiguration == null ||
+        !isBundledExampleCommunityExtensionId(community.extensionId) ||
+        !_isLegacySchema(experience)) {
+      return;
+    }
+    throw StateError(
+      'Community "${community.displayName}" (${community.communityId}) '
+      'cannot open with remote Loom services because its bundled package '
+      'experience is missing or legacy for extension '
+      '"${community.extensionId}". Install the full bundled initialization '
+      'package before opening this community.',
+    );
+  }
+
   /// Serializes the account-to-role mapping with the entry check.
   ///
   /// Engine-native surfaces use the signed-in account id as their actor id,
@@ -1195,6 +1216,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       child: Builder(
         builder: (context) {
           final experience = _experienceForCommunity();
+          _failClosedForMissingBundledPackageExperience(experience);
           if (_isLegacySchema(experience) || _communityEntryAllowed == true) {
             return _buildScreen(context);
           }

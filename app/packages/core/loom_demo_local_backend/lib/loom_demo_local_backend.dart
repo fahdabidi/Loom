@@ -177,6 +177,24 @@ class LocalInAppBackend {
       packageLabel: 'initialization package',
       manifestFileName: LoomExtensionPackageFormat.initializationManifestFile,
     );
+    return parseLocalPackagePairFromManifests(
+      extensionManifest: extension,
+      initializationManifest: initialization,
+    );
+  }
+
+  /// Parses already-loaded package manifests through the same validation and
+  /// installation planning path as file-backed local packages.
+  ///
+  /// Bundled Flutter assets have no filesystem path on a device, so callers
+  /// that load an initialization package from the asset bundle use this seam
+  /// instead of recreating [LocalInstalledCommunity] metadata by hand.
+  LocalPackagePairInstallPlan parseLocalPackagePairFromManifests({
+    required Map<String, Object?> extensionManifest,
+    required Map<String, Object?> initializationManifest,
+  }) {
+    final extension = extensionManifest;
+    final initialization = initializationManifest;
     final actualSpecVersion = extension['specVersion'];
     if (actualSpecVersion is! int ||
         actualSpecVersion != LoomExtensionPackageFormat.specVersion) {
@@ -248,6 +266,29 @@ class LocalInAppBackend {
     final plan = parseLocalPackagePair(
       extensionPackagePath: extensionPackagePath,
       initializationPackagePath: initializationPackagePath,
+    );
+    loadExtensionPackage(plan.extensionPackage);
+    return importInitializationPackage(
+      plan.initializationPackage,
+      accentColor: plan.accentColor,
+      logoAssetId: plan.logoAssetId,
+      heroImageAssetId: plan.heroImageAssetId,
+      specVersion: plan.specVersion,
+      appShellConfiguration: plan.appShellConfiguration,
+      experienceConfiguration: plan.experienceConfiguration,
+    );
+  }
+
+  /// Installs already-loaded package manifests through the normal local
+  /// package-import path. This is the asset-bundle counterpart of
+  /// [installLocalPackagePairFromFiles].
+  LocalBackendImportReport installLocalPackagePairFromManifests({
+    required Map<String, Object?> extensionManifest,
+    required Map<String, Object?> initializationManifest,
+  }) {
+    final plan = parseLocalPackagePairFromManifests(
+      extensionManifest: extensionManifest,
+      initializationManifest: initializationManifest,
     );
     loadExtensionPackage(plan.extensionPackage);
     return importInitializationPackage(

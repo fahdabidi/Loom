@@ -529,31 +529,229 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
   ),
 ];
 
-LocalBackendSnapshot preloadedExampleCommunitiesSnapshot() {
-  return LocalBackendSnapshot(
-    communities: [
-      for (final target in loomEvidenceTargets)
-        LocalInstalledCommunity(
-          communityId: target.communityId,
-          displayName: target.communityName,
-          extensionId: target.extensionId,
-          logoAssetId: 'seed/assets/${target.handle}-logo.png',
-          cardImageAssetId: 'seed/assets/${target.handle}-card.png',
-          heroImageAssetId: 'seed/assets/${target.handle}-hero.png',
-          accentColor: target.accentColor,
-        ),
-    ],
-    loadedExtensionIds: [
-      for (final target in loomEvidenceTargets) target.extensionId,
-    ],
+/// The result of importing every product community bundled with the app.
+///
+/// The snapshot comes from [LocalInAppBackend]'s normal package importer; it
+/// is intentionally not a second, metadata-only catalog. Seed paths use the
+/// canonical community ids read from each initialization package.
+class PreloadedExampleCommunities {
+  const PreloadedExampleCommunities({
+    required this.snapshot,
+    required this.seedFilesByCommunityId,
+  });
+
+  final LocalBackendSnapshot snapshot;
+  final Map<String, List<String>> seedFilesByCommunityId;
+}
+
+const _bundledInitializationAssetPathByExtensionId = <String, String>{
+  'ext_garden_club':
+      'packages/loom_communities_app_shell/assets/'
+      'Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc',
+  'ext_neighborhood_book_club':
+      'packages/loom_communities_app_shell/assets/'
+      'Loom_Communities_Workflow_Engine_BookClub_Example.jsonc',
+  'ext_youth_soccer':
+      'packages/loom_communities_app_shell/assets/'
+      'Loom_Communities_Workflow_Engine_YouthSoccer_Example.jsonc',
+  'ext_cedar_commons_hoa':
+      'packages/loom_communities_app_shell/assets/'
+      'Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc',
+  'ext_mosque':
+      'packages/loom_communities_app_shell/assets/'
+      'Loom_Communities_Workflow_Engine_Mosque_Example.jsonc',
+  'ext_chess_club':
+      'packages/loom_communities_app_shell/assets/'
+      'Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc',
+  'ext_camera_club':
+      'packages/loom_communities_app_shell/assets/'
+      'Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc',
+  'ext_member_social_space':
+      'packages/loom_communities_app_shell/assets/'
+      'Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc',
+  'ext_ad_free_community':
+      'packages/loom_communities_app_shell/assets/'
+      'Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc',
+  'ext_data_portability_community':
+      'packages/loom_communities_app_shell/assets/'
+      'Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc',
+};
+
+/// Whether [extensionId] belongs to one of the product packages shipped in
+/// the Flutter asset bundle.
+bool isBundledExampleCommunityExtensionId(String extensionId) =>
+    _bundledInitializationAssetPathByExtensionId.containsKey(extensionId);
+
+/// Loads and installs every shipped initialization package through the local
+/// package-import seam.
+///
+/// Each source asset is the byte-identical shipped JSONC package. The tiny
+/// synthesized extension manifest supplies only the companion metadata the
+/// importer already requires; all community identity, spec, app-shell, and
+/// experience data is read from the bundled initialization package itself.
+Future<PreloadedExampleCommunities> preloadBundledExampleCommunities() async {
+  final expectedExtensionIds = loomEvidenceTargets
+      .map((target) => target.extensionId)
+      .toSet();
+  final bundledExtensionIds = _bundledInitializationAssetPathByExtensionId.keys
+      .toSet();
+  if (expectedExtensionIds.length != loomEvidenceTargets.length ||
+      !expectedExtensionIds.containsAll(bundledExtensionIds) ||
+      !bundledExtensionIds.containsAll(expectedExtensionIds)) {
+    throw StateError(
+      'Bundled initialization packages must cover every unique Loom evidence '
+      'target exactly once.',
+    );
+  }
+
+  final backend = LocalInAppBackend();
+  final seedFilesByCommunityId = <String, List<String>>{};
+  for (final target in loomEvidenceTargets) {
+    final assetPath =
+        _bundledInitializationAssetPathByExtensionId[target.extensionId];
+    if (assetPath == null) {
+      throw StateError(
+        'No bundled initialization package is registered for '
+        '${target.communityName} (${target.extensionId}).',
+      );
+    }
+    final initializationManifest = await _loadBundledInitializationManifest(
+      assetPath,
+      extensionId: target.extensionId,
+    );
+    final report = backend.installLocalPackagePairFromManifests(
+      extensionManifest: _bundledExtensionManifest(initializationManifest),
+      initializationManifest: initializationManifest,
+    );
+    if (!report.created) {
+      throw StateError(
+        'Bundled initialization package $assetPath reuses canonical '
+        'communityId "${report.community.communityId}".',
+      );
+    }
+    final workflowDefinitions =
+        report.community.experienceConfiguration['workflowDefinitions'];
+    if (workflowDefinitions is! Map || workflowDefinitions.isEmpty) {
+      throw StateError(
+        'Bundled initialization package $assetPath for '
+        '"${report.community.displayName}" is missing a non-empty package '
+        'experience.workflowDefinitions block.',
+      );
+    }
+    if (report.community.appShellConfiguration.isEmpty) {
+      throw StateError(
+        'Bundled initialization package $assetPath for '
+        '"${report.community.displayName}" is missing appShell.',
+      );
+    }
+    seedFilesByCommunityId[report.community.communityId] =
+        report.importedSeedFiles;
+  }
+  return PreloadedExampleCommunities(
+    snapshot: backend.snapshot(),
+    seedFilesByCommunityId: Map.unmodifiable(seedFilesByCommunityId),
   );
 }
 
-Map<String, List<String>> preloadedSeedFilesByCommunityId() {
-  return {
-    for (final target in loomEvidenceTargets)
-      target.communityId: target.seedDataFiles,
+Future<Map<String, Object?>> _loadBundledInitializationManifest(
+  String assetPath, {
+  required String extensionId,
+}) async {
+  final source = await rootBundle.loadString(assetPath);
+  final decoded = jsonDecode(_stripBundledPackageJsonComments(source));
+  if (decoded is! Map) {
+    throw StateError(
+      'Bundled initialization package for $extensionId must contain a JSON '
+      'object.',
+    );
+  }
+  final manifest = Map<String, Object?>.from(decoded);
+  final declaredExtensionId = manifest['extensionId'];
+  if (declaredExtensionId != extensionId) {
+    throw StateError(
+      'Bundled initialization package $assetPath declares extensionId '
+      '${jsonEncode(declaredExtensionId)}, expected $extensionId.',
+    );
+  }
+  return manifest;
+}
+
+Map<String, Object?> _bundledExtensionManifest(
+  Map<String, Object?> initializationManifest,
+) {
+  final extensionId = initializationManifest['extensionId'];
+  final displayName = initializationManifest['displayName'];
+  final specVersion = initializationManifest['specVersion'];
+  if (extensionId is! String ||
+      extensionId.trim().isEmpty ||
+      displayName is! String ||
+      displayName.trim().isEmpty ||
+      specVersion is! int) {
+    throw StateError(
+      'Bundled initialization package must declare non-empty extensionId and '
+      'displayName plus an integer specVersion.',
+    );
+  }
+  return <String, Object?>{
+    'specVersion': specVersion,
+    'extensionId': extensionId,
+    'displayName': displayName,
+    'version': 'bundled',
+    'permissions': const <String>[],
   };
+}
+
+/// Removes JSONC comments without changing string content such as https URLs.
+String _stripBundledPackageJsonComments(String content) {
+  final buffer = StringBuffer();
+  var index = 0;
+  var inString = false;
+  while (index < content.length) {
+    if (inString && content[index] == '\\' && index + 1 < content.length) {
+      buffer
+        ..write(content[index])
+        ..write(content[index + 1]);
+      index += 2;
+      continue;
+    }
+    if (content[index] == '"') {
+      inString = !inString;
+      buffer.write(content[index++]);
+      continue;
+    }
+    if (!inString &&
+        index + 1 < content.length &&
+        content[index] == '/' &&
+        content[index + 1] == '/') {
+      index += 2;
+      while (index < content.length && content[index] != '\n') {
+        index++;
+      }
+      continue;
+    }
+    if (!inString &&
+        index + 1 < content.length &&
+        content[index] == '/' &&
+        content[index + 1] == '*') {
+      index += 2;
+      var terminated = false;
+      while (index + 1 < content.length) {
+        if (content[index] == '*' && content[index + 1] == '/') {
+          index += 2;
+          terminated = true;
+          break;
+        }
+        if (content[index] == '\n') buffer.write('\n');
+        index++;
+      }
+      if (!terminated) {
+        throw const FormatException('unterminated block comment');
+      }
+      continue;
+    }
+    buffer.write(content[index++]);
+  }
+  return buffer.toString();
 }
 
 const List<LoomActorIdentity> _fallbackActorIdentities = [

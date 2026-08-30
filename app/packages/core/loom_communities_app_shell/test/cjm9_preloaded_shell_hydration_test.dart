@@ -29,7 +29,7 @@ class _PreloadedShellInstallation {
   final LocalBackendImportReport report;
   final Map<String, Object?> incomingPackage;
   final Map<String, Object?> incomingExperience;
-  final LocalInstalledCommunity initialCommunity;
+  final LocalInstalledCommunity? initialCommunity;
   final Directory temp;
 
   Future<void> dispose() => temp.delete(recursive: true);
@@ -38,12 +38,15 @@ class _PreloadedShellInstallation {
 Future<_PreloadedShellInstallation> _installOverPreloadedShell({
   required String fixtureRelative,
   String? extensionId,
+  String? communityId,
 }) async {
   final source = _readFixture(fixtureRelative);
   final resolvedExtensionId =
       extensionId ?? _stringValue(source, 'extensionId');
   source['extensionId'] = resolvedExtensionId;
-  final communityId = _stringValue(source, 'communityId');
+  final resolvedCommunityId =
+      communityId ?? _stringValue(source, 'communityId');
+  source['communityId'] = resolvedCommunityId;
   final extensionManifest = _extensionManifestFromSource(
     source,
     resolvedExtensionId,
@@ -62,12 +65,14 @@ Future<_PreloadedShellInstallation> _installOverPreloadedShell({
   await extensionFile.writeAsString(jsonEncode(extensionManifest));
   await initializationFile.writeAsString(jsonEncode(source));
 
-  final backend = LocalInAppBackend(
-    snapshot: preloadedExampleCommunitiesSnapshot(),
+  final preload = await preloadBundledExampleCommunities();
+  final backend = LocalInAppBackend(snapshot: preload.snapshot);
+  final preloadedCommunities = backend.listCommunities().where(
+    (community) => community.communityId == resolvedCommunityId,
   );
-  final snapshotCommunity = backend.listCommunities().singleWhere(
-    (community) => community.communityId == communityId,
-  );
+  final snapshotCommunity = preloadedCommunities.isEmpty
+      ? null
+      : preloadedCommunities.single;
   final report = backend.installLocalPackagePairFromFiles(
     extensionPackagePath: extensionFile.path,
     initializationPackagePath: initializationFile.path,
@@ -204,13 +209,16 @@ Widget _communityScreen({
 
 void main() {
   test(
-    'preloaded garden shell is hydrated with incoming canonical schema-v2 experience',
+    'preloaded garden shell already carries the canonical package experience',
     () async {
       final installation = await _installOverPreloadedShell(
         fixtureRelative: _gardenFixtureRelative,
       );
       try {
-        expect(installation.initialCommunity.experienceConfiguration, isEmpty);
+        expect(
+          installation.initialCommunity!.experienceConfiguration,
+          equals(installation.incomingExperience),
+        );
         expect(installation.report.created, isFalse);
         expect(
           installation.report.community.experienceConfiguration,
@@ -244,13 +252,16 @@ void main() {
   );
 
   test(
-    'camera shell hydrates canonical binding into marketplace flow',
+    'preloaded camera shell retains its canonical marketplace binding',
     () async {
       final installation = await _installOverPreloadedShell(
         fixtureRelative: _cameraFixtureRelative,
       );
       try {
-        expect(installation.initialCommunity.experienceConfiguration, isEmpty);
+        expect(
+          installation.initialCommunity!.experienceConfiguration,
+          equals(installation.incomingExperience),
+        );
         expect(installation.report.created, isFalse);
         expect(
           installation.report.community.experienceConfiguration,
@@ -322,6 +333,7 @@ void main() {
         () => _installOverPreloadedShell(
           fixtureRelative: _gardenFixtureRelative,
           extensionId: 'ext_garden_club_phone_scroll',
+          communityId: 'community_garden_club_phone_scroll',
         ),
       ))!;
       try {
