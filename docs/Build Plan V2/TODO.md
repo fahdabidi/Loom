@@ -561,6 +561,30 @@ Re-published: 82 upserted, 0 inserts, total still 82, and stored definitions car
 `platformSource` went 0 → 8. Rule added to CLAUDE.md: **publish after any package change**, and
 verify with a control query rather than trusting a zero.
 
+### 2026-08-29 — B4 minting PROVEN LIVE, against the deployed stack
+
+Not a unit test. A real instance, created through the API as an authenticated member, against
+`loom-workflow-service:0.9.0` and the re-published definitions:
+
+| Step | Result |
+|---|---|
+| create `hoa-export-evidence` | `201`, state `draft`, `transferId` **null** |
+| apply `preview-export` | state `preview`, `transferId` = `84d40a00-34e5-4f61-9bba-9269962ed540` |
+| apply `approve-redaction` | state `redaction-approved`, `transferId` **identical** |
+| `checksum` throughout | **null** — it belongs to the export bundle service, not to minting |
+
+So the whole chain holds end to end: grammar -> package -> published definition -> deployed service
+-> a minted, opaque, immutable value. The id is a v4 UUID encoding no community, instance, workflow,
+fan, counter or timestamp, and the second transition proved the never-rewritten rule rather than
+asserting it.
+
+This is the check that would have failed silently an hour earlier, when the deployed definitions
+still predated the grammar. A green suite could not have told the difference.
+
+**The probe instance was deleted afterwards** (instances 4 -> 3, definitions untouched at 82).
+Leaving it would have been exactly the residue already criticised in the `b3-e2e` groups and
+`verify_tabletop_club`: test data that a later reader mistakes for product data.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
