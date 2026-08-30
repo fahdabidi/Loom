@@ -968,6 +968,29 @@ app, overlaying the frame. Detected via `dumpsys window` on the device rather th
 Flutter-side, which is why that rule exists: a Flutter text guard cannot see a system window, and a
 capture taken during it would have been silently corrupt.
 
+### 2026-08-30 — this file no longer follows its own header, and has not for a week
+
+Its header says: **"This is an index, not a memory. One line per open item... Never write item
+detail directly here"** — detail belongs in the owning tracker's `## 8. Live TODO / Next Steps
+Queue`.
+
+The file is **1260 lines**. Roughly 830 were added on 2026-08-29/30 by me, as multi-paragraph
+findings. **But the drift predates that**: dated detail sections run back through 08-28, 08-27 and
+08-25, so the convention had already lapsed before this effort started, and today's entries match
+existing practice rather than departing from it.
+
+Noting it rather than fixing it, deliberately. Relocating only the newest sections would leave the
+file *less* internally consistent than it is now, and mass-restructuring 1260 lines of accumulated
+context is a large, hard-to-review change with real potential to lose the reasoning these entries
+exist to carry.
+
+- [ ] `needs-decision` — **either move the detail into
+  `Access Control and Workflow Service Tracker.md` §8 and restore this file to a one-line index, or
+  amend the header to describe what this file has actually become.** A stated convention that the
+  document visibly ignores is worse than either, because a reader cannot tell which parts to trust —
+  the same failure as a tracker whose checkboxes contradict its own header, which cost real time here
+  on 2026-08-29.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
