@@ -99,6 +99,23 @@ This belongs to the same family as grep-gated commits and byte-identical doc mir
 passes for the wrong reason**. A stale validator does not error, it disagrees -- and its disagreement
 reads exactly like a real finding against your work.
 
+## A search that finds nothing is not evidence of absence
+
+Three false "it does not exist" claims in one day, each from a query that was narrower than the
+question:
+
+| Claim | Why it was wrong |
+|---|---|
+| "no package declares a payment id" | inventoried by **comment wording**, not field name; `receiptId` comments read differently |
+| "nothing selects the remote engine factory" | `grep` was **case-sensitive**; the call is `configureEngineNativeCommunityEngineFactoryForProduction` |
+| "minio has no liveness probe" | jsonpath asked for `livenessProbe.exec.command`; minio's is an **httpGet** probe |
+
+Each produced a confident report of missing work that already existed, and two reached the user.
+
+**Before reporting something absent, run a control** — a query in the same shape that must return a
+hit. If the control also returns nothing, the query is broken, not the codebase. Prefer reading the
+definition and its callers over one pattern coming back empty.
+
 ## Evidence rules
 
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A

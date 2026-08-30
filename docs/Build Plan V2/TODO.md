@@ -510,7 +510,10 @@ B3's per-viewer change feed.
   Dispatched with the probes.
 - [ ] **Every service runs a single replica**, so any restart is downtime. Separate decision:
   replica counts, PDBs and whether the Dart service is safe to run concurrently.
-- [ ] **minio has no liveness probe.**
+- [x] `WRONG, CORRECTED 2026-08-29` — **minio has no liveness probe.** It has both, and always did:
+  httpGet `/minio/health/live` (15s delay, 20s period) and `/minio/health/ready` (5s/5s). My audit
+  queried `livenessProbe.exec.command`, which only matches exec-style probes, so an httpGet probe
+  read as absent. Nothing to do.
 - [ ] TLS: a JWT crosses the dev link in plaintext, with an Android cleartext exemption that must not
   outlive it. Already on the pre-GA list; restated here because "production ready" now includes it.
 
