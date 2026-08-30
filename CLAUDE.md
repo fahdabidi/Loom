@@ -99,6 +99,29 @@ This belongs to the same family as grep-gated commits and byte-identical doc mir
 passes for the wrong reason**. A stale validator does not error, it disagrees -- and its disagreement
 reads exactly like a real finding against your work.
 
+## Orphaned loop emitters steal ticks silently
+
+`data/loop_emitter.sh` runs on **Windows**, one per Claude session, and **old ones survive the
+session that started them**. On 2026-08-29 there were four: Aug 20, Aug 24, Aug 27, and the live one.
+
+They all poll the same `data/loops/*.loop` registry. When an orphan fires it increments `fires`,
+stamps `last_fired`, and writes `LOOP-FIRE` to the stdout of a **dead task nobody reads**. The live
+emitter then sees a recent `last_fired`, correctly concludes the loop is not due, and stays quiet.
+The tick is consumed by a corpse.
+
+The signature is a **count mismatch**: `backend.loop` read `fires=117` while the live Monitor's
+output held only 47 `LOOP-FIRE` lines. Roughly 70 ticks had been eaten. `last_fired` looks healthy
+throughout, so every check of "is the loop armed" passes while nothing arrives.
+
+    ps -ef | grep "[l]oop_emitter"        # expect exactly ONE, child of the live shell
+    kill <each orphan pid>
+
+Check this **first** when ticks stop but the registry looks fine. Orphans also burn the `max_fires`
+budget, so a loop can auto-disable having delivered a fraction of its ticks.
+
+Note the registry lives in the **Windows** repo, not the VM's. Checking `~/Loom/data/loops` on the
+VM shows a different, stale set and will tell you the loop is dead when it is not.
+
 ## A search that finds nothing is not evidence of absence
 
 Three false "it does not exist" claims in one day, each from a query that was narrower than the
