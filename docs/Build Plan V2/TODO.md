@@ -1022,7 +1022,35 @@ this lets anyone choose their role.
 `group_membership_role` rows for `loom-cedar-board-1`, verified 0/0 afterwards). The Keycloak user
 remains, disabled-by-neglect rather than deleted, pending the account-seeding work.
 
-- [ ] `needs-fix-now` — **enforce authorization on `decideGroupMembership`.** At minimum: the actor
+- [x] `FIXED AND VERIFIED LIVE 2026-08-30` — `loom/app-access:0.3.2` (`4994fa8`). Both halves
+  confirmed against the running service, and **separately**, so neither masks the other:
+
+  | Check | Result |
+  |---|---|
+  | the original exploit, mismatched actor | `403 fan_identity_mismatch` |
+  | self-approval with a valid identity | `403 self_membership_decision_forbidden` |
+  | **legitimate self-request** | **`201`** — the flow is not broken |
+
+  Distinct error codes for the two defects, so each is independently enforced. The fix adds real
+  token plumbing; `X-Loom-Actor` is demoted to actor context and is no longer an identity credential.
+
+  **The vulnerability had been masking an incomplete account.** Working accounts need a `fanId` **user
+  attribute**, which the `loom fan id` protocol mapper emits as the `fanId` claim — `test-fan-alice`
+  carries `fan-test-alice`. A user created without it has no claim, which the old header-trusting code
+  never noticed. Create users with **every field in one POST**: Keycloak replaces rather than merges,
+  and a follow-up PATCH silently cleared an email during this work.
+
+- [ ] `needs-decision` — **the fix creates a bootstrap problem, by design.** Approval now requires an
+  admin, and only one active membership with a role exists across all eleven groups
+  (`fan-test-alice`, `hoa-board`, Cedar). **Nine communities have nobody who can approve anyone**, so
+  the ~35 accounts cannot be seeded purely through the API.
+
+  The honest options: insert the first owner/admin per community directly, once, as an explicitly
+  recorded bootstrap, then create everyone else through the checked flow; or add a real bootstrap
+  path to the service. Seeding entirely by direct insert would reproduce the problem the fix just
+  closed — fixture data that never passed an authorization check.
+
+  Original note follows. **enforce authorization on `decideGroupMembership`.** At minimum: the actor
   must be bound to the presented token, and must hold an administrative role in the group being
   decided. Self-approval must be refused outright.
 - [ ] `new-ticket` — **audit every app-access endpoint that takes `X-Loom-Actor`** for the same shape.
