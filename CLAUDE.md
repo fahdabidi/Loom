@@ -334,17 +334,34 @@ There are **five**, and the demo app is the one that gets forgotten — it was o
 migration too, and a Chess regeneration broke it for a full day in 2026-08 because I was running the
 other four and calling that "the suites".
 
-| Suite | Path | Baseline (2026-08-28) |
+| Suite | Path | Baseline (2026-08-30, measured) |
 | --- | --- | ---: |
-| UX judges | `app/packages/tooling/loom_ux_judges` | 444 |
-| App shell | `app/packages/core/loom_communities_app_shell` | 318 (+2 skipped) |
-| Workflow engine | `app/packages/core/loom_workflow_engine` | 312 (+4 skipped) |
-| Workflow service | `app/packages/core/loom_workflow_service` | 84 (+5 skipped) |
+| UX judges | `app/packages/tooling/loom_ux_judges` | 464 |
+| App shell | `app/packages/core/loom_communities_app_shell` | 354 (+2 skipped) |
+| Workflow engine | `app/packages/core/loom_workflow_engine` | 312 (+5 skipped) |
+| Workflow service | `app/packages/core/loom_workflow_service` | 148 (+1 skipped, with PG credentials; 139 (+10) without) |
 | Demo app | `app/apps/loom_communities_demo` | 160 |
 
 Run all five after installing a regenerated community package. The demo app renders the shipped
 packages, so it is precisely the suite a package change can break, and precisely the one that looks
 skippable because the change was "just JSON".
+
+**The skipped counts are the load-bearing part.** Both the workflow service and the engine carry
+PostgreSQL integration tests that **skip silently** without `LOOM_POSTGRES_PASSWORD` and a
+port-forward. On 2026-08-30 a dispatch reported the workflow service green at `139 passed, 10
+skipped` — and the ten skipped included all four tests written to prove the fix that dispatch had
+just built. With credentials it is `148 passed, 1 skipped`.
+
+So read the skip count before the pass count. A suite whose skips went *up* is the shape of a green
+run that proved less than the one before it. To run them for real:
+
+    kubectl port-forward -n loom svc/postgres 15432:5432 &
+    env LOOM_POSTGRES_HOST=127.0.0.1 LOOM_POSTGRES_PORT=15432 \
+        LOOM_POSTGRES_DATABASE=loom_workflow_service LOOM_POSTGRES_USERNAME=loom \
+        LOOM_POSTGRES_PASSWORD="$PW" dart test
+
+The engine's four `postgres_database_integration_test.dart` cases need the same, and they are the
+ones that exercise row locking and overlapping transitions.
 
 Update these numbers when a suite legitimately grows; a baseline nobody maintains stops being
 evidence.
