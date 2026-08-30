@@ -1094,9 +1094,22 @@ would break row-level locking while every existing test still passed.
 - [x] outage diagnosed, service restored, probe row cleaned up (`DELETE 1`, 0 remaining)
 - [x] operational trap written into `CLAUDE.md` — a heavy build stalls the cluster, and the blast
       radius outlives the build
-- [ ] `dispatched` — pooled/reconnecting Postgres access in `loom_workflow_service`
-- [ ] after it lands: deploy, then **prove it** by restarting `postgres-0` and confirming the
-      service serves without human intervention
+- [x] **landed and independently verified** (`ff03d168`) — bounded 8-connection pool, 5s acquire
+      timeout, repositories on `pg.Session`, transactions through `Pool.runTx` with the drift
+      executor zone-bound so concurrent requests cannot borrow one another's connection. SQLite
+      path untouched. `/readyz` now probes the database; `/healthz` deliberately still does not
+- [x] **verified against live PostgreSQL, because the suite alone could not** — the dispatch
+      reported green at `139 passed, 10 skipped`, and those ten included **all four tests it had
+      written to prove its own fix**. With a port-forward and credentials: 4/4 pass, including the
+      lock test that has a background borrower steal the connection a statement-based `BEGIN` would
+      have released and then requires an outside `UPDATE` to block. The engine's own four
+      PostgreSQL cases pass too, including overlapping transitions on separate connections.
+      Five suites re-run here: 148 (+1), 312 (+5), 354 (+2), 464, 160 — all exit 0, no weakened
+      assertions in the diff
+- [ ] building `loom-workflow-service:1.0.2`; then import, bump the manifest from `1.0.1`, roll out
+- [ ] **prove it**: delete `postgres-0` deliberately and confirm the service keeps serving with
+      nobody restarting it. A controlled restart is a better test than waiting for another stall,
+      and if it does not recover the fix is not real whatever the tests say
 
 **The check this changes:** after any heavy build, re-run a real request against the stack. Pod
 status is not evidence — everything was `Running` throughout.
