@@ -673,6 +673,37 @@ Parse the response, do not guess its shape.
 All three deployed mechanisms are now demonstrated end to end rather than asserted: opaque-id
 minting, checksum generation and verification, and the per-viewer change feed.
 
+### 2026-08-30 — B5 proven live, one production bug fixed, one pre-existing failure uncovered
+
+**B5's compliance property holds against the deployed service.** Uploaded a document (v1),
+acknowledged it, added a revision (v2): state reads `acknowledged=true, acknowledgedVersion=1,
+currentVersion=2`, and the content serves v2. The acknowledgement **survived and went stale** rather
+than being erased. "Who accepted the CC&Rs" stays answerable across a revision.
+
+**Exercising it found a 500 that every test passed over** (`b3b9bdf7`).
+`listDocumentAcknowledgements` bound `currentVersion` unconditionally while the SQL referenced it
+only when `currentVersionOnly` was true, so the **default listing always failed**. The unit tests use
+the in-memory repository, which ignores parameter binding and cannot express this defect. Fixed, with
+a PostgreSQL-backed test that reproduces the exact live error and was verified failing without the
+fix.
+
+- [ ] `needs-debug-agent` — **`postgres_guard_refusal_integration_test.dart` has been failing
+  invisibly.** *"live PostgreSQL updateInstanceFields persists and is readable afterward"* expects
+  `200` and gets `403`. **Pre-existing**: it still fails with every uncommitted change stashed.
+
+  It is invisible because Postgres-backed tests **skip without credentials**, so the routine
+  `dart test` run reports 139 green while a real integration test is red. That is the exact hazard
+  already recorded in CLAUDE.md, now with a concrete instance.
+
+  A `403` on `updateInstanceFields` is an authorization refusal where the test expects success, so
+  the candidates are a real authz regression, a role/group state dependency (note Cedar's split
+  membership, where only `fan-test-alice` is in the mapped group), or a stale test. **Do not assume
+  the third.**
+
+- [ ] `new-ticket` — **run the Postgres-backed suites with credentials in whatever passes for CI
+  here**, or at minimum at every closeout. A suite that silently skips its only real integration
+  coverage will hide the next one of these too.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
