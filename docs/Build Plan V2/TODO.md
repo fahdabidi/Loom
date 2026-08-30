@@ -908,10 +908,32 @@ live walkthrough and UX judge. That requires an authenticated member session, an
 **no platform on which one can be obtained**. This is upstream of the membership blocker: even with
 all ten communities populated, nobody could sign in to walk them.
 
-- [ ] `needs-decision` — **pick the platform to unblock.** Android needs an Authorization Code +
-  PKCE implementation. Web needs the engine's `dart:ffi`/`dart:io` imports made conditional so a
-  web-compatible drift backend can be selected. Android is closer to the existing capture apparatus;
-  web is closer to a working login. Neither is small, and doing both is worse than choosing.
+- [ ] `needs-decision` — **pick the platform to unblock.** Scoped 2026-08-30, and **Android is
+  smaller than "implement OAuth" suggests** — my earlier "neither is small" overstated it.
+
+  **The protocol is already done and platform-neutral.** `interactive_authorization.dart` is 80
+  lines importing only `dart:convert`, `dart:math`, `crypto` and `openid_client`: PKCE verifier
+  generation, the RFC 7636 `S256` challenge, the authorization URI, and callback-state validation.
+  The token exchange in the web implementation is ordinary `http` and reusable as-is.
+
+  What the web layer adds that is genuinely platform-specific is only six things
+  (`interactive_login_web.dart`): store the transaction in `sessionStorage`, set
+  `window.location.href`, read the callback from the URL, clear storage, and `history.replaceState`
+  to tidy the address bar.
+
+  **Android equivalents:** persist the transaction (the app already uses `FlutterSecureStorage` for
+  tokens), launch the authorization URI in a Custom Tab or browser, and **capture the redirect** via
+  an app link or custom scheme — that last one is the only genuinely new piece, and it needs an
+  `AndroidManifest` intent filter plus the redirect URI registered on the `loom-test-client` Keycloak
+  client. Roughly a mirror of the ~200-line web file with the storage and redirect halves swapped.
+
+  **Web, by contrast, needs the engine restructured**: `dart:ffi` and `dart:io` are unconditional in
+  `store/database.dart`, so it needs conditional imports and a web-compatible drift backend
+  (sqlite3 wasm/IndexedDB) — a change to the engine every platform shares, to reach a target nothing
+  in this repo has ever built.
+
+  On this evidence Android is both the smaller job and the one the capture apparatus already targets.
+  Recorded as a recommendation, not a decision taken.
 
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
