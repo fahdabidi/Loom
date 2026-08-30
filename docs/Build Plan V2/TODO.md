@@ -721,6 +721,43 @@ fix.
   here**, or at minimum at every closeout. A suite that silently skips its only real integration
   coverage will hide the next one of these too.
 
+### 2026-08-30 — BLOCKER FOR THE PRODUCTION BAR: ten of eleven communities have no members
+
+Measured against the live cluster while trying to exercise B1's item queue end to end.
+
+**Of the 11 groups the live mapping targets, exactly ONE has a member:**
+
+| Group | Mapped? | Members |
+|---|---|---|
+| `loom_communities_cedar-commons-hoa` | **yes** | `fan-test-alice` |
+| `loom_communities_cedar_commons_hoa` | no | `fan_alice`, `fan_bob` |
+| 2 × `loom_communities_b3-e2e-*` | no | 1 each (my own test residue) |
+| **the other 10 mapped groups** | yes | **none** |
+
+**This blocks the stated production bar**, which is every product-doc workflow verified by live
+walkthrough and UX judge across the B25 addendum's 79 rows. You cannot walk through a community
+nobody can join. Nine of the ten communities are unreachable by any identity that exists.
+
+It also makes several shipped features unexercisable rather than unproven. The item queue is the
+clearest case: `join_queue` is declared only in Book Club, Camera Club and Garden, and no fan has
+membership in any of them. B1 is wired, deployed and reachable **in code**, and cannot be
+demonstrated by a member today.
+
+**I under-called this earlier.** On 2026-08-29 I looked at Cedar's split membership, found five test
+fixtures, and recorded it as cleanup — "not a blocker, and I over-escalated it". The narrow claim was
+right: no real user data is at risk. The conclusion was wrong. The split is the visible edge of
+membership data barely existing at all, and that is a blocker for the completion gate rather than
+tidying.
+
+- [ ] `needs-decision` — **who creates community membership, and for whom.** Seeding test identities
+  into the ten empty mapped groups is a data operation against App Access, and it decides what a
+  "member" is for every future walkthrough and capture. Options: seed a per-community test fan set;
+  put one identity in every community; or drive membership through the real join flow if one exists.
+  I did not pick one, because it determines what every subsequent live verification actually proves.
+
+- [ ] `new-ticket` — delete the two `loom_communities_b3-e2e-*` groups and the unmapped duplicate
+  spellings once the above is decided; they will otherwise be read as product data.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
