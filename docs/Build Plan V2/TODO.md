@@ -1119,6 +1119,42 @@ calls. Once the pool was rebuilt, a create + transition succeeded (`201`, `200`,
 and role resolution runs through app-access. My first hypothesis — that the security fix broke the
 stack — was wrong, and the restart counts said so before I acted on it.
 
+
+### 2026-08-30 — the workflow-service image build ships 6 GB of build artifacts
+
+Building `1.0.2` took roughly an hour, most of it before Docker ran a single instruction:
+
+    Sending build context to Docker daemon  6.885GB
+
+`build.sh` stages `~/.pub-cache` and `~/Loom/app` into a scratch dir and hands the whole thing to
+`docker build`. Measured on the live staging directory:
+
+| Path | Size |
+| --- | ---: |
+| `.pub-cache` | 535 MB |
+| `app/apps` | **4.0 GB** |
+| `app/packages` | 1.7 GB |
+| `app/build` | 52 MB |
+
+The 4 GB is Flutter build output — `apps/loom_communities_demo/build` and a `build/` directory in
+almost every package, plus `.dart_tool/build`. **None of it belongs in a server image**, which
+compiles `bin/loom_workflow_service.dart` to an AOT binary. There is no `.dockerignore` anywhere in
+the build path, so every build copies all of it, twice: once into the scratch dir, once into a
+Docker layer.
+
+- [ ] `new-ticket` — exclude build output from the image context. Either write a `.dockerignore`
+      into the scratch dir from `build.sh` (it is the context root, so it has to be placed there,
+      not beside the Dockerfile in the package), or stage with an exclude list instead of `cp -r`.
+      Exclude at minimum `build/`, `.dart_tool/`, `.git/`, and test fixtures
+- [ ] confirm the resulting image still runs — the AOT compile needs the workspace resolved, which
+      is why the script stages a pre-resolved tree in the first place; excluding `.dart_tool`
+      wholesale may break `pub get` reuse, so verify rather than assume
+
+**Why it is worth doing rather than tolerating:** a one-hour build is why the deploy step keeps
+getting deferred, and it is the same build that starved the node and caused this morning's outage.
+Cutting the context to a few hundred MB shortens both the wait and the window in which the cluster
+is degraded.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
