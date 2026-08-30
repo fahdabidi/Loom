@@ -991,6 +991,46 @@ exist to carry.
   the same failure as a tracker whose checkboxes contradict its own header, which cost real time here
   on 2026-08-29.
 
+### 2026-08-30 — SECURITY: any authenticated fan can grant themselves any role in any community
+
+Found while seeding test accounts through the real join flow. **Not a theory — reproduced twice.**
+
+`decideGroupMembership` is specified as *"Requires `app.access.admin`. Approving moves the membership
+to `active` and grants the roles supplied here"*. **Nothing enforces that.**
+
+A brand-new Keycloak user with no roles, no memberships and no admin rights:
+
+    POST /v1/apps/loom_communities/groups/loom_communities_chess-club/membership-requests
+      Authorization: Bearer <their own token>   X-Loom-Actor: loom-cedar-board-1
+      -> 201, state "requested"
+
+    POST .../membership-requests/loom-cedar-board-1/decision
+      Authorization: Bearer <their own token>   X-Loom-Actor: loom-cedar-board-1
+      {"decision":"approve","roleIds":["chess-owner"]}
+      -> 200, state "active", roleIds ["chess-owner"], decidedByFanId "loom-cedar-board-1"
+
+**They approved their own request and granted themselves owner.** Repeated against Cedar with
+`hoa-board`, same result. The caller is identified by an `X-Loom-Actor` header, and no check ties the
+actor to the token, nor requires the actor to hold any administrative role in the group being decided.
+
+**Impact.** Any account that can obtain a token — the realm allows direct grants — can become owner or
+board of every community, which is every permission the workflow engine subsequently trusts. All the
+per-fan visibility work is downstream of this: the engine correctly resolves what a role may see, and
+this lets anyone choose their role.
+
+**Both escalated memberships were deleted immediately after confirming** (`group_membership` and
+`group_membership_role` rows for `loom-cedar-board-1`, verified 0/0 afterwards). The Keycloak user
+remains, disabled-by-neglect rather than deleted, pending the account-seeding work.
+
+- [ ] `needs-fix-now` — **enforce authorization on `decideGroupMembership`.** At minimum: the actor
+  must be bound to the presented token, and must hold an administrative role in the group being
+  decided. Self-approval must be refused outright.
+- [ ] `new-ticket` — **audit every app-access endpoint that takes `X-Loom-Actor`** for the same shape.
+  A header-supplied identity that nothing ties to the token is a pattern, not one endpoint.
+- [ ] `new-ticket` — seeding test accounts is **blocked on the fix**. Seeding through the flow as it
+  stands would mean using the vulnerability as the mechanism, and the resulting memberships would be
+  indistinguishable from an attack.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
