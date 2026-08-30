@@ -627,6 +627,26 @@ times, which is exactly what a `platformSource` is supposed to name.
 Probe instance and its bundle were deleted afterwards (instances 4 → 3, bundles 1 → 0, definitions
 untouched at 82).
 
+### 2026-08-30 — offline replica is wired end to end, and OFF unless a build says otherwise
+
+The chain is complete: `main.dart` -> `configureLoomOfflineReplicaSupportForProduction` ->
+`loomWorkflowReplicaCoordinator` -> `part25`'s engine factory -> `LoomWorkflowReplica`. The
+coordinator is referenced from real production code, not only its own test.
+
+**It is off by default, deliberately.** The writable directory is host-injected and defaults to
+empty:
+
+    --dart-define=LOOM_OFFLINE_REPLICA_DIRECTORY=<writable path>
+
+With it empty the app keeps remote-only behaviour, the remote factory stays unwrapped, and no
+`path_provider` dependency is added to a core package. So offline browse now needs **four** defines
+alongside the three that already select the real backend — worth stating plainly, because the
+existing trap in this project is a build that silently exercises something other than what the
+tester believes.
+
+Turning it on is a deliberate build-time choice, not a code change, and it is the last step before
+offline browse and session resume are reachable by a member.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
