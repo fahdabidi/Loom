@@ -59,7 +59,15 @@ An idle KVM-less emulator costs ~70% CPU on the VM and roughly quadruples Flutte
 a suite TIMEOUT under that load is environmental. Re-run the single test in isolation before
 calling it a regression. A failed `expect` is a different matter.
 
-## Launch dispatches detached, and confirm they are alive
+## Verification traps — checks that pass for the wrong reason
+
+Every rule below cost real time on 2026-08-29/30, and they share one shape: **a signal that looked
+healthy while measuring the wrong thing.** A loop whose `last_fired` advances because a dead process
+consumed the tick. A validator that answers confidently from last week's grammar. A green suite over
+a service whose deployed definitions predate the feature. When something looks fine, ask what the
+check would show if it were broken — if the answer is "the same thing", it is not a check.
+
+### Launch dispatches detached, and confirm they are alive
 
 A dispatch backgrounded with plain `nohup ... &` inside an `ssh` command can die the moment the
 ssh session closes -- the same command succeeded twice and died once, so treat it as a race, not a
@@ -77,7 +85,7 @@ hoping output appears.
 Rule out resources before assuming a bad ticket: check `free -h` and `dmesg` for OOM kills. A
 15 GB VM with 12 GB available and no OOM lines did not fail for lack of memory.
 
-## The validator on :8787 answers happily while running last week's grammar
+### The validator on :8787 answers happily while running last week's grammar
 
 `call_skill_authoring_agent.sh` checks that *something* responds on :8787 and reuses it. It never
 checks that it is running current code. On 2026-08-29 a Skill dispatch rejected the brand-new
@@ -99,7 +107,7 @@ This belongs to the same family as grep-gated commits and byte-identical doc mir
 passes for the wrong reason**. A stale validator does not error, it disagrees -- and its disagreement
 reads exactly like a real finding against your work.
 
-## Never `kill` by pattern — resolve the pid, then confirm what it is
+### Never `kill` by pattern — resolve the pid, then confirm what it is
 
 A dispatch's command line contains **the entire ticket text**. So any `pgrep -f <phrase>` where the
 phrase also appears in a ticket will match the running agent. On 2026-08-29 a cleanup of a duplicate
@@ -118,7 +126,7 @@ matches, read them, then kill a specific pid.
 This is the same family as the existing `pgrep` note below: **process searches match things you did
 not mean, in both directions.**
 
-## Orphaned loop emitters steal ticks silently
+### Orphaned loop emitters steal ticks silently
 
 `data/loop_emitter.sh` runs on **Windows**, one per Claude session, and **old ones survive the
 session that started them**. On 2026-08-29 there were four: Aug 20, Aug 24, Aug 27, and the live one.
@@ -141,7 +149,7 @@ budget, so a loop can auto-disable having delivered a fraction of its ticks.
 Note the registry lives in the **Windows** repo, not the VM's. Checking `~/Loom/data/loops` on the
 VM shows a different, stale set and will tell you the loop is dead when it is not.
 
-## Publishing definitions is not a one-time step
+### Publishing definitions is not a one-time step
 
 The backend stores a **copy** of every workflow definition, written by
 `bin/publish_workflow_definitions.dart`. Change a community package and the deployed copy is stale
@@ -165,7 +173,7 @@ Confirm the change actually landed by querying the stored JSON for the thing you
 control** — a query for something that must already be present, so a zero means absent rather than
 broken.
 
-## A search that finds nothing is not evidence of absence
+### A search that finds nothing is not evidence of absence
 
 Three false "it does not exist" claims in one day, each from a query that was narrower than the
 question:
