@@ -2339,11 +2339,10 @@
             "hideWhenEmpty": true,
             "displayContexts": ["detail"]
           },
-          // NEEDS IMPLEMENTATION (platform service): checksum/integrity-hash
-          // generation is Not implemented. Platform-written; no JSON effect fabricates it.
           "checksum": {
             "type": "text?",
             "writableBy": "platform",
+            "platformSource": "checksum",
             "displayIcon": "fingerprint",
             "labelTemplate": "Checksum: {value}",
             "hideWhenEmpty": true,
@@ -2359,11 +2358,10 @@
             "hideWhenEmpty": true,
             "displayContexts": ["tile", "detail"]
           },
-          // NEEDS IMPLEMENTATION (platform service): opaque export/transfer ID
-          // generation is Not implemented. Platform-written; no JSON effect fabricates it.
           "transferId": {
             "type": "text?",
             "writableBy": "platform",
+            "platformSource": "opaqueId",
             "displayIcon": "tag",
             "labelTemplate": "Transfer ID: {value}",
             "hideWhenEmpty": true,

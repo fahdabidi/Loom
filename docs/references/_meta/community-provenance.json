@@ -58,8 +58,8 @@
       "lastCommitSubject": "feat(communities): regenerate Data Portability Community at specVersion 4 (5 of 11)"
     },
     "Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc": {
-      "sha256": "1d4211b5d3c1ad070a944ffd2e91063825ec5ae2406997d9a2010c0f66801312",
-      "bytes": 105174,
+      "sha256": "84948255c7420a269d1e1ea2dd11af7aa62e44044a716164372138c95570975b",
+      "bytes": 104916,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "654d3467",
       "lastCommitDate": "2026-08-27",
@@ -101,9 +101,9 @@
       "sha256": "f32f949eb72031f8a8850697f3afeba0ae92b29d55200a58e237d32f60405f1a",
       "bytes": 107343,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "76233ee1",
-      "lastCommitDate": "2026-08-28",
-      "lastCommitSubject": "fix(youthsoccer): name the writers, declare the practice reminder"
+      "lastCommit": "4933a3de",
+      "lastCommitDate": "2026-08-29",
+      "lastCommitSubject": "feat(youth-soccer): declare platformSource on the three platform-written fields"
     }
   }
 }
