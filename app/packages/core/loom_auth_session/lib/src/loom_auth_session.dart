@@ -4,13 +4,12 @@ import 'package:http/http.dart' as http;
 
 import 'auth_exceptions.dart';
 import 'interactive_authorization.dart';
-import 'interactive_login_stub.dart'
-    if (dart.library.js_interop) 'interactive_login_web.dart';
+import 'interactive_login_platform.dart';
 import 'secure_storage_backend.dart';
 
 /// Persists and renews the bearer-token session used by Loom API clients.
 ///
-/// Flutter Web clients can use [loginInteractively] and
+/// Flutter Web and Android clients can use [loginInteractively] and
 /// [completeInteractiveLogin] for browser-hosted authorization code + PKCE.
 /// [loginWithTestCredentials] bypasses that browser flow and exists only for
 /// automated/local testing with Keycloak-native test accounts; production UI
@@ -84,16 +83,23 @@ class LoomAuthSession {
     }
   }
 
-  /// Redirects a Flutter Web browser to Keycloak for authorization code + PKCE.
+  /// Starts a browser-hosted Keycloak authorization code + PKCE login.
   ///
   /// The returned future intentionally remains pending while the current page
-  /// navigates away. Non-web targets throw [UnsupportedError]. Call
-  /// [completeInteractiveLogin] while initializing the returned page.
+  /// navigates away. Android completes this future after the browser callback
+  /// has been exchanged and persisted. Unsupported targets throw
+  /// [UnsupportedError]. Call [completeInteractiveLogin] while initializing a
+  /// web page that may have been returned to by the identity provider.
   Future<void> loginInteractively({
     List<String> scopes = defaultInteractiveLoginScopes,
-  }) => _interactiveLogin.start(scopes: scopes);
+  }) async {
+    // A cancelled or failed interactive login must not leave an earlier or
+    // partial locally authenticated session behind.
+    await logout();
+    await _interactiveLogin.start(scopes: scopes);
+  }
 
-  /// Completes a pending Flutter Web login from the current browser URL.
+  /// Completes a pending browser login from the current platform callback.
   ///
   /// Returns `false` when the current URL is not an authorization callback.
   /// Missing or forged callback state is rejected before any token exchange.
@@ -146,11 +152,12 @@ class LoomAuthSession {
   }
 
   InteractiveLoginPlatform get _interactiveLogin =>
-      _interactiveLoginPlatform ??= InteractiveLoginPlatform(
+      _interactiveLoginPlatform ??= createInteractiveLoginPlatform(
         issuerUri: _issuerUriForTokenEndpoint(_tokenEndpoint),
         clientId: _clientId,
         httpClient: _httpClient,
         persistTokens: _persistAuthorizationCodeTokens,
+        pendingTransactionStorage: _secureStorage,
       );
 
   Future<void> _persistAuthorizationCodeTokens(

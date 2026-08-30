@@ -66,6 +66,11 @@ class _LoomProductionLoginScreenState extends State<LoomProductionLoginScreen> {
     });
     try {
       await widget.session.loginInteractively();
+      if (!mounted) return;
+      setState(() {
+        _state = _ProductionLoginState.success;
+      });
+      widget.onLoginSucceeded?.call();
     } on UnsupportedError {
       _showUnsupportedPlatform();
     } on LoomAuthSessionException catch (error) {
@@ -193,7 +198,7 @@ class _LoomProductionLoginScreenState extends State<LoomProductionLoginScreen> {
     _ProductionLoginState.authError =>
       _authErrorMessage ?? 'The identity provider could not complete sign-in.',
     _ProductionLoginState.unsupported =>
-      'Interactive identity-provider sign-in is currently available only in '
-          'Loom on the web.',
+      'Interactive identity-provider sign-in is currently available in Loom '
+          'on the web and Android.',
   };
 }

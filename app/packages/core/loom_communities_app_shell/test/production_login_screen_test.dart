@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_auth_session/loom_auth_session.dart';
@@ -19,6 +21,7 @@ final class _InteractiveFakeLoomAuthSession extends LoomAuthSession {
     this.completionResult = false,
     this.completionError,
     this.loginError,
+    this.loginCompletes = false,
   }) : super(
          tokenEndpoint: Uri.parse(
            'https://identity.test/realms/loom/protocol/openid-connect/token',
@@ -30,6 +33,7 @@ final class _InteractiveFakeLoomAuthSession extends LoomAuthSession {
   final bool completionResult;
   final Object? completionError;
   final Object? loginError;
+  final bool loginCompletes;
   int loginCalls = 0;
 
   @override
@@ -44,6 +48,7 @@ final class _InteractiveFakeLoomAuthSession extends LoomAuthSession {
     loginCalls += 1;
     final error = loginError;
     if (error != null) throw error;
+    if (!loginCompletes) await Completer<void>().future;
   }
 }
 
@@ -67,6 +72,29 @@ void main() {
     },
   );
 
+  testWidgets('completed Android sign-in reports success to the member', (
+    tester,
+  ) async {
+    var successCalls = 0;
+    final session = _InteractiveFakeLoomAuthSession(loginCompletes: true);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LoomProductionLoginScreen(
+          session: session,
+          onLoginSucceeded: () => successCalls += 1,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('production-login-button')));
+    await tester.pump();
+
+    expect(session.loginCalls, 1);
+    expect(find.text('You’re signed in'), findsOneWidget);
+    expect(successCalls, 1);
+  });
+
   testWidgets('unsupported interactive platform renders an honest state', (
     tester,
   ) async {
@@ -84,8 +112,8 @@ void main() {
     );
     expect(
       find.text(
-        'Interactive identity-provider sign-in is currently available only '
-        'in Loom on the web.',
+        'Interactive identity-provider sign-in is currently available in Loom '
+        'on the web and Android.',
       ),
       findsOneWidget,
     );
