@@ -838,6 +838,47 @@ the entire backend build-out and would have made a device test look successful w
   is verified only as far as "configured correctly and able to reach the services", which is short of
   the walkthrough the production bar asks for.
 
+### 2026-08-30 — the device run rendered a LEGACY FALLBACK, and Android cannot sign in at all
+
+Root-cause investigation of "the entry gate never appeared". Both findings are defects, both cited.
+
+**1. What I saw on the emulator was not Cedar's real package.** `LOOM_PRELOAD_EXAMPLE_COMMUNITIES`
+creates the ten cards as **metadata-only** `LocalInstalledCommunity` objects with an empty
+`experienceConfiguration`. `_experienceFromConfiguration` therefore returns null, the community is
+classified **legacy** (`part01_local_extension_screen.dart:243-246`), and
+`_refreshCommunityEntryGate` sets `_communityEntryAllowed = true` and returns **before**
+synchronising authorization or listing accounts (`:274-290`). `build` then renders community content
+whenever the schema is legacy, independently of the gate (`:1188-1209`).
+
+So the theme, the "HOA Board / 2 roles" card and the four home sections came from a **shallow
+fallback**, not the engine-native package — which is also why there were zero network calls: the
+legacy return happens before `_ensureEngineAuthorizationSync`.
+
+**My report two ticks ago that "Cedar opens with its theme, roles and surfaces" was therefore
+describing a fallback rendering.** It looked exactly like success. This is the verify-against-the-
+artifact-that-executes trap in a new costume: the artifact was fresh and correct, and the *fixture
+path* was the fake.
+
+**2. There is no Android production login.** `LoomProductionLoginScreen` calls
+`completeInteractiveLogin` / `loginInteractively` (`part38_production_login_screen.dart:33-75`), and
+the non-web `InteractiveLoginPlatform` throws
+`UnsupportedError("Interactive Loom login is currently supported only on Flutter Web.")`
+(`loom_auth_session/lib/src/interactive_login_stub.dart:5-24`). The screen catches it and shows an
+unsupported state.
+
+**A member cannot obtain a bearer token on Android at all.** The navigation path exists; the
+implementation does not.
+
+- [ ] `new-ticket` — **preload must install the full bundled packages**, so a preloaded community
+  carries its canonical `communityId`, `specVersion`, `appShellConfiguration` and non-empty
+  `workflowDefinitions`, and the existing gate runs.
+- [ ] `new-ticket` — **fail closed**: when remote services are configured and a preloaded community
+  reaches `LocalExtensionScreen` with an empty or legacy experience, error naming the community
+  rather than silently rendering non-authoritative content.
+- [ ] `needs-decision` — **Android interactive login is unimplemented.** An Authorization Code +
+  PKCE flow is required before any Android live walkthrough is possible. Until then the B25
+  completion gate cannot be met on Android by any means, regardless of membership.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
