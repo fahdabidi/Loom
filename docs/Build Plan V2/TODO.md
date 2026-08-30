@@ -547,6 +547,20 @@ since 2026-08-27.
   wins. A `NEEDS IMPLEMENTATION` note that outlives its implementation is worse than none: the next
   reader trusts it and re-reports a closed gap.
 
+### 2026-08-29 — the deployed definitions were stale, and nothing said so
+
+Publishing happened before the five `platformSource` regenerations, so the backend's stored copies
+predated the grammar: **0 of 82 carried `platformSource`**, confirmed against a control query showing
+80 carried `writableBy`.
+
+Opaque-id minting was built, tested, deployed in `0.8.0` and correct — and could not have fired for
+any community, because the definition the service reads is its own stored copy, not the package in
+the repo. Every suite stayed green throughout; there is no test that can see this.
+
+Re-published: 82 upserted, 0 inserts, total still 82, and stored definitions carrying
+`platformSource` went 0 → 8. Rule added to CLAUDE.md: **publish after any package change**, and
+verify with a control query rather than trusting a zero.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,

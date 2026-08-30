@@ -122,6 +122,30 @@ budget, so a loop can auto-disable having delivered a fraction of its ticks.
 Note the registry lives in the **Windows** repo, not the VM's. Checking `~/Loom/data/loops` on the
 VM shows a different, stale set and will tell you the loop is dead when it is not.
 
+## Publishing definitions is not a one-time step
+
+The backend stores a **copy** of every workflow definition, written by
+`bin/publish_workflow_definitions.dart`. Change a community package and the deployed copy is stale
+until you publish again. **Nothing tells you.** No test fails, no route errors, no probe goes red:
+the service serves the old definition and every surface built on it looks fine.
+
+On 2026-08-29 the 82 definitions were published, then five packages were regenerated onto the
+`platformSource` grammar. The stored copies still had **zero** `platformSource` declarations, so
+opaque-id minting -- built, deployed in `0.8.0`, and correct -- could never have fired. Re-publishing
+took the count from 0 to 8 affected definitions, and the total stayed 82 because the publisher is an
+upsert.
+
+**Publish after any package change, before believing anything downstream of it works:**
+
+    kubectl port-forward -n loom svc/postgres 15432:5432 &
+    cd app/packages/core/loom_workflow_service
+    env LOOM_POSTGRES_HOST=127.0.0.1 LOOM_POSTGRES_PORT=15432         LOOM_POSTGRES_DATABASE=loom_workflow_service LOOM_POSTGRES_USERNAME=loom         LOOM_POSTGRES_PASSWORD="$PW" dart run bin/publish_workflow_definitions.dart          # dry run
+                                                                                            # then --write
+
+Confirm the change actually landed by querying the stored JSON for the thing you added, **with a
+control** — a query for something that must already be present, so a zero means absent rather than
+broken.
+
 ## A search that finds nothing is not evidence of absence
 
 Three false "it does not exist" claims in one day, each from a query that was narrower than the
