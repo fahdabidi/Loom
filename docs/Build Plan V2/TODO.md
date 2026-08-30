@@ -869,6 +869,15 @@ unsupported state.
 **A member cannot obtain a bearer token on Android at all.** The navigation path exists; the
 implementation does not.
 
+**Independently verified, because this claim invalidates a plan rather than blocking a step.** The
+selection is a Dart conditional import — `loom_auth_session.dart:8` reads
+`if (dart.library.js_interop) 'interactive_login_web.dart'`, so the **stub is the default** and the
+web implementation is chosen only where `js_interop` exists. Android has none, so it gets the stub,
+where `start()` and `complete()` both return `Future.error(UnsupportedError(...))`. The package
+contains exactly three files — `interactive_authorization.dart`, `interactive_login_stub.dart`,
+`interactive_login_web.dart` — and **no Android implementation**. That conditional was the one thing
+that could have made the report wrong, which is why it was worth checking rather than accepting.
+
 - [ ] `new-ticket` — **preload must install the full bundled packages**, so a preloaded community
   carries its canonical `communityId`, `specVersion`, `appShellConfiguration` and non-empty
   `workflowDefinitions`, and the existing gate runs.
