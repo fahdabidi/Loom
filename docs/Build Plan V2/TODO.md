@@ -888,6 +888,31 @@ that could have made the report wrong, which is why it was worth checking rather
   PKCE flow is required before any Android live walkthrough is possible. Until then the B25
   completion gate cannot be met on Android by any means, regardless of membership.
 
+### 2026-08-30 — NO authenticated walkthrough is possible on ANY platform today
+
+Both targets are blocked, for unrelated reasons, and neither was known before today.
+
+| Platform | Blocker |
+|---|---|
+| **Android** | Interactive login is unimplemented. `loom_auth_session.dart:8` selects `interactive_login_web.dart` only `if (dart.library.js_interop)`, so Android gets the stub, whose `start()` and `complete()` both return `UnsupportedError`. No Android implementation exists in the package. |
+| **Web** | The app **does not compile**. `loom_workflow_engine/lib/src/store/database.dart:3` imports `dart:ffi` unconditionally (and `dart:io` beside it) for sqlite3, reached via `main.dart -> loom_communities_demo -> loom_communities_app_shell -> loom_workflow_engine`. `flutter build web --release` fails. |
+
+**I proposed web as the way around Android and was wrong.** `interactive_login_web.dart` is a real
+203-line implementation, the demo app has a `web/` directory, and it looked like a clean path. It
+does not build, and nothing in the repo suggests a web build has ever been attempted — the `web/`
+directory is Flutter scaffolding. Building it rather than recommending it is the only reason this
+was caught in one tick instead of becoming a plan.
+
+**Consequence for the production bar.** The completion gate is every product-doc workflow verified by
+live walkthrough and UX judge. That requires an authenticated member session, and there is currently
+**no platform on which one can be obtained**. This is upstream of the membership blocker: even with
+all ten communities populated, nobody could sign in to walk them.
+
+- [ ] `needs-decision` — **pick the platform to unblock.** Android needs an Authorization Code +
+  PKCE implementation. Web needs the engine's `dart:ffi`/`dart:io` imports made conditional so a
+  web-compatible drift backend can be selected. Android is closer to the existing capture apparatus;
+  web is closer to a working login. Neither is small, and doing both is worse than choosing.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
