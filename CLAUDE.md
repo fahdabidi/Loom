@@ -67,6 +67,22 @@ consumed the tick. A validator that answers confidently from last week's grammar
 a service whose deployed definitions predate the feature. When something looks fine, ask what the
 check would show if it were broken — if the answer is "the same thing", it is not a check.
 
+### Two dispatches in different repos still contend for one machine
+
+The "one dispatch at a time" rule is usually explained by the shared working tree, so two dispatches
+in **separate** repos look safe. They are safe for the tree and not for the box. On 2026-08-30 an
+`app-access` Maven build in `~/loom-backend` and Flutter work in `~/Loom` together drove an 8-core VM
+to **load 34.9**, 242 MB free, and 1.1 GB of swap in use.
+
+The danger is not slowness. **A suite that times out under that load reads as a failure**, and an
+agent may then "fix" something that was never broken, or weaken an assertion to make the timeout go
+away — see the load-sensitivity note further down, which exists for the same reason.
+
+Before starting a second dispatch, check `nproc` against `uptime`, and prefer to queue. If two are
+already running, do not kill one mid-work: a killed dispatch leaves a dirty tree with no record of
+what it had finished. Let them land, then verify **both** with extra care, specifically re-running
+any suite the agent reported as slow or failing.
+
 ### Launch dispatches detached, and confirm they are alive
 
 A dispatch backgrounded with plain `nohup ... &` inside an `ssh` command can die the moment the
