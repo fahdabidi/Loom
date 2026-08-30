@@ -613,8 +613,38 @@ Leaving it would have been exactly the residue already criticised in the `b3-e2e
   the publisher CLI, while definitions live in `loom_workflow_service`. Production is correct only
   because the manifest overrides it; a manual publisher run without it hits the wrong database.
   Dispatched with the probes.
-- [ ] **Every service runs a single replica**, so any restart is downtime. Separate decision:
-  replica counts, PDBs and whether the Dart service is safe to run concurrently.
+- [ ] **Every service runs a single replica, and for workflow-service that is currently REQUIRED
+  for correctness — not an oversight.** Measured 2026-08-29.
+
+  The service serialises transitions with an **in-process** `_SerialExecutor`, and says why in its
+  own comment: "WorkflowDatabase's transaction boundary uses one externally-owned PostgreSQL
+  connection. Keep whole transitions sequential so statements from two HTTP requests cannot
+  interleave between BEGIN and COMMIT."
+
+  **That lock does not span pods.** And there is no database-level protection behind it: a grep for
+  `FOR UPDATE`, optimistic version checks or row versions returns nothing across both the engine and
+  the service (control: the same grep shape finds `BEGIN`, so the query works). `mergeInstanceFields`
+  is a read-modify-write inside a transaction —
+
+      final row = await readInstance(instanceId);   // plain SELECT, no FOR UPDATE
+      data.addAll(fieldUpdates);
+      await updateInstanceState(...);               // writes the whole JSON back
+
+  At Postgres's default READ COMMITTED, two pods doing this concurrently on one instance both read
+  the pre-state and the second write **silently clobbers the first**. A lost transition, with no
+  error anywhere.
+
+  So `replicas: 2` would trade deploy downtime for silent data loss. **Do not scale this service
+  until one of these lands:**
+
+  1. `SELECT ... FOR UPDATE` on the instance row inside the transition transaction — smallest,
+     standard, and contained to the engine's write path. **Recommended.**
+  2. optimistic concurrency: a version column plus a conditional update that fails and retries
+  3. keep one replica deliberately, and accept downtime on every rollout — which is what happens
+     today, only by accident rather than decision
+
+  The other services (app-access, fan-passport, keycloak) are Spring Boot with pooled connections
+  and are not implicated by this finding; their replica counts are a separate, ordinary question.
 - [x] `WRONG, CORRECTED 2026-08-29` — **minio has no liveness probe.** It has both, and always did:
   httpGet `/minio/health/live` (15s delay, 20s period) and `/minio/health/ready` (5s/5s). My audit
   queried `livenessProbe.exec.command`, which only matches exec-style probes, so an httpGet probe
