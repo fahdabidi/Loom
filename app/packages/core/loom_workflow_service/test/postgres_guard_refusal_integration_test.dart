@@ -414,7 +414,7 @@ void main() {
         final service = WorkflowService(
           database: database,
           identityExtractor: const HeaderWorkflowIdentityExtractor(),
-          appAccessClient: const _DenyAppAccessClient(),
+          appAccessClient: const _AuthorizedFieldEditorAppAccessClient(),
           communityGroupIdResolver: MapCommunityGroupIdResolver({
             _communityId: 'loom_communities_service_postgres_integration',
           }),
@@ -706,4 +706,26 @@ class _DenyAppAccessClient implements AppAccessDecisionClient {
     required String groupId,
     required String correlationId,
   }) async => <String>{};
+}
+
+class _AuthorizedFieldEditorAppAccessClient extends _DenyAppAccessClient {
+  const _AuthorizedFieldEditorAppAccessClient();
+
+  @override
+  Future<bool> hasActiveMembership({
+    required String fanId,
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  }) async => fanId == 'fan-editor';
+
+  @override
+  Future<Set<String>> resolveRoleIds({
+    required String fanId,
+    required String appId,
+    required String groupId,
+    required String correlationId,
+  }) async => fanId == 'fan-editor'
+      ? <String>{'fan-editor'}
+      : <String>{};
 }

@@ -988,6 +988,131 @@ void main() {
   );
 
   test(
+    'updateInstanceFields resolves roles for a role-guarded edit',
+    () async {
+      await _seedEditableInstance(database, roleGuarded: true);
+      appAccessClient.roleIds = {'hoa-board'};
+
+      final response = await service.handler(
+        _fieldUpdateRequest(
+          fanId: 'fan-board-member',
+          body: {
+            'fieldUpdates': {'title': 'Updated by board'},
+          },
+        ),
+      );
+
+      expect(response.statusCode, 200);
+      expect(appAccessClient.roleResolutionCallCount, 1);
+      expect(appAccessClient.roleResolutionFanId, 'fan-board-member');
+      expect(appAccessClient.roleResolutionAppId, 'loom_communities');
+      expect(
+        appAccessClient.roleResolutionGroupId,
+        'loom_communities_service_unit',
+      );
+      expect(appAccessClient.roleResolutionCorrelationId, _correlationId);
+      expect(
+        jsonDecode(
+          (await database.readInstance(_editableInstanceId))!.instanceData,
+        ),
+        containsPair('title', 'Updated by board'),
+      );
+    },
+  );
+
+  test(
+    'updateInstanceFields refuses a member without the required role',
+    () async {
+      await _seedEditableInstance(database, roleGuarded: true);
+
+      final response = await service.handler(
+        _fieldUpdateRequest(
+          fanId: 'fan-member-without-role',
+          body: {
+            'fieldUpdates': {'title': 'Must not persist'},
+          },
+        ),
+      );
+
+      expect(response.statusCode, 403);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('code', 'workflow_field_edit_refused'),
+      );
+      expect(appAccessClient.roleResolutionCallCount, 1);
+      expect(
+        jsonDecode(
+          (await database.readInstance(_editableInstanceId))!.instanceData,
+        ),
+        containsPair('title', 'Before'),
+      );
+    },
+  );
+
+  test(
+    'updateInstanceFields refuses a non-member before a role guard',
+    () async {
+      await _seedEditableInstance(database, roleGuarded: true);
+      appAccessClient.roleIds = {'hoa-board'};
+      appAccessClient.activeMembership = false;
+
+      final response = await service.handler(
+        _fieldUpdateRequest(
+          fanId: 'fan-former-board-member',
+          body: {
+            'fieldUpdates': {'title': 'Must not persist'},
+          },
+        ),
+      );
+
+      expect(response.statusCode, 403);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('code', 'community_membership_required'),
+      );
+      expect(appAccessClient.roleResolutionCallCount, 1);
+      expect(
+        jsonDecode(
+          (await database.readInstance(_editableInstanceId))!.instanceData,
+        ),
+        containsPair('title', 'Before'),
+      );
+    },
+  );
+
+  test(
+    'updateInstanceFields returns 503 when role resolution is unavailable',
+    () async {
+      await _seedEditableInstance(database, roleGuarded: true);
+      appAccessClient.roleResolutionError = const AppAccessDecisionException(
+        'App Access role resolution failed.',
+      );
+
+      final response = await service.handler(
+        _fieldUpdateRequest(
+          fanId: 'fan-board-member',
+          body: {
+            'fieldUpdates': {'title': 'Must not persist'},
+          },
+        ),
+      );
+
+      expect(response.statusCode, 503);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('code', 'authorization_service_unavailable'),
+      );
+      expect(appAccessClient.roleResolutionCallCount, 1);
+      expect(
+        jsonDecode(
+          (await database.readInstance(_editableInstanceId))!.instanceData,
+        ),
+        containsPair('title', 'Before'),
+      );
+    },
+  );
+
+  test(
     'updateInstanceFields maps editGuard refusal to a detail-free 403',
     () async {
       await _seedEditableInstance(database);
@@ -1586,7 +1711,10 @@ Future<void> _seedRoleGuardedTransition(WorkflowDatabase database) async {
   );
 }
 
-Future<void> _seedEditableInstance(WorkflowDatabase database) async {
+Future<void> _seedEditableInstance(
+  WorkflowDatabase database, {
+  bool roleGuarded = false,
+}) async {
   await database.upsertDefinition(
     definitionId: '${_communityId}_$_editableWorkflowType',
     workflowType: _editableWorkflowType,
@@ -1596,9 +1724,13 @@ Future<void> _seedEditableInstance(WorkflowDatabase database) async {
         'draft': {
           'label': 'Draft',
           'editableFields': ['title', 'computedTitle', 'effectOnly'],
-          'editGuard': {
-            'actorEqualsField': {'key': 'editorFanId'},
-          },
+          'editGuard': roleGuarded
+              ? {
+                  'allowedRoleIds': ['hoa-board'],
+                }
+              : {
+                  'actorEqualsField': {'key': 'editorFanId'},
+                },
         },
       },
       'transitions': <Map<String, dynamic>>[],

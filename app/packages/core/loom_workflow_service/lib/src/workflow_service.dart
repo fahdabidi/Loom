@@ -948,6 +948,8 @@ class WorkflowService {
           communityId: communityId,
           identity: identity,
           correlationId: correlationId,
+          membershipRequiredMessage:
+              'The change feed is available only to community members.',
         );
         if (membershipError != null) return membershipError;
 
@@ -3646,6 +3648,7 @@ class WorkflowService {
     required String communityId,
     required WorkflowRequestIdentity identity,
     required String correlationId,
+    required String membershipRequiredMessage,
   }) async {
     final groupId = await _communityGroupIdResolver.resolveGroupId(communityId);
     if (groupId == null || groupId.trim().isEmpty) {
@@ -3663,7 +3666,7 @@ class WorkflowService {
         request: request,
         statusCode: 403,
         code: 'community_membership_required',
-        message: 'The change feed is available only to community members.',
+        message: membershipRequiredMessage,
       );
     } on AppAccessDecisionException catch (_) {
       return _authorizationServiceUnavailable(request);
@@ -3872,6 +3875,25 @@ class WorkflowService {
           communityId,
           () => LocalWorkflowEngineApi(db: _database, communityId: communityId),
         );
+        final roleResolutionError = await _resolveRolesForRequest(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          engine: engine,
+        );
+        if (roleResolutionError != null) return roleResolutionError;
+
+        final membershipError = await _requireActiveCommunityMembership(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          membershipRequiredMessage:
+              'Workflow fields can be edited only by community members.',
+        );
+        if (membershipError != null) return membershipError;
+
         await engine.updateInstanceFields(
           workflowType: before.workflowType,
           instanceId: instanceId,
