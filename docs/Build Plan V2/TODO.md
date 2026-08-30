@@ -593,6 +593,40 @@ still predated the grammar. A green suite could not have told the difference.
 Leaving it would have been exactly the residue already criticised in the `b3-e2e` groups and
 `verify_tabletop_club`: test data that a later reader mistakes for product data.
 
+### 2026-08-30 — the checksum half proven live too, and one inconsistency found
+
+Both `platformSource` mechanisms are now demonstrated against the deployed stack, not just tested.
+A real Cedar instance, authenticated member, `loom-workflow-service:0.9.0`:
+
+| Step | Result |
+|---|---|
+| `generateExportBundle` | `201`, SHA-256 `9f05529…` over 1596 bytes |
+| instance `checksum` field | **the identical digest**, read straight from `workflow_instances` |
+| `checksumVerified` on generation | `false` |
+| `verifyExportBundle` | `200`, `verified: true`, `recordedChecksum == observedChecksum` |
+| `checksumVerified` after | **`true`** |
+| `transferId` on the same instance | minted independently, a different UUID from the earlier probe |
+
+Verification **recomputes** rather than reading the stored value back, so a replaced or truncated
+bundle would fail — the property that makes the digest worth storing.
+
+**This settles the factual half of the open `checksumVerified` grammar question.** The field is
+genuinely platform-written, by `verifyExportBundle`, on the same service as `checksum` but through a
+different operation. Only the naming is still open, and option 1 (reuse `"checksum"` and infer from
+the `bool` type) now looks worse: the two fields are written by different operations at different
+times, which is exactly what a `platformSource` is supposed to name.
+
+- [ ] `new-ticket` — **`checksumStatus` can disagree with `checksumVerified`.** After successful
+  verification the instance read `checksumVerified: true` while `checksumStatus` still read
+  `verification-pending`. `checksumStatus` is `writableBy: "effect"`, so only a workflow transition
+  advances it, while the platform writes `checksumVerified` directly. A member can therefore see
+  "verification pending" on a bundle the platform has already verified. Either the workflow needs a
+  transition that reconciles them, or `checksumStatus` should not be an independently-written mirror
+  of a platform fact.
+
+Probe instance and its bundle were deleted afterwards (instances 4 → 3, bundles 1 → 0, definitions
+untouched at 82).
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
