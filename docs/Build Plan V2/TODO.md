@@ -613,8 +613,25 @@ Leaving it would have been exactly the residue already criticised in the `b3-e2e
   the publisher CLI, while definitions live in `loom_workflow_service`. Production is correct only
   because the manifest overrides it; a manual publisher run without it hits the wrong database.
   Dispatched with the probes.
-- [ ] **Every service runs a single replica, and for workflow-service that is currently REQUIRED
-  for correctness — not an oversight.** Measured 2026-08-29.
+- [x] `FIXED 2026-08-29 (`112bec2d`)` — **row-level locking landed; N replicas are now SAFE.**
+  `readInstanceForUpdate()` takes `SELECT ... FOR UPDATE` on PostgreSQL; SQLite keeps `BEGIN
+  IMMEDIATE` untouched. Proven by a two-connection test that was **demonstrated failing first** (lock
+  removed → integration file exits 1, detects the lost update; restored → 4/4, 0 skipped), and
+  confirmed to have actually run against real Postgres by watching the pass counter increment across
+  it rather than trusting a summary.
+
+  **Scaling is still a separate decision.** This makes replicas safe; it does not run them. Deciding
+  `replicas: 2` also wants PodDisruptionBudgets and a rollout strategy.
+
+  **A latent fragility surfaced and is NOT fixed:** the first attempt regressed
+  `v3_milestone_phasee_purchase_proposal_test.dart`, and the cause was not semantics. Both
+  resolutions chose the same target; the extra resolution simply added latency, and the test's
+  **direct read raced the transition's commit** and observed the still-uncommitted row. Resolving
+  once removed the added latency, so the window is narrow again — but the race in that test is real
+  and a slower machine or a loaded VM can reopen it. If it flakes, it is this, not the locking.
+
+  Original note follows. **Every service runs a single replica, and for workflow-service that is
+  currently REQUIRED for correctness — not an oversight.** Measured 2026-08-29.
 
   The service serialises transitions with an **in-process** `_SerialExecutor`, and says why in its
   own comment: "WorkflowDatabase's transaction boundary uses one externally-owned PostgreSQL
