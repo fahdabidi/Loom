@@ -787,6 +787,39 @@ offline browse on.
   Until it builds, the app-side chain is verified only as far as: the code wires it, the emulator can
   reach the services, and the services answer correctly to direct calls.
 
+### 2026-08-30 — the app runs on device from today's build; no backend call yet
+
+Built on the **VM** to sidestep the Windows Developer Mode blocker (Linux has no symlink
+restriction), copied over, installed on `emulator-5554`. Everything below is a **fresh artifact from
+current `main`** -- deliberately not the Aug 11 APK sitting in the output directory, which predates
+the entire backend build-out and would have made a device test look successful while proving nothing.
+
+**What is proven:**
+
+- the APK builds (VM, Flutter 3.41.7, Java 21 -- 194 MB with communities bundled)
+- it installs and launches; Flutter loads, no crash, no cleartext rejection
+- `LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true` loads **10 example communities**, themes applied
+- Cedar Commons HOA opens with its theme, `HOA Board` and its 2 roles, Home/Messages, and the home
+  surface's 4 sections -- all rendered from the local package
+- the emulator can reach the deployed services: `ping` 2/2, and raw `nc` to `192.168.56.10:30083`
+  returns `HTTP/1.0 200 OK`, `x-powered-by: Dart with package:shelf`
+- the build **is** configured for the real backend. `configureLoomRemoteServicesFromEnvironment`
+  falls back to the named environment when no define is present -- "When no define is present the
+  environment is used" -- and `LOOM_ENV` defaults to `dev`. The three backend dart-defines are
+  genuinely unnecessary; only `LOOM_OFFLINE_REPLICA_DIRECTORY` is.
+
+**What is NOT proven, and must not be claimed:** the app has made **zero** calls to
+`192.168.56.10`. Everything on screen is package content. Two reasons, and they are separable:
+
+1. no authenticated session exists, so `RemoteWorkflowEngineApi` has no bearer token
+2. nothing navigated to a surface that lists workflow *instances*, which is what would fetch
+
+- [ ] `new-ticket` — **drive the app to an authenticated instance fetch on device.** Needs a sign-in
+  path: tapping the identity icon on the community screen changed nothing, and no login prompt
+  appeared at any point in this build. Until a member session exists on the device, the app-side link
+  is verified only as far as "configured correctly and able to reach the services", which is short of
+  the walkthrough the production bar asks for.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
