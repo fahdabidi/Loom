@@ -1106,10 +1106,28 @@ would break row-level locking while every existing test still passed.
       PostgreSQL cases pass too, including overlapping transitions on separate connections.
       Five suites re-run here: 148 (+1), 312 (+5), 354 (+2), 464, 160 — all exit 0, no weakened
       assertions in the diff
-- [ ] building `loom-workflow-service:1.0.2`; then import, bump the manifest from `1.0.1`, roll out
-- [ ] **prove it**: delete `postgres-0` deliberately and confirm the service keeps serving with
-      nobody restarting it. A controlled restart is a better test than waiting for another stall,
-      and if it does not recover the fix is not real whatever the tests say
+- [x] `loom-workflow-service:1.0.2` built, imported, manifest bumped, rolled out (backend `ebc742a`).
+      Also committed the app-access `0.3.2` manifest (`752354e`), which had been deployed and
+      verified this morning but never recorded — the repo described `0.3.1` while the cluster ran
+      `0.3.2`
+- [x] **PROVEN LIVE 2026-08-30.** Deleted `postgres-0` deliberately and touched nothing else:
+
+          t+012s   pg Terminating   readyz=503  healthz=200  changes=000
+          t+024s   pg Running       readyz=200  healthz=200  changes=200
+          t+204s   pg Running       readyz=200  healthz=200  changes=200
+
+      **Same pod before and after** (`workflow-service-7bb5b6f5b4-bwgxh`), **`restarts=0`**. The
+      pool reopened by itself in under 24 seconds; Kubernetes did not repair this by cycling the
+      container, which is the distinction the whole ticket turned on. The identical event this
+      morning cost two hours of total outage.
+
+      Both health semantics behaved as designed: readiness went 503 while the database was gone
+      (so the pod leaves service) and liveness stayed 200 (so it is not crash-looped). A liveness
+      probe that tracked the database would have converted this into a restart storm.
+
+      The `401`s later in the run were the access token expiring at its `expires_in: 300` lifetime,
+      not a regression — confirmed by re-requesting with a fresh token (`200`) and creating an
+      instance successfully. Probe row deleted afterwards, 0 remaining.
 
 **The check this changes:** after any heavy build, re-run a real request against the stack. Pod
 status is not evidence — everything was `Running` throughout.
@@ -1154,6 +1172,23 @@ Docker layer.
 getting deferred, and it is the same build that starved the node and caused this morning's outage.
 Cutting the context to a few hundred MB shortens both the wait and the window in which the cluster
 is degraded.
+
+**What actually happened building `1.0.2`, recorded because the diagnosis was half wrong.** Three
+attempts. The first ran 1:08 and was genuinely stalled — its `docker` client CPU was flat at 18:05
+across two samples sixteen minutes apart, with no container, no shim and an idle daemon. I killed
+the second on the same reasoning and **that call was wrong**: its client had 9:18 of CPU and
+climbing, so it was working, and I generalised from one confirmed case to one that did not match.
+Two things that looked like causes were not: container creation from the large intermediate image
+works fine, and BuildKit was never available to switch to — it needs the buildx plugin, which is
+not installed and not in the configured apt repos.
+
+The third attempt succeeded after a `dockerd` restart and after deleting 3.57 GB of gitignored,
+regenerable `build/` directories (`app/` went 6124 MB → 2556 MB). Which of those two mattered is
+**not established**. The final image is 146 MB — the multi-stage build discards the context — so
+the bloat only ever cost build time, never image size.
+
+Two lessons worth more than the incident: judge hung-versus-slow from a **CPU trend**, never one
+sample, and note that the build log is block-buffered, so a stale tail is not evidence of a stall.
 
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
