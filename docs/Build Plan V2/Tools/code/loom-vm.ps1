@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Host-side control for the Loom VirtualBox Ubuntu VM.
 
@@ -34,7 +34,7 @@
 [CmdletBinding()]
 param(
   [Parameter(Mandatory = $true, Position = 0)]
-  [ValidateSet('status', 'start', 'start-headless', 'stop', 'poweroff', 'restart',
+  [ValidateSet('status', 'start', 'start-headless', 'resume', 'stop', 'poweroff', 'restart',
     'ip', 'screenshot', 'run', 'net-restart', 'fix-network', 'wait-ready',
     'config-get', 'config-set', 'snapshot-take', 'snapshot-list',
     'snapshot-restore', 'ssh-config', 'help')]
@@ -192,6 +192,22 @@ switch ($Command) {
   'start'          { Invoke-VBoxRetry @('startvm', $VM_NAME, '--type', 'gui') }
   'start-headless' { Invoke-VBoxRetry @('startvm', $VM_NAME, '--type', 'headless') }
 
+  'resume' {
+    # A paused VM is running but frozen: ssh times out exactly as it does for a
+    # wedged one, and 'status' is the only thing that tells them apart. Added
+    # 2026-08-28, when a paused VM had no recovery path through this script --
+    # the only sanctioned way to touch it -- so the alternative was a power
+    # cycle that would have destroyed another session's in-flight work.
+    $info = & $VBM showvminfo $VM_NAME --machinereadable
+    if ($info -match 'VMState="paused"') {
+      & $VBM controlvm $VM_NAME resume
+      if (Wait-ForState 'running' 30) { 'Resumed.' }
+      else { Write-Warning 'Did not reach running within 30s.' }
+    } else {
+      Write-Warning 'VM is not paused. Nothing to resume; check status.'
+    }
+  }
+
   'stop' {
     # Graceful ACPI shutdown. Does not need guest credentials.
     Assert-Running
@@ -338,3 +354,4 @@ survives router reboots, lease changes, and the VM moving networks.
 "@
   }
 }
+
