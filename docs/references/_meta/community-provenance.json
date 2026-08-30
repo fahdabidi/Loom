@@ -34,8 +34,8 @@
       "lastCommitSubject": "fix(cameraclub): name the writers, and keep the per-member reminder this time"
     },
     "Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc": {
-      "sha256": "b6e8cfa52b9d9f2a35e315222d0f137007053850eda8a83c87eb90e53d1fae41",
-      "bytes": 102880,
+      "sha256": "c4c51663a4758b8b5a2fcf1851a694ca461b16a05c83c1734f43f588807f1bfe",
+      "bytes": 102855,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "a453dd25",
       "lastCommitDate": "2026-08-27",
@@ -61,9 +61,9 @@
       "sha256": "84948255c7420a269d1e1ea2dd11af7aa62e44044a716164372138c95570975b",
       "bytes": 104916,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "654d3467",
-      "lastCommitDate": "2026-08-27",
-      "lastCommitSubject": "fix(gardenclub): declare the reminder, and name the writers honestly"
+      "lastCommit": "629b4309",
+      "lastCommitDate": "2026-08-29",
+      "lastCommitSubject": "feat(garden-club): declare platformSource on checksum and transferId"
     },
     "Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc": {
       "sha256": "0186f2cb9beb789004e14aba632ee62bb25868b9a1a851307d834c0017830917",
