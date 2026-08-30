@@ -1130,9 +1130,7 @@
           // ASSUMPTION: one selected component produces one package file in this demo.
           // A real packaging backend may report a different count.
           "fileCount": { "type": "number", "formula": "size(scope)", "displayIcon": "description", "labelTemplate": "{value} files", "displayContexts": ["tile", "detail"] },
-          // NEEDS IMPLEMENTATION (platform service): checksum/integrity-hash generation.
-          // Declared for the surface, never written by any effect or form entry.
-          "checksum": { "type": "text?", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "checksum": { "type": "text?", "writableBy": "platform", "platformSource": "checksum", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "generationStartedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
           "generationCompletedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
           "downloadedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "download_done", "hideWhenEmpty": true },
@@ -1359,9 +1357,7 @@
           "redactionValidationResult": { "type": "text?", "writableBy": "formEntry", "displayIcon": "fact_check", "labelTemplate": "Redaction validation: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "generationStatus": { "type": "text?", "writableBy": "effect", "displayIcon": "sync", "labelTemplate": "Generation: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "downloadState": { "type": "text?", "writableBy": "effect", "displayIcon": "download", "labelTemplate": "Download: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          // NEEDS IMPLEMENTATION (platform service): checksum/integrity-hash generation.
-          // Declared for the surface, never written by any effect or form entry.
-          "checksum": { "type": "text?", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "checksum": { "type": "text?", "writableBy": "platform", "platformSource": "checksum", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "generationStartedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
           "generationCompletedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
           "downloadedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "download_done", "hideWhenEmpty": true },
@@ -1546,9 +1542,7 @@
           "verificationResult": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "fact_check", "labelTemplate": "Verification: {value}", "displayContexts": ["tile", "detail"] },
           "transferEligibility": { "type": "text", "writableBy": "effect", "displayIcon": "swap_horiz", "labelTemplate": "Transfer: {value}", "displayContexts": ["tile", "detail"] },
           "auditHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
-          // NEEDS IMPLEMENTATION (platform service): checksum/integrity-hash generation.
-          // Declared for visible evidence, never written by any effect or form entry.
-          "checksum": { "type": "text?", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "checksum": { "type": "text?", "writableBy": "platform", "platformSource": "checksum", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "verifiedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
           "transferEnabledAt": { "type": "date?", "writableBy": "effect", "displayIcon": "send_time_extension", "hideWhenEmpty": true },
           "evidenceExportedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "file_download_done", "hideWhenEmpty": true }
@@ -1832,9 +1826,7 @@
           "verificationResult": { "type": "text?", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Provider result: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "rollbackAvailability": { "type": "text?", "writableBy": "effect", "displayIcon": "restore", "labelTemplate": "Rollback: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "auditHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
-          // NEEDS IMPLEMENTATION (platform service): opaque transfer-ID generation.
-          // Declared for the receiver record, never written by any effect or form entry.
-          "transferId": { "type": "text?", "displayIcon": "confirmation_number", "labelTemplate": "Transfer ID: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "transferId": { "type": "text?", "writableBy": "platform", "platformSource": "opaqueId", "displayIcon": "confirmation_number", "labelTemplate": "Transfer ID: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
           "submittedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "send_time_extension", "hideWhenEmpty": true },
           "verifiedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },

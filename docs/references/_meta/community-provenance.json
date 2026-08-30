@@ -37,9 +37,9 @@
       "sha256": "c4c51663a4758b8b5a2fcf1851a694ca461b16a05c83c1734f43f588807f1bfe",
       "bytes": 102855,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "a453dd25",
-      "lastCommitDate": "2026-08-27",
-      "lastCommitSubject": "fix(cedar): platform writers, upload metadata, and the checksum gate its doc always required"
+      "lastCommit": "5e96e434",
+      "lastCommitDate": "2026-08-29",
+      "lastCommitSubject": "feat(cedar-hoa): declare platform writers on checksum and transferId"
     },
     "Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc": {
       "sha256": "f00570f0cf3db30ff6335136071a8828b7e5a19986eb7249dd1767beb7e97813",
@@ -50,8 +50,8 @@
       "lastCommitSubject": "fix(chessclub): declare who each tab is for"
     },
     "Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc": {
-      "sha256": "7f6af5b6faed12924eecbb2d13cbc8aa3db3ce7baf62bbc744090276e241290c",
-      "bytes": 92937,
+      "sha256": "75d698fb1ad183ee20fedc6c79383117de633177c3dc5799f84c09c0afbe68ec",
+      "bytes": 92465,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "4528c8d0",
       "lastCommitDate": "2026-08-19",
