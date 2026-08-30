@@ -707,6 +707,11 @@ class PostgresDocumentRepository implements DocumentRepository {
     required bool currentVersionOnly,
     required int currentVersion,
   }) async {
+    final parameters = <String, dynamic>{
+      'communityId': communityId,
+      'documentId': documentId,
+      if (currentVersionOnly) 'currentVersion': currentVersion,
+    };
     final rows = await _connection.execute(
       pg.Sql.named('''
         SELECT fan_id, version, acknowledged_at
@@ -715,11 +720,7 @@ class PostgresDocumentRepository implements DocumentRepository {
           ${currentVersionOnly ? 'AND version = @currentVersion' : ''}
         ORDER BY acknowledged_at ASC, fan_id ASC
       '''),
-      parameters: <String, dynamic>{
-        'communityId': communityId,
-        'documentId': documentId,
-        'currentVersion': currentVersion,
-      },
+      parameters: parameters,
     );
     return rows.map((row) {
       final values = row.toColumnMap();
