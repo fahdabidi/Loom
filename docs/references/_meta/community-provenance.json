@@ -53,9 +53,9 @@
       "sha256": "75d698fb1ad183ee20fedc6c79383117de633177c3dc5799f84c09c0afbe68ec",
       "bytes": 92465,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "4528c8d0",
-      "lastCommitDate": "2026-08-19",
-      "lastCommitSubject": "feat(communities): regenerate Data Portability Community at specVersion 4 (5 of 11)"
+      "lastCommit": "9d84bf88",
+      "lastCommitDate": "2026-08-29",
+      "lastCommitSubject": "feat(data-portability): declare platform writers on three checksums and a transferId"
     },
     "Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc": {
       "sha256": "84948255c7420a269d1e1ea2dd11af7aa62e44044a716164372138c95570975b",
@@ -82,8 +82,8 @@
       "lastCommitSubject": "fix(membersocialspace): name the writers on 39 misdeclared fields"
     },
     "Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc": {
-      "sha256": "07a3959bfdfecee2fe27090d2a09c8f3fdf5ab8ffbfba145deb03508d63f2a4b",
-      "bytes": 74537,
+      "sha256": "c5a68a04586f0af3590637f94813e6d1531c5aafdf2b918a8cb50b0fb35d2de0",
+      "bytes": 74214,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "9b596e93",
       "lastCommitDate": "2026-08-27",

@@ -953,13 +953,9 @@
           "redactionStatus": { "type": "text?", "writableBy": "effect",
             "displayIcon": "policy", "labelTemplate": "Redaction: {value}",
             "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          // NEEDS IMPLEMENTATION (platform service): checksum / integrity hash generation.
-          // Declared for exportWizard, never seeded, never effect-written, and never used as a guard.
-          "checksum": { "type": "text?", "writableBy": "platform", "hideWhenEmpty": true,
+          "checksum": { "type": "text?", "writableBy": "platform", "platformSource": "checksum", "hideWhenEmpty": true,
             "displayIcon": "fingerprint", "displayContexts": ["detail"] },
-          // NEEDS IMPLEMENTATION (platform service): opaque transfer-ID generation.
-          // Declared for exportWizard, never seeded, never effect-written, and never used as a guard.
-          "transferId": { "type": "text?", "writableBy": "platform", "hideWhenEmpty": true,
+          "transferId": { "type": "text?", "writableBy": "platform", "platformSource": "opaqueId", "hideWhenEmpty": true,
             "displayIcon": "key", "displayContexts": ["detail"] },
           "statusMessage": { "type": "text?", "writableBy": "effect",
             "displayIcon": "receipt_long", "labelTemplate": "{value}",
