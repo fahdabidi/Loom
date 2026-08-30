@@ -935,6 +935,39 @@ all ten communities populated, nobody could sign in to walk them.
   On this evidence Android is both the smaller job and the one the capture apparatus already targets.
   Recorded as a recommendation, not a decision taken.
 
+### 2026-08-30 — both findings confirmed ON DEVICE, with the fix in place
+
+Rebuilt with the preload fix (`60c94aa7`), clean-installed, and driven by hand. Two predictions were
+stated before the run and both held.
+
+**1. The preload fix works.** The community descriptions changed on the home screen — Garden Club
+went from "Coordinate garden events and plant exchange requests" (the stale alias catalogue) to
+"RSVP to seasonal garden events, share plants and tools…" (the real package). Cedar, Youth Soccer,
+Masjid Nur and Chess changed too.
+
+Opening Cedar now shows the **entry gate** instead of silently rendering content:
+
+> Welcome to Loom — Choose an account below or create a new one.
+> `LoomAuthNotLoggedInException: No Loom authentication session is stored; login is required.`
+> Choose an active account or create one to continue to **Cedar Commons HOA**.
+
+Cedar resolves as engine-native, the gate runs, and authentication is demanded. Exactly the
+behaviour the fallback was hiding.
+
+**2. Android sign-in is unimplemented, in the app's own words.** "Continue to secure sign-in" leads
+to:
+
+> **Secure sign-in is not supported on this platform yet**
+> Interactive identity-provider sign-in is currently available only in Loom on the web.
+
+The static finding is now demonstrated on the artifact that executes. Zero backend calls throughout,
+as expected: no session can be obtained, so nothing can be fetched.
+
+**An ANR appeared mid-run** — "Digital Wellbeing isn't responding" — a system dialog unrelated to the
+app, overlaying the frame. Detected via `dumpsys window` on the device rather than by anything
+Flutter-side, which is why that rule exists: a Flutter text guard cannot see a system window, and a
+capture taken during it would have been silently corrupt.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
