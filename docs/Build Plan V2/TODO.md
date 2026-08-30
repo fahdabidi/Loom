@@ -189,9 +189,10 @@ The missing-`platformSource` finding is a **warning, not an error**, because 138
 declare `writableBy: "platform"` without one. A validator that fails the corpus it ships with teaches
 everyone to ignore it. Promote once regeneration has moved the corpus.
 
-- [ ] regenerate the 5 affected packages via the Skill (Book Club, Cedar, DataPortability, Youth
-      Soccer, Garden) -- **verify Book Club against `c0e0355b^`, not HEAD**
-- [ ] build and deploy `0.8.0`; minting is in `main` but not in the deployed `0.7.0`
+- [ ] regenerate the 5 affected packages via the Skill -- **2 of 5 done**: Youth Soccer
+      (`4933a3de`), Garden (`629b4309`). Remaining: Cedar, DataPortability, Book Club --
+      **verify Book Club against `c0e0355b^`, not HEAD**
+- [x] `DONE` — minting deployed in `0.8.0`, and `0.9.0` now carries it plus the health probes
 
 **B5. Document member state + versioning — DONE 2026-08-29.** Built (`6099d40f`), deployed in
 `loom-workflow-service:0.7.0` and verified live by method: POST `/revisions` answers 401 while a fake
@@ -489,12 +490,21 @@ B3's per-viewer change feed.
 
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
-- [ ] **workflow-service has no liveness or readiness probe, and no health endpoint.** `/health`,
+- [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
+  backend `cb7dce7`). `/healthz` returns `{"status":"live"}` and `/readyz` `{"status":"ready"}`,
+  both unauthenticated, both registered on the deployment. Liveness deliberately does **not** check
+  Postgres: a liveness probe that tracks dependencies makes Kubernetes kill healthy pods during a
+  blip, turning a brief outage into a crash loop that outlasts it. Readiness tolerates 300s of cold
+  start so it cannot kill the pod mid-migration. Image and probes applied together -- probes against
+  `0.8.0`, where `/readyz` was a 404, would have failed readiness permanently. Original note follows.
+  **workflow-service has no liveness or readiness probe, and no health endpoint.** `/health`,
   `/healthz`, `/readyz` all `404`. It is the **only** application service without them; app-access,
   fan-passport and keycloak have both, postgres has `pg_isready`. **Four rollouts happened today and
   every one put the pod into service before it had connected to Postgres** — they looked clean only
   because the service wins that race when starting fast. Dispatched.
-- [ ] **`LOOM_POSTGRES_DATABASE` defaults to `loom_app_access`** in both the service entrypoint and
+- [x] `DONE 2026-08-29` — **`LOOM_POSTGRES_DATABASE` default corrected** to `loom_workflow_service`,
+  now a single named constant resolved in one place rather than two duplicated literals. Original
+  note follows. **`LOOM_POSTGRES_DATABASE` defaults to `loom_app_access`** in both the service entrypoint and
   the publisher CLI, while definitions live in `loom_workflow_service`. Production is correct only
   because the manifest overrides it; a manual publisher run without it hits the wrong database.
   Dispatched with the probes.
