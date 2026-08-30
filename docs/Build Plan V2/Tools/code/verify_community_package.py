@@ -1,6 +1,16 @@
 import io, json, re, sys
 
+# ARGUMENT ORDER: <new> then <old>. argv[1] is the CANDIDATE, argv[2] is the SHIPPED
+# file. Passing them the other way round was done on three packages before anyone
+# noticed, on 2026-08-29. Most checks are equality comparisons and so read the same
+# either way, which is exactly why it went unnoticed -- but the writer-declaration
+# line prints its direction, and the reminder check below is genuinely one-way:
+# reversed, "old had reminders and new does not" cannot catch a LOST reminder block,
+# only a gained one.
 new_path, old_path = sys.argv[1], sys.argv[2]
+if len(sys.argv) > 1 and sys.argv[1] in ('-h', '--help'):
+    print(__doc__ or 'usage: verify_community_package.py <new-candidate> <shipped-original>')
+    raise SystemExit(0)
 
 def strip(t):
     t = re.sub(r'(?<!:)//[^\n]*', '', t)
