@@ -1073,19 +1073,25 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   }) async {
     try {
       await _requireSurfacePermission(fanId: fanId, workflowType: workflowType);
-      // Resolve guards and GAP-1 inputs before opening a transaction. Besides
-      // preserving the public validation contract, this means an expected
-      // StateError never enters the database transaction machinery.
-      final resolved = await _resolveTransition(
+      await _validateTransitionInputsBeforeTransaction(
         workflowType: workflowType,
-        instanceId: instanceId,
         transitionId: transitionId,
-        fanId: fanId,
         inputs: inputs,
-        validateInputs: true,
       );
       late final WorkflowTransitionResult result;
       await _db.transaction(() async {
+        // Resolve exactly once from the row protected for this complete
+        // read-modify-write. A preflight resolution could become stale before
+        // the lock is acquired, while resolving twice adds observable latency
+        // to otherwise single-step transitions.
+        final resolved = await _resolveTransitionWithLockedInstance(
+          workflowType: workflowType,
+          instanceId: instanceId,
+          transitionId: transitionId,
+          fanId: fanId,
+          inputs: inputs,
+          validateInputs: false,
+        );
         result = await _applyTransitionWithinTransaction(
           resolved: resolved,
           fanId: fanId,
@@ -1105,10 +1111,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     }
   }
 
-  /// Resolves a transition without performing writes or opening a transaction.
-  ///
-  /// This phase deliberately contains all failures which must occur before a
-  /// top-level [applyTransition] transaction, including GAP-1 input checks.
+  /// Resolves a transition without performing writes.
   Future<_ResolvedTransition> _resolveTransition({
     required String workflowType,
     required String instanceId,
@@ -1116,13 +1119,14 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required String fanId,
     Map<String, dynamic>? inputs,
     required bool validateInputs,
+    WorkflowInstanceRow? instanceRow,
   }) async {
     final machine = await _getDefinition(workflowType);
     if (machine == null) {
       throw StateError('Unknown workflow type: $workflowType');
     }
 
-    final row = await _db.readInstance(instanceId);
+    final row = instanceRow ?? await _db.readInstance(instanceId);
     if (row == null) throw StateError('Instance $instanceId not found');
 
     final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
@@ -1209,6 +1213,66 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       data: data,
       transition: transition,
       inputs: inputs,
+    );
+  }
+
+  /// Checks validation that depends only on the declared workflow, not on a
+  /// mutable instance row. Keeping this outside the transaction preserves the
+  /// public missing-input failure contract for callers already inside a
+  /// transaction, while the stateful resolution happens once under the row
+  /// lock below.
+  Future<void> _validateTransitionInputsBeforeTransaction({
+    required String workflowType,
+    required String transitionId,
+    Map<String, dynamic>? inputs,
+  }) async {
+    final machine = await _getDefinition(workflowType);
+    if (machine == null) {
+      throw StateError('Unknown workflow type: $workflowType');
+    }
+    LoomWorkflowTransition? transition;
+    for (final candidate in machine.transitions) {
+      if (candidate.id == transitionId) {
+        transition = candidate;
+        break;
+      }
+    }
+    // The locked, stateful resolution retains the established unknown-
+    // transition error ordering. This preflight exists solely for the
+    // required-input validation needed before a nested transaction can begin.
+    if (transition == null) return;
+    if (transition.inputs == null) return;
+    for (final entry in transition.inputs!.entries) {
+      if (entry.value.required &&
+          (inputs == null || !inputs.containsKey(entry.key))) {
+        throw StateError(
+          'Transition $transitionId requires input "${entry.key}"',
+        );
+      }
+    }
+  }
+
+  /// Resolves a transition from the row lock held for its complete
+  /// read-modify-write operation. The caller must already own [_db]'s
+  /// transaction.
+  Future<_ResolvedTransition> _resolveTransitionWithLockedInstance({
+    required String workflowType,
+    required String instanceId,
+    required String transitionId,
+    required String fanId,
+    Map<String, dynamic>? inputs,
+    required bool validateInputs,
+  }) async {
+    final row = await _db.readInstanceForUpdate(instanceId);
+    if (row == null) throw StateError('Instance $instanceId not found');
+    return _resolveTransition(
+      workflowType: workflowType,
+      instanceId: instanceId,
+      transitionId: transitionId,
+      fanId: fanId,
+      inputs: inputs,
+      validateInputs: validateInputs,
+      instanceRow: row,
     );
   }
 
@@ -1591,7 +1655,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     }
 
     await _db.transaction(() async {
-      final row = await _db.readInstance(instanceId);
+      final row = await _db.readInstanceForUpdate(instanceId);
       if (row == null) throw StateError('Instance $instanceId not found');
 
       final stateDef = machine.states[row.currentState];
@@ -1962,7 +2026,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
               'relatedInstance "${effect.relatedInstance}" is not an instance id',
             );
           }
-          final target = await _db.readInstance(targetId);
+          final target = await _db.readInstanceForUpdate(targetId);
           if (target == null)
             throw StateError('Related instance $targetId not found');
           final targetMachine = await _getDefinition(target.workflowType);
@@ -2044,7 +2108,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
             );
           }
           try {
-            final resolved = await _resolveTransition(
+            final resolved = await _resolveTransitionWithLockedInstance(
               workflowType: relatedQuery.workflowType,
               instanceId: targetId,
               transitionId: transitionId,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -332,6 +333,138 @@ void main() {
           await connection.execute('DROP SCHEMA $schema CASCADE');
         }
         await connection.close();
+      }
+    },
+    skip: password == null || password.isEmpty
+        ? 'Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL '
+              'port-forward.'
+        : false,
+  );
+
+  test(
+    'real PostgreSQL preserves both writes from overlapping instance '
+    'transitions on separate connections',
+    () async {
+      final host = Platform.environment['LOOM_POSTGRES_HOST'] ?? '127.0.0.1';
+      final port = int.parse(
+        Platform.environment['LOOM_POSTGRES_PORT'] ?? '15432',
+      );
+      final database =
+          Platform.environment['LOOM_POSTGRES_DATABASE'] ?? 'loom_app_access';
+      final username = Platform.environment['LOOM_POSTGRES_USERNAME'] ?? 'loom';
+      final schema =
+          'workflow_database_test_${DateTime.now().microsecondsSinceEpoch}_$pid';
+      final endpoint = pg.Endpoint(
+        host: host,
+        port: port,
+        database: database,
+        username: username,
+        password: password,
+      );
+      const settings = pg.ConnectionSettings(sslMode: pg.SslMode.disable);
+
+      final schemaConnection = await pg.Connection.open(
+        endpoint,
+        settings: settings,
+      );
+      pg.Connection? firstConnection;
+      pg.Connection? secondConnection;
+      WorkflowDatabase? firstDatabase;
+      WorkflowDatabase? secondDatabase;
+      var schemaCreated = false;
+      try {
+        await schemaConnection.execute('CREATE SCHEMA $schema');
+        schemaCreated = true;
+
+        firstConnection = await pg.Connection.open(
+          endpoint,
+          settings: settings,
+        );
+        secondConnection = await pg.Connection.open(
+          endpoint,
+          settings: settings,
+        );
+        await firstConnection.execute('SET search_path TO $schema');
+        await secondConnection.execute('SET search_path TO $schema');
+
+        firstDatabase = WorkflowDatabase.withExecutor(
+          PgDatabase.opened(firstConnection, enableMigrations: false),
+          dialect: WorkflowSqlDialect.postgres,
+        );
+        secondDatabase = WorkflowDatabase.withExecutor(
+          PgDatabase.opened(secondConnection, enableMigrations: false),
+          dialect: WorkflowSqlDialect.postgres,
+        );
+        await firstDatabase.initialize();
+        await secondDatabase.initialize();
+        await firstDatabase.insertInstance(
+          instanceId: 'shared-instance',
+          communityId: 'concurrent-transitions',
+          workflowType: 'concurrent-transition',
+          currentState: 'draft',
+          instanceData: const {'initial': true},
+          createdByFanId: 'member',
+        );
+
+        final firstTransitionHasRead = Completer<void>();
+
+        Future<void> applyTransition(
+          WorkflowDatabase workflowDatabase,
+          Map<String, dynamic> fieldUpdates, {
+          bool holdAfterRead = false,
+        }) async {
+          await workflowDatabase.transaction(() async {
+            final row = await workflowDatabase.readInstanceForUpdate(
+              'shared-instance',
+            );
+            expect(row, isNotNull);
+            final data = jsonDecode(row!.instanceData) as Map<String, dynamic>;
+
+            if (holdAfterRead) {
+              firstTransitionHasRead.complete();
+              // Keep the first transition open after its read. The second
+              // connection must therefore block at SELECT FOR UPDATE, then
+              // read the first transition's committed JSON before merging.
+              await workflowDatabase.execute('SELECT pg_sleep(0.25)');
+            }
+
+            data.addAll(fieldUpdates);
+            await workflowDatabase.updateInstanceState(
+              instanceId: row.instanceId,
+              newState: row.currentState,
+              newInstanceData: data,
+            );
+          });
+        }
+
+        final firstTransition = applyTransition(firstDatabase, const {
+          'firstTransition': true,
+        }, holdAfterRead: true);
+        await firstTransitionHasRead.future;
+        final secondTransition = applyTransition(secondDatabase, const {
+          'secondTransition': true,
+        });
+        await Future.wait([firstTransition, secondTransition]);
+
+        final stored = await firstDatabase.readInstance('shared-instance');
+        expect(stored, isNotNull);
+        expect(
+          jsonDecode(stored!.instanceData),
+          allOf(
+            containsPair('initial', true),
+            containsPair('firstTransition', true),
+            containsPair('secondTransition', true),
+          ),
+        );
+      } finally {
+        firstDatabase?.close();
+        secondDatabase?.close();
+        await firstConnection?.close();
+        await secondConnection?.close();
+        if (schemaCreated) {
+          await schemaConnection.execute('DROP SCHEMA $schema CASCADE');
+        }
+        await schemaConnection.close();
       }
     },
     skip: password == null || password.isEmpty

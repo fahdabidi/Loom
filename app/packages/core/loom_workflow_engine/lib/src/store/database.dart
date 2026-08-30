@@ -337,6 +337,27 @@ class WorkflowDatabase {
     return WorkflowInstanceRow.fromRow(result.first);
   }
 
+  /// Reads one instance while holding its row lock until the current
+  /// transaction completes.
+  ///
+  /// Call this only from an existing transaction before deriving a complete
+  /// replacement for [WorkflowInstanceRow.instanceData]. PostgreSQL's
+  /// READ COMMITTED isolation otherwise permits two connections to read the
+  /// same JSON value and silently overwrite each other's changes. SQLite
+  /// retains its established BEGIN IMMEDIATE serialization and intentionally
+  /// uses the unchanged SELECT form.
+  Future<WorkflowInstanceRow?> readInstanceForUpdate(String instanceId) async {
+    await _ensureOpenAndMigrated();
+    final result = await _db.runSelect(
+      _dialect.isSqlite
+          ? 'SELECT * FROM workflow_instances WHERE instance_id = ?'
+          : r'SELECT * FROM workflow_instances WHERE instance_id = $1 FOR UPDATE',
+      [instanceId],
+    );
+    if (result.isEmpty) return null;
+    return WorkflowInstanceRow.fromRow(result.first);
+  }
+
   /// Atomically writes new state + data for one instance.
   Future<void> updateInstanceState({
     required String instanceId,
@@ -367,7 +388,7 @@ class WorkflowDatabase {
     required Map<String, dynamic> fieldUpdates,
   }) async {
     await transaction(() async {
-      final row = await readInstance(instanceId);
+      final row = await readInstanceForUpdate(instanceId);
       if (row == null) throw StateError('Instance $instanceId not found');
       final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
       data.addAll(fieldUpdates);

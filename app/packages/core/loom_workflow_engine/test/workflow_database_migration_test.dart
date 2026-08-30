@@ -25,7 +25,7 @@ void main() {
           )
         ''');
       } finally {
-        legacyDatabase.dispose();
+        legacyDatabase.close();
       }
 
       final database = WorkflowDatabase.file(path);
@@ -52,7 +52,7 @@ void main() {
           expect(columns, contains('created_by_fan_id'));
           expect(columns, isNot(contains('created_by_persona_id')));
         } finally {
-          inspectionDatabase.dispose();
+          inspectionDatabase.close();
         }
       } finally {
         database.close();
@@ -88,7 +88,7 @@ void main() {
           expect(columns, contains('created_by_fan_id'));
           expect(columns, isNot(contains('created_by_persona_id')));
         } finally {
-          inspectionDatabase.dispose();
+          inspectionDatabase.close();
         }
       } finally {
         if (await directory.exists()) {
@@ -112,7 +112,7 @@ void main() {
           'ALTER TABLE workflow_instances ADD COLUMN created_by_fan_id TEXT',
         );
       } finally {
-        ambiguousDatabase.dispose();
+        ambiguousDatabase.close();
       }
 
       final database = WorkflowDatabase.file(path);
