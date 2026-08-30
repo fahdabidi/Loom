@@ -758,6 +758,35 @@ tidying.
 - [ ] `new-ticket` — delete the two `loom_communities_b3-e2e-*` groups and the unmapped duplicate
   spellings once the above is decided; they will otherwise be read as product data.
 
+### 2026-08-30 — the emulator reaches the live backend; the APK build is blocked on a Windows setting
+
+**Reachability is proven, and that is the half that was in doubt.** From inside `emulator-5554`:
+
+    ping 192.168.56.10          -> 2/2 packets, 0% loss
+    nc  192.168.56.10 30083     -> HTTP/1.0 200 OK, "x-powered-by: Dart with package:shelf"
+    nc  192.168.56.10 30082     -> open (keycloak)
+
+So an Android build on this host can reach the k3s services over the host-only network.
+
+**And the three backend dart-defines are no longer needed.** `LOOM_ENV` defaults to `dev`, and the
+`dev` environment already carries every endpoint — auth `:30082`, workflow service `:30083`,
+app-access `:30080`, fan-passport `:30081` — plus the full community-to-group map. A plain debug
+build targets the deployed stack. Only `LOOM_OFFLINE_REPLICA_DIRECTORY` still needs one, to switch
+offline browse on.
+
+- [ ] `needs-user-action` — **`flutter build apk` fails: "Building with plugins requires symlink
+  support. Please enable Developer Mode in your system settings."** This needs Windows Developer Mode
+  (`start ms-settings:developers`), which this session cannot set.
+
+  **Do not fall back to the APKs already in `build/app/outputs/flutter-apk/`.** They are dated
+  **Aug 11 and Aug 9** and predate the entire backend build-out: the probes, the row locking, the
+  minting, the change feed, the document versioning and both of today's fixes. Installing one and
+  exercising it would reproduce this project's most expensive recurring mistake — verifying against a
+  proxy rather than the artifact that actually executes, which has already happened four times.
+
+  Until it builds, the app-side chain is verified only as far as: the code wires it, the emulator can
+  reach the services, and the services answer correctly to direct calls.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
