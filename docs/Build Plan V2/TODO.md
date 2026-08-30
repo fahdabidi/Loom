@@ -687,7 +687,24 @@ the in-memory repository, which ignores parameter binding and cannot express thi
 a PostgreSQL-backed test that reproduces the exact live error and was verified failing without the
 fix.
 
-- [ ] `needs-debug-agent` — **`postgres_guard_refusal_integration_test.dart` has been failing
+- [x] `RESOLVED 2026-08-30 (`441d0d22`)` — **it was not a stale test; it marked a real
+  authorization gap.** `_updateInstanceFields` never resolved roles, so the engine evaluated the edit
+  guard against an empty role map and **refused every caller** on any workflow with role-guarded
+  editable fields. Known and deferred: `3bbda3f9` says in its own message *"Left open, deliberately:
+  `_updateInstanceFields` does not resolve roles at all"*.
+
+  **My first diagnosis was wrong.** I read the failure as a stale test encoding pre-fix creator-only
+  semantics, and asked for an authorized app-access client. The dispatch **refused and reported**
+  that no client could change the outcome, because the route never consults one. It was right, and
+  the refusal is why the real gap surfaced instead of a one-character `expect(403)`.
+
+  Fixed by reusing the transition route's `_resolveRolesForRequest` rather than a second path, with
+  four outcomes distinguished so the fix cannot pass by allowing everyone: member with the role
+  `200`, member without it `403`, **non-member still holding the role `403`**, app-access unreachable
+  `503`. The third preserves what `3bbda3f9` bought; the fourth stops a resolution failure collapsing
+  into "no roles", which would be indistinguishable from a legitimate refusal.
+
+  Original note follows. **`postgres_guard_refusal_integration_test.dart` has been failing
   invisibly.** *"live PostgreSQL updateInstanceFields persists and is readable afterward"* expects
   `200` and gets `403`. **Pre-existing**: it still fails with every uncommitted change stashed.
 
