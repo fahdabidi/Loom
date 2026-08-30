@@ -99,6 +99,25 @@ This belongs to the same family as grep-gated commits and byte-identical doc mir
 passes for the wrong reason**. A stale validator does not error, it disagrees -- and its disagreement
 reads exactly like a real finding against your work.
 
+## Never `kill` by pattern — resolve the pid, then confirm what it is
+
+A dispatch's command line contains **the entire ticket text**. So any `pgrep -f <phrase>` where the
+phrase also appears in a ticket will match the running agent. On 2026-08-29 a cleanup of a duplicate
+`kubectl port-forward -n loom svc/postgres 15432:5432` matched the codex process running a ticket
+that quoted that exact command, and killed it. It survived only because the pid that matched was the
+`npm exec` wrapper and the real agent was a child.
+
+    pgrep -af "<pattern>"      # LOOK at the full command lines first
+    ps -p <pid> -o pid,ppid,cmd   # confirm this pid is the thing you mean
+    kill <pid>
+
+Two habits that would each have prevented it: exclude the agent explicitly (`| grep -v codex`) when
+searching for infrastructure processes, and never pipe a `pgrep` straight into `kill` — print the
+matches, read them, then kill a specific pid.
+
+This is the same family as the existing `pgrep` note below: **process searches match things you did
+not mean, in both directions.**
+
 ## Orphaned loop emitters steal ticks silently
 
 `data/loop_emitter.sh` runs on **Windows**, one per Claude session, and **old ones survive the
