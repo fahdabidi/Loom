@@ -221,8 +221,16 @@ Per-fan isolation is enforced by the store, not by convention: a singleton row p
 file to one `(fanId, communityId)` pair and a mistaken reuse fails closed. Proven at both layers --
 querying Alice's replica as Bob throws, and reopening Alice's file as Bob throws.
 
-Still open: giving it a caller. **Not blocked** -- the app already runs on the backend by default,
-so this is a ticket about when to sync and when to read the replica, not an architecture decision.
+**Caller landed 2026-08-29 (`e95bfc8b`)**: `part49_offline_replica_coordinator.dart`. Directory
+injected by the host, so the core package gains no `path_provider` and stays testable; unconfigured
+means offline support is off and the remote factory stays unwrapped, a clean no-op. Fallback happens
+**only** on unavailability -- a `403` surfaces and the replica is never consulted, asserted as
+`expect(engine.lastRead, isNull)`. Writes never fall back and nothing is queued. A replica read
+reports its cursor age so a surface can say the data is stale. App shell 345 -> 351.
+
+Still open: mounting it in a surface, and a decision on background sync -- deliberately left as a
+recommendation, since a timer that syncs a closed community is a battery and bandwidth call nobody
+has made.
 
 **P1. PARKED until after production — everything that is a member's own choice.** User decision
 2026-08-29: "Lets park everything that is a members choice for the moment. Put this into the tracker
@@ -349,7 +357,7 @@ B3 is dark for a different reason entirely, and the difference matters more than
 
 | | Client | Surface | What it needs |
 |---|---|---|---|
-| B3 change feed | built, referenced only by its own test | **none -- it is not a screen feature** | A caller: something to decide when to sync and when to read the replica offline |
+| B3 change feed | **caller landed** (`e95bfc8b`) | still unmounted | Mount it in a surface; decide background sync |
 | B5 document versioning | exists, missing 4 methods | **already live** | Add the methods, call them |
 
 B3 is infrastructure with no owner: nothing decides when to sync. **This is not an engine
