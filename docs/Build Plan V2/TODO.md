@@ -189,9 +189,11 @@ The missing-`platformSource` finding is a **warning, not an error**, because 138
 declare `writableBy: "platform"` without one. A validator that fails the corpus it ships with teaches
 everyone to ignore it. Promote once regeneration has moved the corpus.
 
-- [ ] regenerate the 5 affected packages via the Skill -- **2 of 5 done**: Youth Soccer
-      (`4933a3de`), Garden (`629b4309`). Remaining: Cedar, DataPortability, Book Club --
-      **verify Book Club against `c0e0355b^`, not HEAD**
+- [x] `DONE 2026-08-29` — all five regenerated through the Skill: Youth Soccer (`4933a3de`),
+      Garden (`629b4309`), Cedar (`5e96e434`), DataPortability (`9d84bf88`), Book Club (`6caf719d`).
+      Corpus now carries **7 `platformSource: "checksum"` and 6 `"opaqueId"`**, matching the measured
+      inventory of 6 export/transfer ids exactly. The "verify Book Club against `c0e0355b^`"
+      instruction was **retired, not followed** — see the re-assessment above.
 - [x] `DONE` — minting deployed in `0.8.0`, and `0.9.0` now carries it plus the health probes
 
 **B5. Document member state + versioning — DONE 2026-08-29.** Built (`6099d40f`), deployed in
@@ -515,6 +517,35 @@ Left open, and genuinely unresolved: the shared-library and reading-material sur
 those experiences in the product doc while the JSON no longer carries the fields and the app does not
 yet call the services for this community. That is a wiring gap, not a data-loss gap, and it belongs
 with B3/B6-style app work rather than with a regeneration.
+
+### 2026-08-29 — one stale marker left, and a small grammar gap behind it
+
+Every remaining `NEEDS IMPLEMENTATION` marker is a correctly deferred service — payment gateway and
+payment ids (AdFree 6, Cedar 2, Mosque 2, Youth Soccer 1, Garden 1), and AI answer generation
+(Book Club 1, Mosque 1) — **except one.**
+
+Garden's `checksumVerified` carries: *"checksum verification is unavailable with the checksum
+service."* **That is no longer true.** `export-bundle-api.openapi.yaml` implements
+`verifyExportBundle`, and the spec states plainly that `checksumVerified` gets `false` on generation
+and *"only `verifyExportBundle` may set"* it true. The comment describes a gap that has been closed
+since 2026-08-27.
+
+- [ ] `needs-spec-decision` — **what `platformSource` does a `checksumVerified` field declare?** The
+  closed set is `checksum` and `opaqueId`, and neither fits: the field is a verification **result**,
+  a bool set by a different operation on the same service, not a hash value produced at transition
+  time. Three options, none obviously right:
+  1. reuse `"checksum"`, letting the service infer from the field's `bool` type — implicit typing,
+     and the kind of thing that reads as clever until it is wrong
+  2. add a third value such as `"checksumVerification"` — explicit, but a grammar addition
+  3. leave it `writableBy: "platform"` with no `platformSource` — honest today, and it keeps the
+     missing-`platformSource` warning pointing at a field that genuinely has an unnamed writer
+
+  Small, and blocking nothing. Worth deciding rather than guessing, because option 1 is the tempting
+  one and the least reversible.
+
+- [ ] `new-ticket` — **delete Garden's stale `checksumVerified` comment** regardless of which option
+  wins. A `NEEDS IMPLEMENTATION` note that outlives its implementation is worse than none: the next
+  reader trusts it and re-reports a closed gap.
 
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
