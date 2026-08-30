@@ -2059,6 +2059,7 @@
           "checksum": {
             "type": "text?",
             "writableBy": "platform",
+            "platformSource": "checksum",
             "displayIcon": "verified_user",
             "labelTemplate": "Checksum: {value}",
             "hideWhenEmpty": true,

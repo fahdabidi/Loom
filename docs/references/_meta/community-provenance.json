@@ -42,8 +42,8 @@
       "lastCommitSubject": "feat(cedar-hoa): declare platform writers on checksum and transferId"
     },
     "Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc": {
-      "sha256": "f00570f0cf3db30ff6335136071a8828b7e5a19986eb7249dd1767beb7e97813",
-      "bytes": 87560,
+      "sha256": "201d1b02d959dd221ec2abb6983f48a7030283b55e2e95175c447605e240a7cb",
+      "bytes": 87602,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "2e8541af",
       "lastCommitDate": "2026-08-28",
@@ -85,9 +85,9 @@
       "sha256": "c5a68a04586f0af3590637f94813e6d1531c5aafdf2b918a8cb50b0fb35d2de0",
       "bytes": 74214,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "9b596e93",
-      "lastCommitDate": "2026-08-27",
-      "lastCommitSubject": "docs(skill): the reminder migration as a worked before/after, not a rule"
+      "lastCommit": "6caf719d",
+      "lastCommitDate": "2026-08-29",
+      "lastCommitSubject": "feat(book-club): declare platformSource on checksum and transferId"
     },
     "Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc": {
       "sha256": "b24c1f564f9498f04e2b1bc2f1e7fcac449bd8e8e7d08fbb5fe868d67b36812a",
