@@ -647,6 +647,32 @@ tester believes.
 Turning it on is a deliberate build-time choice, not a code change, and it is the last step before
 offline browse and session resume are reachable by a member.
 
+### 2026-08-30 — the change feed proven live, cursor semantics included
+
+Exercised with a real token against `1.0.0`, not just probed for a status code:
+
+| Call | Result |
+|---|---|
+| full sync, no cursor | `200`, 3 changed, 3 visible, `hasMore: false`, `resyncRequired: false` |
+| replay with the returned cursor | `changed` **3 → 0**, `visibleInstanceIds` **3 → 3, identical set** |
+
+That is the contract working: `changed` is a paged delta, `visibleInstanceIds` is a whole-set answer.
+The replica deletes anything absent from that set, so its staying complete under a cursor is the
+property that stops a member retaining rows they may no longer read. The keyset cursor also excluded
+the boundary row rather than repeating it, which is `afterInstanceId` doing its job.
+
+`nextRoleCursor` is returned, so the role-change invalidation path has its input.
+
+**A correction to my own probing.** Earlier I reported `GET /instances` returning 0 for this fan and
+treated it as "no instances exist", then created probe instances on that basis. The response is
+shaped `{"items": [...]}` and my script read `instances`. There were 3 all along, all
+`hoa-facility-reservation` created by `fan-test-alice`. I also briefly suspected a visibility leak
+between `/instances` and `/changes` on the strength of that bad parse — both endpoints agree exactly.
+Parse the response, do not guess its shape.
+
+All three deployed mechanisms are now demonstrated end to end rather than asserted: opaque-id
+minting, checksum generation and verification, and the per-viewer change feed.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
