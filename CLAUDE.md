@@ -19,6 +19,27 @@ to `ubuntu-24.04.4-loom`, which prevents targeting the unrelated `Ubuntu-24.04.4
 
 Rebooting a dev VM whose emulator is wedged is routine maintenance. Do not wait for a human.
 
+### The build and the cluster share one machine
+
+The k3s cluster runs on the same 8-core VM that builds images and hosts dispatches. A Maven or
+Docker build starves it: on 2026-08-30 an `app-access` image build stalled the node hard enough
+that **every pod's probes failed at once** — app-access, fan-passport, keycloak and minio all
+logged `context deadline exceeded` within the same minute, and kubelet gracefully restarted
+`postgres-0`.
+
+Two things make this worth knowing in advance:
+
+- **A whole-node stall looks like a service bug.** The tell is that unrelated services fail
+  together, and that Postgres shows `exitCode: 0, reason: Completed` — a *graceful* shutdown, not
+  a crash. One service failing is a service problem; four failing at once is the node.
+- **The blast radius outlives the build.** The build finishes, load returns to normal, and the
+  cluster looks healthy — `kubectl get pods` shows everything `1/1 Running` with no restarts.
+  Meanwhile any service holding a single long-lived DB connection is permanently broken. Check
+  that services still *serve* after a heavy build, not just that they are `Running`.
+
+Before starting a build or dispatch, check `cut -d' ' -f1-3 /proc/loadavg`. After one finishes,
+re-run a real request against the stack rather than trusting pod status.
+
 ## The Android emulator belongs on Windows, not in the VM
 
 **The VM has no AVD any more.** `loom_demo` was deleted 2026-08-24 (1.7 GB reclaimed) and the

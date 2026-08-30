@@ -1059,6 +1059,53 @@ remains, disabled-by-neglect rather than deleted, pending the account-seeding wo
   stands would mean using the vulnerability as the mechanism, and the resulting memberships would be
   indistinguishable from an attack.
 
+### 2026-08-30 — a two-hour silent outage, and the resilience defect behind it
+
+**I caused this, and the shape of it is worth keeping.** Building the `app-access:0.3.2` image on
+the VM starved the node that also runs k3s. Kubelet gracefully restarted `postgres-0`
+(`exitCode: 0`, `reason: Completed` — 12 restarts total), and at the same minute *every* pod logged
+`context deadline exceeded`: app-access, fan-passport, keycloak, minio. Four services failing
+together is the node, not the services.
+
+**Postgres recovered in under a minute. `workflow-service` never did.** For roughly two hours every
+request returned `500`:
+
+    "error": "Severity.error Attempting to execute query, but connection is not open."
+
+`GET /changes`, `POST /instances`, transitions — all dead. The pod stayed `1/1 Running` with **zero
+restarts** and `/readyz` reported ready the entire time. Nothing in `kubectl get pods` showed a
+problem. It recovered only when I ran `kubectl rollout restart`.
+
+**Root cause** — `loom_workflow_service/lib/src/postgres_connection.dart` opens exactly one
+`pg.Connection` at process start and holds it for the life of the pod, then hands it to
+`PgDatabase.opened(...)`, which is explicitly the "caller owns the connection" constructor. No pool,
+no validation, no reopen path. Once that socket dies the service is permanently broken.
+
+The Java services came back **on their own** in the same incident, because HikariCP validates and
+replaces dead connections. This is a Dart-side defect only.
+
+A database restart is routine in production — failover, patching, resize, an OOM kill. Ticketed and
+dispatched (`/tmp/ticket_pg_reconnect.md`): pooled connections that reopen, a bounded pool with a
+connect timeout, readiness that reflects database reachability, and **`/healthz` left alone** —
+liveness restarting on a transient DB blip turns one slow query into a crash loop. The highest-risk
+part is that `SELECT ... FOR UPDATE` needs a transaction pinned to one connection, so a naive pool
+would break row-level locking while every existing test still passed.
+
+- [x] outage diagnosed, service restored, probe row cleaned up (`DELETE 1`, 0 remaining)
+- [x] operational trap written into `CLAUDE.md` — a heavy build stalls the cluster, and the blast
+      radius outlives the build
+- [ ] `dispatched` — pooled/reconnecting Postgres access in `loom_workflow_service`
+- [ ] after it lands: deploy, then **prove it** by restarting `postgres-0` and confirming the
+      service serves without human intervention
+
+**The check this changes:** after any heavy build, re-run a real request against the stack. Pod
+status is not evidence — everything was `Running` throughout.
+
+**Also confirmed, incidentally:** the `0.3.2` authorization fix did **not** break service-to-service
+calls. Once the pool was rebuilt, a create + transition succeeded (`201`, `200`, `transferId` minted),
+and role resolution runs through app-access. My first hypothesis — that the security fix broke the
+stack — was wrong, and the restart counts said so before I acted on it.
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
