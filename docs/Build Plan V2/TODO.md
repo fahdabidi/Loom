@@ -1431,6 +1431,56 @@ The corrected path, all existing APIs:
    so every fixture has passed the real check
 
 
+
+### 2026-08-30 — every live community now has a working admin role
+
+`deleteRole` shipped (`loom/app-access:0.3.3`, backend `5f8a165`), the mistaken app-level `admin` was
+removed with it, and the eleven community-scoped admin roles were provisioned.
+
+**`deleteRole` verified live before use, guard first:**
+
+| Check | Result |
+| --- | --- |
+| Delete a **held** role (`hoa-board`) | `409 role_in_use` — *"1 holder remains: 1 in group_membership_role"* |
+| Delete an unknown role | `404 role_not_found` |
+| Delete the unheld `admin` | `204`, empty body |
+
+The cascade was checked against a control: `app_role` 30 → 29 and `role_permission` 377 → 372, both
+back to exactly their pre-mistake values, so it removed its own row and its five permissions and
+touched nothing else.
+
+**The admin roles**, named from each group's existing role prefix rather than an invented convention
+(`masjid-admin` and `cedar_commons_hoa_admin` were the precedent):
+
+| Group | Admin role |
+| --- | --- |
+| `ad-free-community` | `ad-off-admin` |
+| `camera-club` | `camera-club-admin` |
+| `cedar-commons-hoa` | `hoa-admin` |
+| `chess-club` | `chess-admin` |
+| `data-portability-community` | `portability-admin` |
+| `garden-club` | `garden-admin` |
+| `masjid-nur` | `masjid-admin` *(existed; permissions added)* |
+| `member-social-space` | `social-admin` |
+| `neighborhood-book-club` | `book-admin` |
+| `riverside-youth-soccer` | `soccer-admin` |
+| `tabletop-club` | `tabletop-admin` |
+
+**The one that could have destroyed data.** `setRolePermissions` is *replace*, not merge — the spec
+says "Replace the permission set a role grants" and the implementation calls
+`deleteById_AppIdAndId_RoleId` first. `masjid-admin` already held 23 workflow permissions, so sending
+only the five governance ones would have silently stripped every capability its admins had. Checked
+before acting; sent 23 + 5. Verified after: **28 total, 23 non-governance** — nothing lost.
+
+Measured after: **11 of 11 live groups** have a role holding `community.manage_members`; `app_role`
+29 → 39. The twelfth such role is `cedar_commons_hoa_admin` in the orphaned underscored group, which
+remains unreachable and is tracked separately.
+
+- [x] `deleteRole` built, verified, deployed in `0.3.3`
+- [x] the mistaken app-level `admin` deleted through it
+- [x] eleven community-scoped admin roles, all on live hyphenated groups
+- [ ] grant each to a first/creator account, then seed the rest through
+      `requestGroupMembership` → `decideGroupMembership`
 ### 2026-08-30 — the group spelling was never a decision, and the answer changes the admin picture
 
 I asked the user to choose a canonical group spelling. **That was not a decision to make** — the
