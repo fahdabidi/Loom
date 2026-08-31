@@ -85,9 +85,9 @@
       "sha256": "8f3aee82f3c663775a200921551c6a1e45d11cc206c35d460bf1b4ce97459ace",
       "bytes": 74323,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "6caf719d",
-      "lastCommitDate": "2026-08-29",
-      "lastCommitSubject": "feat(book-club): declare platformSource on checksum and transferId"
+      "lastCommit": "e41cd46d",
+      "lastCommitDate": "2026-08-31",
+      "lastCommitSubject": "feat(neighborhood-book-club): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc": {
       "sha256": "b24c1f564f9498f04e2b1bc2f1e7fcac449bd8e8e7d08fbb5fe868d67b36812a",
@@ -98,8 +98,8 @@
       "lastCommitSubject": "fix(community): Tabletop declares deliver_reminder on its send-reminder transition"
     },
     "Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc": {
-      "sha256": "f32f949eb72031f8a8850697f3afeba0ae92b29d55200a58e237d32f60405f1a",
-      "bytes": 107343,
+      "sha256": "d275802897ef325dfebcbffe8c10c9a4c29307d1f81a629fa34b17ad9b29d665",
+      "bytes": 107452,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "4933a3de",
       "lastCommitDate": "2026-08-29",

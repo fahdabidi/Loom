@@ -69,6 +69,10 @@
         "documents": { "accent": "#00796B" }
       }
     },
+    "notifications": {
+      "allowedChannels": ["inbox", "push"],
+      "default": ["inbox", "push"]
+    },
     "creatableAction": { "multiActionStyle": "speedDial", "presentationStyle": "slideOutBottom" },
     "roles": [
       {
