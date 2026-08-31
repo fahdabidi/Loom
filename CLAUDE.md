@@ -205,11 +205,33 @@ The signature is a **count mismatch**: `backend.loop` read `fires=117` while the
 output held only 47 `LOOP-FIRE` lines. Roughly 70 ticks had been eaten. `last_fired` looks healthy
 throughout, so every check of "is the loop armed" passes while nothing arrives.
 
-    ps -ef | grep "[l]oop_emitter"        # expect exactly ONE, child of the live shell
+    ps -ef | grep "[l]oop_emitter"        # expect exactly ONE (see the parent-pid warning below)
     kill <each orphan pid>
 
 Check this **first** when ticks stop but the registry looks fine. Orphans also burn the `max_fires`
 budget, so a loop can auto-disable having delivered a fraction of its ticks.
+
+**Do NOT test this by the parent pid — that check is wrong on Windows.** On 2026-08-31 I diagnosed a
+live emitter as orphaned because its parent process was dead, and that reasoning was invalid: Git
+Bash's launcher exits immediately after exec'ing, so the innermost `loop_emitter.sh` **always** has a
+dead parent. A freshly started emitter shows the same three-process shape, with the last one already
+reparented seconds after a clean start:
+
+    42908  parent=18448  claude.exe (alive)
+    27196  parent=42908  bash.exe (alive)
+    23396  parent=20716  DEAD          <- normal, not evidence of anything
+
+**The two checks that do work:**
+
+- **The count mismatch above** — registry `fires` against `LOOP-FIRE` lines in the live Monitor's
+  output file. That is what found the four orphans, and it is still the first thing to run.
+- **Does it survive `TaskStop` on the Monitor?** A legitimate emitter dies with its Monitor. One
+  still running afterwards belongs to an earlier Monitor and is the thing to kill. This is the only
+  cheap way to tell one emitter from another when they look identical in `ps`.
+
+A gap that stays constant is old damage, not a live leak: the 2026-08-29 incident left `fires` 70
+ahead of delivered ticks, and two days later it was **still exactly 70**, which is how you know
+nothing further was eaten.
 
 Note the registry lives in the **Windows** repo, not the VM's. Checking `~/Loom/data/loops` on the
 VM shows a different, stale set and will tell you the loop is dead when it is not.
