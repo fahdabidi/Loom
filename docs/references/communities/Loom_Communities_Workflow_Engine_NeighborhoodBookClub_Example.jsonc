@@ -26,6 +26,10 @@
         "admin": { "accent": "#4C5364" }
       }
     },
+    "notifications": {
+      "allowedChannels": ["inbox", "push"],
+      "default": ["inbox", "push"]
+    },
     "creatableAction": {
       "multiActionStyle": "speedDial",
       "presentationStyle": "slideOutBottom"

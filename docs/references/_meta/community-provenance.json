@@ -77,13 +77,13 @@
       "sha256": "9db09c6d80794bca06e5b9480ddb92b42d601edbf3cde294e52a043cd2edaf51",
       "bytes": 45231,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "f50e047f",
-      "lastCommitDate": "2026-08-27",
-      "lastCommitSubject": "fix(membersocialspace): name the writers on 39 misdeclared fields"
+      "lastCommit": "c617548c",
+      "lastCommitDate": "2026-08-31",
+      "lastCommitSubject": "feat(member-social-space): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc": {
-      "sha256": "c5a68a04586f0af3590637f94813e6d1531c5aafdf2b918a8cb50b0fb35d2de0",
-      "bytes": 74214,
+      "sha256": "8f3aee82f3c663775a200921551c6a1e45d11cc206c35d460bf1b4ce97459ace",
+      "bytes": 74323,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "6caf719d",
       "lastCommitDate": "2026-08-29",
