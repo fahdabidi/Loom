@@ -2180,7 +2180,7 @@ here.
 | ⬜ Open | `needs-decision` | **Six fakes back 53 distinct platform APIs and the cluster runs five services.** Retiring `LocalWorkflowEngineApi`/`LocalAuthApi` is *building* a remote auth API, not wiring one — the scope was corrected twice and still needs a decision on which of the 53 are in scope. | TODO.md, migrated | 2026-08-31 |
 | ⬜ Open | `needs-debug-agent` | **Garden walkthrough stall** — unfixed, reproducing on both hosts, fails in ~4 min with a diagnostic. | TODO.md, migrated | 2026-08-31 |
 | ⬜ Open | `new-milestone` | **Platform phases A, A.1, B, C, D, E, G.4 remain**, with Phase E gated on the two permission vocabularies that do not meet (`community.surface.navigation.*` vs `community.manage_settings`). | TODO.md, migrated | 2026-08-31 |
-| ⬜ Open | `new-ticket` | `b25-c16` app-shell capability utilization fails 5 sub-checks — tabs, presentation states, community-card states, theme customization, renderer selection. Largest named obstacle to the bar | pass-42 criteria scorecard | 2026-08-31 |
+| ⬜ Open | `new-ticket` | **`b25-c16` — root-caused 2026-08-31: a schema regression, not a capability gap.** The judge requires booleans `tabsPass`/`presentationStatesPass`/`mainCommunityCardStatesPass`/`themeCustomizationPass`/`rendererSelectionPass` on `appShellCapabilityReview.communityResults[]`. Pass-42 supplies strings `tabs: "pass"`, `presentationStates`, `communityListStates`, `themeCustomization`, `rendererSelection`, so every one reads `null != true` and is reported failed **while the review itself asserts all five pass**. Passes 36–39 used the correct boolean form; the canonical bundle does not. Fix the producing agent's output schema — the five sub-checks will keep failing after a perfect capture until it is fixed. | pass-42 bundle vs judge contract | 2026-08-31 |
 | ⬜ Open | `needs-live-validation` | **`b25-c14` — measured 2026-08-31, and the artifact is ~97% scaffold.** `llm-vision-ux-review-b25-v4-pass-42.json` exists (53 KB, `status: pass`, 204 `screenReviews`), so "the judge was never run" is wrong as stated — but of those 204 entries only **7** carry `visibleEvidence` and **7** carry `critique`; **zero** carry per-screen direct-question answers. The rest are `{rowId, verdict: pass, findings: []}`. No real vision judge inspected 197 of the 204 screens. | pass-42 scorecard, re-measured | 2026-08-31 |
 | ⬜ Open | `needs-decision` | Data Portability's **9** rows share one identical expected decision; decides whether the 79 denominator is honest | row-duplication analysis | 2026-08-31 |
 | ⬜ Open | `needs-decision` | Masjid's 3 `wf_*` persona/UX rows are not workflows — are they B25 rows at all? | row-duplication analysis | 2026-08-31 |
@@ -2619,7 +2619,7 @@ unknown". The detail lives in `production-ux-criteria-scorecard.json`, keyed on 
 | Criterion | `blocksPass` | Why |
 | --- | --- | --- |
 | `b25-c14-llm-vision-ux-review` | true | "The LLM vision UX review is missing holistic answers or screen reviews." **Re-measured 2026-08-31:** the bundle on disk carried `holisticQuestionAnswers: []` and `screenReviews: []` while the review file had them populated, so re-running `b25_llm_ux_review_importer.dart` changes the score from **0 to 20** and the message to "too shallow to prove production UX quality". The import gap is real but it is not the blocker — the review itself is a scaffold, so c14 fails either way. |
-| `b25-c16-app-shell-capability-utilization` | true | Five sub-checks failed for the Loom Communities shell: `tabsPass`, `presentationStatesPass`, `mainCommunityCardStatesPass`, `themeCustomizationPass`, `rendererSelectionPass` |
+| `b25-c16-app-shell-capability-utilization` | true | **Two distinct causes, separated 2026-08-31.** (1) A false failure: the five sub-checks are keyed `tabsPass` etc. as booleans by the judge and supplied as `tabs: "pass"` strings by pass-42, so all five fail regardless of the app. (2) A real gap: 3 of 6 `tabRendererResults[]` (Calendar, Marketplace, WorkflowStatus) carry **empty** `screenRowIds` and `screenshotHashes`, and 5 of 6 fail the documented proof requirement of row ids, hashes, visible text, answers and critique. |
 
 16 of 18 criteria pass; `holisticPass` and `workflowPersonaPass` are both true.
 
@@ -2632,7 +2632,7 @@ unknown". The detail lives in `production-ux-criteria-scorecard.json`, keyed on 
   across five capability areas. That is a genuine remediation batch, and the largest single named
   obstacle to the production bar found so far.
 
-- [ ] `new-ticket` — c16: reconcile app-shell capability utilization across the five failing areas
+- [ ] `new-ticket` — c16: fix the producing agent's schema (boolean `*Pass` keys, not string `"pass"` values), then capture real proof for the Calendar, Marketplace and WorkflowStatus renderer contracts
 - [ ] after a fresh capture: rerun the vision judge for c14
 - [ ] treat any scorecard without checking `generatedAt` as suspect — this one was two months stale
       and nothing said so
