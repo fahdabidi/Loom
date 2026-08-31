@@ -1564,6 +1564,35 @@ workflow *definition*.
 
 Without the control I would have reported a B7 regression that does not exist. That is the rule
 working on its author.
+
+### 2026-08-31 — the production bar is unblocked: device carries current code
+
+The Developer Mode blocker was **incidental, not intrinsic** — see `CLAUDE.md`, "Build the APK on the
+VM". Windows restricts plugin symlinks; Linux does not; the VM has a full Android toolchain. Building
+there and installing over adb sidesteps the setting entirely.
+
+**State now:**
+
+| | |
+| --- | --- |
+| APK built at | `c969a991` — includes sync settings, notification gate, mounted replica, acknowledgements view, auth fixes |
+| Installed on | `emulator-5554`, replacing the 2026-08-11 build |
+| Launch | clean, no `FATAL EXCEPTION` in logcat |
+| Accounts | 35 across 11 communities, all seeded through the real approve flow |
+| Backends | all live and verified end-to-end |
+| Evidence | now records which package build a walkthrough proved |
+
+**Two cautions carried forward into the walkthrough phase:**
+
+- **Rebuild before every capture.** The APK I installed at 15:00 was already stale by 17:00 — it predated
+  the settings screen by one commit. The VM build takes ~2–5 minutes with a warm Gradle cache, so
+  there is no excuse for walking through code the device does not have.
+- **The denominator is not 79.** 12 rows name workflows their package does not ship, and the
+  act-ability blind spot means the true unprovable count is ≥ 12. The numerator is also soft: the 3
+  proven rows carry no package identity and classify as `unknown` under the model shipped today.
+
+- [x] Developer Mode blocker dissolved
+- [ ] first walkthroughs: the five B25 rows the account seeding unblocked are the natural target
 ### 2026-08-31 — the production bar is blocked on one Windows setting, and the installed APK is three weeks stale
 
 With the backend complete, the next step is proving it on a device. That is blocked, and the two
