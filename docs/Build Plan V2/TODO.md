@@ -1534,6 +1534,36 @@ than the recorded 7 implied, and it is worth knowing before anyone measures prog
 - [ ] `needs-skill-dispatch` — the five Masjid rows: correct the product doc's B25 table, or remove
       them if they were never real workflows
 - [ ] the original 7 remain as recorded
+
+### 2026-08-31 — end-to-end verification of the finished build-out
+
+Run against the deployed stack after everything landed, so the completion claim rests on live
+responses rather than on each piece having passed when it shipped.
+
+| Check | Result |
+| --- | --- |
+| Auth — member token from Keycloak | ok |
+| **B3** change feed | `200` |
+| **B7** definitions stored | **82** |
+| `/healthz` | `200` |
+| `/readyz` | `200` |
+| app-access, service credentials | `200` |
+| **SECURITY** — mismatched `X-Loom-Actor` | **`403`** |
+
+Deployed images match their manifests exactly: `loom/app-access:0.3.3`, `loom/fan-passport:0.3.1`,
+`loom-workflow-service:1.0.2`. `loom-workflow-service:1.0.3` exists locally and is deliberately not
+deployed — it was the `.dockerignore` verification build.
+
+**Two of my own probes were wrong, recorded so they are not mistaken for findings.** A `GET` on
+`/v1/communities/{id}/workflow-definitions` returned `404`; that route accepts **PUT only**, because
+the publisher writes definitions and the engine reads them internally — there is no GET handler and
+none is owed. And a batch of follow-up queries returned empty **including their control**, which
+meant my column names were wrong, not that the data was absent. One of those queries was misconceived
+regardless: `experience.notifications` is package-level configuration and would never appear inside a
+workflow *definition*.
+
+Without the control I would have reported a B7 regression that does not exist. That is the rule
+working on its author.
 ### 2026-08-31 — the production bar is blocked on one Windows setting, and the installed APK is three weeks stale
 
 With the backend complete, the next step is proving it on a device. That is blocked, and the two
