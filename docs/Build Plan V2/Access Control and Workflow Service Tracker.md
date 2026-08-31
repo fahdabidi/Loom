@@ -221,6 +221,8 @@ A (engine contracts) → B (service) → D (deploy) → E (app shell) → F (reg
 
 | Status | Tag | Item | Source | Date |
 |---|---|---|---|---|
+| ⬜ Open | `new-ticket` | **Community isolation is a `WHERE community_id = ?` clause** — not schema-per-tenant, not row-level security. It holds only as long as every query remembers it, and nothing in the database enforces it. One omitted predicate is a cross-community data leak that no test would catch. | TODO.md cross-cutting, migrated | 2026-08-31 |
+| ⬜ Open | `new-ticket` | **Idempotency is reimplemented per repository** — `document_repository`, the bundle repository and the queue each carry their own version. Divergence between them is silent, and the correct behaviour is subtle enough that three independent implementations will not stay in agreement. | TODO.md cross-cutting, migrated | 2026-08-31 |
 | ⬜ Open | `new-ticket` | **Server-initiated push is a placeholder and nothing implements it.** `push-delivery-api.openapi.yaml` is deliberately provider-agnostic and pinned `0.0.0-placeholder`; every path answers `501`. The two live delivery paths (`notificationInbox` archetype, `LocalNotificationDeliveryService`) both require the app to be running, so a member whose app is closed is never told anything. Choosing a provider is the commitment this defers. | TODO.md B2, migrated | 2026-08-31 |
 | ⬜ Open | `needs-verification` | **Delivery failures are invisible.** `LocalNotificationDeliveryService` swallows every platform error by design ("best-effort"), so a denied permission never reaches the engine and a failed delivery is indistinguishable from a successful one. Correct for the engine; it stops being tolerable once anything depends on delivery having happened — e.g. a queue offer expiring because the member was never told. | TODO.md B2, migrated | 2026-08-31 |
 | ⬜ Open | `new-ticket` | **The change feed is built but not deployed.** `listVisibleChanges` is present in `workflow_service.dart` and the cursor was amended to a keyset pair (spec `033371c3`); it ships with the next workflow-service image. Built ≠ deployed — the four-state vocabulary in §9 exists because this distinction kept getting lost. | TODO.md B5, migrated | 2026-08-31 |
@@ -885,4 +887,1053 @@ B3's per-viewer change feed.
   `roleIds`, a role carries a `groupId`, and a group id embeds a community name by convention rather
   than by contract. The first two hops are real API; the third is string manipulation against data
   that demonstrably has two spellings
+
+
+---
+
+### Cross-cutting findings, 2026-08-29 → 2026-08-31
+
+*Migrated from `TODO.md` on 2026-08-31. Nineteen dated entries covering the backend build-out as it
+happened: the live proofs (B4 minting, checksums, the change feed, B5), the security escalation and
+its fix, the two-hour outage and the resilience defect behind it, and the admin-role provisioning
+work — including the corrections I had to make to my own earlier claims. Entries are never rewritten
+after the day they were written, so numbers inside them go stale by design; §4 and §8 carry current
+state.*
+
+### 2026-08-29 — the deployed definitions were stale, and nothing said so
+
+Publishing happened before the five `platformSource` regenerations, so the backend's stored copies
+predated the grammar: **0 of 82 carried `platformSource`**, confirmed against a control query showing
+80 carried `writableBy`.
+
+Opaque-id minting was built, tested, deployed in `0.8.0` and correct — and could not have fired for
+any community, because the definition the service reads is its own stored copy, not the package in
+the repo. Every suite stayed green throughout; there is no test that can see this.
+
+Re-published: 82 upserted, 0 inserts, total still 82, and stored definitions carrying
+`platformSource` went 0 → 8. Rule added to CLAUDE.md: **publish after any package change**, and
+verify with a control query rather than trusting a zero.
+
+
+### 2026-08-29 — B4 minting PROVEN LIVE, against the deployed stack
+
+Not a unit test. A real instance, created through the API as an authenticated member, against
+`loom-workflow-service:0.9.0` and the re-published definitions:
+
+| Step | Result |
+|---|---|
+| create `hoa-export-evidence` | `201`, state `draft`, `transferId` **null** |
+| apply `preview-export` | state `preview`, `transferId` = `84d40a00-34e5-4f61-9bba-9269962ed540` |
+| apply `approve-redaction` | state `redaction-approved`, `transferId` **identical** |
+| `checksum` throughout | **null** — it belongs to the export bundle service, not to minting |
+
+So the whole chain holds end to end: grammar -> package -> published definition -> deployed service
+-> a minted, opaque, immutable value. The id is a v4 UUID encoding no community, instance, workflow,
+fan, counter or timestamp, and the second transition proved the never-rewritten rule rather than
+asserting it.
+
+This is the check that would have failed silently an hour earlier, when the deployed definitions
+still predated the grammar. A green suite could not have told the difference.
+
+**The probe instance was deleted afterwards** (instances 4 -> 3, definitions untouched at 82).
+Leaving it would have been exactly the residue already criticised in the `b3-e2e` groups and
+`verify_tabletop_club`: test data that a later reader mistakes for product data.
+
+
+### 2026-08-30 — the checksum half proven live too, and one inconsistency found
+
+Both `platformSource` mechanisms are now demonstrated against the deployed stack, not just tested.
+A real Cedar instance, authenticated member, `loom-workflow-service:0.9.0`:
+
+| Step | Result |
+|---|---|
+| `generateExportBundle` | `201`, SHA-256 `9f05529…` over 1596 bytes |
+| instance `checksum` field | **the identical digest**, read straight from `workflow_instances` |
+| `checksumVerified` on generation | `false` |
+| `verifyExportBundle` | `200`, `verified: true`, `recordedChecksum == observedChecksum` |
+| `checksumVerified` after | **`true`** |
+| `transferId` on the same instance | minted independently, a different UUID from the earlier probe |
+
+Verification **recomputes** rather than reading the stored value back, so a replaced or truncated
+bundle would fail — the property that makes the digest worth storing.
+
+**This settles the factual half of the open `checksumVerified` grammar question.** The field is
+genuinely platform-written, by `verifyExportBundle`, on the same service as `checksum` but through a
+different operation. Only the naming is still open, and option 1 (reuse `"checksum"` and infer from
+the `bool` type) now looks worse: the two fields are written by different operations at different
+times, which is exactly what a `platformSource` is supposed to name.
+
+- [ ] `new-ticket` — **`checksumStatus` can disagree with `checksumVerified`.** After successful
+  verification the instance read `checksumVerified: true` while `checksumStatus` still read
+  `verification-pending`. `checksumStatus` is `writableBy: "effect"`, so only a workflow transition
+  advances it, while the platform writes `checksumVerified` directly. A member can therefore see
+  "verification pending" on a bundle the platform has already verified. Either the workflow needs a
+  transition that reconciles them, or `checksumStatus` should not be an independently-written mirror
+  of a platform fact.
+
+Probe instance and its bundle were deleted afterwards (instances 4 → 3, bundles 1 → 0, definitions
+untouched at 82).
+
+
+### 2026-08-30 — offline replica is wired end to end, and OFF unless a build says otherwise
+
+The chain is complete: `main.dart` -> `configureLoomOfflineReplicaSupportForProduction` ->
+`loomWorkflowReplicaCoordinator` -> `part25`'s engine factory -> `LoomWorkflowReplica`. The
+coordinator is referenced from real production code, not only its own test.
+
+**It is off by default, deliberately.** The writable directory is host-injected and defaults to
+empty:
+
+    --dart-define=LOOM_OFFLINE_REPLICA_DIRECTORY=<writable path>
+
+With it empty the app keeps remote-only behaviour, the remote factory stays unwrapped, and no
+`path_provider` dependency is added to a core package. So offline browse now needs **four** defines
+alongside the three that already select the real backend — worth stating plainly, because the
+existing trap in this project is a build that silently exercises something other than what the
+tester believes.
+
+Turning it on is a deliberate build-time choice, not a code change, and it is the last step before
+offline browse and session resume are reachable by a member.
+
+
+### 2026-08-30 — the change feed proven live, cursor semantics included
+
+Exercised with a real token against `1.0.0`, not just probed for a status code:
+
+| Call | Result |
+|---|---|
+| full sync, no cursor | `200`, 3 changed, 3 visible, `hasMore: false`, `resyncRequired: false` |
+| replay with the returned cursor | `changed` **3 → 0**, `visibleInstanceIds` **3 → 3, identical set** |
+
+That is the contract working: `changed` is a paged delta, `visibleInstanceIds` is a whole-set answer.
+The replica deletes anything absent from that set, so its staying complete under a cursor is the
+property that stops a member retaining rows they may no longer read. The keyset cursor also excluded
+the boundary row rather than repeating it, which is `afterInstanceId` doing its job.
+
+`nextRoleCursor` is returned, so the role-change invalidation path has its input.
+
+**A correction to my own probing.** Earlier I reported `GET /instances` returning 0 for this fan and
+treated it as "no instances exist", then created probe instances on that basis. The response is
+shaped `{"items": [...]}` and my script read `instances`. There were 3 all along, all
+`hoa-facility-reservation` created by `fan-test-alice`. I also briefly suspected a visibility leak
+between `/instances` and `/changes` on the strength of that bad parse — both endpoints agree exactly.
+Parse the response, do not guess its shape.
+
+All three deployed mechanisms are now demonstrated end to end rather than asserted: opaque-id
+minting, checksum generation and verification, and the per-viewer change feed.
+
+
+### 2026-08-30 — B5 proven live, one production bug fixed, one pre-existing failure uncovered
+
+**B5's compliance property holds against the deployed service.** Uploaded a document (v1),
+acknowledged it, added a revision (v2): state reads `acknowledged=true, acknowledgedVersion=1,
+currentVersion=2`, and the content serves v2. The acknowledgement **survived and went stale** rather
+than being erased. "Who accepted the CC&Rs" stays answerable across a revision.
+
+**Exercising it found a 500 that every test passed over** (`b3b9bdf7`).
+`listDocumentAcknowledgements` bound `currentVersion` unconditionally while the SQL referenced it
+only when `currentVersionOnly` was true, so the **default listing always failed**. The unit tests use
+the in-memory repository, which ignores parameter binding and cannot express this defect. Fixed, with
+a PostgreSQL-backed test that reproduces the exact live error and was verified failing without the
+fix.
+
+- [x] `RESOLVED 2026-08-30 (`441d0d22`)` — **it was not a stale test; it marked a real
+  authorization gap.** `_updateInstanceFields` never resolved roles, so the engine evaluated the edit
+  guard against an empty role map and **refused every caller** on any workflow with role-guarded
+  editable fields. Known and deferred: `3bbda3f9` says in its own message *"Left open, deliberately:
+  `_updateInstanceFields` does not resolve roles at all"*.
+
+  **My first diagnosis was wrong.** I read the failure as a stale test encoding pre-fix creator-only
+  semantics, and asked for an authorized app-access client. The dispatch **refused and reported**
+  that no client could change the outcome, because the route never consults one. It was right, and
+  the refusal is why the real gap surfaced instead of a one-character `expect(403)`.
+
+  Fixed by reusing the transition route's `_resolveRolesForRequest` rather than a second path, with
+  four outcomes distinguished so the fix cannot pass by allowing everyone: member with the role
+  `200`, member without it `403`, **non-member still holding the role `403`**, app-access unreachable
+  `503`. The third preserves what `3bbda3f9` bought; the fourth stops a resolution failure collapsing
+  into "no roles", which would be indistinguishable from a legitimate refusal.
+
+  Original note follows. **`postgres_guard_refusal_integration_test.dart` has been failing
+  invisibly.** *"live PostgreSQL updateInstanceFields persists and is readable afterward"* expects
+  `200` and gets `403`. **Pre-existing**: it still fails with every uncommitted change stashed.
+
+  It is invisible because Postgres-backed tests **skip without credentials**, so the routine
+  `dart test` run reports 139 green while a real integration test is red. That is the exact hazard
+  already recorded in CLAUDE.md, now with a concrete instance.
+
+  A `403` on `updateInstanceFields` is an authorization refusal where the test expects success, so
+  the candidates are a real authz regression, a role/group state dependency (note Cedar's split
+  membership, where only `fan-test-alice` is in the mapped group), or a stale test. **Do not assume
+  the third.**
+
+- [ ] `new-ticket` — **run the Postgres-backed suites with credentials in whatever passes for CI
+  here**, or at minimum at every closeout. A suite that silently skips its only real integration
+  coverage will hide the next one of these too.
+
+
+### 2026-08-30 — SECURITY: any authenticated fan can grant themselves any role in any community
+
+Found while seeding test accounts through the real join flow. **Not a theory — reproduced twice.**
+
+`decideGroupMembership` is specified as *"Requires `app.access.admin`. Approving moves the membership
+to `active` and grants the roles supplied here"*. **Nothing enforces that.**
+
+A brand-new Keycloak user with no roles, no memberships and no admin rights:
+
+    POST /v1/apps/loom_communities/groups/loom_communities_chess-club/membership-requests
+      Authorization: Bearer <their own token>   X-Loom-Actor: loom-cedar-board-1
+      -> 201, state "requested"
+
+    POST .../membership-requests/loom-cedar-board-1/decision
+      Authorization: Bearer <their own token>   X-Loom-Actor: loom-cedar-board-1
+      {"decision":"approve","roleIds":["chess-owner"]}
+      -> 200, state "active", roleIds ["chess-owner"], decidedByFanId "loom-cedar-board-1"
+
+**They approved their own request and granted themselves owner.** Repeated against Cedar with
+`hoa-board`, same result. The caller is identified by an `X-Loom-Actor` header, and no check ties the
+actor to the token, nor requires the actor to hold any administrative role in the group being decided.
+
+**Impact.** Any account that can obtain a token — the realm allows direct grants — can become owner or
+board of every community, which is every permission the workflow engine subsequently trusts. All the
+per-fan visibility work is downstream of this: the engine correctly resolves what a role may see, and
+this lets anyone choose their role.
+
+**Both escalated memberships were deleted immediately after confirming** (`group_membership` and
+`group_membership_role` rows for `loom-cedar-board-1`, verified 0/0 afterwards). The Keycloak user
+remains, disabled-by-neglect rather than deleted, pending the account-seeding work.
+
+- [x] `FIXED AND VERIFIED LIVE 2026-08-30` — `loom/app-access:0.3.2` (`4994fa8`). Both halves
+  confirmed against the running service, and **separately**, so neither masks the other:
+
+  | Check | Result |
+  |---|---|
+  | the original exploit, mismatched actor | `403 fan_identity_mismatch` |
+  | self-approval with a valid identity | `403 self_membership_decision_forbidden` |
+  | **legitimate self-request** | **`201`** — the flow is not broken |
+
+  Distinct error codes for the two defects, so each is independently enforced. The fix adds real
+  token plumbing; `X-Loom-Actor` is demoted to actor context and is no longer an identity credential.
+
+  **The vulnerability had been masking an incomplete account.** Working accounts need a `fanId` **user
+  attribute**, which the `loom fan id` protocol mapper emits as the `fanId` claim — `test-fan-alice`
+  carries `fan-test-alice`. A user created without it has no claim, which the old header-trusting code
+  never noticed. Create users with **every field in one POST**: Keycloak replaces rather than merges,
+  and a follow-up PATCH silently cleared an email during this work.
+
+- [x] `RESOLVED 2026-08-31` — **the fix creates a bootstrap problem, by design.** Approval now requires an
+  admin, and only one active membership with a role exists across all eleven groups
+  (`fan-test-alice`, `hoa-board`, Cedar). **Nine communities have nobody who can approve anyone**, so
+  the ~35 accounts cannot be seeded purely through the API.
+
+  The honest options: insert the first owner/admin per community directly, once, as an explicitly
+  recorded bootstrap, then create everyone else through the checked flow; or add a real bootstrap
+  path to the service. Seeding entirely by direct insert would reproduce the problem the fix just
+  closed — fixture data that never passed an authorization check.
+
+  Original note follows. **enforce authorization on `decideGroupMembership`.** At minimum: the actor
+  must be bound to the presented token, and must hold an administrative role in the group being
+  decided. Self-approval must be refused outright.
+- [ ] `new-ticket` — **audit every app-access endpoint that takes `X-Loom-Actor`** for the same shape.
+  A header-supplied identity that nothing ties to the token is a pattern, not one endpoint.
+- [ ] `new-ticket` — seeding test accounts is **blocked on the fix**. Seeding through the flow as it
+  stands would mean using the vulnerability as the mechanism, and the resulting memberships would be
+  indistinguishable from an attack.
+
+
+### 2026-08-30 — a two-hour silent outage, and the resilience defect behind it
+
+**I caused this, and the shape of it is worth keeping.** Building the `app-access:0.3.2` image on
+the VM starved the node that also runs k3s. Kubelet gracefully restarted `postgres-0`
+(`exitCode: 0`, `reason: Completed` — 12 restarts total), and at the same minute *every* pod logged
+`context deadline exceeded`: app-access, fan-passport, keycloak, minio. Four services failing
+together is the node, not the services.
+
+**Postgres recovered in under a minute. `workflow-service` never did.** For roughly two hours every
+request returned `500`:
+
+    "error": "Severity.error Attempting to execute query, but connection is not open."
+
+`GET /changes`, `POST /instances`, transitions — all dead. The pod stayed `1/1 Running` with **zero
+restarts** and `/readyz` reported ready the entire time. Nothing in `kubectl get pods` showed a
+problem. It recovered only when I ran `kubectl rollout restart`.
+
+**Root cause** — `loom_workflow_service/lib/src/postgres_connection.dart` opens exactly one
+`pg.Connection` at process start and holds it for the life of the pod, then hands it to
+`PgDatabase.opened(...)`, which is explicitly the "caller owns the connection" constructor. No pool,
+no validation, no reopen path. Once that socket dies the service is permanently broken.
+
+The Java services came back **on their own** in the same incident, because HikariCP validates and
+replaces dead connections. This is a Dart-side defect only.
+
+A database restart is routine in production — failover, patching, resize, an OOM kill. Ticketed and
+dispatched (`/tmp/ticket_pg_reconnect.md`): pooled connections that reopen, a bounded pool with a
+connect timeout, readiness that reflects database reachability, and **`/healthz` left alone** —
+liveness restarting on a transient DB blip turns one slow query into a crash loop. The highest-risk
+part is that `SELECT ... FOR UPDATE` needs a transaction pinned to one connection, so a naive pool
+would break row-level locking while every existing test still passed.
+
+- [x] outage diagnosed, service restored, probe row cleaned up (`DELETE 1`, 0 remaining)
+- [x] operational trap written into `CLAUDE.md` — a heavy build stalls the cluster, and the blast
+      radius outlives the build
+- [x] **landed and independently verified** (`ff03d168`) — bounded 8-connection pool, 5s acquire
+      timeout, repositories on `pg.Session`, transactions through `Pool.runTx` with the drift
+      executor zone-bound so concurrent requests cannot borrow one another's connection. SQLite
+      path untouched. `/readyz` now probes the database; `/healthz` deliberately still does not
+- [x] **verified against live PostgreSQL, because the suite alone could not** — the dispatch
+      reported green at `139 passed, 10 skipped`, and those ten included **all four tests it had
+      written to prove its own fix**. With a port-forward and credentials: 4/4 pass, including the
+      lock test that has a background borrower steal the connection a statement-based `BEGIN` would
+      have released and then requires an outside `UPDATE` to block. The engine's own four
+      PostgreSQL cases pass too, including overlapping transitions on separate connections.
+      Five suites re-run here: 148 (+1), 312 (+5), 354 (+2), 464, 160 — all exit 0, no weakened
+      assertions in the diff
+- [x] `loom-workflow-service:1.0.2` built, imported, manifest bumped, rolled out (backend `ebc742a`).
+      Also committed the app-access `0.3.2` manifest (`752354e`), which had been deployed and
+      verified this morning but never recorded — the repo described `0.3.1` while the cluster ran
+      `0.3.2`
+- [x] **PROVEN LIVE 2026-08-30.** Deleted `postgres-0` deliberately and touched nothing else:
+
+          t+012s   pg Terminating   readyz=503  healthz=200  changes=000
+          t+024s   pg Running       readyz=200  healthz=200  changes=200
+          t+204s   pg Running       readyz=200  healthz=200  changes=200
+
+      **Same pod before and after** (`workflow-service-7bb5b6f5b4-bwgxh`), **`restarts=0`**. The
+      pool reopened by itself in under 24 seconds; Kubernetes did not repair this by cycling the
+      container, which is the distinction the whole ticket turned on. The identical event this
+      morning cost two hours of total outage.
+
+      Both health semantics behaved as designed: readiness went 503 while the database was gone
+      (so the pod leaves service) and liveness stayed 200 (so it is not crash-looped). A liveness
+      probe that tracked the database would have converted this into a restart storm.
+
+      The `401`s later in the run were the access token expiring at its `expires_in: 300` lifetime,
+      not a regression — confirmed by re-requesting with a fresh token (`200`) and creating an
+      instance successfully. Probe row deleted afterwards, 0 remaining.
+
+**The check this changes:** after any heavy build, re-run a real request against the stack. Pod
+status is not evidence — everything was `Running` throughout.
+
+**Also confirmed, incidentally:** the `0.3.2` authorization fix did **not** break service-to-service
+calls. Once the pool was rebuilt, a create + transition succeeded (`201`, `200`, `transferId` minted),
+and role resolution runs through app-access. My first hypothesis — that the security fix broke the
+stack — was wrong, and the restart counts said so before I acted on it.
+
+
+
+### 2026-08-30 — the workflow-service image build ships 6 GB of build artifacts
+
+Building `1.0.2` took roughly an hour, most of it before Docker ran a single instruction:
+
+    Sending build context to Docker daemon  6.885GB
+
+`build.sh` stages `~/.pub-cache` and `~/Loom/app` into a scratch dir and hands the whole thing to
+`docker build`. Measured on the live staging directory:
+
+| Path | Size |
+| --- | ---: |
+| `.pub-cache` | 535 MB |
+| `app/apps` | **4.0 GB** |
+| `app/packages` | 1.7 GB |
+| `app/build` | 52 MB |
+
+The 4 GB is Flutter build output — `apps/loom_communities_demo/build` and a `build/` directory in
+almost every package, plus `.dart_tool/build`. **None of it belongs in a server image**, which
+compiles `bin/loom_workflow_service.dart` to an AOT binary. There is no `.dockerignore` anywhere in
+the build path, so every build copies all of it, twice: once into the scratch dir, once into a
+Docker layer.
+
+- [ ] `new-ticket` — exclude build output from the image context. Either write a `.dockerignore`
+      into the scratch dir from `build.sh` (it is the context root, so it has to be placed there,
+      not beside the Dockerfile in the package), or stage with an exclude list instead of `cp -r`.
+      Exclude at minimum `build/`, `.dart_tool/`, `.git/`, and test fixtures
+- [ ] confirm the resulting image still runs — the AOT compile needs the workspace resolved, which
+      is why the script stages a pre-resolved tree in the first place; excluding `.dart_tool`
+      wholesale may break `pub get` reuse, so verify rather than assume
+
+**Why it is worth doing rather than tolerating:** a one-hour build is why the deploy step keeps
+getting deferred, and it is the same build that starved the node and caused this morning's outage.
+Cutting the context to a few hundred MB shortens both the wait and the window in which the cluster
+is degraded.
+
+**What actually happened building `1.0.2`, recorded because the diagnosis was half wrong.** Three
+attempts. The first ran 1:08 and was genuinely stalled — its `docker` client CPU was flat at 18:05
+across two samples sixteen minutes apart, with no container, no shim and an idle daemon. I killed
+the second on the same reasoning and **that call was wrong**: its client had 9:18 of CPU and
+climbing, so it was working, and I generalised from one confirmed case to one that did not match.
+Two things that looked like causes were not: container creation from the large intermediate image
+works fine, and BuildKit was never available to switch to — it needs the buildx plugin, which is
+not installed and not in the configured apt repos.
+
+The third attempt succeeded after a `dockerd` restart and after deleting 3.57 GB of gitignored,
+regenerable `build/` directories (`app/` went 6124 MB → 2556 MB). Which of those two mattered is
+**not established**. The final image is 146 MB — the multi-stage build discards the context — so
+the bloat only ever cost build time, never image size.
+
+Two lessons worth more than the incident: judge hung-versus-slow from a **CPU trend**, never one
+sample, and note that the build log is block-buffered, so a stale tail is not evidence of a stall.
+
+
+
+### 2026-08-30 — the blocker is not bootstrapping, it is that the platform `admin` role was never provisioned
+
+I reported earlier that seeding was blocked because nine communities have no admin who can approve.
+That was right about the symptom and **wrong about the cause**, and the correction matters because
+it changes what has to be built.
+
+**First, two corrections to what I said.** I claimed the only role-holding membership was
+`fan-test-alice` with `hoa-board` in Cedar. It is **`fan_alice`** with **`cedar_commons_hoa_admin`**,
+and there are **5 active memberships across 4 groups**, not one.
+
+**What is actually true**, measured against `loom_app_access` with controls on every query
+(24 groups, 29 roles, 372 `role_permission` rows):
+
+| Check | Result |
+| --- | --- |
+| Roles holding `community.manage_members` | **1 of 29** — `cedar_commons_hoa_admin` |
+| A role named `admin` | **does not exist** |
+| `community.view` | held by **nobody** |
+| `community.manage_roles` | held by **nobody** |
+| `community.invite` | held by **nobody** |
+| `community.manage_settings` | held by **nobody** |
+
+Confirmed in code, not inferred from the name: `AppAccessService.java:103` defines
+`GROUP_MANAGER_PERMISSION = "community.manage_members"`, and that is what the decide path checks.
+
+**Why the domain roles do not have it, and should not.** The derived roles are rich in workflow
+actions — `hoa-board` has 34, `book-organizer` 31, `chess-owner` 7 — and every one of them is a
+workflow action (`export_wizard.create`, `document_library.upload`). The provisioning deriver builds
+role permissions from the package's workflows. `DerivedRoleInput` carries only `roleId` and `label`,
+so a package cannot express a governance grant at all.
+
+That is correct by design. `docs/references/reference/permissions.md` §7 says so plainly:
+
+> `admin` is a **platform** role and coexists with domain roles: a real person may hold
+> `[admin, hoa-board]`. No fixture declares a role named `admin`, so this is purely additive.
+> User management is an App Shell experience gated on `community.manage_members`, never a workflow.
+
+So `community.manage_members` was never meant to sit on a community package role. It belongs to a
+platform `admin` role that **nothing has ever created**. `cedar_commons_hoa_admin` is a hand-made
+one-off — 4 permissions where derived roles have 20–34 — which is why exactly one community works.
+
+**Consequence.** `requestGroupMembership` → `decideGroupMembership` is unusable in every community
+except Cedar, and inserting a bootstrap membership would not fix it: an admin bootstrapped into
+Chess Club would hold `chess-owner`, which has seven export-wizard permissions and cannot admit
+anyone. The invitation path is closed for the same reason — `issueInvite` is documented
+"Admin-initiated only".
+
+- [ ] `new-ticket` — **provision the platform `admin` role** with the five `community.*` governance
+      permissions, and a path to grant it. This is app-access provisioning work, not a package
+      change, and it is upstream of every seeding question
+- [x] `RESOLVED 2026-08-31` — **who holds `admin` for each community**, once the role exists. This is the
+      question I previously framed as "bootstrap admin", and it is smaller than it looked: granting
+      an existing platform role to a fan is ordinary provisioning, not a direct membership insert
+      that bypasses authorization
+- [ ] `new-ticket` — the four governance permissions held by nobody (`community.view`,
+      `manage_roles`, `invite`, `manage_settings`) need the same treatment, or they are decoration
+- [ ] `new-ticket` — **24 groups for ~11 communities**: both hyphenated and underscored spellings
+      exist (`loom_communities_camera-club` *and* `loom_communities_camera_club`), plus two
+      `b3-e2e-*` throwaways. Decide which spelling is canonical and delete the rest before they are
+      read as product data
+
+**CORRECTED, same day — the "per-group vs app-wide" fork above was a false dilemma.** I framed the
+next step as a design decision because `app_role.group_id` is nullable but NULL in zero of 29 rows.
+Reading the authorization path settles it: **the mechanism already exists and is simply unused.**
+
+`AppAccessService.collectActiveRoleIds` (line 1065) unions **two** sources:
+
+```java
+appAccessRoleRepository.findById_AppIdAndId_FanId(appId, fanId)      // app-level, NOT group-scoped
+...
+groupMembershipRoleRepository.findById_AppIdAndId_GroupIdAndId_FanId(appId, groupId, fanId)
+```
+
+The first is gated only on the fan's `app_access` row being active — **no group filter**. So an
+`app_access_role` grant contributes to `activeRoleIds` in *every* group, which is exactly the
+"`admin` coexists with domain roles: a real person may hold `[admin, hoa-board]`" model
+`permissions.md` §7 describes. `requireGroupAdministrator` then checks those ids for
+`community.manage_members`, so a platform admin passes in every community without any per-group role.
+
+Measured, with a control (`group_membership_role` = 5 rows, so the queries work):
+
+| Table | Rows |
+| --- | ---: |
+| `app_access` | **0** |
+| `app_access_role` | **0** |
+
+**Nobody has app-level access at all**, and no platform role has ever been granted. Cedar works only
+because `cedar_commons_hoa_admin` is a *group-scoped* role that happens to carry the permission — the
+one-off, not the design.
+
+So there is no architecture decision outstanding. The work is provisioning, in order:
+
+- [ ] `new-ticket` — create the `admin` role in `app_role` and grant it the five `community.*`
+      governance permissions. `group_id` NULL is the right shape, since `app_access_role` grants are
+      not group-scoped. Note the `invalid_role_scope` guard (lines 525, 589, 873, 1163) rejects a
+      role whose `groupId` does not match the group — confirm it is not on the `app_access_role`
+      path before assuming a NULL-group role can be granted, because those four sites are what would
+      make this fail
+- [x] `RESOLVED 2026-08-31` — **who holds `admin`.** This is the only question left for the user, and it
+      is far smaller than the "bootstrap admin" framing: granting an existing platform role through
+      `app_access` + `app_access_role` is ordinary provisioning, **not** a direct membership insert
+
+
+**RETRACTION 2026-08-30 — there was never a bootstrap problem.** I raised it twice as a hard blocker
+and proposed eleven direct database inserts to get around it. Both were wrong, and the user pointed
+at the answer: the admin role is already system-defined.
+
+`permissions.md` §7 defines it exactly as created — `admin`, **not** declared in community JSON, an
+**app-level template role** on `loom_communities`, assignable in any community's group, holding the
+five `community.*` permissions. It had simply never been created in the running system.
+
+And the grant path exists too. `requireGroupAdministrator` is called from exactly **two** places —
+`issueInvite` (line 620) and `decideGroupMembership` (line 830). **`setGroupMembership` does not call
+it**, and its spec entry says why:
+
+> The fan-to-group mapping tool, and the group-scoped role assignment in the same record. Every
+> `roleId` must be either a role bound to this group **or an app-level template role**.
+
+So `PUT /v1/apps/{appId}/groups/{groupId}/members/{fanId}` is the designed provisioning endpoint: it
+needs no existing administrator and explicitly accepts `admin`. Seeding the first admin is an
+ordinary service-authenticated call, not a database insert that bypasses authorization.
+
+**How I got it wrong.** I checked `requestGroupMembership` and `decideGroupMembership`, found the
+second required an admin, and concluded no path existed — without reading the third endpoint sitting
+beside them in the same file. This is precisely the "a search that finds nothing is not evidence of
+absence" rule, which I had cited earlier the same day. The control I should have run: *"is there any
+endpoint that writes `group_membership` without an authorization check?"* — one grep for callers of
+`requireGroupAdministrator` would have answered it in seconds, and did, once asked.
+
+The corrected path, all existing APIs:
+
+1. `POST /v1/apps/loom_communities/roles` — **done**, `admin` exists, app-level, holding nobody
+2. `PUT /v1/apps/loom_communities/groups/{groupId}/members/{fanId}` — `{roleIds: ["admin"]}`, the
+   provisioning call
+3. everyone else through `requestGroupMembership` → `decideGroupMembership`, approved by that admin,
+   so every fixture has passed the real check
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 2026-08-31 — end-to-end verification of the finished build-out
+
+Run against the deployed stack after everything landed, so the completion claim rests on live
+responses rather than on each piece having passed when it shipped.
+
+| Check | Result |
+| --- | --- |
+| Auth — member token from Keycloak | ok |
+| **B3** change feed | `200` |
+| **B7** definitions stored | **82** |
+| `/healthz` | `200` |
+| `/readyz` | `200` |
+| app-access, service credentials | `200` |
+| **SECURITY** — mismatched `X-Loom-Actor` | **`403`** |
+
+Deployed images match their manifests exactly: `loom/app-access:0.3.3`, `loom/fan-passport:0.3.1`,
+`loom-workflow-service:1.0.2`. `loom-workflow-service:1.0.3` exists locally and is deliberately not
+deployed — it was the `.dockerignore` verification build.
+
+**Two of my own probes were wrong, recorded so they are not mistaken for findings.** A `GET` on
+`/v1/communities/{id}/workflow-definitions` returned `404`; that route accepts **PUT only**, because
+the publisher writes definitions and the engine reads them internally — there is no GET handler and
+none is owed. And a batch of follow-up queries returned empty **including their control**, which
+meant my column names were wrong, not that the data was absent. One of those queries was misconceived
+regardless: `experience.notifications` is package-level configuration and would never appear inside a
+workflow *definition*.
+
+Without the control I would have reported a B7 regression that does not exist. That is the rule
+working on its author.
+
+
+### 2026-08-31 — what finishing the backend unblocked, and what it did not
+
+The build-out is complete, so this records which downstream items actually moved rather than leaving
+the connection implicit.
+
+**Unblocked by the account seeding.** The production-bar entry *"5 rows blocked on a missing
+owner/admin identity: Chess (`chess-export-package`, `chess-pairing-queue`, `chess-rankings-table`)
+and Book Club…"* is no longer blocked. Every live community now has an admin role carrying the five
+`community.*` governance permissions, an admin account holding it, and one account per defined role —
+35 accounts, all seeded through `requestGroupMembership` → `decideGroupMembership` rather than
+inserted. Chess specifically has `chess-admin`, `fan-chess-admin`, and a seeded `chess-owner-1`.
+
+
+**Verified, not asserted — and the mechanism is narrower than "an admin now exists".** The
+walkthrough's `_roleIdsForB25Role` maps `owner` to any identity whose **role id** contains
+`owner|admin|board|coordinator`. Cedar, Garden and Masjid always resolved because they hold
+`hoa-board`, `garden-coordinator` and `masjid-admin`. Chess and Book Club held only Organizer and
+Member, so nothing matched.
+
+Queried against `loom_app_access` after the seeding — every live group now has at least one matching
+identity:
+
+| Group | Matching identity |
+| --- | --- |
+| `chess-club` | `fan-chess-admin as chess-admin`, `fan-chess-owner-1 as chess-owner` |
+| `neighborhood-book-club` | `fan-book-admin as book-admin` |
+| `ad-free-community` | `fan-ad-off-admin`, `fan-ad-off-owner-1` |
+| `camera-club` | `fan-camera-club-admin` |
+| `cedar-commons-hoa` | `fan-hoa-admin`, `fan-hoa-board-1` |
+| `data-portability-community` | `fan-portability-admin`, `fan-portability-owner-1` |
+| `garden-club` | `fan-garden-admin`, `fan-garden-coordinator-1` |
+| `masjid-nur` | `fan-masjid-admin` |
+| `member-social-space` | `fan-social-admin` |
+| `riverside-youth-soccer` | `fan-soccer-admin`, `fan-soccer-owner-1` |
+| `tabletop-club` | `fan-tabletop-admin` |
+
+The per-community `<prefix>-admin` roles are what closed it: every one contains `admin`, so the mapper
+resolves `owner` in all eleven. Chess additionally has a real `chess-owner` holder.
+
+**Still not proven, only unblocked.** Nobody has run those five walkthroughs. The row moves from
+`needs-skill-dispatch` to runnable, and nothing about it is verified until a live walkthrough and a UX
+judge pass say so.
+**Unblocked by the resilience fix.** A walkthrough no longer dies silently when a heavy build bounces
+Postgres: `workflow-service` reopens its pool, proven by deleting `postgres-0` and watching it
+recover in under 24 seconds on the same pod with `restarts=0`.
+
+**Unblocked by the build-context fix.** Deploys cost 917.9 MB of context instead of 6.885 GB, so the
+window where the cluster is degraded during a rebuild is much shorter.
+
+**NOT unblocked, and worth being explicit.** The production bar stands at **3 of 79 rows proven**
+(Camera Club complete). The other open blockers are unrelated to the backend: a reachability-sweep
+blind spot, 7 rows naming workflows their package does not ship, the Garden walkthrough stall, and
+the alternate-leg problem where a completed action can leave no visible result. None of those moved
+today.
+
+**A parity test for the OpenAPI twins is not straightforwardly buildable, contrary to the earlier
+ticket.** The bundle-mirror test works because both copies live in one repo. The OpenAPI twins live
+in `Loom` and `loom-backend` separately, so an in-repo test cannot compare them, and a shared
+checksum manifest does not close it either — each repo would compare its spec against its own copy of
+the manifest, so a one-sided update passes both. Options are a network fetch inside a test, or
+treating the sync as a documented release step. **Not attempted; recorded so the ticket is not picked
+up as if it were simple.**
+
+- [x] backend build-out complete
+- [x] `RESOLVED 2026-08-31` — background sync policy for the replica
+- [x] `RESOLVED 2026-08-31` — how to enforce OpenAPI twin parity across two repos, per the above
+
+### 2026-08-31 — B8 complete: every backend capability is now built, deployed and load-bearing
+
+`20561518`. The notification config is read and gates delivery, which closes the last item in the
+build-out.
+
+| Step | State |
+| --- | --- |
+| Grammar — `experience.notifications` | `32477e12`, mirrored byte-identically |
+| Validator — five error rules | `ffde5bc3`, both-ways conformance green |
+| Product docs | 11/11 (`e1561c0a`, `56c93e80`) |
+| Packages | **11/11**, each verified individually |
+| App read | `20561518` |
+
+**The gate, and the part that was easy to get backwards:**
+
+```dart
+bool get deviceDeliveryEnabled => !muted && defaultChannels.contains('push');
+```
+
+Gated on `default`, **not** `allowedChannels`. `allowedChannels` is what the community *offers*;
+`default` is what a member *gets*. A channel offered but not defaulted must not deliver. Suppressed
+delivery leaves the inbox record intact — muting stops the interruption, not the record — and a
+failed enabled delivery still un-tracks so the next sweep retries.
+
+**Behaviour-preserving, checked against the assets rather than the report.** All ten bundled packages
+declare `default: ["inbox","push"]` and `muted` defaults to `false`, so no community lost device
+delivery. That property is the entire reason the packages and the read had to ship coupled: the read
+alone would have silenced every community, with nothing failing.
+
+**The dispatch corrected me.** My ticket said the app bundles eleven packages; it found **ten** and
+reported the discrepancy instead of proceeding. Tabletop is not in the app-shell pubspec, so 10/10 is
+right and my 11 was wrong. Worth recording because the agent's refusal to accept a stated premise is
+what made the verification meaningful.
+
+**What the eleven-package pass actually protected against.** Every package was diffed against its
+predecessor and validated with that predecessor as a control, because *deletion and correct addition
+produce identical validator reports*. All eleven produced exactly **+109 bytes and a 4-line diff** —
+uniformity that made a differing delta the cheapest possible tripwire. Two real defects surfaced:
+
+- **renamed asset mirrors** — `MasjidNur`→`Mosque`, `NeighborhoodBookClub`→`BookClub`,
+  `RiversideYouthSoccer`→`YouthSoccer`. Three communities would have kept stale app packages **while
+  the demo suite passed**, because that suite reads the very file that would have been stale
+- **Tabletop has no mirror**, which is correct — the pubspec declares ten assets. Confirmed before
+  installing, so `NO MIRROR EXISTS` could be read as expected rather than chased as a bug
+
+Suites at close: app shell **365 + 2** (up from 360 for five new tests), demo 160, engine 312 + 5,
+judges 473. Stack verified **serving** afterwards, not merely `Running`: token ok, `changes` 200,
+zero restarts on `postgres-0` and `workflow-service`.
+
+- [x] B8 complete
+- [ ] `new-ticket` — background sync policy, still deliberately undecided
+- [ ] `new-ticket` — `.dockerignore` for the service image build (6 GB context)
+- [ ] `new-ticket` — parity test for the OpenAPI spec twins, which drifted four operations unnoticed
+- [ ] **pre-GA** — the 35 seeded accounts all share `LoomTest123!` and belong on the rotation list
+
+### 2026-08-30 — B3 and B6 mounted: every backend capability is now load-bearing
+
+`d47c1c31`. `LoomWorkflowReplicaCoordinator` had zero callers for `open()`, `refresh()` and
+`dispose()`, so the change feed and the replica were both fully built on both sides while a member
+got no benefit from either. Community entry now opens the member's replica, refreshes on entry when
+the feed is available, exposes a Refresh action only where a directory is configured, and disposes on
+leaving.
+
+**Stale reads are visible.** Replica-served data renders *"Showing saved data from N ago"*; a
+service-served read shows no such indicator. A replica read and a live read must not look identical —
+serving stale data that appears current is the failure this whole effort exists to remove.
+
+**Verified in the diff, not assumed**, because these are the properties a mounting change could
+quietly break:
+
+| Property | Evidence |
+| --- | --- |
+| A `403` surfaces and never consults the replica | test at `:329`, `expect(engine.lastRead, isNull)` at `:363` |
+| No background sync added | only match for timer/isolate/periodic is a *comment* saying so |
+| Staleness surfaced in members' terms | `'Showing saved data from … ago'` |
+| Assertions | none weakened |
+
+App shell **360 passing + 2 skipped, exit 0**, run here against a 358 + 2 baseline.
+
+**On the segfault.** The dispatch reported its app-shell run crashing at 283 tests with
+`TestDeviceException(Shell subprocess crashed with segmentation fault.)`. Worth taking seriously —
+the replica opens real SQLite files, and concurrent isolates over SQLite is a plausible genuine
+fault. It did **not** reproduce at default concurrency on an idle machine (load 1.46), so it was
+environmental, the same class as the load-sensitivity note in `CLAUDE.md`. My own grep for it
+matched `dart_style 3.1.7` via a too-broad `Dart_` pattern — a reminder that a non-zero count is not
+a finding until it is read.
+
+**Where the build-out stands:**
+
+| Item | State |
+| --- | --- |
+| B1 item queue | **Reachable** |
+| B2 per-member preferences | **Parked** (P1) — a member's own choice, deliberately deferred |
+| B3 change feed | **Reachable** |
+| B4 id generation | **Proven live** |
+| B5 documents + versioning | **Reachable** |
+| B6 offline replica | **Reachable** |
+| B7 definition publisher | Done |
+| B8 community notification config | Grammar written; **validator rules + Skill regeneration + app read outstanding** |
+
+- [ ] B8 is the only backend item with work left: the validator rules, then regenerate packages
+      through the Skill, then the app reads the community default
+- [ ] `new-ticket` — background sync policy: what it would need to decide is written up in the
+      dispatch summary, deliberately not chosen here
+
+### 2026-08-30 — B5 is complete: the acknowledgements view is mounted
+
+`listDocumentAcknowledgements` had zero callers while its three siblings each had one. It is now
+called from `part36_engine_native_marketplace_surface.dart` (`f6800768`), which closes the last dark
+part of B5.
+
+**The gate matches the server exactly**, which was the risk worth checking. `workflow_service.dart`
+resolves `mayAdminister` as *can invoke a transition whose `action` is `upload` or `grant_access`*
+(line 3199); the surface resolves the same way, from the transitions the engine has already resolved
+for this member and instance. Neither wider nor narrower — so the control appears exactly to those
+the service will serve, rather than being rendered and refused. A control that always `403`s teaches
+members the app is broken and leaks that the data exists.
+
+**Assertions were checked, not assumed.** Two `expect`s were removed in the diff, which is the shape
+of a weakened test. They were strengthened: `hasLength(4)` → `hasLength(5)` for the additional
+request, and an inline query-parameter check replaced by a per-request capture plus an indexed
+`expect(requests[3]…)`.
+
+Verified here: **app shell 358 passing + 2 skipped, exit=0**, against a 354 + 2 baseline.
+
+**Integration state now:**
+
+| Item | State |
+| --- | --- |
+| B1 item queue | Reachable |
+| B2 per-member preferences | Parked (P1), not a gap |
+| B3 change feed | Built, deployed, **caller landed, not mounted** |
+| B5 documents | **Reachable, complete** |
+| B6 replica | Built, **caller landed, not mounted** |
+| B8 community notification config | Grammar written; validator + Skill regeneration outstanding |
+
+- [x] B5 complete
+- [ ] `dispatched` — mount the replica coordinator, which closes B3 and B6 together. Sync on entry
+      and explicit refresh only; **background/timer sync is deliberately excluded** as a battery and
+      bandwidth decision nobody has made
+
+### 2026-08-30 — the test accounts are seeded, every one through the real authorization flow
+
+The request that has been blocked all session is done. **35 accounts created, 0 failures**, and not one
+of them was inserted directly into the database.
+
+**The end-to-end proof, run before seeding anything in bulk** (Chess):
+
+| Step | Result |
+| --- | --- |
+| Member requests membership for self | `201`, `state: requested`, `roleIds: []` |
+| **Community admin approves**, granting `chess-member` | `200`, `state: active`, `roleIds: ["chess-member"]`, `decidedAt` set |
+
+That is the whole chain the security fix protects: a fan cannot self-approve, an admin must decide,
+and the actor is bound to the token. Every fixture below passed it.
+
+**What exists now**, measured against `loom_app_access` with a control:
+
+| | Before | After |
+| --- | ---: | ---: |
+| Active memberships | 5 | **40** |
+| Role grants | 5 | **40** |
+| Live groups with a working admin | 0 | **11 of 11** |
+| Memberships stuck in `requested` | — | **0** |
+
+| Group | Members | Distinct roles |
+| --- | ---: | ---: |
+| `ad-free-community` | 3 | 3 |
+| `camera-club` | 3 | 3 |
+| `cedar-commons-hoa` | 4 | 3 |
+| `chess-club` | 4 | 4 |
+| `data-portability-community` | 4 | 4 |
+| `garden-club` | 3 | 3 |
+| `masjid-nur` | 2 | 2 |
+| `member-social-space` | 3 | 3 |
+| `neighborhood-book-club` | 3 | 3 |
+| `riverside-youth-soccer` | 4 | 4 |
+| `tabletop-club` | 3 | 3 |
+
+Accounts follow one convention: Keycloak `loom-<slug>`, fan id `fan-<slug>`, password `LoomTest123!`,
+each verified by decoding the `fanId` claim from a real token rather than trusting the create — the
+`fanId` attribute is what the `loom fan id` mapper emits, and an account without it authenticates and
+then fails every authorization check.
+
+**Scope note:** one account per defined role, which gives complete role coverage — the property live
+walkthroughs need. The request said "a few accounts per each defined role"; a second member per
+community is cheap to add on the same path and has not been done.
+
+- [x] 11 community admin accounts, granted via `setGroupMembership`
+- [x] 23 role accounts seeded through `requestGroupMembership` → `decideGroupMembership`
+- [x] 0 stuck in `requested`; 0 direct inserts
+- [ ] optional: a second account for member-type roles, if walkthroughs want two ordinary members
+- [ ] **pre-GA:** these are all `LoomTest123!` and belong on the credential rotation list
+
+### 2026-08-30 — every live community now has a working admin role
+
+`deleteRole` shipped (`loom/app-access:0.3.3`, backend `5f8a165`), the mistaken app-level `admin` was
+removed with it, and the eleven community-scoped admin roles were provisioned.
+
+**`deleteRole` verified live before use, guard first:**
+
+| Check | Result |
+| --- | --- |
+| Delete a **held** role (`hoa-board`) | `409 role_in_use` — *"1 holder remains: 1 in group_membership_role"* |
+| Delete an unknown role | `404 role_not_found` |
+| Delete the unheld `admin` | `204`, empty body |
+
+The cascade was checked against a control: `app_role` 30 → 29 and `role_permission` 377 → 372, both
+back to exactly their pre-mistake values, so it removed its own row and its five permissions and
+touched nothing else.
+
+**The admin roles**, named from each group's existing role prefix rather than an invented convention
+(`masjid-admin` and `cedar_commons_hoa_admin` were the precedent):
+
+| Group | Admin role |
+| --- | --- |
+| `ad-free-community` | `ad-off-admin` |
+| `camera-club` | `camera-club-admin` |
+| `cedar-commons-hoa` | `hoa-admin` |
+| `chess-club` | `chess-admin` |
+| `data-portability-community` | `portability-admin` |
+| `garden-club` | `garden-admin` |
+| `masjid-nur` | `masjid-admin` *(existed; permissions added)* |
+| `member-social-space` | `social-admin` |
+| `neighborhood-book-club` | `book-admin` |
+| `riverside-youth-soccer` | `soccer-admin` |
+| `tabletop-club` | `tabletop-admin` |
+
+**The one that could have destroyed data.** `setRolePermissions` is *replace*, not merge — the spec
+says "Replace the permission set a role grants" and the implementation calls
+`deleteById_AppIdAndId_RoleId` first. `masjid-admin` already held 23 workflow permissions, so sending
+only the five governance ones would have silently stripped every capability its admins had. Checked
+before acting; sent 23 + 5. Verified after: **28 total, 23 non-governance** — nothing lost.
+
+Measured after: **11 of 11 live groups** have a role holding `community.manage_members`; `app_role`
+29 → 39. The twelfth such role is `cedar_commons_hoa_admin` in the orphaned underscored group, which
+remains unreachable and is tracked separately.
+
+- [x] `deleteRole` built, verified, deployed in `0.3.3`
+- [x] the mistaken app-level `admin` deleted through it
+- [x] eleven community-scoped admin roles, all on live hyphenated groups
+- [ ] grant each to a first/creator account, then seed the rest through
+      `requestGroupMembership` → `decideGroupMembership`
+
+### 2026-08-30 — the group spelling was never a decision, and the answer changes the admin picture
+
+I asked the user to choose a canonical group spelling. **That was not a decision to make** — the
+deployed configuration already settles it, and I should have read it before asking.
+
+`LOOM_COMMUNITY_GROUP_IDS` in the `workflow-service-config` secret maps **all eleven** communities to
+the **hyphenated** groups:
+
+```
+"community_cedar_commons_hoa": "loom_communities_cedar-commons-hoa"
+"community_camera_club":       "loom_communities_camera-club"
+"community_mosque":            "loom_communities_masjid-nur"
+```
+
+`MapCommunityGroupIdResolver` returns `null` for anything absent and the service then fails closed,
+so a group not in that map is unreachable by construction. The underscored duplicates are orphans.
+
+**And that retracts "Cedar works, the other ten do not."** Memberships by group:
+
+| Group | Members | Routed to? |
+| --- | ---: | --- |
+| `loom_communities_cedar-commons-hoa` | 1 — `fan-test-alice` as `hoa-board` | **yes, live** |
+| `loom_communities_cedar_commons_hoa` | 2 — incl. `fan_alice` as `cedar_commons_hoa_admin` | **no, orphan** |
+
+The only role holding `community.manage_members` sits in the **orphaned** group. The live Cedar group
+holds `hoa-board` — 34 workflow permissions, **zero** `community.*`. Cedar looked like the working
+case only because every query I ran hit the orphan.
+
+**So the gap is uniform, which makes it simpler.** No community has a working admin in the group the
+service routes to. Every one of the eleven live hyphenated groups needs a community-scoped admin role
+carrying the five governance permissions, then its first member granted it. No per-community
+judgement and no spelling call.
+
+- [x] canonical spelling: **hyphenated**, determined by deployed config, not chosen
+- [ ] `new-ticket` — one admin role per live hyphenated group, five `community.*` permissions each.
+      `masjid-admin` already exists in a live group and needs the permissions added rather than a new
+      role; `cedar_commons_hoa_admin` is in an orphan group and is the wrong thing to reuse
+- [ ] `new-ticket` — the orphaned underscored groups and their memberships. They are unreachable, so
+      they are not urgent, but they will keep producing false readings exactly like this one until
+      they are gone. **Deleting them needs care**: `app_role_group_fk` is `ON DELETE CASCADE`, so
+      dropping a group takes its roles with it
+
+### 2026-08-30 — CORRECTION: `admin` is community-scoped, and I created it wrong
+
+User correction, and it is right: **`admin` is the community's default first role**, typically the
+creator or root user of that community, with other members possibly granted admin privileges later.
+It is **not** an app-level role, which is how I read `permissions.md` §7 and what I created.
+
+**What the data says, and it matches the user, not my reading.** The existing pattern is already
+there in two communities:
+
+| Role | Group | `community.*` perms |
+| --- | --- | ---: |
+| `cedar_commons_hoa_admin` | `loom_communities_cedar_commons_hoa` | 5 |
+| `masjid-admin` | `loom_communities_masjid-nur` | **0** |
+| `admin` *(mine, wrong)* | **NULL** | 5 |
+
+So I also mischaracterised `cedar_commons_hoa_admin` as a hand-made one-off. It is the intended
+shape. Masjid has its equivalent too — it simply carries no governance permissions yet.
+
+**The schema forces the naming.** `app_role_pkey PRIMARY KEY (app_id, role_id)` means `role_id` is
+unique per app, so a bare `admin` can exist exactly once app-wide and **cannot** be per-community.
+Community-scoped admin roles must therefore be named per community, which is precisely why the
+existing ones read `cedar_commons_hoa_admin` and `masjid-admin`.
+
+**Corrected model:**
+
+- one admin role per community, `group_id` = that community's group
+- holding the five `community.*` permissions
+- granted to the community's first/creator user, via `setGroupMembership`
+- additional admins later are just further grants of the same role
+
+**Consequences to clear up:**
+
+- [x] `RESOLVED 2026-08-31` — **the stray app-level `admin` role.** It holds nobody
+      (`app_access_role` = 0, `group_membership_role` = 0), so it grants nothing, but it is wrong and
+      should not linger. **There is no delete-role operation in the API** — only `getRole` and
+      `setRolePermissions` — so removing it means a direct database delete, which is destructive on
+      the auth system and needs an explicit go-ahead. The alternative is stripping its permissions
+      with `setRolePermissions` to leave it inert
+- [ ] `new-ticket` — **`masjid-admin` has no `community.*` permissions**, so Masjid's admin cannot
+      admit anyone either. Every community's admin role needs the five governance grants, not just a
+      name that reads like "admin"
+- [x] `RESOLVED 2026-08-31` — **canonical group spelling, and this now blocks the work.** 24 groups for
+      ~11 communities, and Cedar has memberships under **both**: `fan-test-alice` holds `hoa-board`
+      in `loom_communities_cedar-commons-hoa` while `fan_alice` holds `cedar_commons_hoa_admin` in
+      `loom_communities_cedar_commons_hoa`. Which spelling gets the admin role decides which group is
+      real
+**STEP 1 DONE 2026-08-30 — the `admin` role exists.** User approved. Created via
+`POST /v1/apps/loom_communities/roles` (`201`), verified independently against `loom_app_access`
+rather than from the API's own response:
+
+| Check | Result |
+| --- | --- |
+| `app_role` row | `admin`, **`group_id = NULL`** — the shape `setAppAccess` requires |
+| Permissions | all five `community.*` attached |
+| `app_access_role` grants | **0** — the role holds no one |
+| App-level roles in the system | **1**, the first ever |
+
+`community.manage_members` is now held by two roles: `admin`, and the `cedar_commons_hoa_admin`
+one-off. That one-off should probably be retired once `admin` is granted, but not before — it is
+currently the only working approver.
+
+- [x] `RESOLVED 2026-08-31` — **which fan id holds `admin`** (`PUT /v1/apps/loom_communities/access/{fanId}`
+      with `{state: "active", roleIds: ["admin"]}`). One grant covers every community, because the
+      role is app-level and `collectActiveRoleIds` adds it with no group filter
+- [ ] then seed the ~35–40 accounts through `requestGroupMembership` → `decideGroupMembership`,
+      approved by that admin, so every fixture has passed the real authorization check
+- [ ] afterwards: retire `cedar_commons_hoa_admin`, or keep it deliberately and say why
+      that bypasses the authorization check the security fix just added
+- [ ] then seed the ~35–40 accounts through the real `requestGroupMembership` → `decideGroupMembership`
+      flow, which is what makes the fixtures worth having
+
+**RESOLVED 2026-08-30 — the `invalid_role_scope` guard is the opposite of a problem, and the whole
+path needs no code change.** The four sites, read rather than assumed:
+
+| Site | Method | Behaviour toward a NULL-group role |
+| --- | --- | --- |
+| 525 | `setAppAccess` | **requires it** — rejects roles that *have* a `groupId`: "App-level access accepts only app-level roles" |
+| 589 | `setGroupMembership` | allows it — guard is `roleGroupId != null && !equals(groupId)` |
+| 873 | `decideGroupMembership` | allows it — same guard |
+| 1163 | `requireGroupRoles` (invites only) | rejects it — invites must be group-scoped |
+
+So a NULL-group `admin` is not merely viable, it is **the only shape `setAppAccess` accepts**. The
+spec agrees: `CreateRoleRequest` is `required: [roleId, displayName]` with
+`groupId: type: [string, 'null']`, and `PUT /v1/apps/{appId}/access/{fanId}` (`setAppAccess`) exists.
+All five governance permissions are present in the 127-entry catalog.
+
+**The complete path, using only existing APIs — no dispatch, no code change:**
+
+1. `POST /v1/apps/loom_communities/roles` — `{roleId: "admin", displayName: "Administrator",
+   permissionIds: [the five community.* permissions]}`, **no `groupId`**
+2. `PUT /v1/apps/loom_communities/access/{fanId}` — `{state: "active", roleIds: ["admin"]}`
+3. then seed every other account through the real `requestGroupMembership` →
+   `decideGroupMembership` flow
+
+- [ ] **BLOCKED ON APPROVAL, not on knowledge.** Step 1 was attempted and refused by the tool
+      permission gate, correctly: it writes to the live authorization system. Step 1 grants nobody
+      anything — a role with no holders — but it is still a change to auth, so it needs an explicit
+      go-ahead
+- [x] `RESOLVED 2026-08-31` — **who holds `admin`** (step 2). Unchanged, and still the only genuine
+      decision here
+
+
+
+---
+
+### Architecture decisions taken during the build-out
+
+*Migrated from `TODO.md` "Cross-cutting" preamble on 2026-08-31.*
+
+- [ ] `new-ticket` — **community isolation is a `WHERE community_id = ?` clause.** Not schema-per-tenant, not row-level security; one missing predicate leaks across communities and nothing structural prevents it. Wants a test that runs every repository query against a two-community fixture
+- [ ] `new-ticket` — **idempotency is reimplemented per repository.** `document_repository`, the bundle repository and the queue repository each carry their own `idempotency_key` column and index. Three implementations of one contract will drift; wants one shared table keyed by `(community, route, key)`
+- [x] `DECIDED 2026-08-29` — **archetype backends stay in `loom_workflow_service`, with enforced
+  module boundaries.** User direction: "We are making all code production ready. So implement this in
+  the most robust production ready way. With no shortcuts."
+
+  **Robust points at staying together here, and that is the argument, not convenience.** 15 call
+  sites resolve permission by asking the engine "could this caller invoke action X". Splitting leaves
+  two options and both are worse: duplicate the authorization logic, giving **two sources of truth
+  about who may do what** — divergence there is a security bug, not a wrong answer — or an
+  authorization round-trip per request, which adds a failure mode and latency while keeping the
+  coupling. One in-process authorization path is the safer system.
+
+  Obligations that come with the decision, so "keep together" is not "leave alone":
+  - module boundaries enforced (separate libraries, no cross-imports) so extraction stays mechanical
+  - `workflow_service.dart` is **4,484 lines** of an 8,075-line package; decompose per domain
+  - revisit only on a real operational difference (bundle downloads saturating the pod), never on
+    "documents are a different noun"
 

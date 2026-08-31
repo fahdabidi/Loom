@@ -2184,6 +2184,514 @@ here.
 | ⬜ Open | `needs-live-validation` | Five rows unblocked by account seeding are runnable and unrun — the natural first walkthrough target | account seeding | 2026-08-31 |
 
 **Tag taxonomy** is the fixed set in `Tools/reference-tracker-template.md` §8. Do not invent tags here.
+
+---
+
+## 9. Production bar and device history — 2026-08-30 → 2026-08-31
+
+*Migrated from `TODO.md` on 2026-08-31, when TODO.md was restored to being an index rather than a
+memory. Twelve dated entries recording how the production bar actually stands: the membership
+blocker, getting the app onto a device and reaching the live backend, the legacy-fallback render,
+the Android sign-in dead end, and the three ways the B25 measurement itself turned out to be
+unreliable — an overstated denominator, a numerator that records no package identity, and a row
+unit that duplicates decision text across communities.*
+
+*Entries are never rewritten after the day they were written; the §8 queue carries current state.*
+
+### 2026-08-30 — BLOCKER FOR THE PRODUCTION BAR: ten of eleven communities have no members
+
+Measured against the live cluster while trying to exercise B1's item queue end to end.
+
+**Of the 11 groups the live mapping targets, exactly ONE has a member:**
+
+| Group | Mapped? | Members |
+|---|---|---|
+| `loom_communities_cedar-commons-hoa` | **yes** | `fan-test-alice` |
+| `loom_communities_cedar_commons_hoa` | no | `fan_alice`, `fan_bob` |
+| 2 × `loom_communities_b3-e2e-*` | no | 1 each (my own test residue) |
+| **the other 10 mapped groups** | yes | **none** |
+
+**This blocks the stated production bar**, which is every product-doc workflow verified by live
+walkthrough and UX judge across the B25 addendum's 79 rows. You cannot walk through a community
+nobody can join. Nine of the ten communities are unreachable by any identity that exists.
+
+It also makes several shipped features unexercisable rather than unproven. The item queue is the
+clearest case: `join_queue` is declared only in Book Club, Camera Club and Garden, and no fan has
+membership in any of them. B1 is wired, deployed and reachable **in code**, and cannot be
+demonstrated by a member today.
+
+**I under-called this earlier.** On 2026-08-29 I looked at Cedar's split membership, found five test
+fixtures, and recorded it as cleanup — "not a blocker, and I over-escalated it". The narrow claim was
+right: no real user data is at risk. The conclusion was wrong. The split is the visible edge of
+membership data barely existing at all, and that is a blocker for the completion gate rather than
+tidying.
+
+- [x] `RESOLVED 2026-08-31` — **who creates community membership, and for whom.** Seeding test identities
+  into the ten empty mapped groups is a data operation against App Access, and it decides what a
+  "member" is for every future walkthrough and capture. Options: seed a per-community test fan set;
+  put one identity in every community; or drive membership through the real join flow if one exists.
+  I did not pick one, because it determines what every subsequent live verification actually proves.
+
+- [ ] `new-ticket` — delete the two `loom_communities_b3-e2e-*` groups and the unmapped duplicate
+  spellings once the above is decided; they will otherwise be read as product data.
+
+
+### 2026-08-30 — the emulator reaches the live backend; the APK build is blocked on a Windows setting
+
+**Reachability is proven, and that is the half that was in doubt.** From inside `emulator-5554`:
+
+    ping 192.168.56.10          -> 2/2 packets, 0% loss
+    nc  192.168.56.10 30083     -> HTTP/1.0 200 OK, "x-powered-by: Dart with package:shelf"
+    nc  192.168.56.10 30082     -> open (keycloak)
+
+So an Android build on this host can reach the k3s services over the host-only network.
+
+**And the three backend dart-defines are no longer needed.** `LOOM_ENV` defaults to `dev`, and the
+`dev` environment already carries every endpoint — auth `:30082`, workflow service `:30083`,
+app-access `:30080`, fan-passport `:30081` — plus the full community-to-group map. A plain debug
+build targets the deployed stack. Only `LOOM_OFFLINE_REPLICA_DIRECTORY` still needs one, to switch
+offline browse on.
+
+- [ ] `needs-user-action` — **`flutter build apk` fails: "Building with plugins requires symlink
+  support. Please enable Developer Mode in your system settings."** This needs Windows Developer Mode
+  (`start ms-settings:developers`), which this session cannot set.
+
+  **Do not fall back to the APKs already in `build/app/outputs/flutter-apk/`.** They are dated
+  **Aug 11 and Aug 9** and predate the entire backend build-out: the probes, the row locking, the
+  minting, the change feed, the document versioning and both of today's fixes. Installing one and
+  exercising it would reproduce this project's most expensive recurring mistake — verifying against a
+  proxy rather than the artifact that actually executes, which has already happened four times.
+
+  Until it builds, the app-side chain is verified only as far as: the code wires it, the emulator can
+  reach the services, and the services answer correctly to direct calls.
+
+
+### 2026-08-30 — the app runs on device from today's build; no backend call yet
+
+Built on the **VM** to sidestep the Windows Developer Mode blocker (Linux has no symlink
+restriction), copied over, installed on `emulator-5554`. Everything below is a **fresh artifact from
+current `main`** -- deliberately not the Aug 11 APK sitting in the output directory, which predates
+the entire backend build-out and would have made a device test look successful while proving nothing.
+
+**What is proven:**
+
+- the APK builds (VM, Flutter 3.41.7, Java 21 -- 194 MB with communities bundled)
+- it installs and launches; Flutter loads, no crash, no cleartext rejection
+- `LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true` loads **10 example communities**, themes applied
+- Cedar Commons HOA opens with its theme, `HOA Board` and its 2 roles, Home/Messages, and the home
+  surface's 4 sections -- all rendered from the local package
+- the emulator can reach the deployed services: `ping` 2/2, and raw `nc` to `192.168.56.10:30083`
+  returns `HTTP/1.0 200 OK`, `x-powered-by: Dart with package:shelf`
+- the build **is** configured for the real backend. `configureLoomRemoteServicesFromEnvironment`
+  falls back to the named environment when no define is present -- "When no define is present the
+  environment is used" -- and `LOOM_ENV` defaults to `dev`. The three backend dart-defines are
+  genuinely unnecessary; only `LOOM_OFFLINE_REPLICA_DIRECTORY` is.
+
+**What is NOT proven, and must not be claimed:** the app has made **zero** calls to
+`192.168.56.10`. Everything on screen is package content. Two reasons, and they are separable:
+
+1. no authenticated session exists, so `RemoteWorkflowEngineApi` has no bearer token
+2. nothing navigated to a surface that lists workflow *instances*, which is what would fetch
+
+- [ ] `new-ticket` — **drive the app to an authenticated instance fetch on device.** The path exists
+  in code; I could not drive it blind through the UI. Entry points, for whoever does the walkthrough:
+
+  | Where | What |
+  |---|---|
+  | `part38_production_login_screen.dart` | `LoomProductionLoginScreen` — the real Keycloak login |
+  | `part01_local_extension_screen.dart:1088` | menu item `_production-login`, **gated on `productionAuthSession != null`** |
+  | `part01_local_extension_screen.dart:1090` | menu item `_sign-in-specific-person` → `LoomAuthScreen` |
+  | `part01_local_extension_screen.dart:347` | the `community-entry-gate` Scaffold, which embeds `LoomAuthScreen` |
+
+  Auth resolves to the **remote** implementation: `configureLoomRemoteServicesFromEnvironment` sets
+  `_loomRemoteServiceConfiguration` (part37:181), and `resolveLoomAuthApiForCommunity` returns
+  `RemoteLoomAuthApi` whenever that is non-null. So a sign-in on device would hit Keycloak at
+  `192.168.56.10:30082` rather than the local fake.
+
+  What I could not establish: why opening Cedar bypassed the entry gate, and which control opens the
+  identity menu — tapping the header identity icon and the roles card both did nothing. That is UI
+  archaeology better done by someone who can see the widget tree, not by tapping coordinates.
+
+  Original note follows: tapping the identity icon on the community screen changed nothing, and no
+  login prompt appeared at any point in this build. Until a member session exists on the device, the app-side link
+  is verified only as far as "configured correctly and able to reach the services", which is short of
+  the walkthrough the production bar asks for.
+
+
+### 2026-08-30 — the device run rendered a LEGACY FALLBACK, and Android cannot sign in at all
+
+Root-cause investigation of "the entry gate never appeared". Both findings are defects, both cited.
+
+**1. What I saw on the emulator was not Cedar's real package.** `LOOM_PRELOAD_EXAMPLE_COMMUNITIES`
+creates the ten cards as **metadata-only** `LocalInstalledCommunity` objects with an empty
+`experienceConfiguration`. `_experienceFromConfiguration` therefore returns null, the community is
+classified **legacy** (`part01_local_extension_screen.dart:243-246`), and
+`_refreshCommunityEntryGate` sets `_communityEntryAllowed = true` and returns **before**
+synchronising authorization or listing accounts (`:274-290`). `build` then renders community content
+whenever the schema is legacy, independently of the gate (`:1188-1209`).
+
+So the theme, the "HOA Board / 2 roles" card and the four home sections came from a **shallow
+fallback**, not the engine-native package — which is also why there were zero network calls: the
+legacy return happens before `_ensureEngineAuthorizationSync`.
+
+**My report two ticks ago that "Cedar opens with its theme, roles and surfaces" was therefore
+describing a fallback rendering.** It looked exactly like success. This is the verify-against-the-
+artifact-that-executes trap in a new costume: the artifact was fresh and correct, and the *fixture
+path* was the fake.
+
+**2. There is no Android production login.** `LoomProductionLoginScreen` calls
+`completeInteractiveLogin` / `loginInteractively` (`part38_production_login_screen.dart:33-75`), and
+the non-web `InteractiveLoginPlatform` throws
+`UnsupportedError("Interactive Loom login is currently supported only on Flutter Web.")`
+(`loom_auth_session/lib/src/interactive_login_stub.dart:5-24`). The screen catches it and shows an
+unsupported state.
+
+**A member cannot obtain a bearer token on Android at all.** The navigation path exists; the
+implementation does not.
+
+**Independently verified, because this claim invalidates a plan rather than blocking a step.** The
+selection is a Dart conditional import — `loom_auth_session.dart:8` reads
+`if (dart.library.js_interop) 'interactive_login_web.dart'`, so the **stub is the default** and the
+web implementation is chosen only where `js_interop` exists. Android has none, so it gets the stub,
+where `start()` and `complete()` both return `Future.error(UnsupportedError(...))`. The package
+contains exactly three files — `interactive_authorization.dart`, `interactive_login_stub.dart`,
+`interactive_login_web.dart` — and **no Android implementation**. That conditional was the one thing
+that could have made the report wrong, which is why it was worth checking rather than accepting.
+
+- [ ] `new-ticket` — **preload must install the full bundled packages**, so a preloaded community
+  carries its canonical `communityId`, `specVersion`, `appShellConfiguration` and non-empty
+  `workflowDefinitions`, and the existing gate runs.
+- [ ] `new-ticket` — **fail closed**: when remote services are configured and a preloaded community
+  reaches `LocalExtensionScreen` with an empty or legacy experience, error naming the community
+  rather than silently rendering non-authoritative content.
+- [x] `RESOLVED 2026-08-31` — **Android interactive login is unimplemented.** An Authorization Code +
+  PKCE flow is required before any Android live walkthrough is possible. Until then the B25
+  completion gate cannot be met on Android by any means, regardless of membership.
+
+
+### 2026-08-30 — NO authenticated walkthrough is possible on ANY platform today
+
+Both targets are blocked, for unrelated reasons, and neither was known before today.
+
+| Platform | Blocker |
+|---|---|
+| **Android** | Interactive login is unimplemented. `loom_auth_session.dart:8` selects `interactive_login_web.dart` only `if (dart.library.js_interop)`, so Android gets the stub, whose `start()` and `complete()` both return `UnsupportedError`. No Android implementation exists in the package. |
+| **Web** | The app **does not compile**. `loom_workflow_engine/lib/src/store/database.dart:3` imports `dart:ffi` unconditionally (and `dart:io` beside it) for sqlite3, reached via `main.dart -> loom_communities_demo -> loom_communities_app_shell -> loom_workflow_engine`. `flutter build web --release` fails. |
+
+**I proposed web as the way around Android and was wrong.** `interactive_login_web.dart` is a real
+203-line implementation, the demo app has a `web/` directory, and it looked like a clean path. It
+does not build, and nothing in the repo suggests a web build has ever been attempted — the `web/`
+directory is Flutter scaffolding. Building it rather than recommending it is the only reason this
+was caught in one tick instead of becoming a plan.
+
+**Consequence for the production bar.** The completion gate is every product-doc workflow verified by
+live walkthrough and UX judge. That requires an authenticated member session, and there is currently
+**no platform on which one can be obtained**. This is upstream of the membership blocker: even with
+all ten communities populated, nobody could sign in to walk them.
+
+- [x] `RESOLVED 2026-08-31` — **pick the platform to unblock.** Scoped 2026-08-30, and **Android is
+  smaller than "implement OAuth" suggests** — my earlier "neither is small" overstated it.
+
+  **The protocol is already done and platform-neutral.** `interactive_authorization.dart` is 80
+  lines importing only `dart:convert`, `dart:math`, `crypto` and `openid_client`: PKCE verifier
+  generation, the RFC 7636 `S256` challenge, the authorization URI, and callback-state validation.
+  The token exchange in the web implementation is ordinary `http` and reusable as-is.
+
+  What the web layer adds that is genuinely platform-specific is only six things
+  (`interactive_login_web.dart`): store the transaction in `sessionStorage`, set
+  `window.location.href`, read the callback from the URL, clear storage, and `history.replaceState`
+  to tidy the address bar.
+
+  **Android equivalents:** persist the transaction (the app already uses `FlutterSecureStorage` for
+  tokens), launch the authorization URI in a Custom Tab or browser, and **capture the redirect** via
+  an app link or custom scheme — that last one is the only genuinely new piece, and it needs an
+  `AndroidManifest` intent filter plus the redirect URI registered on the `loom-test-client` Keycloak
+  client. Roughly a mirror of the ~200-line web file with the storage and redirect halves swapped.
+
+  **Web, by contrast, needs the engine restructured**: `dart:ffi` and `dart:io` are unconditional in
+  `store/database.dart`, so it needs conditional imports and a web-compatible drift backend
+  (sqlite3 wasm/IndexedDB) — a change to the engine every platform shares, to reach a target nothing
+  in this repo has ever built.
+
+  On this evidence Android is both the smaller job and the one the capture apparatus already targets.
+  Recorded as a recommendation, not a decision taken.
+
+
+### 2026-08-30 — both findings confirmed ON DEVICE, with the fix in place
+
+Rebuilt with the preload fix (`60c94aa7`), clean-installed, and driven by hand. Two predictions were
+stated before the run and both held.
+
+**1. The preload fix works.** The community descriptions changed on the home screen — Garden Club
+went from "Coordinate garden events and plant exchange requests" (the stale alias catalogue) to
+"RSVP to seasonal garden events, share plants and tools…" (the real package). Cedar, Youth Soccer,
+Masjid Nur and Chess changed too.
+
+Opening Cedar now shows the **entry gate** instead of silently rendering content:
+
+> Welcome to Loom — Choose an account below or create a new one.
+> `LoomAuthNotLoggedInException: No Loom authentication session is stored; login is required.`
+> Choose an active account or create one to continue to **Cedar Commons HOA**.
+
+Cedar resolves as engine-native, the gate runs, and authentication is demanded. Exactly the
+behaviour the fallback was hiding.
+
+**2. Android sign-in is unimplemented, in the app's own words.** "Continue to secure sign-in" leads
+to:
+
+> **Secure sign-in is not supported on this platform yet**
+> Interactive identity-provider sign-in is currently available only in Loom on the web.
+
+The static finding is now demonstrated on the artifact that executes. Zero backend calls throughout,
+as expected: no session can be obtained, so nothing can be fetched.
+
+**An ANR appeared mid-run** — "Digital Wellbeing isn't responding" — a system dialog unrelated to the
+app, overlaying the frame. Detected via `dumpsys window` on the device rather than by anything
+Flutter-side, which is why that rule exists: a Flutter text guard cannot see a system window, and a
+capture taken during it would have been silently corrupt.
+
+
+### 2026-08-31 — walkthrough evidence records no package identity, so nothing can tell when it goes stale
+
+Noticed while asking whether today's eleven package edits invalidated the three proven Camera Club
+rows. The answer is "probably not", and the more useful finding is that **nothing in the evidence
+model could tell us either way**.
+
+`Evidence/B25/phase-a-legacy/manifest.json` records `communityName`, `slug`, `phase`, `runId`, `dir`
+and `screenshotCount`. It records **no package hash, no `specVersion`, no provenance entry** — nothing
+that identifies *which build of the package* the walkthrough proved.
+
+**Why that matters more than today's specific change.** `docs/references/_meta/community-provenance.json`
+exists and is regenerated on every package install, so the project already tracks package identity —
+it simply is not carried into the evidence a walkthrough produces. The consequence is that a row
+proven in August and a row proven against a package regenerated afterwards look identical in the
+record, and the standing rule that "only a committed manifest is durable" quietly assumes the
+manifest is still *about* the current package.
+
+**For today specifically:** the change was an additive `experience.notifications` block. It touches no
+state, transition, binding, guard or seed, so the three Camera Club rows are very unlikely to have
+been invalidated. But "very unlikely" is a judgement I made by reading the diff, not something the
+evidence records or any check enforces — which is exactly the kind of gap that turns into a false
+"proven" later.
+
+
+**Applied to the existing evidence 2026-08-31, and it changes the numerator too.** The B25 manifest
+contains **0** occurrences of `packageProvenance` against **10** for `screenshotCount` — the control
+confirms the field is genuinely absent rather than the query being wrong.
+
+So under the model just shipped (`f809e9a4`), the three "proven" Camera Club rows classify as
+**`unknown`** — not current, not stale. Nobody can say whether they were proven against the packages
+now shipped, and "probably fine because the change was additive" is a judgement from reading a diff,
+not a record.
+
+**Both halves of "3 of 79" are therefore soft:**
+
+- the **denominator** overstates: 12 rows name workflows their package does not ship, and the
+  act-ability blind spot means the true unprovable count is ≥ 12
+- the **numerator** is unverifiable: the 3 proven rows carry no package identity, so their status is
+  `unknown` rather than `proven-current`
+
+Neither is a reason to re-run them blindly — the additive `experience.notifications` block touches no
+state, transition, binding, guard or seed. It is a reason to stop quoting **3 of 79** as though both
+numbers were solid. Every capture from now carries its package identity, so this becomes a comparison
+rather than an argument.
+- [ ] `new-ticket` — carry package provenance into the walkthrough manifest: at minimum the
+      `community-provenance.json` entry (or its hash) for each community captured, written at capture
+      time. Then a manifest can be compared against the current package and reported as stale rather
+      than silently believed
+- [ ] until then, treat any row proven before 2026-08-31 as proven against a **different** package
+      build than the one now shipped, and say so rather than assuming either way
+
+### 2026-08-31 — the unshippable-row sweep undercounted: 12 rows, not 7
+
+Re-ran the check while the device work was blocked. The recorded finding says **7 rows name a
+workflow their package does not ship**. Measured against the shipped packages: it is **12**.
+
+**Method, and the two things that made my first two attempts wrong.** The B25 asset
+(`assets/b25_semantic_interaction_models.json`, 79 rows) joins to packages on **`extensionId`, not
+`communityId`** — the two id spaces genuinely differ (`community_ad_off` in B25 vs
+`community_ad_free_community` in the package), and joining on `communityId` silently drops six of ten
+communities. The row's workflow field is **`workflowId`**, not `workflow`. My first run reported "0
+rows checked" and my second "32 not shipped"; both were artifacts of those mistakes, not findings.
+The run below carries a control — a row known to be shipped (`photo-walk-rsvp`) resolves `True` — so a
+zero would mean absent rather than broken.
+
+**The 7 already recorded, all confirmed:**
+
+| Community | Workflow |
+| --- | --- |
+| Chess Club | `chess-local-install-open`, `chess-route-home` |
+| Garden Club | `garden-tool-loan-giveaway` |
+| Member Social Space | `platform-messages-entry`, `platform-connections-entry`, `platform-connection-invite`, `platform-message-stream` |
+
+**Five more that were missed, all Masjid Nur:**
+
+| Rows | Workflow id |
+| ---: | --- |
+| 1 | `wf_demo-app-persona-picker` |
+| 2 | `wf_community-persona-aware-ux` |
+| 2 | `wf_multi-persona-workflow-evidence` |
+
+Three distinct ids across five rows. **No package anywhere uses a `wf_` prefixed `workflowType`** —
+Masjid ships only `mosque-*` — and these ids appear nowhere in the repo except old
+`.codex-logs` dispatch prompts. So they are not a second id space that needs mapping; they are rows
+naming workflows that do not exist, the same class as the seven.
+
+**Consequence.** 12 of 79 rows cannot be walked as written, so the production bar's denominator is
+questionable until they are either corrected in the product docs or struck. That is a larger share
+than the recorded 7 implied, and it is worth knowing before anyone measures progress against 79.
+
+- [ ] `needs-skill-dispatch` — the five Masjid rows: correct the product doc's B25 table, or remove
+      them if they were never real workflows
+- [ ] the original 7 remain as recorded
+
+
+
+
+### 2026-08-31 — the 12 unshippable rows diagnosed, and a worse problem behind them
+
+Analysed the 12 rather than just counting them. **They are not typos, and striking them would delete
+real coverage.** Most carry valid content with a wrong workflow id pasted on.
+
+**Chess — 2 rows are duplicates.** `chess-local-install-open`, `chess-route-home` and
+`chess-match-result` share **identical** expected-decision text, role and primary actions
+(`record match`, `submit score`, `save result`). Only `chess-match-result` is shipped. The other two
+are the same row three times with two invented ids.
+
+**Member Social Space — 4 rows, one description, no valid id.** All four share one decision text
+("evaluates a concrete message, connection, or invite…") and none names a shipped workflow. The
+package ships `platform-message-thread` and `platform-connection`; the rows want re-pointing at them,
+not deleting.
+
+**Garden — 1 conflation.** `garden-tool-loan-giveaway` names two shipped workflows joined by a hyphen:
+`garden-tool-loan` and `garden-tool-giveaway`.
+
+**Masjid — 3 are not workflows.** `wf_demo-app-persona-picker`, `wf_community-persona-aware-ux`,
+`wf_multi-persona-workflow-evidence` describe cross-cutting persona/UX checks ("member confirms their
+view hides admin-only actions"), not community workflows. They belong to a different kind of check.
+
+#### The worse problem: rows that are distinct in name only
+
+The same analysis surfaced something not previously recorded. **Data Portability has NINE rows sharing
+one identical expected decision and action list** — every `export-*` workflow. All nine are shipped, so
+no sweep flags them, but nine rows with the same expected decision are not nine proofs. Cedar has two.
+
+That matters for what "79 rows" means:
+
+| | |
+| --- | --- |
+| Rows naming a workflow the package does not ship | 12 |
+| Rows that duplicate another row's decision text verbatim | at least **15** across 4 groups |
+| Rows whose role cannot act on the workflow | unknown — only walkthroughs reveal it |
+
+**79 is a count of table rows, not of distinct provable behaviours.** A bar measured against it can be
+satisfied without the coverage it implies.
+
+- [ ] `needs-skill-dispatch` — Chess: strike the 2 duplicate rows, keep `chess-match-result`
+- [ ] `needs-skill-dispatch` — Social Space: re-point the 4 rows at `platform-message-thread` and
+      `platform-connection`, with decisions that actually differ
+- [ ] `needs-skill-dispatch` — Garden: split the conflated row into loan and giveaway
+- [ ] `needs-decision` — Masjid's 3 persona/UX rows: are they B25 rows at all, or a separate check?
+- [ ] `needs-decision` — Data Portability's 9 identical rows: nine real proofs, or one generic row
+      copied nine times? This decides whether the denominator is honest
+
+### 2026-08-31 — what pass-42 actually failed on, and how old it is
+
+The B25 iteration scorecard is the closest thing to a production-readiness verdict, and two things
+about it were not being said.
+
+**It is from 2026-07-03.** `b25-iteration-scorecard-b25-v4-pass-42.json` carries
+`generatedAt: 2026-07-03T02:23:51Z` — nearly two months old. The B25 judge cycle stopped in early
+July. Anyone reading "latest scorecard" was reading a July verdict against an August codebase.
+
+**Its findings table is empty, but the failures are recorded elsewhere.** The iteration scorecard
+reports `blockingCriterionFailures: 2` with `blockingFindings: []`, which reads as "2 failures,
+unknown". The detail lives in `production-ux-criteria-scorecard.json`, keyed on **`verdict`** (not
+`status`, which is what I first filtered on and got a misleading zero):
+
+| Criterion | `blocksPass` | Why |
+| --- | --- | --- |
+| `b25-c14-llm-vision-ux-review` | true | "The LLM vision UX review is missing holistic answers or screen reviews." The judge was **never run** on the evidence |
+| `b25-c16-app-shell-capability-utilization` | true | Five sub-checks failed for the Loom Communities shell: `tabsPass`, `presentationStatesPass`, `mainCommunityCardStatesPass`, `themeCustomizationPass`, `rendererSelectionPass` |
+
+16 of 18 criteria pass; `holisticPass` and `workflowPersonaPass` are both true.
+
+**So the two blockers are different in kind**, and that matters for sequencing:
+
+- **c14 is unrun work**, not a defect. The remedy is to run the UX judge over the screenshot evidence.
+  It cannot be run against July screenshots and mean anything — it needs a fresh capture from the
+  current build.
+- **c16 is a real gap** between what the product docs say the shell does and what the shell does,
+  across five capability areas. That is a genuine remediation batch, and the largest single named
+  obstacle to the production bar found so far.
+
+- [ ] `new-ticket` — c16: reconcile app-shell capability utilization across the five failing areas
+- [ ] after a fresh capture: rerun the vision judge for c14
+- [ ] treat any scorecard without checking `generatedAt` as suspect — this one was two months stale
+      and nothing said so
+
+### 2026-08-31 — the production bar is unblocked: device carries current code
+
+The Developer Mode blocker was **incidental, not intrinsic** — see `CLAUDE.md`, "Build the APK on the
+VM". Windows restricts plugin symlinks; Linux does not; the VM has a full Android toolchain. Building
+there and installing over adb sidesteps the setting entirely.
+
+**State now:**
+
+| | |
+| --- | --- |
+| APK built at | `c969a991` — includes sync settings, notification gate, mounted replica, acknowledgements view, auth fixes |
+| Installed on | `emulator-5554`, replacing the 2026-08-11 build |
+| Launch | clean, no `FATAL EXCEPTION` in logcat |
+| Accounts | 35 across 11 communities, all seeded through the real approve flow |
+| Backends | all live and verified end-to-end |
+| Evidence | now records which package build a walkthrough proved |
+
+**Two cautions carried forward into the walkthrough phase:**
+
+- **Rebuild before every capture.** The APK I installed at 15:00 was already stale by 17:00 — it predated
+  the settings screen by one commit. The VM build takes ~2–5 minutes with a warm Gradle cache, so
+  there is no excuse for walking through code the device does not have.
+- **The denominator is not 79.** 12 rows name workflows their package does not ship, and the
+  act-ability blind spot means the true unprovable count is ≥ 12. The numerator is also soft: the 3
+  proven rows carry no package identity and classify as `unknown` under the model shipped today.
+
+- [x] Developer Mode blocker dissolved
+- [ ] first walkthroughs: the five B25 rows the account seeding unblocked are the natural target
+
+### 2026-08-31 — the production bar is blocked on one Windows setting, and the installed APK is three weeks stale
+
+With the backend complete, the next step is proving it on a device. That is blocked, and the two
+reasons compound.
+
+**The emulator is fine.** `emulator-5554` is attached and `qemu-system-x86_64` is running on Windows,
+so the host half works.
+
+**The installed build is from 2026-08-11.** `com.example.loom_communities_demo` on the emulator
+predates essentially all of this effort — no notification gate, no replica mount, no acknowledgements
+view, none of the authorization fixes. The only APKs on disk are `app-debug.apk` (2026-08-11) and
+`app-release.apk` (2026-08-09).
+
+**A walkthrough against that would prove nothing and look like proof.** It would exercise three-week-
+old code while appearing to validate today's integration, which is the same failure family as a
+capture that quietly ran against a local engine — the reason `LOOM_ENV` throws on a typo rather than
+falling back.
+
+**The rebuild is blocked**, reproducing the 2026-08-30 finding:
+
+    Please enable Developer Mode in your system settings. Run
+      start ms-settings:developers
+
+Flutter needs Developer Mode for the symlink support plugins require. It is a system setting, not
+something a dispatch or an elevated shell here can set.
+
+- [ ] **NEEDS THE USER** — enable Developer Mode on Windows (`start ms-settings:developers`), then the
+      APK rebuilds and walkthroughs become possible
+- [ ] then rebuild and install before any walkthrough, because the on-device build must not predate
+      the code being verified
+- [ ] the five newly-runnable B25 rows are the natural first target, since they are the ones today's
+      seeding unblocked
+
 ## Gate Evidence Template
 
 For each completed phase, paste or link:

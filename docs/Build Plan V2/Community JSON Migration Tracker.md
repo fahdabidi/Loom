@@ -1222,3 +1222,141 @@ dispatched/verified/committed, and both this walkthrough (steps 1-6) and the pro
 | ⬜ Open | `needs-live-validation` | §6 step 7 (LLM Product Docs To Evidence Reconciliation gate) — confirmed run and closed only for Cedar Commons HOA (§4 row 1, combined-pass note). Status for the other 9 communities not confirmed in this table; re-check §4 per-row before assuming it's outstanding everywhere, then run/close per community. | §6 step 7 | 2026-08-11 |
 | ⬜ Open | `new-milestone` | §7 step 8: remove the legacy Dart catalog paths and the 6 hybrid communities' bespoke per-community widgets — now unblocked, all 10 §4 rows read complete. Not yet scoped into tickets. | §7 step 8 | 2026-08-11 |
 | ⬜ Open | `new-ticket` | Backlog of deferred, lower-severity polish findings accepted across multiple communities (ISO-8601 date/timestamp humanization — needs real date parsing, not a regex extension; `maxLines: 2` truncation on longer titles; contradictory chip-pair rendering) — tracked in §4's per-row notes, not yet consolidated into a ticket. | §4, multiple rows | 2026-08-11 |
+
+---
+
+## 9. Package regeneration record — 2026-08-29 → 2026-08-31
+
+*Migrated from `TODO.md` on 2026-08-31. Four dated entries on the packages themselves: the Book Club
+"regression" that the backend work overtook, a stale marker and the grammar gap behind it, the B8
+`experience.notifications` regeneration across all eleven communities, and the absent-block default
+that would have silently switched off device notifications for every community that never declared
+the block.*
+
+### 2026-08-29 — the Book Club "regression" has been overtaken by the backend
+
+`c0e0355b` removed eleven instance fields from Book Club while making an unrelated and correct
+change, and was recorded as a shipped regression. Re-examined today against `c0e0355b^`, the removal
+splits three ways and **only the first was ever wrong**:
+
+| Removed | Verdict now |
+|---|---|
+| `reminderAt`, `reminderSentAt` | **Correct** — the documented §15 conversion to a declared `reminder` block removes the formula field |
+| `acknowledgedByFanIds`, `savedByFanIds`, `accessRequestedFanIds`, `approvedFanIds` | **Correct now** — per-member document state is owned by the deployed member-state API |
+| `queuedFanIds`, `myQueuePosition`, `queueLength`, `currentHolderFanId`, `currentHolderDisplay` | **Correct now** — queue membership, position and custody are owned by the deployed item queue service |
+
+They were a regression **at the time** because they were removed before anything replaced them. B1
+and B5 have since shipped the services that own those facts, and B5's own spec names a `fanId[]` of
+readers as the anti-pattern it exists to replace: it grows without bound and rides along on every
+read of the instance.
+
+**So do not restore them.** Re-adding would create a second, diverging source of truth for who holds
+an item and who acknowledged a document. `verify_community_package.py` against `c0e0355b^` reports
+`VERIFY FAIL` and will keep doing so; that comparison is now the wrong baseline, and the standing
+instruction to "verify Book Club against `c0e0355b^`, not HEAD" is **retired** — HEAD is the correct
+baseline for this package again.
+
+Left open, and genuinely unresolved: the shared-library and reading-material surfaces still *declare*
+those experiences in the product doc while the JSON no longer carries the fields and the app does not
+yet call the services for this community. That is a wiring gap, not a data-loss gap, and it belongs
+with B3/B6-style app work rather than with a regeneration.
+
+
+### 2026-08-29 — one stale marker left, and a small grammar gap behind it
+
+Every remaining `NEEDS IMPLEMENTATION` marker is a correctly deferred service — payment gateway and
+payment ids (AdFree 6, Cedar 2, Mosque 2, Youth Soccer 1, Garden 1), and AI answer generation
+(Book Club 1, Mosque 1) — **except one.**
+
+Garden's `checksumVerified` carries: *"checksum verification is unavailable with the checksum
+service."* **That is no longer true.** `export-bundle-api.openapi.yaml` implements
+`verifyExportBundle`, and the spec states plainly that `checksumVerified` gets `false` on generation
+and *"only `verifyExportBundle` may set"* it true. The comment describes a gap that has been closed
+since 2026-08-27.
+
+- [ ] `needs-spec-decision` — **what `platformSource` does a `checksumVerified` field declare?** The
+  closed set is `checksum` and `opaqueId`, and neither fits: the field is a verification **result**,
+  a bool set by a different operation on the same service, not a hash value produced at transition
+  time. Three options, none obviously right:
+  1. reuse `"checksum"`, letting the service infer from the field's `bool` type — implicit typing,
+     and the kind of thing that reads as clever until it is wrong
+  2. add a third value such as `"checksumVerification"` — explicit, but a grammar addition
+  3. leave it `writableBy: "platform"` with no `platformSource` — honest today, and it keeps the
+     missing-`platformSource` warning pointing at a field that genuinely has an unnamed writer
+
+  Small, and blocking nothing. Worth deciding rather than guessing, because option 1 is the tempting
+  one and the least reversible.
+
+- [ ] `new-ticket` — **delete Garden's stale `checksumVerified` comment** regardless of which option
+  wins. A `NEEDS IMPLEMENTATION` note that outlives its implementation is worse than none: the next
+  reader trusts it and re-reports a closed gap.
+
+
+### 2026-08-31 — B8 package regeneration, running record
+
+Product docs: **11 of 11 done** (`e1561c0a`, `56c93e80`). Each states what its community offers and
+why, drawn from that community's own workflows rather than boilerplate.
+
+Packages, each through the Skill via a **targeted-edit brief** and verified before install:
+
+| Community | Commit | Delta | Diff | Validator (new / shipped control) |
+| --- | --- | ---: | --- | --- |
+| Camera Club | `31652ee7` | +109 | 4 lines | pass 0 err, 9 / 9 |
+| Chess Club | `cad5c1bc` | +109 | 4 lines | pass 0 err, 2 / 2 |
+| Cedar Commons HOA | `e1050a25` | +109 | 4 lines | pass 0 err, 12 / 12 |
+| Ad-Free Community | `9026105c` | +109 | 4 lines | pass 0 err, 4 / 4 |
+
+**The +109 is a tripwire, not a coincidence.** Four independently authored packages producing a
+byte-identical delta means the Skill is making the same minimal edit rather than reformatting. A
+package that comes back with a *different* delta gets scrutiny before anything else — which is worth
+more than the validator here, because deletion and correct addition produce identical validator
+reports.
+
+Two tools now derive from the shipped package rather than from memory:
+
+- **the brief generator** extracts roles, workflows and tabs and counts them, so the "what must
+  survive" block cannot be subtly wrong in the way that grants permission to drop something
+- **the installer** does lift-copy-restore on the `chmod 444` canonical file, updates the asset
+  mirror, and **confirms the written file matches its source byte-for-byte** — the pilot's copy was
+  silently refused by the permission guard and the provenance tool then ran against a half-applied
+  state
+
+- [ ] remaining: Garden Club (running), Masjid Nur, Member Social Space, Neighborhood Book Club,
+      Riverside Youth Soccer, Tabletop Club, Data Portability
+- [ ] then the app read, which **must ship with the last package** — the read alone switches device
+      notifications off, the packages alone are inert
+
+### 2026-08-30 — the absent-block default would have silently switched off device notifications
+
+**A correction to my own analysis, caught before it shipped.** I offered the user three options for
+what an absent `experience.notifications` block should mean and described `["inbox"]` as "fails quiet
+— an omission never interrupts anyone". They picked it on that description. **The description was
+incomplete in the way that mattered.**
+
+`part44_reminder_sweeper.dart:59` calls `_delivery.deliver(notification)` **unconditionally** for
+every due notification, and `LocalNotificationDeliveryService.deliver` calls
+`FlutterLocalNotificationsPlugin.show()`. So device notifications already fire in **every** community
+today. "Quiet" was never the status quo — it would have been a **regression**, switching off a
+working feature in all eleven communities the moment the app started honouring the config, with
+nothing failing and no error anywhere. Exactly the silent-loss failure this effort exists to remove.
+
+Re-presented with that fact. **User decision: keep absent = `["inbox"]`, and regenerate all eleven
+packages to declare `push` explicitly**, so the rule stays "quiet unless asked" while no community
+loses delivery.
+
+**Consequence: the app-read and the package regeneration must land together.** Shipping the read
+first switches notifications off; shipping the packages first is inert. That coupling is the whole
+risk of this item.
+
+- [ ] regenerate eleven packages to declare `experience.notifications`, **through the Skill only** —
+      community JSON is never hand-authored. Use a **targeted-edit brief**: an authoring-mode
+      dispatch re-authors from scratch and drops shipped workflows and tabs
+- [ ] verify each against its predecessor **field by field**, not just with the validator —
+      deletion is invisible in a validator run, so a package that quietly lost a workflow and one
+      that correctly gained a config block produce identical reports
+- [ ] run `tool/update_community_provenance.dart` in the **same commit**, or the judges suite goes red
+- [ ] then the app read: deliver the device notification iff `push` is in `default` **and**
+      `muted` is false; the inbox record is unaffected, because muting stops the interruption and
+      not the record
+- [ ] **pilot one community first** and verify it exhaustively before touching the other ten
+
