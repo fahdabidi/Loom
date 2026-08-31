@@ -1433,6 +1433,42 @@ The corrected path, all existing APIs:
 
 
 
+
+### 2026-08-30 — B5 is complete: the acknowledgements view is mounted
+
+`listDocumentAcknowledgements` had zero callers while its three siblings each had one. It is now
+called from `part36_engine_native_marketplace_surface.dart` (`f6800768`), which closes the last dark
+part of B5.
+
+**The gate matches the server exactly**, which was the risk worth checking. `workflow_service.dart`
+resolves `mayAdminister` as *can invoke a transition whose `action` is `upload` or `grant_access`*
+(line 3199); the surface resolves the same way, from the transitions the engine has already resolved
+for this member and instance. Neither wider nor narrower — so the control appears exactly to those
+the service will serve, rather than being rendered and refused. A control that always `403`s teaches
+members the app is broken and leaks that the data exists.
+
+**Assertions were checked, not assumed.** Two `expect`s were removed in the diff, which is the shape
+of a weakened test. They were strengthened: `hasLength(4)` → `hasLength(5)` for the additional
+request, and an inline query-parameter check replaced by a per-request capture plus an indexed
+`expect(requests[3]…)`.
+
+Verified here: **app shell 358 passing + 2 skipped, exit=0**, against a 354 + 2 baseline.
+
+**Integration state now:**
+
+| Item | State |
+| --- | --- |
+| B1 item queue | Reachable |
+| B2 per-member preferences | Parked (P1), not a gap |
+| B3 change feed | Built, deployed, **caller landed, not mounted** |
+| B5 documents | **Reachable, complete** |
+| B6 replica | Built, **caller landed, not mounted** |
+| B8 community notification config | Grammar written; validator + Skill regeneration outstanding |
+
+- [x] B5 complete
+- [ ] `dispatched` — mount the replica coordinator, which closes B3 and B6 together. Sync on entry
+      and explicit refresh only; **background/timer sync is deliberately excluded** as a battery and
+      bandwidth decision nobody has made
 ### 2026-08-30 — the test accounts are seeded, every one through the real authorization flow
 
 The request that has been blocked all session is done. **35 accounts created, 0 failures**, and not one
