@@ -2160,6 +2160,30 @@ Closeout rule for reopened phases:
   app-shell capability review artifacts inspect the current screenshots and pass.
 - **Evidence/tooling commit, v4 pass 41:** `915a35a`.
 
+
+## 8. Live TODO / Next Steps Queue
+
+Added 2026-08-31. This tracker owns the production bar — phase status, the UX evidence matrices, the
+judge gates and the per-phase ledger — and had no §8, so items belonging to it had nowhere to live and
+accumulated as prose in `TODO.md` instead. That is the mechanism by which the index became a memory.
+
+Flat table, newest-relevant first. Full context for each item belongs in the body of this tracker or
+its linked evidence; this section is the queue, and `TODO.md` carries only a one-line rollup pointing
+here.
+
+| Status | Tag | Item | Source | Date |
+|---|---|---|---|---|
+| ⬜ Open | `new-ticket` | `b25-c16` app-shell capability utilization fails 5 sub-checks — tabs, presentation states, community-card states, theme customization, renderer selection. Largest named obstacle to the bar | pass-42 criteria scorecard | 2026-08-31 |
+| ⬜ Open | `needs-live-validation` | `b25-c14` LLM vision UX judge was never run over the screenshot evidence; needs a fresh capture from the current build first | pass-42 criteria scorecard | 2026-08-31 |
+| ⬜ Open | `needs-decision` | Data Portability's **9** rows share one identical expected decision; decides whether the 79 denominator is honest | row-duplication analysis | 2026-08-31 |
+| ⬜ Open | `needs-decision` | Masjid's 3 `wf_*` persona/UX rows are not workflows — are they B25 rows at all? | row-duplication analysis | 2026-08-31 |
+| ⬜ Open | `needs-skill-dispatch` | Chess: strike the 2 duplicate rows (`chess-local-install-open`, `chess-route-home`); keep `chess-match-result` | row-duplication analysis | 2026-08-31 |
+| ⬜ Open | `needs-skill-dispatch` | Social Space: re-point 4 rows at `platform-message-thread` / `platform-connection` with decisions that differ | row-duplication analysis | 2026-08-31 |
+| ⬜ Open | `needs-skill-dispatch` | Garden: split `garden-tool-loan-giveaway` into the two shipped workflows | row-duplication analysis | 2026-08-31 |
+| ⬜ Open | `needs-verification` | The 3 proven Camera Club rows carry no package identity and classify as `unknown`; re-prove or accept deliberately | evidence-provenance model | 2026-08-31 |
+| ⬜ Open | `needs-live-validation` | Five rows unblocked by account seeding are runnable and unrun — the natural first walkthrough target | account seeding | 2026-08-31 |
+
+**Tag taxonomy** is the fixed set in `Tools/reference-tracker-template.md` §8. Do not invent tags here.
 ## Gate Evidence Template
 
 For each completed phase, paste or link:
