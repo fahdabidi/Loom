@@ -18,8 +18,8 @@
   "algorithm": "sha-256",
   "packages": {
     "Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc": {
-      "sha256": "c74e8edf6fef9081e6ecc35d9cecb28126f51c758e203d86897698e453f5928b",
-      "bytes": 82412,
+      "sha256": "fa6b66b319824bbfa3825f390bee288f4549046f1a1a5f3e51915af517496592",
+      "bytes": 82521,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "ccdd4136",
       "lastCommitDate": "2026-08-25",
@@ -37,9 +37,9 @@
       "sha256": "c3066d7c86c33799074f60f47fceb0c474e525a87c1902bf42e4b1356feb1bf9",
       "bytes": 102964,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "5e96e434",
-      "lastCommitDate": "2026-08-29",
-      "lastCommitSubject": "feat(cedar-hoa): declare platform writers on checksum and transferId"
+      "lastCommit": "e1050a25",
+      "lastCommitDate": "2026-08-31",
+      "lastCommitSubject": "feat(cedar-commons-hoa): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc": {
       "sha256": "49f0c1d7239ffc28b018361d7735318553fb02b918e5e9de9f57f1816831e2a8",
