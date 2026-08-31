@@ -1435,6 +1435,40 @@ The corrected path, all existing APIs:
 
 
 
+
+### 2026-08-30 — the absent-block default would have silently switched off device notifications
+
+**A correction to my own analysis, caught before it shipped.** I offered the user three options for
+what an absent `experience.notifications` block should mean and described `["inbox"]` as "fails quiet
+— an omission never interrupts anyone". They picked it on that description. **The description was
+incomplete in the way that mattered.**
+
+`part44_reminder_sweeper.dart:59` calls `_delivery.deliver(notification)` **unconditionally** for
+every due notification, and `LocalNotificationDeliveryService.deliver` calls
+`FlutterLocalNotificationsPlugin.show()`. So device notifications already fire in **every** community
+today. "Quiet" was never the status quo — it would have been a **regression**, switching off a
+working feature in all eleven communities the moment the app started honouring the config, with
+nothing failing and no error anywhere. Exactly the silent-loss failure this effort exists to remove.
+
+Re-presented with that fact. **User decision: keep absent = `["inbox"]`, and regenerate all eleven
+packages to declare `push` explicitly**, so the rule stays "quiet unless asked" while no community
+loses delivery.
+
+**Consequence: the app-read and the package regeneration must land together.** Shipping the read
+first switches notifications off; shipping the packages first is inert. That coupling is the whole
+risk of this item.
+
+- [ ] regenerate eleven packages to declare `experience.notifications`, **through the Skill only** —
+      community JSON is never hand-authored. Use a **targeted-edit brief**: an authoring-mode
+      dispatch re-authors from scratch and drops shipped workflows and tabs
+- [ ] verify each against its predecessor **field by field**, not just with the validator —
+      deletion is invisible in a validator run, so a package that quietly lost a workflow and one
+      that correctly gained a config block produce identical reports
+- [ ] run `tool/update_community_provenance.dart` in the **same commit**, or the judges suite goes red
+- [ ] then the app read: deliver the device notification iff `push` is in `default` **and**
+      `muted` is false; the inbox record is unaffected, because muting stops the interruption and
+      not the record
+- [ ] **pilot one community first** and verify it exhaustively before touching the other ten
 ### 2026-08-30 — B3 and B6 mounted: every backend capability is now load-bearing
 
 `d47c1c31`. `LoomWorkflowReplicaCoordinator` had zero callers for `open()`, `refresh()` and
