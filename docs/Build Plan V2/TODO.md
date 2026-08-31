@@ -1438,6 +1438,43 @@ The corrected path, all existing APIs:
 
 
 
+
+### 2026-08-31 — what finishing the backend unblocked, and what it did not
+
+The build-out is complete, so this records which downstream items actually moved rather than leaving
+the connection implicit.
+
+**Unblocked by the account seeding.** The production-bar entry *"5 rows blocked on a missing
+owner/admin identity: Chess (`chess-export-package`, `chess-pairing-queue`, `chess-rankings-table`)
+and Book Club…"* is no longer blocked. Every live community now has an admin role carrying the five
+`community.*` governance permissions, an admin account holding it, and one account per defined role —
+35 accounts, all seeded through `requestGroupMembership` → `decideGroupMembership` rather than
+inserted. Chess specifically has `chess-admin`, `fan-chess-admin`, and a seeded `chess-owner-1`.
+
+**Unblocked by the resilience fix.** A walkthrough no longer dies silently when a heavy build bounces
+Postgres: `workflow-service` reopens its pool, proven by deleting `postgres-0` and watching it
+recover in under 24 seconds on the same pod with `restarts=0`.
+
+**Unblocked by the build-context fix.** Deploys cost 917.9 MB of context instead of 6.885 GB, so the
+window where the cluster is degraded during a rebuild is much shorter.
+
+**NOT unblocked, and worth being explicit.** The production bar stands at **3 of 79 rows proven**
+(Camera Club complete). The other open blockers are unrelated to the backend: a reachability-sweep
+blind spot, 7 rows naming workflows their package does not ship, the Garden walkthrough stall, and
+the alternate-leg problem where a completed action can leave no visible result. None of those moved
+today.
+
+**A parity test for the OpenAPI twins is not straightforwardly buildable, contrary to the earlier
+ticket.** The bundle-mirror test works because both copies live in one repo. The OpenAPI twins live
+in `Loom` and `loom-backend` separately, so an in-repo test cannot compare them, and a shared
+checksum manifest does not close it either — each repo would compare its spec against its own copy of
+the manifest, so a one-sided update passes both. Options are a network fetch inside a test, or
+treating the sync as a documented release step. **Not attempted; recorded so the ticket is not picked
+up as if it were simple.**
+
+- [x] backend build-out complete
+- [ ] `needs-decision` — background sync policy for the replica
+- [ ] `needs-decision` — how to enforce OpenAPI twin parity across two repos, per the above
 ### 2026-08-31 — B8 complete: every backend capability is now built, deployed and load-bearing
 
 `20561518`. The notification config is read and gates delivery, which closes the last item in the
