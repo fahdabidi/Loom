@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 1.0.0
+doc_version: 1.1.0
 status: current
-last_verified: 2026-07-14
+last_verified: 2026-08-30
 audience: llm-agent
 derived_from: docs/Build Plan V2/Loom Communities Workflow Engine V3/Loom_Communities_Workflow_Engine_ComputationModel.md
 ---
@@ -65,6 +65,55 @@ timezone — see [`workflow-grammar.md`](./workflow-grammar.md)'s `reminder` sec
 "dueAt":          { "type": "date" },     // deadline minus the reminder offset
 "isExpiringSoon": { "type": "bool", "formula": "isPast(dueAt)" }
 ```
+### Notification delivery — which channels, and the community's default
+
+Scheduling says *when*. This says *how*, and it is community configuration rather than a platform
+service: it lives in the package beside `theme` and `creatableAction`, because it describes the
+experience this community offers.
+
+```jsonc
+"experience": {
+  "notifications": {
+    "allowedChannels": ["inbox", "push"],  // "inbox" | "push". Omitted: ["inbox"].
+    "default":         ["inbox"],          // subset of allowedChannels. Omitted: ["inbox"].
+    "muted":           false               // Omitted: false.
+  }
+}
+```
+
+`allowedChannels` is what this community **offers**; `default` is what a member gets **before they
+choose**. They are different facts, and collapsing them would make "we do not offer push"
+indistinguishable from "we offer it but do not default to it".
+
+The name follows `allowedRoleIds`, the grammar's existing spelling for a permitted set. It is
+deliberately **not** `channels`: fan-passport uses that key for the set a member has *chosen*, and one
+word covering both the offered set and the chosen set is the ambiguity this grammar avoids everywhere
+else.
+
+**The channel set is closed, and it is closed to what can actually be delivered.** Both values have
+working delivery paths on a running device — `inbox` is the `notificationInbox` archetype, `push` is
+`FlutterLocalNotificationsPlugin`. There is deliberately no third value: server-initiated push, for a
+member whose app is closed, is **not implemented**, and a key promising it would be a field claiming a
+writer it does not have.
+
+**`muted` suppresses interruption without suppressing the record.** A muted community still files
+notifications in the inbox; a member who looks still sees them. It is retained rather than inferred
+from `default` because it mirrors fan-passport's own model exactly, so a member's stored preference
+overlays the community default field-for-field with no translation step. Silence is
+`default: ["inbox"]` with `muted: true`, never an empty list — an empty array reads as "no opinion" to
+a client and "no delivery" to a server, and those must not be the same value.
+
+**This is the community's default, not a member's choice.** A package is identical for every member,
+so a per-member preference cannot live in it. fan-passport stores one member's departure from this
+default; the two compose, and neither replaces the other.
+
+| Rule | Severity |
+|---|---|
+| `allowedChannels` non-empty, unique, all within `["inbox", "push"]` | error |
+| `default` non-empty, unique, and a subset of `allowedChannels` | error |
+| `muted: true` while `inbox` is absent from `default` | error — mutes into silence with nothing left readable |
+| an unknown key under `notifications` | error |
+
 
 ### Export bundles and their checksum
 
