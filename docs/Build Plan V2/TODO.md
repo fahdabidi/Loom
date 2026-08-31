@@ -1432,6 +1432,59 @@ The corrected path, all existing APIs:
 
 
 
+
+### 2026-08-30 — the test accounts are seeded, every one through the real authorization flow
+
+The request that has been blocked all session is done. **35 accounts created, 0 failures**, and not one
+of them was inserted directly into the database.
+
+**The end-to-end proof, run before seeding anything in bulk** (Chess):
+
+| Step | Result |
+| --- | --- |
+| Member requests membership for self | `201`, `state: requested`, `roleIds: []` |
+| **Community admin approves**, granting `chess-member` | `200`, `state: active`, `roleIds: ["chess-member"]`, `decidedAt` set |
+
+That is the whole chain the security fix protects: a fan cannot self-approve, an admin must decide,
+and the actor is bound to the token. Every fixture below passed it.
+
+**What exists now**, measured against `loom_app_access` with a control:
+
+| | Before | After |
+| --- | ---: | ---: |
+| Active memberships | 5 | **40** |
+| Role grants | 5 | **40** |
+| Live groups with a working admin | 0 | **11 of 11** |
+| Memberships stuck in `requested` | — | **0** |
+
+| Group | Members | Distinct roles |
+| --- | ---: | ---: |
+| `ad-free-community` | 3 | 3 |
+| `camera-club` | 3 | 3 |
+| `cedar-commons-hoa` | 4 | 3 |
+| `chess-club` | 4 | 4 |
+| `data-portability-community` | 4 | 4 |
+| `garden-club` | 3 | 3 |
+| `masjid-nur` | 2 | 2 |
+| `member-social-space` | 3 | 3 |
+| `neighborhood-book-club` | 3 | 3 |
+| `riverside-youth-soccer` | 4 | 4 |
+| `tabletop-club` | 3 | 3 |
+
+Accounts follow one convention: Keycloak `loom-<slug>`, fan id `fan-<slug>`, password `LoomTest123!`,
+each verified by decoding the `fanId` claim from a real token rather than trusting the create — the
+`fanId` attribute is what the `loom fan id` mapper emits, and an account without it authenticates and
+then fails every authorization check.
+
+**Scope note:** one account per defined role, which gives complete role coverage — the property live
+walkthroughs need. The request said "a few accounts per each defined role"; a second member per
+community is cheap to add on the same path and has not been done.
+
+- [x] 11 community admin accounts, granted via `setGroupMembership`
+- [x] 23 role accounts seeded through `requestGroupMembership` → `decideGroupMembership`
+- [x] 0 stuck in `requested`; 0 direct inserts
+- [ ] optional: a second account for member-type roles, if walkthroughs want two ordinary members
+- [ ] **pre-GA:** these are all `LoomTest123!` and belong on the credential rotation list
 ### 2026-08-30 — every live community now has a working admin role
 
 `deleteRole` shipped (`loom/app-access:0.3.3`, backend `5f8a165`), the mistaken app-level `admin` was
