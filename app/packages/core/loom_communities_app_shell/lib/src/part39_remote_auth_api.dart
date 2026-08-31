@@ -313,7 +313,9 @@ class RemoteLoomAuthApi implements LoomAuthApi {
 
   @override
   Future<void> signOut() async {
+    final memberId = _currentSession?.account.accountId;
     await _session.logout();
+    await endLoomReplicaSyncSession(memberId: memberId);
     _currentSession = null;
   }
 

@@ -34,6 +34,8 @@ final class LoomRemoteServiceConfiguration {
 
 LoomAuthSession? _loomAuthSession;
 LoomRemoteServiceConfiguration? _loomRemoteServiceConfiguration;
+LoomAuthSession? _replicaSyncObservedSession;
+void Function()? _replicaSyncLogoutListener;
 
 /// The single production identity-provider session owned by the app shell.
 ///
@@ -178,6 +180,7 @@ LoomRemoteServiceConfiguration? configureLoomRemoteServicesFromEnvironment({
     ),
   );
   _loomAuthSession = configuration.session;
+  _observeReplicaSyncSession(configuration.session);
   _loomRemoteServiceConfiguration = configuration;
   return configuration;
 }
@@ -221,6 +224,7 @@ LoomRemoteServiceConfiguration _configurationFromEnvironment(
     ),
   );
   _loomAuthSession = configuration.session;
+  _observeReplicaSyncSession(configuration.session);
   _loomRemoteServiceConfiguration = configuration;
   return configuration;
 }
@@ -342,10 +346,12 @@ void disableRemoteEngineForCommunity({required String extensionId}) {
 @visibleForTesting
 void overrideLoomAuthSessionForTesting(LoomAuthSession session) {
   _loomAuthSession = session;
+  _observeReplicaSyncSession(session);
 }
 
 @visibleForTesting
 void resetLoomAuthSessionForTesting() {
+  _stopObservingReplicaSyncSession();
   _loomAuthSession = null;
   _loomRemoteServiceConfiguration = null;
 }
@@ -360,4 +366,31 @@ void overrideLoomRemoteServiceConfigurationForTesting(
   LoomRemoteServiceConfiguration configuration,
 ) {
   _loomRemoteServiceConfiguration = configuration;
+  _loomAuthSession = configuration.session;
+  _observeReplicaSyncSession(configuration.session);
+}
+
+void _observeReplicaSyncSession(LoomAuthSession session) {
+  if (identical(_replicaSyncObservedSession, session)) return;
+  _stopObservingReplicaSyncSession();
+  void onLogout() {
+    // The session, rather than any particular route, is the lifetime boundary
+    // for timed replica work. This cancels every policy before another member
+    // can authenticate on the same device.
+    unawaited(endLoomReplicaSyncSession());
+  }
+
+  session.addLogoutListener(onLogout);
+  _replicaSyncObservedSession = session;
+  _replicaSyncLogoutListener = onLogout;
+}
+
+void _stopObservingReplicaSyncSession() {
+  final session = _replicaSyncObservedSession;
+  final listener = _replicaSyncLogoutListener;
+  if (session != null && listener != null) {
+    session.removeLogoutListener(listener);
+  }
+  _replicaSyncObservedSession = null;
+  _replicaSyncLogoutListener = null;
 }

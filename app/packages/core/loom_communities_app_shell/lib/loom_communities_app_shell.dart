@@ -67,6 +67,7 @@ part 'src/part46_item_queue_client.dart';
 part 'src/part47_notification_preferences_client.dart';
 part 'src/part48_visible_change_replica.dart';
 part 'src/part49_offline_replica_coordinator.dart';
+part 'src/part50_replica_sync_policy.dart';
 part 'src/part38_production_login_screen.dart';
 part 'src/instance_scoped_action_context.dart';
 part 'src/repeater_surface.dart';

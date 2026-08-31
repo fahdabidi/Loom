@@ -352,6 +352,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           extensionId: community.extensionId,
         );
       }
+      if (offlineReplicaEnabled &&
+          _authApi.currentSession?.account.accountId == signedInAccountId) {
+        await loomReplicaSyncPolicyController.activateCommunity(
+          memberId: signedInAccountId,
+          extensionId: community.extensionId,
+        );
+      }
       if (!mounted) return;
     }
     setState(() {
@@ -613,6 +620,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
 
   @override
   void dispose() {
+    final activeMemberId = _activeFanId;
+    if (activeMemberId != null) {
+      loomReplicaSyncPolicyController.deactivateCommunity(
+        memberId: activeMemberId,
+        extensionId: community.extensionId,
+      );
+    }
     disposeOfflineReplicaForExtensionId(extensionId: community.extensionId);
     _surfaceScrollController
       ..removeListener(_updateFocusedSurfaceFromScroll)
@@ -1502,6 +1516,35 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
             ),
             icon: const Icon(Icons.people_outline),
           ),
+          if (activeIdentity.accountId != null)
+            PopupMenuButton<String>(
+              key: const ValueKey('community-overflow-menu'),
+              icon: const Icon(Icons.more_vert),
+              tooltip: 'More options',
+              onSelected: (value) {
+                if (value != 'sync-settings') return;
+                Navigator.of(context).push<void>(
+                  MaterialPageRoute<void>(
+                    builder: (_) => LoomReplicaSyncSettingsScreen(
+                      memberId: activeIdentity.accountId!,
+                    ),
+                  ),
+                );
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem<String>(
+                  key: ValueKey('community-sync-settings-menu-item'),
+                  value: 'sync-settings',
+                  child: Row(
+                    children: [
+                      Icon(Icons.sync_outlined),
+                      SizedBox(width: 12),
+                      Text('Sync settings'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
       body: SingleChildScrollView(

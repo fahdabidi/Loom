@@ -57,6 +57,21 @@ class LoomAuthSession {
   Future<String>? _refreshingAccessToken;
   int _sessionGeneration = 0;
   InteractiveLoginPlatform? _interactiveLoginPlatform;
+  final Set<void Function()> _logoutListeners = <void Function()>{};
+
+  /// Registers a callback that runs after this session has been cleared.
+  ///
+  /// App-owned work which uses this session's credentials, such as replica
+  /// synchronization, can use this to tear itself down at the session
+  /// boundary instead of relying on a screen's lifetime.
+  void addLogoutListener(void Function() listener) {
+    _logoutListeners.add(listener);
+  }
+
+  /// Stops delivering logout notifications to [listener].
+  void removeLogoutListener(void Function() listener) {
+    _logoutListeners.remove(listener);
+  }
 
   /// Returns an access token that is outside the proactive refresh window.
   ///
@@ -185,6 +200,9 @@ class LoomAuthSession {
     _sessionGeneration++;
     _session = null;
     _storageWasRead = true;
+    for (final listener in List<void Function()>.of(_logoutListeners)) {
+      listener();
+    }
   }
 
   /// Closes the internally created HTTP client, if this instance owns it.

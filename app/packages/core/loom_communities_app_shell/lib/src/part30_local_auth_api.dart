@@ -325,6 +325,8 @@ class LocalAuthApi implements LoomAuthApi {
 
   @override
   Future<void> signOut() async {
+    final memberId = _currentSession?.account.accountId;
+    await endLoomReplicaSyncSession(memberId: memberId);
     _currentSession = null;
   }
 

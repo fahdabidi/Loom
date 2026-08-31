@@ -19,6 +19,7 @@ const String _offlineReplicaDirectory = String.fromEnvironment(
 );
 
 void main() {
+  configureLoomReplicaSyncPolicyPersistenceForProduction();
   final remoteServices = configureLoomRemoteServicesFromEnvironment();
   if (remoteServices != null) {
     if (_offlineReplicaDirectory.isNotEmpty) {
