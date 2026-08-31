@@ -1622,6 +1622,41 @@ than the recorded 7 implied, and it is worth knowing before anyone measures prog
       them if they were never real workflows
 - [ ] the original 7 remain as recorded
 
+
+### 2026-08-31 — what pass-42 actually failed on, and how old it is
+
+The B25 iteration scorecard is the closest thing to a production-readiness verdict, and two things
+about it were not being said.
+
+**It is from 2026-07-03.** `b25-iteration-scorecard-b25-v4-pass-42.json` carries
+`generatedAt: 2026-07-03T02:23:51Z` — nearly two months old. The B25 judge cycle stopped in early
+July. Anyone reading "latest scorecard" was reading a July verdict against an August codebase.
+
+**Its findings table is empty, but the failures are recorded elsewhere.** The iteration scorecard
+reports `blockingCriterionFailures: 2` with `blockingFindings: []`, which reads as "2 failures,
+unknown". The detail lives in `production-ux-criteria-scorecard.json`, keyed on **`verdict`** (not
+`status`, which is what I first filtered on and got a misleading zero):
+
+| Criterion | `blocksPass` | Why |
+| --- | --- | --- |
+| `b25-c14-llm-vision-ux-review` | true | "The LLM vision UX review is missing holistic answers or screen reviews." The judge was **never run** on the evidence |
+| `b25-c16-app-shell-capability-utilization` | true | Five sub-checks failed for the Loom Communities shell: `tabsPass`, `presentationStatesPass`, `mainCommunityCardStatesPass`, `themeCustomizationPass`, `rendererSelectionPass` |
+
+16 of 18 criteria pass; `holisticPass` and `workflowPersonaPass` are both true.
+
+**So the two blockers are different in kind**, and that matters for sequencing:
+
+- **c14 is unrun work**, not a defect. The remedy is to run the UX judge over the screenshot evidence.
+  It cannot be run against July screenshots and mean anything — it needs a fresh capture from the
+  current build.
+- **c16 is a real gap** between what the product docs say the shell does and what the shell does,
+  across five capability areas. That is a genuine remediation batch, and the largest single named
+  obstacle to the production bar found so far.
+
+- [ ] `new-ticket` — c16: reconcile app-shell capability utilization across the five failing areas
+- [ ] after a fresh capture: rerun the vision judge for c14
+- [ ] treat any scorecard without checking `generatedAt` as suspect — this one was two months stale
+      and nothing said so
 ### 2026-08-31 — end-to-end verification of the finished build-out
 
 Run against the deployed stack after everything landed, so the completion claim rests on live
