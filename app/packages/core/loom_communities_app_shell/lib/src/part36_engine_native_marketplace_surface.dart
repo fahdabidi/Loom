@@ -1329,6 +1329,34 @@ class _DocumentLibraryArchetypeCardState
     });
   }
 
+  /// The engine has already resolved these transitions for this member and
+  /// instance. The document service treats either `upload` or `grant_access`
+  /// as a library-administration capability; never infer it from a role name
+  /// in the card.
+  bool get _mayAdministerDocument => _actions.any(
+    (transition) =>
+        transition.action == 'upload' || transition.action == 'grant_access',
+  );
+
+  bool get _mayViewDocumentAcknowledgements =>
+      _usesServiceDocument && _document != null && _mayAdministerDocument;
+
+  Future<void> _showDocumentAcknowledgements() async {
+    final client = _documentClient;
+    final communityId = _documentCommunityId;
+    final document = _document;
+    if (client == null || communityId == null || document == null) return;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => _DocumentAcknowledgementsDialog(
+        client: client,
+        communityId: communityId,
+        documentId: document.documentId,
+      ),
+    );
+  }
+
   Map<String, WorkflowFactPillFieldSchema> _factSchema() {
     final schema = <String, WorkflowFactPillFieldSchema>{};
     for (final entry in widget.resolved.machine.instanceDataSchema.entries) {
@@ -1675,6 +1703,18 @@ class _DocumentLibraryArchetypeCardState
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(_error!),
                 ),
+              if (_mayViewDocumentAcknowledgements)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    key: ValueKey(
+                      'document-library-acknowledgements-${_document!.documentId}',
+                    ),
+                    onPressed: _showDocumentAcknowledgements,
+                    icon: const Icon(Icons.fact_check_outlined),
+                    label: const Text('View acknowledgements'),
+                  ),
+                ),
               if (!_loadingActions)
                 WorkflowActionButtonRow(
                   surface: widget.displayContext == 'detail'
@@ -1696,6 +1736,178 @@ class _DocumentLibraryArchetypeCardState
           ),
         ),
       ),
+    );
+  }
+}
+
+/// A document administrator's compliance reading for the current and prior
+/// versions. It requests both server-defined views: one answers who has
+/// acknowledged the current document, while the full history identifies
+/// members who still need to acknowledge its current version.
+class _DocumentAcknowledgementsDialog extends StatefulWidget {
+  const _DocumentAcknowledgementsDialog({
+    required this.client,
+    required this.communityId,
+    required this.documentId,
+  });
+
+  final LoomDocumentClient client;
+  final String communityId;
+  final String documentId;
+
+  @override
+  State<_DocumentAcknowledgementsDialog> createState() =>
+      _DocumentAcknowledgementsDialogState();
+}
+
+class _DocumentAcknowledgementsDialogState
+    extends State<_DocumentAcknowledgementsDialog> {
+  LoomDocumentAcknowledgements? _currentVersionAcknowledgements;
+  LoomDocumentAcknowledgements? _allAcknowledgements;
+  bool _loading = true;
+  bool _unavailable = false;
+  int _request = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _request++;
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    final request = ++_request;
+    setState(() {
+      _loading = true;
+      _unavailable = false;
+      _currentVersionAcknowledgements = null;
+      _allAcknowledgements = null;
+    });
+    try {
+      final results = await Future.wait(<Future<LoomDocumentAcknowledgements>>[
+        widget.client.listDocumentAcknowledgements(
+          communityId: widget.communityId,
+          documentId: widget.documentId,
+          currentVersionOnly: true,
+        ),
+        widget.client.listDocumentAcknowledgements(
+          communityId: widget.communityId,
+          documentId: widget.documentId,
+          currentVersionOnly: false,
+        ),
+      ]);
+      if (!mounted || request != _request) return;
+      setState(() {
+        _loading = false;
+        _currentVersionAcknowledgements = results[0];
+        _allAcknowledgements = results[1];
+      });
+    } catch (_) {
+      if (!mounted || request != _request) return;
+      setState(() {
+        _loading = false;
+        _unavailable = true;
+      });
+    }
+  }
+
+  List<LoomDocumentAcknowledgement> get _earlierAcknowledgements {
+    final all = _allAcknowledgements;
+    if (all == null) return const [];
+    return all.acknowledgements
+        .where(
+          (acknowledgement) =>
+              acknowledgement.stale == true ||
+              acknowledgement.version < all.currentVersion,
+        )
+        .toList(growable: false);
+  }
+
+  Widget _section({
+    required String title,
+    required List<LoomDocumentAcknowledgement> acknowledgements,
+    required String emptyMessage,
+    required bool earlierVersion,
+    required int currentVersion,
+  }) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      const SizedBox(height: 4),
+      if (acknowledgements.isEmpty)
+        Text(emptyMessage)
+      else
+        for (final acknowledgement in acknowledgements)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              earlierVersion
+                  ? '${acknowledgement.fanId} needs to acknowledge the '
+                        'current version (acknowledged version '
+                        '${acknowledgement.version}; current version '
+                        '$currentVersion).'
+                  : '${acknowledgement.fanId} acknowledged the current '
+                        'version (version ${acknowledgement.version}).',
+            ),
+          ),
+    ],
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final current = _currentVersionAcknowledgements;
+    final all = _allAcknowledgements;
+    final currentVersion = current?.currentVersion ?? all?.currentVersion;
+    return AlertDialog(
+      key: ValueKey(
+        'document-library-acknowledgements-dialog-${widget.documentId}',
+      ),
+      title: const Text('Document acknowledgements'),
+      content: SizedBox(
+        width: 420,
+        child: _loading
+            ? const Text('Loading acknowledgements…')
+            : _unavailable || current == null || all == null
+            ? const Text('Acknowledgements unavailable.')
+            : SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Current document version: $currentVersion'),
+                    const SizedBox(height: 12),
+                    _section(
+                      title: 'Acknowledged the current version',
+                      acknowledgements: current.acknowledgements,
+                      emptyMessage:
+                          'No one has acknowledged the current version.',
+                      earlierVersion: false,
+                      currentVersion: currentVersion!,
+                    ),
+                    const SizedBox(height: 12),
+                    _section(
+                      title: 'Acknowledged an earlier version',
+                      acknowledgements: _earlierAcknowledgements,
+                      emptyMessage:
+                          'No one has acknowledged an earlier version.',
+                      earlierVersion: true,
+                      currentVersion: currentVersion,
+                    ),
+                  ],
+                ),
+              ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Close'),
+        ),
+      ],
     );
   }
 }

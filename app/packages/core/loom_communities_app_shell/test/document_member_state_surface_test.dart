@@ -83,6 +83,8 @@ final class _DocumentStateService {
   bool saved = false;
   int? acknowledgedVersion;
   bool failMemberState = false;
+  int acknowledgementStatusCode = 200;
+  final List<bool> acknowledgementCurrentVersionOnlyRequests = <bool>[];
   var documentCount = 1;
   final List<Map<String, Object?>> memberStateWrites = <Map<String, Object?>>[];
   var revisionRequests = 0;
@@ -120,10 +122,21 @@ final class _DocumentStateService {
     }
     if (request.method == 'GET' &&
         path.endsWith('/documents/doc-1/acknowledgements')) {
+      final currentVersionOnly =
+          request.url.queryParameters['currentVersionOnly'] == 'true';
+      acknowledgementCurrentVersionOnlyRequests.add(currentVersionOnly);
+      if (acknowledgementStatusCode != 200) {
+        return http.Response(
+          'acknowledgements unavailable',
+          acknowledgementStatusCode,
+        );
+      }
       return _json(<String, Object?>{
         'documentId': 'doc-1',
         'currentVersion': version,
-        'acknowledgements': acknowledgedVersion == null
+        'acknowledgements':
+            acknowledgedVersion == null ||
+                (currentVersionOnly && acknowledgedVersion != version)
             ? <Object?>[]
             : <Object?>[
                 <String, Object?>{
@@ -290,7 +303,7 @@ void main() {
   });
 
   test(
-    'document client sends UUID correlation ids on all four member-state operations',
+    'document client sends UUID correlation ids on member-state and acknowledgement operations',
     () async {
       final requests = <http.Request>[];
       final httpClient = MockClient((request) async {
@@ -313,7 +326,6 @@ void main() {
           });
         }
         if (request.url.path.endsWith('/acknowledgements')) {
-          expect(request.url.queryParameters['currentVersionOnly'], 'true');
           return _json(<String, Object?>{
             'documentId': 'doc-1',
             'currentVersion': 2,
@@ -361,12 +373,17 @@ void main() {
         documentId: 'doc-1',
         currentVersionOnly: true,
       );
+      final acknowledgementHistory = await client.listDocumentAcknowledgements(
+        communityId: 'community-test',
+        documentId: 'doc-1',
+      );
 
       expect(revision.version, 2);
       expect(state.currentVersion, 2);
       expect(updated.read, isTrue);
       expect(acknowledgements.acknowledgements.single.stale, isTrue);
-      expect(requests, hasLength(4));
+      expect(acknowledgementHistory.acknowledgements.single.stale, isTrue);
+      expect(requests, hasLength(5));
       for (final request in requests) {
         expect(request.headers['authorization'], 'Bearer test-access-token');
         expect(
@@ -380,6 +397,146 @@ void main() {
       }
       expect(requests.first.headers['idempotency-key'], isNotNull);
       expect(requests[2].headers, isNot(contains('idempotency-key')));
+      expect(requests[3].url.queryParameters['currentVersionOnly'], 'true');
+      expect(requests[4].url.queryParameters, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'only a caller with resolved document administration sees acknowledgements',
+    (tester) async {
+      final service = _DocumentStateService();
+      addTearDown(service.close);
+      final administratorMachine = _documentMachine(
+        transitions: <Map<String, Object?>>[
+          _transition(id: 'acknowledge-policy', action: 'acknowledge'),
+          _transition(id: 'manage-access', action: 'grant_access'),
+        ],
+      );
+      await _pumpCard(tester, service: service, machine: administratorMachine);
+
+      expect(
+        find.byKey(const ValueKey('document-library-acknowledgements-doc-1')),
+        findsOneWidget,
+      );
+
+      final uploaderMachine = _documentMachine(
+        transitions: <Map<String, Object?>>[
+          _transition(id: 'acknowledge-policy', action: 'acknowledge'),
+          _transition(id: 'replace-policy', action: 'upload'),
+        ],
+      );
+      await _pumpCard(tester, service: service, machine: uploaderMachine);
+
+      expect(
+        find.byKey(const ValueKey('document-library-acknowledgements-doc-1')),
+        findsOneWidget,
+      );
+
+      final readerMachine = _documentMachine(
+        transitions: <Map<String, Object?>>[
+          _transition(id: 'acknowledge-policy', action: 'acknowledge'),
+        ],
+      );
+      await _pumpCard(tester, service: service, machine: readerMachine);
+
+      expect(
+        find.byKey(const ValueKey('document-library-acknowledgements-doc-1')),
+        findsNothing,
+      );
+    },
+  );
+
+  testWidgets(
+    'a refused acknowledgement request is unavailable rather than empty',
+    (tester) async {
+      final service = _DocumentStateService()..acknowledgementStatusCode = 403;
+      addTearDown(service.close);
+      final machine = _documentMachine(
+        transitions: <Map<String, Object?>>[
+          _transition(id: 'acknowledge-policy', action: 'acknowledge'),
+          _transition(id: 'manage-access', action: 'grant_access'),
+        ],
+      );
+      await _pumpCard(tester, service: service, machine: machine);
+      await tester.tap(
+        find.byKey(const ValueKey('document-library-acknowledgements-doc-1')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Acknowledgements unavailable.'), findsOneWidget);
+      expect(
+        find.text('No one has acknowledged the current version.'),
+        findsNothing,
+      );
+      expect(
+        find.text('No one has acknowledged an earlier version.'),
+        findsNothing,
+      );
+    },
+  );
+
+  testWidgets(
+    'current and earlier-version acknowledgement readings are visibly distinct',
+    (tester) async {
+      final service = _DocumentStateService()
+        ..version = 2
+        ..acknowledgedVersion = 1;
+      addTearDown(service.close);
+      final machine = _documentMachine(
+        transitions: <Map<String, Object?>>[
+          _transition(id: 'acknowledge-policy', action: 'acknowledge'),
+          _transition(id: 'manage-access', action: 'grant_access'),
+        ],
+      );
+      await _pumpCard(tester, service: service, machine: machine);
+      await tester.tap(
+        find.byKey(const ValueKey('document-library-acknowledgements-doc-1')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Acknowledged the current version'), findsOneWidget);
+      expect(
+        find.text('No one has acknowledged the current version.'),
+        findsOneWidget,
+      );
+      expect(find.text('Acknowledged an earlier version'), findsOneWidget);
+      expect(
+        find.text(
+          'member needs to acknowledge the current version '
+          '(acknowledged version 1; current version 2).',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        service.acknowledgementCurrentVersionOnlyRequests,
+        containsAllInOrder(<bool>[true, false]),
+      );
+    },
+  );
+
+  testWidgets(
+    'an unreachable acknowledgement service is unavailable rather than empty',
+    (tester) async {
+      final service = _DocumentStateService()..acknowledgementStatusCode = 503;
+      addTearDown(service.close);
+      final machine = _documentMachine(
+        transitions: <Map<String, Object?>>[
+          _transition(id: 'acknowledge-policy', action: 'acknowledge'),
+          _transition(id: 'manage-access', action: 'grant_access'),
+        ],
+      );
+      await _pumpCard(tester, service: service, machine: machine);
+      await tester.tap(
+        find.byKey(const ValueKey('document-library-acknowledgements-doc-1')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Acknowledgements unavailable.'), findsOneWidget);
+      expect(
+        find.text('No one has acknowledged the current version.'),
+        findsNothing,
+      );
     },
   );
 
