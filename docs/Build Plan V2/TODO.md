@@ -1296,6 +1296,36 @@ So there is no architecture decision outstanding. The work is provisioning, in o
 - [ ] then seed the ~35–40 accounts through the real `requestGroupMembership` → `decideGroupMembership`
       flow, which is what makes the fixtures worth having
 
+**RESOLVED 2026-08-30 — the `invalid_role_scope` guard is the opposite of a problem, and the whole
+path needs no code change.** The four sites, read rather than assumed:
+
+| Site | Method | Behaviour toward a NULL-group role |
+| --- | --- | --- |
+| 525 | `setAppAccess` | **requires it** — rejects roles that *have* a `groupId`: "App-level access accepts only app-level roles" |
+| 589 | `setGroupMembership` | allows it — guard is `roleGroupId != null && !equals(groupId)` |
+| 873 | `decideGroupMembership` | allows it — same guard |
+| 1163 | `requireGroupRoles` (invites only) | rejects it — invites must be group-scoped |
+
+So a NULL-group `admin` is not merely viable, it is **the only shape `setAppAccess` accepts**. The
+spec agrees: `CreateRoleRequest` is `required: [roleId, displayName]` with
+`groupId: type: [string, 'null']`, and `PUT /v1/apps/{appId}/access/{fanId}` (`setAppAccess`) exists.
+All five governance permissions are present in the 127-entry catalog.
+
+**The complete path, using only existing APIs — no dispatch, no code change:**
+
+1. `POST /v1/apps/loom_communities/roles` — `{roleId: "admin", displayName: "Administrator",
+   permissionIds: [the five community.* permissions]}`, **no `groupId`**
+2. `PUT /v1/apps/loom_communities/access/{fanId}` — `{state: "active", roleIds: ["admin"]}`
+3. then seed every other account through the real `requestGroupMembership` →
+   `decideGroupMembership` flow
+
+- [ ] **BLOCKED ON APPROVAL, not on knowledge.** Step 1 was attempted and refused by the tool
+      permission gate, correctly: it writes to the live authorization system. Step 1 grants nobody
+      anything — a role with no holders — but it is still a change to auth, so it needs an explicit
+      go-ahead
+- [ ] `needs-decision` — **who holds `admin`** (step 2). Unchanged, and still the only genuine
+      decision here
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
