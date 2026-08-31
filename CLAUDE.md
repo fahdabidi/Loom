@@ -93,12 +93,26 @@ reports `[✓] Android toolchain … Android SDK version 36.0.0`, with `JAVA_HOM
 what the Flutter side needs (the backend's Java 21 override belongs to `loom-backend/build.sh` only).
 Linux has no symlink restriction, so the build simply works:
 
-    ssh loom-vm '. ~/.loom-env.sh; cd ~/Loom/app/apps/loom_communities_demo && flutter build apk --debug'
+    ssh loom-vm '. ~/.loom-env.sh; cd ~/Loom/app/apps/loom_communities_demo && flutter build apk --debug \
+      --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true'
     ssh loom-vm 'cat ~/Loom/app/apps/loom_communities_demo/build/app/outputs/flutter-apk/app-debug.apk' > /tmp/app.apk
     "C:\Android\Sdk\platform-tools\adb.exe" install -r /tmp/app.apk
 
 Proven 2026-08-31: built in ~5 minutes, 166,844,907 bytes, transferred byte-identical, installed to
 `emulator-5554` over the stale 2026-08-11 build, launched clean with no `FATAL EXCEPTION` in logcat.
+
+**`--dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true` is not optional, and omitting it looks like a
+product bug.** `main.dart` reads the flag through `bool.fromEnvironment`, which defaults to **false**,
+so an APK built without it installs and launches perfectly and then shows *"No communities installed"*
+forever. That state is not merely empty — it is unusable, because **every route to sign-in requires a
+community to already be open**: the identity picker carrying "Sign in securely with Loom…" lives in a
+community screen's `AppBar`, and `_communityEntryGate` takes a `community.extensionId`. So the app with
+no packages has no login, and the natural reading of that screen is "Android cannot authenticate",
+which is what it was recorded as for two days.
+
+`launch_loom_demo_emulators.sh` passes the define for `flutter run`, which is why the app behaves
+correctly there and only the installed APK is empty. Two commands for the same app that differ in one
+flag, where only one of them is documented here, is how the difference stayed invisible.
 
 **The emulator still belongs on Windows** — that has not changed, and the VM has no AVD. What changes
 is that *building* and *running* need not happen on the same host. The APK is a file; only the
