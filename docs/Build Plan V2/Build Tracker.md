@@ -2181,7 +2181,7 @@ here.
 | ⬜ Open | `needs-debug-agent` | **Garden walkthrough stall** — unfixed, reproducing on both hosts, fails in ~4 min with a diagnostic. | TODO.md, migrated | 2026-08-31 |
 | ⬜ Open | `new-milestone` | **Platform phases A, A.1, B, C, D, E, G.4 remain**, with Phase E gated on the two permission vocabularies that do not meet (`community.surface.navigation.*` vs `community.manage_settings`). | TODO.md, migrated | 2026-08-31 |
 | ⬜ Open | `new-ticket` | `b25-c16` app-shell capability utilization fails 5 sub-checks — tabs, presentation states, community-card states, theme customization, renderer selection. Largest named obstacle to the bar | pass-42 criteria scorecard | 2026-08-31 |
-| ⬜ Open | `needs-live-validation` | `b25-c14` LLM vision UX judge was never run over the screenshot evidence; needs a fresh capture from the current build first | pass-42 criteria scorecard | 2026-08-31 |
+| ⬜ Open | `needs-live-validation` | **`b25-c14` — measured 2026-08-31, and the artifact is ~97% scaffold.** `llm-vision-ux-review-b25-v4-pass-42.json` exists (53 KB, `status: pass`, 204 `screenReviews`), so "the judge was never run" is wrong as stated — but of those 204 entries only **7** carry `visibleEvidence` and **7** carry `critique`; **zero** carry per-screen direct-question answers. The rest are `{rowId, verdict: pass, findings: []}`. No real vision judge inspected 197 of the 204 screens. | pass-42 scorecard, re-measured | 2026-08-31 |
 | ⬜ Open | `needs-decision` | Data Portability's **9** rows share one identical expected decision; decides whether the 79 denominator is honest | row-duplication analysis | 2026-08-31 |
 | ⬜ Open | `needs-decision` | Masjid's 3 `wf_*` persona/UX rows are not workflows — are they B25 rows at all? | row-duplication analysis | 2026-08-31 |
 | ⬜ Open | `needs-skill-dispatch` | Chess: strike the 2 duplicate rows (`chess-local-install-open`, `chess-route-home`); keep `chess-match-result` | row-duplication analysis | 2026-08-31 |
@@ -2618,7 +2618,7 @@ unknown". The detail lives in `production-ux-criteria-scorecard.json`, keyed on 
 
 | Criterion | `blocksPass` | Why |
 | --- | --- | --- |
-| `b25-c14-llm-vision-ux-review` | true | "The LLM vision UX review is missing holistic answers or screen reviews." The judge was **never run** on the evidence |
+| `b25-c14-llm-vision-ux-review` | true | "The LLM vision UX review is missing holistic answers or screen reviews." **Re-measured 2026-08-31:** the bundle on disk carried `holisticQuestionAnswers: []` and `screenReviews: []` while the review file had them populated, so re-running `b25_llm_ux_review_importer.dart` changes the score from **0 to 20** and the message to "too shallow to prove production UX quality". The import gap is real but it is not the blocker — the review itself is a scaffold, so c14 fails either way. |
 | `b25-c16-app-shell-capability-utilization` | true | Five sub-checks failed for the Loom Communities shell: `tabsPass`, `presentationStatesPass`, `mainCommunityCardStatesPass`, `themeCustomizationPass`, `rendererSelectionPass` |
 
 16 of 18 criteria pass; `holisticPass` and `workflowPersonaPass` are both true.
