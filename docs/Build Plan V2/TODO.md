@@ -1251,6 +1251,51 @@ anyone. The invitation path is closed for the same reason — `issueInvite` is d
       exist (`loom_communities_camera-club` *and* `loom_communities_camera_club`), plus two
       `b3-e2e-*` throwaways. Decide which spelling is canonical and delete the rest before they are
       read as product data
+
+**CORRECTED, same day — the "per-group vs app-wide" fork above was a false dilemma.** I framed the
+next step as a design decision because `app_role.group_id` is nullable but NULL in zero of 29 rows.
+Reading the authorization path settles it: **the mechanism already exists and is simply unused.**
+
+`AppAccessService.collectActiveRoleIds` (line 1065) unions **two** sources:
+
+```java
+appAccessRoleRepository.findById_AppIdAndId_FanId(appId, fanId)      // app-level, NOT group-scoped
+...
+groupMembershipRoleRepository.findById_AppIdAndId_GroupIdAndId_FanId(appId, groupId, fanId)
+```
+
+The first is gated only on the fan's `app_access` row being active — **no group filter**. So an
+`app_access_role` grant contributes to `activeRoleIds` in *every* group, which is exactly the
+"`admin` coexists with domain roles: a real person may hold `[admin, hoa-board]`" model
+`permissions.md` §7 describes. `requireGroupAdministrator` then checks those ids for
+`community.manage_members`, so a platform admin passes in every community without any per-group role.
+
+Measured, with a control (`group_membership_role` = 5 rows, so the queries work):
+
+| Table | Rows |
+| --- | ---: |
+| `app_access` | **0** |
+| `app_access_role` | **0** |
+
+**Nobody has app-level access at all**, and no platform role has ever been granted. Cedar works only
+because `cedar_commons_hoa_admin` is a *group-scoped* role that happens to carry the permission — the
+one-off, not the design.
+
+So there is no architecture decision outstanding. The work is provisioning, in order:
+
+- [ ] `new-ticket` — create the `admin` role in `app_role` and grant it the five `community.*`
+      governance permissions. `group_id` NULL is the right shape, since `app_access_role` grants are
+      not group-scoped. Note the `invalid_role_scope` guard (lines 525, 589, 873, 1163) rejects a
+      role whose `groupId` does not match the group — confirm it is not on the `app_access_role`
+      path before assuming a NULL-group role can be granted, because those four sites are what would
+      make this fail
+- [ ] `needs-decision` — **who holds `admin`.** This is the only question left for the user, and it
+      is far smaller than the "bootstrap admin" framing: granting an existing platform role through
+      `app_access` + `app_access_role` is ordinary provisioning, **not** a direct membership insert
+      that bypasses the authorization check the security fix just added
+- [ ] then seed the ~35–40 accounts through the real `requestGroupMembership` → `decideGroupMembership`
+      flow, which is what makes the fixtures worth having
+
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
