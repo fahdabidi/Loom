@@ -1440,6 +1440,49 @@ The corrected path, all existing APIs:
 
 
 
+
+### 2026-08-31 — the unshippable-row sweep undercounted: 12 rows, not 7
+
+Re-ran the check while the device work was blocked. The recorded finding says **7 rows name a
+workflow their package does not ship**. Measured against the shipped packages: it is **12**.
+
+**Method, and the two things that made my first two attempts wrong.** The B25 asset
+(`assets/b25_semantic_interaction_models.json`, 79 rows) joins to packages on **`extensionId`, not
+`communityId`** — the two id spaces genuinely differ (`community_ad_off` in B25 vs
+`community_ad_free_community` in the package), and joining on `communityId` silently drops six of ten
+communities. The row's workflow field is **`workflowId`**, not `workflow`. My first run reported "0
+rows checked" and my second "32 not shipped"; both were artifacts of those mistakes, not findings.
+The run below carries a control — a row known to be shipped (`photo-walk-rsvp`) resolves `True` — so a
+zero would mean absent rather than broken.
+
+**The 7 already recorded, all confirmed:**
+
+| Community | Workflow |
+| --- | --- |
+| Chess Club | `chess-local-install-open`, `chess-route-home` |
+| Garden Club | `garden-tool-loan-giveaway` |
+| Member Social Space | `platform-messages-entry`, `platform-connections-entry`, `platform-connection-invite`, `platform-message-stream` |
+
+**Five more that were missed, all Masjid Nur:**
+
+| Rows | Workflow id |
+| ---: | --- |
+| 1 | `wf_demo-app-persona-picker` |
+| 2 | `wf_community-persona-aware-ux` |
+| 2 | `wf_multi-persona-workflow-evidence` |
+
+Three distinct ids across five rows. **No package anywhere uses a `wf_` prefixed `workflowType`** —
+Masjid ships only `mosque-*` — and these ids appear nowhere in the repo except old
+`.codex-logs` dispatch prompts. So they are not a second id space that needs mapping; they are rows
+naming workflows that do not exist, the same class as the seven.
+
+**Consequence.** 12 of 79 rows cannot be walked as written, so the production bar's denominator is
+questionable until they are either corrected in the product docs or struck. That is a larger share
+than the recorded 7 implied, and it is worth knowing before anyone measures progress against 79.
+
+- [ ] `needs-skill-dispatch` — the five Masjid rows: correct the product doc's B25 table, or remove
+      them if they were never real workflows
+- [ ] the original 7 remain as recorded
 ### 2026-08-31 — the production bar is blocked on one Windows setting, and the installed APK is three weeks stale
 
 With the backend complete, the next step is proving it on a device. That is blocked, and the two
