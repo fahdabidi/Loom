@@ -269,6 +269,27 @@ paths:
                 $ref: '#/components/schemas/Role'
         '404':
           $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+    delete:
+      operationId: deleteRole
+      summary: Delete a role that no member or invitation still holds.
+      description: >-
+        Refuses to delete a held role rather than silently removing a member's capability or
+        leaving a dangling assignment. Remove every assignment or invitation grant first; the
+        role's own permission mappings are deleted with the role.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/RoleId'
+      responses:
+        '204':
+          description: Role and its permission mappings deleted.
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
 
   /v1/apps/{appId}/roles/{roleId}/permissions:
     put:
@@ -488,6 +509,99 @@ paths:
             application/json:
               schema:
                 $ref: '../_shared/errors.yaml#/components/schemas/ApiError'
+
+  /v1/apps/{appId}/groups/{groupId}/invitations:
+    post:
+      operationId: issueInvite
+      summary: Mint an invitation to join this group.
+      description: >-
+        Admin-initiated only. The caller who is issuing is inferred from the token;
+        the request body never carries `issuedByFanId`.
+
+
+        This endpoint creates an invitation code that the caller can hand to another
+        fan. The membership becomes active only when the holder redeems the code.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+        - $ref: '#/components/parameters/GroupId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueGroupInvitationRequest'
+      responses:
+        '201':
+          description: Invitation minted and returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupInvitation'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  /v1/apps/{appId}/invitations/{code}:
+    get:
+      operationId: getInvitation
+      summary: Resolve an invitation code without consuming it.
+      description: >-
+        Returns metadata for an invitation so a client can show "you've been invited to
+        this group" before commit. For callers that cannot be identified, this endpoint
+        returns `404 Not Found` whether the code exists or not.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invitation resolved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupInvitation'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
+  /v1/apps/{appId}/invitations/{code}/redemptions:
+    post:
+      operationId: redeemInvite
+      summary: Redeem an invitation into an active group membership.
+      description: >-
+        Redeem is immediate and idempotent per fan: redeeming again returns the
+        existing membership. Each code can only grant access once unless explicitly
+        raised by `maxUses`.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invitation redeemed and resulting membership.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMembership'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
 
   /v1/apps/{appId}/groups/{groupId}/members/{fanId}:
     get:
@@ -933,6 +1047,38 @@ components:
           items:
             type: string
 
+    GroupInvitation:
+      type: object
+      required: [code, appId, groupId, issuedByFanId, roleIds, createdAt, maxUses, useCount]
+      properties:
+        code:
+          type: string
+          description: Opaque, unguessable invitation code.
+        appId:
+          type: string
+        groupId:
+          type: string
+        issuedByFanId:
+          type: string
+        roleIds:
+          type: array
+          description: Roles granted when the invitation is redeemed.
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        maxUses:
+          type: integer
+          minimum: 1
+        useCount:
+          type: integer
+          minimum: 0
+
     ListRolesResponse:
       type: object
       required: [items]
@@ -1213,6 +1359,28 @@ components:
             so approving without one is almost always a mistake rather than a deliberate choice.
           items:
             type: string
+
+    IssueGroupInvitationRequest:
+      type: object
+      required: [roleIds]
+      properties:
+        roleIds:
+          type: array
+          minItems: 1
+          description: One or more group roles the invitee will receive if they redeem.
+          items:
+            type: string
+        maxUses:
+          type: integer
+          description: >-
+            Maximum number of distinct fans that may redeem the same code. Defaults to `1`, so
+            invites are single-use by default.
+          default: 1
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: If omitted, the invitation never expires.
 
     ListGroupMembershipsResponse:
       type: object
