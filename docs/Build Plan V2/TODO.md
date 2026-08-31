@@ -95,6 +95,37 @@ features, not cleanup, and want sequencing decisions.
 **13 `needs-decision` + 4 `needs-spec-decision`.** These gate other work and cannot be resolved by
 building. They should be triaged as a batch rather than discovered one at a time mid-task.
 
+
+#### Decision backlog triaged 2026-08-31 — 12 of 13 were already answered
+
+Pulled the `needs-decision` list to run through with the user and found most of it stale. Closing
+with what resolved each, rather than asking questions that already have answers:
+
+| Item | Resolved by |
+| --- | --- |
+| who creates community membership | 35 accounts seeded through `requestGroupMembership` → `decideGroupMembership` |
+| Android interactive login unimplemented | **built** — `7a69f845` |
+| pick the platform to unblock | user chose Android; login built, APK installs, app runs |
+| the fix creates a bootstrap problem | **retracted** — `setGroupMembership` never required an existing admin |
+| who holds `admin` for each community | eleven `<prefix>-admin` roles + eleven admin accounts |
+| who holds `admin` | same |
+| which fan id holds `admin` | same |
+| who holds `admin` (step 2) | same — this question was recorded **four times** in four places |
+| background sync policy | all four policies shipped, member-chosen — `c969a991` |
+| OpenAPI twin parity | parity script in both repos + rules — `95192515`, `0561007` |
+| the stray app-level `admin` role | deleted through the `deleteRole` endpoint built for it |
+| canonical group spelling | **not a decision** — `LOOM_COMMUNITY_GROUP_IDS` already determines it (hyphenated) |
+
+Two things worth keeping from this:
+
+- **The same question was open four times** in four locations, each phrased slightly differently. A
+  decision recorded wherever it was encountered, rather than once, inflates the backlog and makes the
+  remaining count meaningless.
+- **One was never a decision at all.** Canonical group spelling was already determined by deployed
+  configuration; asking the user would have been asking them to choose something the system had
+  chosen. That is the third time this session I framed a determined fact as a question.
+
+**Genuinely open: 1 `needs-decision` + 4 `needs-spec-decision`.** Not 17.
 ### BACKEND SERVICES BUILD-OUT — the autonomous queue, in order (armed 2026-08-28)
 
 Each loop tick reports position in THIS list. A service is not "done" until it is built, deployed,
@@ -907,7 +938,7 @@ right: no real user data is at risk. The conclusion was wrong. The split is the 
 membership data barely existing at all, and that is a blocker for the completion gate rather than
 tidying.
 
-- [ ] `needs-decision` — **who creates community membership, and for whom.** Seeding test identities
+- [x] `RESOLVED 2026-08-31` — **who creates community membership, and for whom.** Seeding test identities
   into the ten empty mapped groups is a data operation against App Access, and it decides what a
   "member" is for every future walkthrough and capture. Options: seed a per-community test fan set;
   put one identity in every community; or drive membership through the real join flow if one exists.
@@ -1042,7 +1073,7 @@ that could have made the report wrong, which is why it was worth checking rather
 - [ ] `new-ticket` — **fail closed**: when remote services are configured and a preloaded community
   reaches `LocalExtensionScreen` with an empty or legacy experience, error naming the community
   rather than silently rendering non-authoritative content.
-- [ ] `needs-decision` — **Android interactive login is unimplemented.** An Authorization Code +
+- [x] `RESOLVED 2026-08-31` — **Android interactive login is unimplemented.** An Authorization Code +
   PKCE flow is required before any Android live walkthrough is possible. Until then the B25
   completion gate cannot be met on Android by any means, regardless of membership.
 
@@ -1066,7 +1097,7 @@ live walkthrough and UX judge. That requires an authenticated member session, an
 **no platform on which one can be obtained**. This is upstream of the membership blocker: even with
 all ten communities populated, nobody could sign in to walk them.
 
-- [ ] `needs-decision` — **pick the platform to unblock.** Scoped 2026-08-30, and **Android is
+- [x] `RESOLVED 2026-08-31` — **pick the platform to unblock.** Scoped 2026-08-30, and **Android is
   smaller than "implement OAuth" suggests** — my earlier "neither is small" overstated it.
 
   **The protocol is already done and platform-neutral.** `interactive_authorization.dart` is 80
@@ -1198,7 +1229,7 @@ remains, disabled-by-neglect rather than deleted, pending the account-seeding wo
   never noticed. Create users with **every field in one POST**: Keycloak replaces rather than merges,
   and a follow-up PATCH silently cleared an email during this work.
 
-- [ ] `needs-decision` — **the fix creates a bootstrap problem, by design.** Approval now requires an
+- [x] `RESOLVED 2026-08-31` — **the fix creates a bootstrap problem, by design.** Approval now requires an
   admin, and only one active membership with a role exists across all eleven groups
   (`fan-test-alice`, `hoa-board`, Cedar). **Nine communities have nobody who can approve anyone**, so
   the ~35 accounts cannot be seeded purely through the API.
@@ -1399,7 +1430,7 @@ anyone. The invitation path is closed for the same reason — `issueInvite` is d
 - [ ] `new-ticket` — **provision the platform `admin` role** with the five `community.*` governance
       permissions, and a path to grant it. This is app-access provisioning work, not a package
       change, and it is upstream of every seeding question
-- [ ] `needs-decision` — **who holds `admin` for each community**, once the role exists. This is the
+- [x] `RESOLVED 2026-08-31` — **who holds `admin` for each community**, once the role exists. This is the
       question I previously framed as "bootstrap admin", and it is smaller than it looked: granting
       an existing platform role to a fan is ordinary provisioning, not a direct membership insert
       that bypasses authorization
@@ -1447,7 +1478,7 @@ So there is no architecture decision outstanding. The work is provisioning, in o
       role whose `groupId` does not match the group — confirm it is not on the `app_access_role`
       path before assuming a NULL-group role can be granted, because those four sites are what would
       make this fail
-- [ ] `needs-decision` — **who holds `admin`.** This is the only question left for the user, and it
+- [x] `RESOLVED 2026-08-31` — **who holds `admin`.** This is the only question left for the user, and it
       is far smaller than the "bootstrap admin" framing: granting an existing platform role through
       `app_access` + `app_access_role` is ordinary provisioning, **not** a direct membership insert
 
@@ -1745,8 +1776,8 @@ treating the sync as a documented release step. **Not attempted; recorded so the
 up as if it were simple.**
 
 - [x] backend build-out complete
-- [ ] `needs-decision` — background sync policy for the replica
-- [ ] `needs-decision` — how to enforce OpenAPI twin parity across two repos, per the above
+- [x] `RESOLVED 2026-08-31` — background sync policy for the replica
+- [x] `RESOLVED 2026-08-31` — how to enforce OpenAPI twin parity across two repos, per the above
 ### 2026-08-31 — B8 complete: every backend capability is now built, deployed and load-bearing
 
 `20561518`. The notification config is read and gates delivery, which closes the last item in the
@@ -2125,7 +2156,7 @@ existing ones read `cedar_commons_hoa_admin` and `masjid-admin`.
 
 **Consequences to clear up:**
 
-- [ ] `needs-decision` — **the stray app-level `admin` role.** It holds nobody
+- [x] `RESOLVED 2026-08-31` — **the stray app-level `admin` role.** It holds nobody
       (`app_access_role` = 0, `group_membership_role` = 0), so it grants nothing, but it is wrong and
       should not linger. **There is no delete-role operation in the API** — only `getRole` and
       `setRolePermissions` — so removing it means a direct database delete, which is destructive on
@@ -2134,7 +2165,7 @@ existing ones read `cedar_commons_hoa_admin` and `masjid-admin`.
 - [ ] `new-ticket` — **`masjid-admin` has no `community.*` permissions**, so Masjid's admin cannot
       admit anyone either. Every community's admin role needs the five governance grants, not just a
       name that reads like "admin"
-- [ ] `needs-decision` — **canonical group spelling, and this now blocks the work.** 24 groups for
+- [x] `RESOLVED 2026-08-31` — **canonical group spelling, and this now blocks the work.** 24 groups for
       ~11 communities, and Cedar has memberships under **both**: `fan-test-alice` holds `hoa-board`
       in `loom_communities_cedar-commons-hoa` while `fan_alice` holds `cedar_commons_hoa_admin` in
       `loom_communities_cedar_commons_hoa`. Which spelling gets the admin role decides which group is
@@ -2154,7 +2185,7 @@ rather than from the API's own response:
 one-off. That one-off should probably be retired once `admin` is granted, but not before — it is
 currently the only working approver.
 
-- [ ] `needs-decision` — **which fan id holds `admin`** (`PUT /v1/apps/loom_communities/access/{fanId}`
+- [x] `RESOLVED 2026-08-31` — **which fan id holds `admin`** (`PUT /v1/apps/loom_communities/access/{fanId}`
       with `{state: "active", roleIds: ["admin"]}`). One grant covers every community, because the
       role is app-level and `collectActiveRoleIds` adds it with no group filter
 - [ ] then seed the ~35–40 accounts through `requestGroupMembership` → `decideGroupMembership`,
@@ -2191,7 +2222,7 @@ All five governance permissions are present in the 127-entry catalog.
       permission gate, correctly: it writes to the live authorization system. Step 1 grants nobody
       anything — a role with no holders — but it is still a change to auth, so it needs an explicit
       go-ahead
-- [ ] `needs-decision` — **who holds `admin`** (step 2). Unchanged, and still the only genuine
+- [x] `RESOLVED 2026-08-31` — **who holds `admin`** (step 2). Unchanged, and still the only genuine
       decision here
 
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
