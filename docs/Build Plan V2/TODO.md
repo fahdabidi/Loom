@@ -1190,6 +1190,67 @@ the bloat only ever cost build time, never image size.
 Two lessons worth more than the incident: judge hung-versus-slow from a **CPU trend**, never one
 sample, and note that the build log is block-buffered, so a stale tail is not evidence of a stall.
 
+
+### 2026-08-30 — the blocker is not bootstrapping, it is that the platform `admin` role was never provisioned
+
+I reported earlier that seeding was blocked because nine communities have no admin who can approve.
+That was right about the symptom and **wrong about the cause**, and the correction matters because
+it changes what has to be built.
+
+**First, two corrections to what I said.** I claimed the only role-holding membership was
+`fan-test-alice` with `hoa-board` in Cedar. It is **`fan_alice`** with **`cedar_commons_hoa_admin`**,
+and there are **5 active memberships across 4 groups**, not one.
+
+**What is actually true**, measured against `loom_app_access` with controls on every query
+(24 groups, 29 roles, 372 `role_permission` rows):
+
+| Check | Result |
+| --- | --- |
+| Roles holding `community.manage_members` | **1 of 29** — `cedar_commons_hoa_admin` |
+| A role named `admin` | **does not exist** |
+| `community.view` | held by **nobody** |
+| `community.manage_roles` | held by **nobody** |
+| `community.invite` | held by **nobody** |
+| `community.manage_settings` | held by **nobody** |
+
+Confirmed in code, not inferred from the name: `AppAccessService.java:103` defines
+`GROUP_MANAGER_PERMISSION = "community.manage_members"`, and that is what the decide path checks.
+
+**Why the domain roles do not have it, and should not.** The derived roles are rich in workflow
+actions — `hoa-board` has 34, `book-organizer` 31, `chess-owner` 7 — and every one of them is a
+workflow action (`export_wizard.create`, `document_library.upload`). The provisioning deriver builds
+role permissions from the package's workflows. `DerivedRoleInput` carries only `roleId` and `label`,
+so a package cannot express a governance grant at all.
+
+That is correct by design. `docs/references/reference/permissions.md` §7 says so plainly:
+
+> `admin` is a **platform** role and coexists with domain roles: a real person may hold
+> `[admin, hoa-board]`. No fixture declares a role named `admin`, so this is purely additive.
+> User management is an App Shell experience gated on `community.manage_members`, never a workflow.
+
+So `community.manage_members` was never meant to sit on a community package role. It belongs to a
+platform `admin` role that **nothing has ever created**. `cedar_commons_hoa_admin` is a hand-made
+one-off — 4 permissions where derived roles have 20–34 — which is why exactly one community works.
+
+**Consequence.** `requestGroupMembership` → `decideGroupMembership` is unusable in every community
+except Cedar, and inserting a bootstrap membership would not fix it: an admin bootstrapped into
+Chess Club would hold `chess-owner`, which has seven export-wizard permissions and cannot admit
+anyone. The invitation path is closed for the same reason — `issueInvite` is documented
+"Admin-initiated only".
+
+- [ ] `new-ticket` — **provision the platform `admin` role** with the five `community.*` governance
+      permissions, and a path to grant it. This is app-access provisioning work, not a package
+      change, and it is upstream of every seeding question
+- [ ] `needs-decision` — **who holds `admin` for each community**, once the role exists. This is the
+      question I previously framed as "bootstrap admin", and it is smaller than it looked: granting
+      an existing platform role to a fan is ordinary provisioning, not a direct membership insert
+      that bypasses authorization
+- [ ] `new-ticket` — the four governance permissions held by nobody (`community.view`,
+      `manage_roles`, `invite`, `manage_settings`) need the same treatment, or they are decoration
+- [ ] `new-ticket` — **24 groups for ~11 communities**: both hyphenated and underscored spellings
+      exist (`loom_communities_camera-club` *and* `loom_communities_camera_club`), plus two
+      `b3-e2e-*` throwaways. Decide which spelling is canonical and delete the rest before they are
+      read as product data
 ### PRODUCTION READINESS — measured 2026-08-29, not assumed
 
 - [x] `DONE 2026-08-29` — **liveness and readiness probes**, shipped in `0.9.0` (`c0ce568d`,
