@@ -1217,6 +1217,10 @@ dispatched/verified/committed, and both this walkthrough (steps 1-6) and the pro
 
 | Status | Tag | Item | Source | Date |
 |---|---|---|---|---|
+| ⬜ Open | `needs-verification` | **STALENESS SWEEP OWED on the migrated blocks.** §9 and §10 arrived from TODO.md on 2026-08-31 carrying **13 open checkboxes intact and unadjudicated**, several written before the B8 regeneration. Sweep each against the shipped packages with a control before treating any as current. | TODO.md, migrated | 2026-08-31 |
+| ⬜ Open | `needs-skill-dispatch` | **Outstanding Skill dispatches**: DataPortability (6 prefill) and AdFree (4 orphan) never dispatched; Camera Club's regeneration was **rejected, not installed** (it moved the reminder off the per-member path); Book Club is **knowingly damaged and held** (`c0e0355b` removed its per-member `send-reminder`); Garden Club is regenerated but **not installed**. | TODO.md, migrated | 2026-08-31 |
+| ⬜ Open | `new-ticket` | **Six dead queue transitions** — `join-queue`/`leave-queue` in Book Club, Camera and Garden have no reachable caller. | TODO.md, migrated | 2026-08-31 |
+| ⬜ Open | `new-ticket` | **The `chmod 444` anti-hand-editing guard is not durable.** All eleven packages are 444 again, but nothing restores the bit after a lift-copy-restore cycle that exits early, and the guard is the only thing standing between the Skill-only rule and a silent hand edit. | TODO.md, migrated | 2026-08-31 |
 | ⏸️ Paused | `needs-debug-agent` | CJM.16 (Member Social Space): Messages tab shows zero conversations for a freshly-signed-up account. Root Cause Agent dispatched 2026-08-13 — this is a **systemic identity-namespace gap**, not a narrow bug: the grammar's single `personaId` type conflates persona *type* with a specific *account*, so any seed data meaning "this individual" (not "this role") is unsatisfiable once a real account exists. Confirmed present (0.97 confidence) in 10 of 11 real fixtures via full source audit, not just Member Social Space. Recommended fix is a new package-level `seedAccounts` grammar concept plus a migration of seed data across ~10 communities — real architectural scope, not a quick patch. **Paused by explicit user decision, 2026-08-13**, pending review of [`CJM.16 Identity Architecture Proposal.md`](CJM.16%20Identity%20Architecture%20Proposal.md) (written up in full: current identity model, the gap, affected workflows, proposed grammar change, open questions). Resume only after that proposal is reviewed/decided. | §4 row 8 | 2026-08-11 (root-caused 2026-08-13) |
 | ⏸️ Paused | `needs-debug-agent` | CJM.18 (Data Portability Community): sign-up fails deterministically for any persona after prior in-session activity in another community. Root Cause Agent dispatched 2026-08-13 — could not fully confirm the exact reported sequence without live on-device tracing (correctly reported as an instrumentation request, not a guess), but *did* statically confirm a real, separate defect: `main.dart`'s `_authApiForCommunity` caches a persona-resolver closure that ignores its own `communityExtensionId` argument and goes stale after a community's package is re-hydrated (`main.dart:219-233`). Concrete fix + 2 regression tests specified in the report. **Paused by explicit user decision, 2026-08-13** — sequenced after CJM.16's architecture proposal is resolved, not for a technical reason of its own. | §4 row 10 | 2026-08-11 (root-caused 2026-08-13) |
 | ⬜ Open | `needs-live-validation` | §6 step 7 (LLM Product Docs To Evidence Reconciliation gate) — confirmed run and closed only for Cedar Commons HOA (§4 row 1, combined-pass note). Status for the other 9 communities not confirmed in this table; re-check §4 per-row before assuming it's outstanding everywhere, then run/close per community. | §6 step 7 | 2026-08-11 |
@@ -1359,4 +1363,60 @@ risk of this item.
       `muted` is false; the inbox record is unaffected, because muting stops the interruption and
       not the record
 - [ ] **pilot one community first** and verify it exhaustively before touching the other ten
+
+
+---
+
+## 10. Writer-declaration pass and tab audiences — 2026-08-27 → 2026-08-28
+
+*Migrated from `TODO.md` on 2026-08-31. Where the writer pass stood across the ten packages, the
+`writableBy`/`effect` split, and the tab-visibility fix — a role that could read a tab but not act
+on it rendered as invisible, which conflated "can act" with "can see".*
+
+### 2026-08-28 — where the writer pass and the archetype backends actually stand
+
+**Writer-declaration pass — 7 of 10 installed.** Book Club (partially, see below), Garden, Mosque,
+MemberSocialSpace, Chess (twice: writers, then tab audiences), Cedar, Youth Soccer.
+
+- [ ] `needs-skill-dispatch` — **DataPortability (6 prefill) and AdFree (4 orphan) were never dispatched.** Briefs are built and current at `data/{dataportability,adfreecommunity}_brief.md`
+- [ ] `needs-skill-dispatch` — **Camera Club's regeneration was REJECTED, not installed.** It moved the reminder from the per-member `photo-walk-response` row to the parent event and deleted each member's `reminderOffsetHours` — the same collapse that shipped in Book Club and became solved-patterns §19. Camera's own product doc argues the per-member design explicitly at §119–129. Re-dispatch against rule 5f; the output in `~/.codex-skill-authoring-scratch/camera-writers/` is the rejected one, do not install it
+- [ ] `needs-skill-dispatch` — **Book Club is knowingly damaged and held.** `c0e0355b` removed its per-member `send-reminder`, the shared-library queue/custody fields and the reading-material access lists; its own doc requires all of them. A verified restore exists at `~/.codex-skill-authoring-scratch/bookclub-restore-r2/` and is deliberately NOT installed — held until the listing/loan backend exists, by user decision, so it can be regenerated once against the new API rather than restoring instance-data fields the backend supersedes. **Verify any Book Club output against `c0e0355b^`, not against HEAD** — HEAD is the damaged state and a diff against it reports the loss as faithfully preserved
+
+**Archetype backends.** The pattern is now three specs and two services.
+
+- [x] `new-milestone` — **export bundles + checksum**: spec, service, app client, all committed and green
+- [x] `new-milestone` — **document library gains version and per-member state**: `Document.version` is service-assigned and bumps on revision; `read`/`saved`/`acknowledged` move off instance data; acknowledgement binds to the version so a revision invalidates it without rewriting a record. **Spec only — not built**
+- [x] `new-milestone` — **item queue service built** (`b77d0cfd`), 12 tests, workflow service 89 → 101
+- [ ] `needs-verification` — **b77d0cfd MUST NOT BE DEPLOYED as-is.** `_queueOfferHoldWindows` throws at line 38 of `main`, before Postgres opens, so the service will not start without `LOOM_QUEUE_OFFER_HOLD_WINDOWS_SECONDS`. Deploying it without the manifest entry takes down documents, exports and notifications too. Fix dispatched: startup tolerates absence, malformed config still fails loudly, `advanceItemQueue` alone refuses per-community
+- [ ] `new-ticket` — **the six dead queue transitions are still dead.** `join-queue`/`leave-queue` in Book Club, Camera and Garden have zero effects. The service exists; nothing points at it. Needs a Skill regeneration per community plus an app-shell client, neither started
+- [ ] `new-milestone` — **messaging is a boundary, not an implementation.** `messaging-api.openapi.yaml` is `0.0.0-placeholder`; `messaging_feature_not_available` warns on the 8 thread-state transitions that do nothing
+
+**Validator rules added this pass** — four defect classes that were previously invisible to every check: `effect_writable_field_has_no_effect` (60), `prefill_written_field_not_platform` (128), `transition_has_no_observable_effect` (36 measured — my ad-hoc scan said 37; now **30** after `join_queue`/`leave_queue` became platform-completed), `messaging_feature_not_available` (8). Judges 434 → 461.
+
+### 2026-08-28 — a tab you may read but not act on is invisible — CLOSED
+
+- [x] `new-ticket` — **`roleHasPermission` conflated "can act" with "can see". Fixed `3006fa29`.** A role is now admitted if it can act OR if the bound workflow's visibility admits it to read, with read resolution moved into a shared `read_visibility_resolver.dart` in the engine so the tab rail and the instance list cannot disagree. `visibleRoleIds` remains an absolute override. Blast radius was 5 role-tab grants, all in Chess, no removals — predicted independently before reading the agent's report, and the two lists matched
+- [x] `new-ticket` — **PREREQUISITE done `2e8541af`:** Chess declares tab audiences (`admin: ["chess-organizer", "chess-owner"]`). Sequencing mattered — shipping the shell fix first would have widened an exposure rather than closing it
+- [x] `needs-verification` — **demo suite green at 160/160**, first time since Chess declared the tabs its doc requires
+- [ ] `new-ticket` — **SECURITY-ADJACENT, found incidentally and now fixed, but worth a corpus check: Chess's `admin` tab was visible to members.** The demo test asserted it — `chess-member` persona, `community-tab-admin` `findsOneWidget` — and that assertion was *correct about the old behaviour*. With no `visibleRoleIds` declared, a member holding any transition on any admin-tab workflow reached the whole tab. The other nine communities all declared audiences and were unaffected, so the exposure was Chess-only. **The open item is the general one:** nothing fails a build when a community declares an `admin`-ish tab with no `visibleRoleIds`. Rule 5e and solved-patterns §18 tell the Skill to declare them, but a validator rule would catch a package that does not — consider `tab_without_declared_audience` as a warning
+
+
+- [ ] `needs-verification` — **my corpus scan of this defect over-counted twice and is not evidence.** It first said 8 by not following `responseTable` into response workflows, which the real derivation does — that produced false hits on Camera and Garden calendars, where members obviously do RSVP. Refined to 6, still wrong, because it ignored `visibleRoleIds`: AdFree's `admin` hidden from a member is correct behaviour, not a defect. Only the Chess `rankings` case is proven, and it was proven by rendering the UI rather than by reading JSON. Re-measure with the real derivation before quoting any number
+
+### 2026-08-27 — the writer-declaration pass, and what it opened up
+
+Landed today, all pushed and green (judges 440, engine 312, app shell 308, workflow service 75):
+
+- [x] `new-milestone` — **`writableBy` gained `platform`, and `effect` stopped meaning two things.** `effect` had been covering both "a JSON effect writes this" and "something outside the package fills this in", so a field nothing wrote was indistinguishable from one the platform wrote. `InstanceDataField` gained `isMemberWritable`/`isMachineWritten`; six call sites now ask the question they mean. Documented in `field-types.md`, `workflow-grammar.md`, `05-validation.md` and the Skill's instructions
+- [x] `new-milestone` — **two validator rules that make writer defects checkable.** `effect_writable_field_has_no_effect` (60 findings, was 64) and `prefill_written_field_not_platform` (128 findings). Both warnings, deliberately: the packages did not break, the grammar learned to tell things apart. All 10 packages remain `pass` with **zero errors**. Promote to errors once the corpus has moved
+- [x] `needs-skill-dispatch` — **Book Club regenerated**: checksum, transferId and the AI digest answer now say `platform`. Four orphan findings → zero. Verified by my own validator run plus a field-by-field diff, not the agent's report
+- [x] `new-milestone` — **solved-patterns §15 and §16**, the reminder conversion and the prefill writer, each with the plausible-wrong JSON beside the correct JSON. Written after a prose-only rule produced a destructive reading
+
+Open, in order:
+
+- [ ] `needs-skill-dispatch` — **regenerate the remaining 8 communities for writer declarations.** Cedar (16 prefill + 6 orphan), Chess (18+6), Mosque (29+7), Youth Soccer (14+4), Garden (13+12), MemberSocialSpace (22+17), CameraClub (9+4), AdFree (0+4), DataPortability (6+0). Briefs are built at `data/<community>_brief.md` with identifiers re-derived from the shipped package, not from notes. **Book Club needs one more pass too** — its `ownerFanId` is `formEntry` and should be `platform` (its single remaining prefill finding)
+- [ ] `needs-verification` — **Garden Club is regenerated but NOT installed.** Run 1 deleted `reminderAt` *and* `reminderOffsetHours`, removing a capability the product doc promises; run 2, against the corrected instructions, declared the `reminder` block correctly and kept the offset. Re-dispatch once more so the prefill fields land as `platform` in the same pass, then install
+- [ ] `new-ticket` — **the `chmod 444` anti-hand-editing guard is not durable.** All eleven packages are 444 again as of 2026-08-27 (AdFreeCommunity and ChessClub had drifted to 664), but git does not track that permission bit, so a fresh clone gets them writable and the guard silently disappears. It is a local speed bump, not an enforced rule — the actual enforcement is the standing instruction in CLAUDE.md. If it should be real, it needs something the repo carries: a test that fails when a community `*.jsonc` changes without a corresponding Skill dispatch record, or a committed pre-commit hook plus a documented install step. Worth deciding rather than leaving a guard that looks stronger than it is
+- [ ] `new-milestone` — **the export checksum service** (user-queued 2026-08-27, still next after the writer pass): 10 markers across 8 workflows in 6 communities. Spec-first — `migration-export-api` has no checksum concept, and nothing produces an export *bundle* for one to hash
+- [ ] `needs-verification` — **`dueNotifications` has never been proven live.** `loom-workflow-service:0.4.0` is deployed with the endpoint; no community is provisioned into the service with a reminder-bearing instance, so the sweep has never returned a real row
 

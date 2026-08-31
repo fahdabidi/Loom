@@ -221,6 +221,7 @@ A (engine contracts) → B (service) → D (deploy) → E (app shell) → F (reg
 
 | Status | Tag | Item | Source | Date |
 |---|---|---|---|---|
+| ⬜ Open | `new-ticket` | **`WorkflowDatabase.memory()` is the app's only engine database.** Both construction sites use it, so nothing survives a restart — and the worse half is that in-memory also means per-device: two members hold private copies and never converge. | TODO.md, migrated | 2026-08-31 |
 | ⬜ Open | `new-ticket` | **Community isolation is a `WHERE community_id = ?` clause** — not schema-per-tenant, not row-level security. It holds only as long as every query remembers it, and nothing in the database enforces it. One omitted predicate is a cross-community data leak that no test would catch. | TODO.md cross-cutting, migrated | 2026-08-31 |
 | ⬜ Open | `new-ticket` | **Idempotency is reimplemented per repository** — `document_repository`, the bundle repository and the queue each carry their own version. Divergence between them is silent, and the correct behaviour is subtle enough that three independent implementations will not stay in agreement. | TODO.md cross-cutting, migrated | 2026-08-31 |
 | ⬜ Open | `new-ticket` | **Server-initiated push is a placeholder and nothing implements it.** `push-delivery-api.openapi.yaml` is deliberately provider-agnostic and pinned `0.0.0-placeholder`; every path answers `501`. The two live delivery paths (`notificationInbox` archetype, `LocalNotificationDeliveryService`) both require the app to be running, so a member whose app is closed is never told anything. Choosing a provider is the commitment this defers. | TODO.md B2, migrated | 2026-08-31 |
@@ -1936,4 +1937,17 @@ All five governance permissions are present in the 127-entry catalog.
   - `workflow_service.dart` is **4,484 lines** of an 8,075-line package; decompose per domain
   - revisit only on a real operational difference (bundle downloads saturating the pod), never on
     "documents are a different noun"
+
+
+---
+
+### The app's engine is in-memory — 2026-08-28
+
+*Migrated from `TODO.md` on 2026-08-31.*
+
+### 2026-08-28 — the app's engine is in-memory, so nothing survives a restart
+
+- [ ] `new-ticket` — **`WorkflowDatabase.memory()` is the app's only engine database.** Both construction sites use it — `part02_tab_shell.dart:754` and `part25_engine_native_community_store.dart:227` — so in a default local build every loan, RSVP, custody handoff, due date and acknowledgement lives for the life of the process and no longer. Close the app and the community resets to seed data. `WorkflowDatabase.file(path)` exists in `store/database.dart:54` and the app never calls it. **Needs a decision before it is a ticket:** is local persistence wanted (`WorkflowDatabase.file()` on device), or is the local engine deliberately an ephemeral demo shell whose replacement is the remote engine, making local persistence irrelevant? The answer changes the fix entirely
+- [ ] `needs-verification` — **in-memory also means per-device, which is the worse half.** Two members hold private copies and never see each other's state, so one borrowing an item does not make it unavailable to another. Lending, queueing and RSVP capacity are all inherently multi-party, so local-only is not a degraded version of those features — it is a different thing that resembles them. Any B25 row proven against a default build proves single-device behaviour only
+- [x] `needs-verification` — **corrected my own claim that "the loan lifecycle already works".** It does not. The effects are correctly authored and the state machine is right — that part stands — but authored is not backed. `listing-loan-api.openapi.yaml`'s framing paragraph is rewritten: the queue is *unauthored*, custody and loans are *authored but unbacked*, and both need the service
 
