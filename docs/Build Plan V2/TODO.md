@@ -1436,6 +1436,40 @@ The corrected path, all existing APIs:
 
 
 
+
+### 2026-08-31 — B8 package regeneration, running record
+
+Product docs: **11 of 11 done** (`e1561c0a`, `56c93e80`). Each states what its community offers and
+why, drawn from that community's own workflows rather than boilerplate.
+
+Packages, each through the Skill via a **targeted-edit brief** and verified before install:
+
+| Community | Commit | Delta | Diff | Validator (new / shipped control) |
+| --- | --- | ---: | --- | --- |
+| Camera Club | `31652ee7` | +109 | 4 lines | pass 0 err, 9 / 9 |
+| Chess Club | `cad5c1bc` | +109 | 4 lines | pass 0 err, 2 / 2 |
+| Cedar Commons HOA | `e1050a25` | +109 | 4 lines | pass 0 err, 12 / 12 |
+| Ad-Free Community | `9026105c` | +109 | 4 lines | pass 0 err, 4 / 4 |
+
+**The +109 is a tripwire, not a coincidence.** Four independently authored packages producing a
+byte-identical delta means the Skill is making the same minimal edit rather than reformatting. A
+package that comes back with a *different* delta gets scrutiny before anything else — which is worth
+more than the validator here, because deletion and correct addition produce identical validator
+reports.
+
+Two tools now derive from the shipped package rather than from memory:
+
+- **the brief generator** extracts roles, workflows and tabs and counts them, so the "what must
+  survive" block cannot be subtly wrong in the way that grants permission to drop something
+- **the installer** does lift-copy-restore on the `chmod 444` canonical file, updates the asset
+  mirror, and **confirms the written file matches its source byte-for-byte** — the pilot's copy was
+  silently refused by the permission guard and the provenance tool then ran against a half-applied
+  state
+
+- [ ] remaining: Garden Club (running), Masjid Nur, Member Social Space, Neighborhood Book Club,
+      Riverside Youth Soccer, Tabletop Club, Data Portability
+- [ ] then the app read, which **must ship with the last package** — the read alone switches device
+      notifications off, the packages alone are inert
 ### 2026-08-30 — the absent-block default would have silently switched off device notifications
 
 **A correction to my own analysis, caught before it shipped.** I offered the user three options for
