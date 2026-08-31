@@ -42,7 +42,12 @@ known answer for every kind of thing it claims to find, not just one.**
 ### WHERE THIS ACTUALLY STANDS — 2026-08-31
 
 Written because "BACKEND SERVICES BUILD-OUT — COMPLETE" is true and reads as far more finished than
-the project is. **161 items open, 105 closed.** The backend was one workstream.
+the project is. The backend was one workstream.
+
+**48 open items across the four trackers' §8 queues** as of the 2026-08-31 migration — ACWS 24,
+Build 16, Community JSON 7, TabId 1. That is a floor, not a total: the blocks migrated into the
+tracker bodies carry 54 further checkboxes that moved without being re-adjudicated, and sweeping them
+is itself an open row in each tracker.
 
 #### Done and verified live
 
@@ -92,40 +97,20 @@ features, not cleanup, and want sequencing decisions.
 
 #### Blocked on the user
 
-**13 `needs-decision` + 4 `needs-spec-decision`.** These gate other work and cannot be resolved by
-building. They should be triaged as a batch rather than discovered one at a time mid-task.
+**1 `needs-decision` + 4 `needs-spec-decision`** — down from 17 after the 2026-08-31 triage, which
+found twelve already answered and never struck (that record is now `Build Tracker` §9). These gate
+other work and cannot be resolved by building.
 
+The four spec decisions, in the order they block things:
 
-#### Decision backlog triaged 2026-08-31 — 12 of 13 were already answered
-
-Pulled the `needs-decision` list to run through with the user and found most of it stale. Closing
-with what resolved each, rather than asking questions that already have answers:
-
-| Item | Resolved by |
-| --- | --- |
-| who creates community membership | 35 accounts seeded through `requestGroupMembership` → `decideGroupMembership` |
-| Android interactive login unimplemented | **built** — `7a69f845` |
-| pick the platform to unblock | user chose Android; login built, APK installs, app runs |
-| the fix creates a bootstrap problem | **retracted** — `setGroupMembership` never required an existing admin |
-| who holds `admin` for each community | eleven `<prefix>-admin` roles + eleven admin accounts |
-| who holds `admin` | same |
-| which fan id holds `admin` | same |
-| who holds `admin` (step 2) | same — this question was recorded **four times** in four places |
-| background sync policy | all four policies shipped, member-chosen — `c969a991` |
-| OpenAPI twin parity | parity script in both repos + rules — `95192515`, `0561007` |
-| the stray app-level `admin` role | deleted through the `deleteRole` endpoint built for it |
-| canonical group spelling | **not a decision** — `LOOM_COMMUNITY_GROUP_IDS` already determines it (hyphenated) |
-
-Two things worth keeping from this:
-
-- **The same question was open four times** in four locations, each phrased slightly differently. A
-  decision recorded wherever it was encountered, rather than once, inflates the backlog and makes the
-  remaining count meaningless.
-- **One was never a decision at all.** Canonical group spelling was already determined by deployed
-  configuration; asking the user would have been asking them to choose something the system had
-  chosen. That is the third time this session I framed a determined fact as a question.
-
-**Genuinely open: 1 `needs-decision` + 4 `needs-spec-decision`.** Not 17.
+- [ ] `app_group.external_resource_type`/`external_resource_id` are NULL for all 24 groups — are these
+      columns the group→community mapping, or does it live elsewhere? → ACWS §8
+- [ ] what `platformSource` a `checksumVerified` field declares — neither `checksum` nor `opaqueId`
+      fits, and the field cannot be computed without one → ACWS §8
+- [ ] `deliver_reminder` applies to 2 of 4 candidates; Chess and Soccer expose a contradiction between
+      `permissions.md` §4 and §6, and §4 is hard-locked → Build §8
+- [ ] two permission vocabularies that do not meet: `community.surface.navigation.*` vs
+      `community.manage_settings` — prerequisite for Phase E → Build §8
 
 ### BACKEND SERVICES BUILD-OUT — complete 2026-08-31
 
@@ -165,29 +150,21 @@ Open items from those entries are rows in the same trackers' **§8** queues, not
 - [ ] walkthrough evidence records no package identity, so staleness is undetectable → Build Tracker §8
 - [ ] pass-42's two blockers — `c14` judge never run, `c16` capability gap → Build Tracker §8
 
-### 2026-08-30 — this file no longer follows its own header, and has not for a week
+### 2026-08-30 — this file stopped following its own header — RESOLVED 2026-08-31
 
-Its header says: **"This is an index, not a memory. One line per open item... Never write item
-detail directly here"** — detail belongs in the owning tracker's `## 8. Live TODO / Next Steps
-Queue`.
+The header has said "this is an index, not a memory" since it was written. By 2026-08-30 the file was
+**2,633 lines** of narrative — findings, corrections, dated session entries — and the per-tracker §8
+queues it points at had gone quiet, because detail was being written here instead of there.
 
-The file is **1260 lines**. Roughly 830 were added on 2026-08-29/30 by me, as multi-paragraph
-findings. **But the drift predates that**: dated detail sections run back through 08-28, 08-27 and
-08-25, so the convention had already lapsed before this effort started, and today's entries match
-existing practice rather than departing from it.
+**Resolved by the A1 migration on 2026-08-31** (`3054337c`, `4fe6230f`, `326d3a6b`): the record moved
+to the tracker that owns each piece of work, open items became §8 rows, and this file went back to
+being an index — 2,633 lines to under 300.
 
-Noting it rather than fixing it, deliberately. Relocating only the newest sections would leave the
-file *less* internally consistent than it is now, and mass-restructuring 1260 lines of accumulated
-context is a large, hard-to-review change with real potential to lose the reasoning these entries
-exist to carry.
-
-- [ ] `needs-decision` — **either move the detail into
-  `Access Control and Workflow Service Tracker.md` §8 and restore this file to a one-line index, or
-  amend the header to describe what this file has actually become.** A stated convention that the
-  document visibly ignores is worse than either, because a reader cannot tell which parts to trust —
-  the same failure as a tracker whose checkboxes contradict its own header, which cost real time here
-  on 2026-08-29.
-
+Two things made the drift easy to miss. **`Build Tracker` had no §8 at all**, so the one tracker that
+owns the production bar had nowhere to put an open item and everything about it landed here by
+default. And a narrative entry is genuinely useful when written — the cost only appears later, when
+the same finding is unfindable because it sits in a chronological stream instead of beside the work
+it concerns.
 
 ### PRODUCTION READINESS, the bar, and the platform phases — moved 2026-08-31
 
@@ -219,8 +196,10 @@ The live threads, one line each:
 
 ### Spec decisions that block other work
 
-- [ ] `needs-spec-decision` — `deliver_reminder` applies cleanly to 2 of 4 candidates; Chess and Soccer expose a contradiction inside `permissions.md` itself and are deliberately UNAPPLIED — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
-- [ ] `needs-spec-decision` — two permission vocabularies that do not meet: `community.surface.navigation.*` (app-shell only, decided by string suffix) vs `permissions.md`'s `community.manage_settings` (App Access). Prerequisite for Phase E — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
+The two `needs-spec-decision` items that were listed here — `deliver_reminder`'s 2-of-4 applicability
+and the two permission vocabularies — are stated once under **Blocked on the user** above, with the
+other two. A decision recorded in more than one place is what inflated the backlog to 17.
+
 - [ ] `new-milestone` — **Document ACL**: `sharedWith` is one flat `fanId` list, so there is exactly one permission level ("shared" = "can read") and sharing with a group is impossible. Sequenced AFTER Phase F — see [Document ACL Spec Proposal.md](Document%20ACL%20Spec%20Proposal.md)
 - [ ] `new-milestone` — **Spec-version compatibility hardening**: Layers 1–3 land with the v4-only cut; Layer 4 (packages declaring `requiresCapabilities`) needs a spec decision — see [Spec Version Compatibility.md](Spec%20Version%20Compatibility.md)
 

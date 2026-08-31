@@ -3009,3 +3009,41 @@ implies the remainder is provable, which the act-ability blind spot means nobody
 - [ ] `new-milestone` — **Phase G.4**: Ad-Free revert, the last open piece of Phase G (G.1–G.3 done 2026-08-20) — see [Tab Visibility Derivation Spec Proposal.md](Tab%20Visibility%20Derivation%20Spec%20Proposal.md)
 - [ ] `needs-verification` — 3 engine tests skip for want of a deployed backend: 2 need `LOOM_POSTGRES_PASSWORD` (k3s PostgreSQL port-forward), 1 needs a real fan JWT plus a live community id. These are the concrete acceptance gate for Phases B/C/D — un-skipping them is how those phases get proven rather than asserted
 
+
+---
+
+### Decision backlog triaged, 2026-08-31
+
+*Migrated from `TODO.md` on 2026-08-31. Kept because the shape of the finding outlives the specific
+questions: twelve of thirteen `needs-decision` items were already answered and had never been struck,
+one question was recorded in four separate places, and one was never a decision at all.*
+
+#### Decision backlog triaged 2026-08-31 — 12 of 13 were already answered
+
+Pulled the `needs-decision` list to run through with the user and found most of it stale. Closing
+with what resolved each, rather than asking questions that already have answers:
+
+| Item | Resolved by |
+| --- | --- |
+| who creates community membership | 35 accounts seeded through `requestGroupMembership` → `decideGroupMembership` |
+| Android interactive login unimplemented | **built** — `7a69f845` |
+| pick the platform to unblock | user chose Android; login built, APK installs, app runs |
+| the fix creates a bootstrap problem | **retracted** — `setGroupMembership` never required an existing admin |
+| who holds `admin` for each community | eleven `<prefix>-admin` roles + eleven admin accounts |
+| who holds `admin` | same |
+| which fan id holds `admin` | same |
+| who holds `admin` (step 2) | same — this question was recorded **four times** in four places |
+| background sync policy | all four policies shipped, member-chosen — `c969a991` |
+| OpenAPI twin parity | parity script in both repos + rules — `95192515`, `0561007` |
+| the stray app-level `admin` role | deleted through the `deleteRole` endpoint built for it |
+| canonical group spelling | **not a decision** — `LOOM_COMMUNITY_GROUP_IDS` already determines it (hyphenated) |
+
+Two things worth keeping from this:
+
+- **The same question was open four times** in four locations, each phrased slightly differently. A
+  decision recorded wherever it was encountered, rather than once, inflates the backlog and makes the
+  remaining count meaningless.
+- **One was never a decision at all.** Canonical group spelling was already determined by deployed
+  configuration; asking the user would have been asking them to choose something the system had
+  chosen. That is the third time this session I framed a determined fact as a question.
+
