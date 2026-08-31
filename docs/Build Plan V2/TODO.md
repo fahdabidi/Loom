@@ -1451,6 +1451,36 @@ and Book Club…"* is no longer blocked. Every live community now has an admin r
 35 accounts, all seeded through `requestGroupMembership` → `decideGroupMembership` rather than
 inserted. Chess specifically has `chess-admin`, `fan-chess-admin`, and a seeded `chess-owner-1`.
 
+
+**Verified, not asserted — and the mechanism is narrower than "an admin now exists".** The
+walkthrough's `_roleIdsForB25Role` maps `owner` to any identity whose **role id** contains
+`owner|admin|board|coordinator`. Cedar, Garden and Masjid always resolved because they hold
+`hoa-board`, `garden-coordinator` and `masjid-admin`. Chess and Book Club held only Organizer and
+Member, so nothing matched.
+
+Queried against `loom_app_access` after the seeding — every live group now has at least one matching
+identity:
+
+| Group | Matching identity |
+| --- | --- |
+| `chess-club` | `fan-chess-admin as chess-admin`, `fan-chess-owner-1 as chess-owner` |
+| `neighborhood-book-club` | `fan-book-admin as book-admin` |
+| `ad-free-community` | `fan-ad-off-admin`, `fan-ad-off-owner-1` |
+| `camera-club` | `fan-camera-club-admin` |
+| `cedar-commons-hoa` | `fan-hoa-admin`, `fan-hoa-board-1` |
+| `data-portability-community` | `fan-portability-admin`, `fan-portability-owner-1` |
+| `garden-club` | `fan-garden-admin`, `fan-garden-coordinator-1` |
+| `masjid-nur` | `fan-masjid-admin` |
+| `member-social-space` | `fan-social-admin` |
+| `riverside-youth-soccer` | `fan-soccer-admin`, `fan-soccer-owner-1` |
+| `tabletop-club` | `fan-tabletop-admin` |
+
+The per-community `<prefix>-admin` roles are what closed it: every one contains `admin`, so the mapper
+resolves `owner` in all eleven. Chess additionally has a real `chess-owner` holder.
+
+**Still not proven, only unblocked.** Nobody has run those five walkthroughs. The row moves from
+`needs-skill-dispatch` to runnable, and nothing about it is verified until a live walkthrough and a UX
+judge pass say so.
 **Unblocked by the resilience fix.** A walkthrough no longer dies silently when a heavy build bounces
 Postgres: `workflow-service` reopens its pool, proven by deleting `postgres-0` and watching it
 recover in under 24 seconds on the same pod with `restarts=0`.
