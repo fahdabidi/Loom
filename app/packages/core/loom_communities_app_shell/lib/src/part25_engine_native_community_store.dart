@@ -326,12 +326,15 @@ void _installEngineNativeExperience(
   if (experience.workflowDefinitions == null) return;
   final store = _EngineNativeCommunityStore.install(extensionId, experience);
   unawaited(
-    store.ensureReady().then((_) {
-      // Opening a community is the first chance to deliver anything that came
-      // due while the app was closed. Fire-and-forget: the screen must not wait
-      // on a notification, and a failed sweep is recoverable by the next one.
-      unawaited(sweepLoomRemindersForExtensionId(extensionId));
-    }).catchError((Object _, StackTrace __) {}),
+    store
+        .ensureReady()
+        .then((_) {
+          // Opening a community is the first chance to deliver anything that came
+          // due while the app was closed. Fire-and-forget: the screen must not wait
+          // on a notification, and a failed sweep is recoverable by the next one.
+          unawaited(sweepLoomRemindersForExtensionId(extensionId));
+        })
+        .catchError((Object _, StackTrace __) {}),
   );
 }
 
@@ -421,6 +424,7 @@ Future<int> sweepLoomRemindersForExtensionId(String extensionId) async {
     () => LoomReminderSweeper(
       engine: store.engine,
       delivery: LocalNotificationDeliveryService(),
+      notificationConfiguration: store.experience.notificationConfiguration,
     ),
   );
   return sweeper.sweep();

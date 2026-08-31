@@ -1369,6 +1369,69 @@ List<LoomTabRendererContract> allTabRendererContracts() {
   return List.unmodifiable(_tabRendererContractsById.values);
 }
 
+/// The community-wide defaults for notification delivery.
+///
+/// This represents `experience.notifications`, not a member preference. The
+/// inbox is always the default when the block or an individual key is absent,
+/// matching the package contract. Device delivery needs an explicit `push`
+/// default and an unmuted community.
+class LoomNotificationConfiguration {
+  const LoomNotificationConfiguration({
+    this.defaultChannels = const <String>['inbox'],
+    this.muted = false,
+  });
+
+  /// Parses the optional `experience.notifications` block.
+  ///
+  /// `allowedChannels` intentionally is not represented here: it describes
+  /// what the community offers, whereas this configuration is used only to
+  /// decide what members receive by default. Package validation owns the
+  /// offered-channel contract.
+  factory LoomNotificationConfiguration.fromExperienceNotifications(
+    Object? value,
+  ) {
+    if (value == null) return const LoomNotificationConfiguration();
+    if (value is! Map) {
+      throw const FormatException(
+        'experience.notifications must be an object.',
+      );
+    }
+
+    final defaultChannels = switch (value['default']) {
+      null => const <String>['inbox'],
+      final List<Object?> channels => List<String>.unmodifiable([
+        for (final channel in channels)
+          if (channel is String)
+            channel
+          else
+            throw const FormatException(
+              'experience.notifications.default must contain only strings.',
+            ),
+      ]),
+      _ => throw const FormatException(
+        'experience.notifications.default must be a list.',
+      ),
+    };
+    final muted = switch (value['muted']) {
+      null => false,
+      final bool value => value,
+      _ => throw const FormatException(
+        'experience.notifications.muted must be a bool.',
+      ),
+    };
+    return LoomNotificationConfiguration(
+      defaultChannels: defaultChannels,
+      muted: muted,
+    );
+  }
+
+  final List<String> defaultChannels;
+  final bool muted;
+
+  /// Whether this community's default permits a device interruption.
+  bool get deviceDeliveryEnabled => !muted && defaultChannels.contains('push');
+}
+
 class LoomExperienceDefinition {
   const LoomExperienceDefinition({
     required this.extensionId,
@@ -1395,6 +1458,7 @@ class LoomExperienceDefinition {
     this.tabThemeOverrides = const {},
     this.creatableAction,
     this.notificationPresentation,
+    this.notificationConfiguration = const LoomNotificationConfiguration(),
     this.tabCreatableActionStyles = const {},
     this.workflowDefinitions,
     this.workflowInstances,
@@ -1424,6 +1488,7 @@ class LoomExperienceDefinition {
   final Map<String, LoomCardTheme> tabThemeOverrides;
   final LoomCreatableActionStyle? creatableAction;
   final LoomNotificationPresentation? notificationPresentation;
+  final LoomNotificationConfiguration notificationConfiguration;
   final Map<String, LoomCreatableActionStyle> tabCreatableActionStyles;
   final Map<String, LoomWorkflowStateMachine>? workflowDefinitions;
   final List<LoomWorkflowSeedInstance>? workflowInstances;

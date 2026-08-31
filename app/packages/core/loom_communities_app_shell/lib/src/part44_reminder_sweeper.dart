@@ -18,13 +18,16 @@ final class LoomReminderSweeper {
   LoomReminderSweeper({
     required WorkflowEngineApi engine,
     required NotificationDeliveryService delivery,
+    required LoomNotificationConfiguration notificationConfiguration,
     DateTime Function()? clock,
   }) : _engine = engine,
        _delivery = delivery,
+       _notificationConfiguration = notificationConfiguration,
        _clock = clock ?? DateTime.now;
 
   final WorkflowEngineApi _engine;
   final NotificationDeliveryService _delivery;
+  final LoomNotificationConfiguration _notificationConfiguration;
   final DateTime Function() _clock;
 
   /// Reminders already shown, so a second sweep does not repeat them.
@@ -54,6 +57,7 @@ final class LoomReminderSweeper {
 
     var shown = 0;
     for (final notification in due) {
+      if (!_notificationConfiguration.deviceDeliveryEnabled) continue;
       if (!_delivered.add(notification.instanceId)) continue;
       try {
         await _delivery.deliver(notification);

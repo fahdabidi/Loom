@@ -183,6 +183,10 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
   final notificationPresentation = _parseNotificationPresentation(
     experienceConfiguration['notificationPresentation'],
   );
+  final notificationConfiguration =
+      LoomNotificationConfiguration.fromExperienceNotifications(
+        experienceConfiguration['notifications'],
+      );
   final tabCreatableActionStyles = _parseTabCreatableActionStyles(
     experienceConfiguration['tabCreatableActionStyles'],
   );
@@ -208,6 +212,7 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
     ),
     creatableAction: creatableAction,
     notificationPresentation: notificationPresentation,
+    notificationConfiguration: notificationConfiguration,
     tabCreatableActionStyles: tabCreatableActionStyles,
     workflowDefinitions: definitions,
     workflowInstances: instances.isEmpty ? null : instances,
