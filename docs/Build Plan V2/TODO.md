@@ -1441,6 +1441,36 @@ The corrected path, all existing APIs:
 
 
 
+
+### 2026-08-31 — walkthrough evidence records no package identity, so nothing can tell when it goes stale
+
+Noticed while asking whether today's eleven package edits invalidated the three proven Camera Club
+rows. The answer is "probably not", and the more useful finding is that **nothing in the evidence
+model could tell us either way**.
+
+`Evidence/B25/phase-a-legacy/manifest.json` records `communityName`, `slug`, `phase`, `runId`, `dir`
+and `screenshotCount`. It records **no package hash, no `specVersion`, no provenance entry** — nothing
+that identifies *which build of the package* the walkthrough proved.
+
+**Why that matters more than today's specific change.** `docs/references/_meta/community-provenance.json`
+exists and is regenerated on every package install, so the project already tracks package identity —
+it simply is not carried into the evidence a walkthrough produces. The consequence is that a row
+proven in August and a row proven against a package regenerated afterwards look identical in the
+record, and the standing rule that "only a committed manifest is durable" quietly assumes the
+manifest is still *about* the current package.
+
+**For today specifically:** the change was an additive `experience.notifications` block. It touches no
+state, transition, binding, guard or seed, so the three Camera Club rows are very unlikely to have
+been invalidated. But "very unlikely" is a judgement I made by reading the diff, not something the
+evidence records or any check enforces — which is exactly the kind of gap that turns into a false
+"proven" later.
+
+- [ ] `new-ticket` — carry package provenance into the walkthrough manifest: at minimum the
+      `community-provenance.json` entry (or its hash) for each community captured, written at capture
+      time. Then a manifest can be compared against the current package and reported as stale rather
+      than silently believed
+- [ ] until then, treat any row proven before 2026-08-31 as proven against a **different** package
+      build than the one now shipped, and say so rather than assuming either way
 ### 2026-08-31 — the unshippable-row sweep undercounted: 12 rows, not 7
 
 Re-ran the check while the device work was blocked. The recorded finding says **7 rows name a
