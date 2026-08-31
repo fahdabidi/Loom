@@ -388,6 +388,40 @@ B2 was written as "mounting blocked" and B3 as "done, deployed" while both were 
 `part36_engine_native_marketplace_surface.dart`. `NotificationPreferencesClient` and
 `LoomWorkflowReplica` are referenced by nothing outside their own part files.
 
+
+### 2026-08-30 — re-measured the integration table; B5 is 3/4 wired, not "missing 4 methods"
+
+The table above says B5's client is "missing 4 methods" and is not reachable. That was true when
+written and is **stale now**. Measured today by grepping for real call sites, with a control:
+
+`part42_document_client.dart` already has all four — `addRevision`, `getDocumentMemberState`,
+`setDocumentMemberState`, `listDocumentAcknowledgements`. Callers, excluding the client's own file:
+
+| Method | Callers |
+| --- | ---: |
+| `addRevision` | 1 — `part36_engine_native_marketplace_surface.dart` |
+| `getDocumentMemberState` | 1 — same |
+| `setDocumentMemberState` | 1 — same |
+| **`listDocumentAcknowledgements`** | **0** |
+| *control:* `upload` | 1 — so the query finds callers when they exist |
+
+`part36` is a live member-facing surface, and `document_member_state_surface_test.dart` covers the
+member-state path. So **B5 is Reachable for the member half** — acknowledge a document, see its
+state — and dark only for the **compliance read**: who has acknowledged, which is the admin view.
+
+- [ ] `new-ticket` — mount `listDocumentAcknowledgements`. One surface, one client method that
+      already exists and is already tested at the service layer. This is the whole remaining B5 gap
+- [x] corrected the integration table's B5 row; the "missing 4 methods" claim is retired
+
+**Remaining integration gaps, re-measured:**
+
+| Item | Real state |
+| --- | --- |
+| B2 per-member preferences | Not wired — and **parked** (P1), so not a gap to close now |
+| B8 community notification config | Design proposed above, **awaiting approval** |
+| B3 change feed | Caller landed (`e95bfc8b`); needs mounting in a surface + a background-sync decision |
+| B5 documents | **3/4 wired**; only the acknowledgements view is unmounted |
+| B6 replica | Coordinator landed (`e95bfc8b`); same mounting gap as B3 — they are the same ticket |
 **CORRECTION 2026-08-29 (second, and larger): the app already runs on the backend by default.**
 
 I wrote that the app uses `LocalWorkflowEngineApi` over an in-memory database and that dispatches
