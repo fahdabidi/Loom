@@ -457,6 +457,138 @@ void main() {
     });
   });
 
+  group('community notification configuration', () {
+    Map<String, dynamic> withNotifications(Map<String, dynamic> notifications) {
+      final package = capabilityPkg();
+      (package['experience'] as Map<String, dynamic>)['notifications'] =
+          notifications;
+      return package;
+    }
+
+    void expectSingleNotificationFinding(
+      Map<String, dynamic> package,
+      String type,
+    ) {
+      final report = CommunityPackageValidator().validate(package);
+      expect(report.findings, hasLength(1));
+      expect(report.findings.single.type, type);
+      expect(report.findings.single.isWarning, isFalse);
+    }
+
+    test('reports unknown channels in either channel list', () {
+      expectSingleNotificationFinding(
+        withNotifications(<String, dynamic>{
+          'allowedChannels': <String>['inbox', 'email'],
+          'default': <String>['inbox'],
+        }),
+        'unknown_notification_channel',
+      );
+      expectSingleNotificationFinding(
+        withNotifications(<String, dynamic>{
+          'allowedChannels': <String>['inbox', 'push'],
+          'default': <String>['inbox', 'email'],
+        }),
+        'unknown_notification_channel',
+      );
+    });
+
+    test('reports either explicitly empty channel list', () {
+      expectSingleNotificationFinding(
+        withNotifications(<String, dynamic>{
+          'allowedChannels': <String>['inbox'],
+          'default': <String>[],
+        }),
+        'empty_notification_channels',
+      );
+      expectSingleNotificationFinding(
+        withNotifications(<String, dynamic>{
+          'allowedChannels': <String>[],
+          'default': <String>['inbox'],
+        }),
+        'empty_notification_channels',
+      );
+    });
+
+    test('reports a coherent default that is not offered', () {
+      expectSingleNotificationFinding(
+        withNotifications(<String, dynamic>{
+          'allowedChannels': <String>['inbox'],
+          'default': <String>['push'],
+        }),
+        'notification_default_not_offered',
+      );
+    });
+
+    test('reports muted configurations without an inbox default', () {
+      expectSingleNotificationFinding(
+        withNotifications(<String, dynamic>{
+          'allowedChannels': <String>['push'],
+          'default': <String>['push'],
+          'muted': true,
+        }),
+        'notification_muted_without_inbox',
+      );
+    });
+
+    test('reports keys the notification grammar does not define', () {
+      expectSingleNotificationFinding(
+        withNotifications(<String, dynamic>{'digest': true}),
+        'unknown_notification_key',
+      );
+    });
+
+    test('omitting notifications is clean and defaults to inbox', () {
+      expect(
+        CommunityPackageValidator().validate(capabilityPkg()).findings,
+        isEmpty,
+      );
+    });
+
+    test('accepts explicit allowed, default, and unmuted settings', () {
+      expect(
+        CommunityPackageValidator()
+            .validate(
+              withNotifications(<String, dynamic>{
+                'allowedChannels': <String>['inbox', 'push'],
+                'default': <String>['inbox'],
+                'muted': false,
+              }),
+            )
+            .findings,
+        isEmpty,
+      );
+    });
+
+    test('accepts muted true when inbox remains the default', () {
+      expect(
+        CommunityPackageValidator()
+            .validate(
+              withNotifications(<String, dynamic>{
+                'allowedChannels': <String>['inbox'],
+                'default': <String>['inbox'],
+                'muted': true,
+              }),
+            )
+            .findings,
+        isEmpty,
+      );
+    });
+
+    test('allows duplicate channels because the lists are set-like', () {
+      expect(
+        CommunityPackageValidator()
+            .validate(
+              withNotifications(<String, dynamic>{
+                'allowedChannels': <String>['inbox', 'inbox', 'push'],
+                'default': <String>['inbox', 'inbox'],
+              }),
+            )
+            .findings,
+        isEmpty,
+      );
+    });
+  });
+
   group('seed instance creator validation', () {
     test('seed with createdByFanId has no missing-creator finding', () {
       expect(missingCreatorFindings(specV4Pkg()), isEmpty);

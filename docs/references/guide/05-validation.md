@@ -1,8 +1,8 @@
 ---
 spec: 4
-doc_version: 1.8.1
+doc_version: 1.9.0
 status: current
-last_verified: 2026-08-22
+last_verified: 2026-08-30
 audience: llm-agent
 derived_from:
   - app/packages/tooling/loom_ux_judges/lib/src/validator/workflow_validator.dart
@@ -254,6 +254,35 @@ It is a warning because 64 fields across 9 communities declare `effect` today wi
 them. Most are genuinely platform-written; a few are fields nobody ever populates. Failing the corpus
 on introduction would report that the packages broke, when what happened is that the grammar learned
 to tell two things apart.
+
+### Community notifications (added 2026-08-30)
+
+| Code | Meaning | Fix |
+| --- | --- | --- |
+| `unknown_notification_channel` *(error)* | A channel outside the closed set `{inbox, push}`. A third delivery path is a platform decision, not something a package may name. | Use `inbox`, `push`, or both. |
+| `empty_notification_channels` *(error)* | `allowedChannels` or `default` is present but empty. | Give it at least one channel, or omit the key and take the default. |
+| `notification_default_not_offered` *(error)* | `default` names a channel absent from `allowedChannels` — a default nobody can receive. | Add it to `allowedChannels`, or drop it from `default`. |
+| `notification_muted_without_inbox` *(error)* | `muted: true` while `inbox` is absent from `default`. | Keep `inbox` in `default`; muting stops the interruption, not the record. |
+| `unknown_notification_key` *(error)* | A key under `notifications` that the grammar does not define. | Remove it, or propose the key — see [`platform-services.md`](../reference/platform-services.md). |
+
+**All five are errors, and that is safe only because the block is optional and absent everywhere.**
+`experience.notifications` does not appear in any of the eleven shipped packages, and an omitted block
+is legal — it means `allowedChannels: ["inbox"]` and `default: ["inbox"]`. So no rule here can fire on
+the corpus as it stands, and none of them had to be staged as a warning the way
+`platform_writable_field_missing_platform_source` did. A rule that fails the corpus it ships with
+teaches everyone to ignore the validator.
+
+**Why the channel set is closed at two.** `inbox` and `push` both have working delivery on a running
+device — the `notificationInbox` archetype and `FlutterLocalNotificationsPlugin`. Server-initiated
+push, for a member whose app is closed, is **not implemented**
+(`push-delivery-api.openapi.yaml` is `0.0.0-placeholder`). A package naming a third channel would be
+declaring delivery that cannot happen, which is the fabricated-value failure this whole effort exists
+to remove.
+
+**Why `notification_default_not_offered` is separate from `unknown_notification_channel`.** They fail
+differently and are fixed differently: an unknown channel is a typo or an invention, while a default
+outside the offered set is a coherent pair of values that contradict each other. Collapsing them into
+one code would tell an author "bad channel" when the channel is fine and the relationship is wrong.
 
 ### Documents (added 2026-08-26)
 

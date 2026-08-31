@@ -98,8 +98,126 @@ class CommunityPackageValidator {
     final experience = Map<String, dynamic>.from(rawExperience);
 
     findings.addAll(_validateIdentityKeys(package, experience));
+    findings.addAll(_validateNotifications(experience));
     findings.addAll(_validateTabPermissionDeclarations(package));
     return _validateBody(package, experience, findings);
+  }
+
+  List<ValidationFinding> _validateNotifications(
+    Map<String, dynamic> experience,
+  ) {
+    if (!experience.containsKey('notifications')) return const [];
+    final rawNotifications = experience['notifications'];
+    if (rawNotifications is! Map) {
+      return <ValidationFinding>[
+        _finding(
+          'unknown_notification_key',
+          'experience.notifications must be an object with only '
+              '`allowedChannels`, `default`, and `muted` keys.',
+          'experience/notifications',
+        ),
+      ];
+    }
+
+    const allowedKeys = <String>{'allowedChannels', 'default', 'muted'};
+    const supportedChannels = <String>{'inbox', 'push'};
+    final findings = <ValidationFinding>[];
+    for (final rawKey in rawNotifications.keys) {
+      final key = rawKey.toString();
+      if (rawKey is String && allowedKeys.contains(key)) continue;
+      findings.add(
+        _finding(
+          'unknown_notification_key',
+          'Unknown key `$key` in experience.notifications. Legal keys: '
+              '`allowedChannels`, `default`, `muted`.',
+          'experience/notifications/$key',
+        ),
+      );
+    }
+
+    List<Object?>? channelsFor(String key, List<Object?> omittedValue) {
+      if (!rawNotifications.containsKey(key)) return omittedValue;
+      final value = rawNotifications[key];
+      if (value is List) return List<Object?>.from(value);
+      findings.add(
+        _finding(
+          'unknown_notification_channel',
+          'experience.notifications.$key must be a list of the supported '
+              'channels `inbox` and `push`.',
+          'experience/notifications/$key',
+        ),
+      );
+      return null;
+    }
+
+    final allowedChannels = channelsFor('allowedChannels', const ['inbox']);
+    final defaultChannels = channelsFor('default', const ['inbox']);
+
+    void validateChannels(String key, List<Object?>? channels) {
+      if (channels == null) return;
+      if (rawNotifications.containsKey(key) && channels.isEmpty) {
+        findings.add(
+          _finding(
+            'empty_notification_channels',
+            'experience.notifications.$key must not be empty. Omit it to use '
+                'the default `inbox` channel.',
+            'experience/notifications/$key',
+          ),
+        );
+      }
+      for (var index = 0; index < channels.length; index++) {
+        final channel = channels[index];
+        if (channel is String && supportedChannels.contains(channel)) continue;
+        findings.add(
+          _finding(
+            'unknown_notification_channel',
+            'Notification channel `${channel ?? '<null>'}` is not supported. '
+                'Use `inbox` or `push`.',
+            'experience/notifications/$key[$index]',
+          ),
+        );
+      }
+    }
+
+    validateChannels('allowedChannels', allowedChannels);
+    validateChannels('default', defaultChannels);
+
+    if (allowedChannels != null &&
+        defaultChannels != null &&
+        allowedChannels.isNotEmpty &&
+        defaultChannels.isNotEmpty) {
+      final offeredChannels = allowedChannels.whereType<String>().toSet();
+      for (var index = 0; index < defaultChannels.length; index++) {
+        final channel = defaultChannels[index];
+        if (channel is! String ||
+            !supportedChannels.contains(channel) ||
+            offeredChannels.contains(channel)) {
+          continue;
+        }
+        findings.add(
+          _finding(
+            'notification_default_not_offered',
+            'Default notification channel `$channel` is not offered by '
+                'experience.notifications.allowedChannels.',
+            'experience/notifications/default[$index]',
+          ),
+        );
+      }
+    }
+
+    if (rawNotifications['muted'] == true &&
+        defaultChannels != null &&
+        !defaultChannels.contains('inbox')) {
+      findings.add(
+        _finding(
+          'notification_muted_without_inbox',
+          'A muted community must still default to `inbox` so members can '
+              'read the notification record.',
+          'experience/notifications/muted',
+        ),
+      );
+    }
+    return findings;
   }
 
   ValidationReport _validateBody(
