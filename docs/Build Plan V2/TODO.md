@@ -2215,6 +2215,23 @@ in a separate repository this tracker cannot see.
 
 - [ ] `needs-skill-dispatch` — **5 rows blocked on a missing owner/admin identity: Chess (`chess-export-package`, `chess-pairing-queue`, `chess-rankings-table`) and Book Club (`book-selection-publish`, `book-export-metadata`).** Both ship only Organizer + Member. **CORRECTED 2026-08-24 — the earlier "11 rows" in this row was wrong**: the walkthrough's `_roleIdsForB25Role` already maps `owner` → any identity containing owner/admin/board/coordinator, and `donor` → member, so Cedar (`hoa-board`), Garden (`garden-coordinator`) and Masjid (`mosque-admin`) resolve today and were never blocked. The original cross-check used a naive regex that did not model that mapper — it validated against three *workflow*-missing ground truths and none for roles, so the role half was never checked. `owner` is ratified by the user as a standard platform persona: sets up the community, approves who has access. Note its approval authority is App Access's to enforce, not something package JSON may declare (hard rule 13)
 - [ ] `needs-skill-dispatch` — **Ad-Free `ad-off-community-checkout` names the wrong persona.** Its B25 row says `member`, but the doc's own persona table assigns "Fund/sponsor community ad-off" to **Owner**, and the package ships `ad-off-owner`. The walkthrough fails with "could not derive an actionable instance, actorIdentity, and tab ... for B25 product-doc role `member`" — the role exists, it simply cannot act on that workflow. Doc-internal contradiction, same class as Chess; converge through the Skill
+
+**RESOLVED 2026-08-31 — this was fixed and the entry is stale.** The contradiction described no
+longer exists anywhere:
+
+| Source | Says |
+| --- | --- |
+| Product doc B25 table (3 rows, lines 83, 94, 127) | `owner` |
+| Generated asset `b25_semantic_interaction_models.json` | `role: owner` |
+| Persona table, line 46 | Owner — "Fund community-wide ad-off" |
+| Package | ships `ad-off-owner` |
+
+Fixed by `ccdd4136`, *"fix(ad-free): community funding is Owner work — converge the doc's
+contradiction in the doc's favour"*. The entry above says the row "says `member`"; it does not, and
+has not since that commit. No Skill dispatch is owed.
+
+Worth noting the row is still **not proven** — converging the doc removed the contradiction, it did
+not run the walkthrough. It moves from contradictory to runnable, like the five identity-blocked rows.
 - [ ] `needs-verification` — **the reachability sweep has a third blind spot, wider than the role half already corrected.** It checks whether a row's workflow and role *exist*, not whether that role can *act* on that workflow. Ad-Free above passes both existence checks and still fails live. So the real unprovable-row count is ≥ the 7 + 5 already recorded, and is only discoverable by running walkthroughs. Do not quote a total from the sweep as if it were complete
 
 **Arithmetic update 2026-08-31.** That entry's "7 + 5 already recorded" no longer holds, in both
