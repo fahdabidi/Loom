@@ -1623,6 +1623,53 @@ than the recorded 7 implied, and it is worth knowing before anyone measures prog
 - [ ] the original 7 remain as recorded
 
 
+
+### 2026-08-31 — the 12 unshippable rows diagnosed, and a worse problem behind them
+
+Analysed the 12 rather than just counting them. **They are not typos, and striking them would delete
+real coverage.** Most carry valid content with a wrong workflow id pasted on.
+
+**Chess — 2 rows are duplicates.** `chess-local-install-open`, `chess-route-home` and
+`chess-match-result` share **identical** expected-decision text, role and primary actions
+(`record match`, `submit score`, `save result`). Only `chess-match-result` is shipped. The other two
+are the same row three times with two invented ids.
+
+**Member Social Space — 4 rows, one description, no valid id.** All four share one decision text
+("evaluates a concrete message, connection, or invite…") and none names a shipped workflow. The
+package ships `platform-message-thread` and `platform-connection`; the rows want re-pointing at them,
+not deleting.
+
+**Garden — 1 conflation.** `garden-tool-loan-giveaway` names two shipped workflows joined by a hyphen:
+`garden-tool-loan` and `garden-tool-giveaway`.
+
+**Masjid — 3 are not workflows.** `wf_demo-app-persona-picker`, `wf_community-persona-aware-ux`,
+`wf_multi-persona-workflow-evidence` describe cross-cutting persona/UX checks ("member confirms their
+view hides admin-only actions"), not community workflows. They belong to a different kind of check.
+
+#### The worse problem: rows that are distinct in name only
+
+The same analysis surfaced something not previously recorded. **Data Portability has NINE rows sharing
+one identical expected decision and action list** — every `export-*` workflow. All nine are shipped, so
+no sweep flags them, but nine rows with the same expected decision are not nine proofs. Cedar has two.
+
+That matters for what "79 rows" means:
+
+| | |
+| --- | --- |
+| Rows naming a workflow the package does not ship | 12 |
+| Rows that duplicate another row's decision text verbatim | at least **15** across 4 groups |
+| Rows whose role cannot act on the workflow | unknown — only walkthroughs reveal it |
+
+**79 is a count of table rows, not of distinct provable behaviours.** A bar measured against it can be
+satisfied without the coverage it implies.
+
+- [ ] `needs-skill-dispatch` — Chess: strike the 2 duplicate rows, keep `chess-match-result`
+- [ ] `needs-skill-dispatch` — Social Space: re-point the 4 rows at `platform-message-thread` and
+      `platform-connection`, with decisions that actually differ
+- [ ] `needs-skill-dispatch` — Garden: split the conflated row into loan and giveaway
+- [ ] `needs-decision` — Masjid's 3 persona/UX rows: are they B25 rows at all, or a separate check?
+- [ ] `needs-decision` — Data Portability's 9 identical rows: nine real proofs, or one generic row
+      copied nine times? This decides whether the denominator is honest
 ### 2026-08-31 — what pass-42 actually failed on, and how old it is
 
 The B25 iteration scorecard is the closest thing to a production-readiness verdict, and two things
