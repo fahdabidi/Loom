@@ -24,6 +24,10 @@
       "accent": "#2563EB",
       "tabThemes": { "admin": { "accent": "#1D4ED8" } }
     },
+    "notifications": {
+      "allowedChannels": ["inbox", "push"],
+      "default": ["inbox", "push"]
+    },
 
     "roles": [
       {

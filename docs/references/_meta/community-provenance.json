@@ -50,8 +50,8 @@
       "lastCommitSubject": "feat(chess-club): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc": {
-      "sha256": "75d698fb1ad183ee20fedc6c79383117de633177c3dc5799f84c09c0afbe68ec",
-      "bytes": 92465,
+      "sha256": "dff8422b986d2b738acc04fb0320fc9e673881d9074addb78c04145fdd6f5b08",
+      "bytes": 92574,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "9d84bf88",
       "lastCommitDate": "2026-08-29",
@@ -93,9 +93,9 @@
       "sha256": "e639a2f837e8e828231f7cc505e628c7b67246fdef5614b417cfaf870d5476b2",
       "bytes": 131292,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "a0184b0c",
-      "lastCommitDate": "2026-08-22",
-      "lastCommitSubject": "fix(community): Tabletop declares deliver_reminder on its send-reminder transition"
+      "lastCommit": "4ada417c",
+      "lastCommitDate": "2026-08-31",
+      "lastCommitSubject": "feat(tabletop-club): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc": {
       "sha256": "d275802897ef325dfebcbffe8c10c9a4c29307d1f81a629fa34b17ad9b29d665",
