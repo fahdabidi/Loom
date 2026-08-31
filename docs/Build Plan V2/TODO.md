@@ -1465,6 +1465,27 @@ been invalidated. But "very unlikely" is a judgement I made by reading the diff,
 evidence records or any check enforces — which is exactly the kind of gap that turns into a false
 "proven" later.
 
+
+**Applied to the existing evidence 2026-08-31, and it changes the numerator too.** The B25 manifest
+contains **0** occurrences of `packageProvenance` against **10** for `screenshotCount` — the control
+confirms the field is genuinely absent rather than the query being wrong.
+
+So under the model just shipped (`f809e9a4`), the three "proven" Camera Club rows classify as
+**`unknown`** — not current, not stale. Nobody can say whether they were proven against the packages
+now shipped, and "probably fine because the change was additive" is a judgement from reading a diff,
+not a record.
+
+**Both halves of "3 of 79" are therefore soft:**
+
+- the **denominator** overstates: 12 rows name workflows their package does not ship, and the
+  act-ability blind spot means the true unprovable count is ≥ 12
+- the **numerator** is unverifiable: the 3 proven rows carry no package identity, so their status is
+  `unknown` rather than `proven-current`
+
+Neither is a reason to re-run them blindly — the additive `experience.notifications` block touches no
+state, transition, binding, guard or seed. It is a reason to stop quoting **3 of 79** as though both
+numbers were solid. Every capture from now carries its package identity, so this becomes a comparison
+rather than an argument.
 - [ ] `new-ticket` — carry package provenance into the walkthrough manifest: at minimum the
       `community-provenance.json` entry (or its hash) for each community captured, written at capture
       time. Then a manifest can be compared against the current package and reported as stale rather
