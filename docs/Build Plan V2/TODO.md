@@ -39,6 +39,62 @@ known answer for every kind of thing it claims to find, not just one.**
 
 ## Open
 
+### WHERE THIS ACTUALLY STANDS — 2026-08-31
+
+Written because "BACKEND SERVICES BUILD-OUT — COMPLETE" is true and reads as far more finished than
+the project is. **161 items open, 105 closed.** The backend was one workstream.
+
+#### Done and verified live
+
+| | |
+| --- | --- |
+| B1–B8 | built, deployed, load-bearing; exercised against the running stack |
+| Packages | 11/11 on `specVersion: 4`, all regenerated today, each diffed and validated with a control |
+| Accounts | 35 across 11 communities, every one through `requestGroupMembership` → `decideGroupMembership` |
+| Security | privilege escalation closed (`403 fan_identity_mismatch`), verified live |
+| Resilience | Postgres-restart recovery proven by deleting `postgres-0`: same pod, `restarts=0`, 24s |
+| Tooling | build context 6.885 GB → 917.9 MB; APK buildable on the VM; spec-parity check in both repos |
+| Device | `emulator-5554` runs code built at `c969a991` |
+
+#### The production bar is 3 of 79, and **both numbers are unreliable**
+
+- **Denominator overstates.** 12 rows name workflows their package does not ship. The reachability
+  sweep also only checks that a row's workflow and role *exist*, never that the role can *act* — so
+  the true unprovable count is **≥ 12** and is discoverable only by running walkthroughs.
+- **Numerator is unverifiable.** The 3 proven Camera Club rows carry no package identity and classify
+  as `unknown` under the provenance model shipped today.
+- **The last judge pass failed.** `b25-v4-pass-42`: judge status `fail`, 16/18 criteria, **2 blocking
+  criterion failures** — and an **empty findings table**, so what failed was not recorded. Its own
+  next action says to remediate, rebuild, recapture and rerun. That never happened.
+
+#### Proposed order, and why
+
+**1. Repair the ability to measure, before measuring.** Three things make the current numbers
+meaningless, and all are cheap relative to a walkthrough campaign:
+
+- the 12 rows that name non-existent workflows — correct or strike them (`needs-skill-dispatch`)
+- pass-42's 2 blocking failures with no findings recorded — establish what actually failed, or rerun
+  to regenerate them
+- re-prove the 3 Camera Club rows so they carry package identity, or accept them as `unknown`
+  deliberately
+
+**2. Then the walkthrough campaign.** Start with the five rows the account seeding unblocked, because
+they are the ones whose blocker we removed and understand. Rebuild the APK before every capture — a
+build went stale within two hours today.
+
+**3. In parallel, the work that does not need a device:** 59 `new-ticket`, 19 `needs-verification`.
+Several "verification" items are stale claims rather than real work — three were closed today by
+checking rather than building.
+
+**4. Larger phases** (17 `new-milestone`) — Phase A/A.1 bookkeeping and response-row fan-out, C auth
+broker, D deploy, E access authority, G.4 Ad-Free revert, the export checksum service. These are
+features, not cleanup, and want sequencing decisions.
+
+#### Blocked on the user
+
+**13 `needs-decision` + 4 `needs-spec-decision`.** These gate other work and cannot be resolved by
+building. They should be triaged as a batch rather than discovered one at a time mid-task.
+
 ### BACKEND SERVICES BUILD-OUT — the autonomous queue, in order (armed 2026-08-28)
 
 Each loop tick reports position in THIS list. A service is not "done" until it is built, deployed,
