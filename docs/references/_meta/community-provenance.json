@@ -21,9 +21,9 @@
       "sha256": "fa6b66b319824bbfa3825f390bee288f4549046f1a1a5f3e51915af517496592",
       "bytes": 82521,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "ccdd4136",
-      "lastCommitDate": "2026-08-25",
-      "lastCommitSubject": "fix(ad-free): community funding is Owner work -- converge the doc's contradiction in the doc's favou"
+      "lastCommit": "9026105c",
+      "lastCommitDate": "2026-08-31",
+      "lastCommitSubject": "feat(ad-free-community): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc": {
       "sha256": "4f0e1b3edc2435f56b37e15bb15e12a48dbf068266d78b0707be45b7316338ab",
@@ -58,8 +58,8 @@
       "lastCommitSubject": "feat(data-portability): declare platform writers on three checksums and a transferId"
     },
     "Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc": {
-      "sha256": "84948255c7420a269d1e1ea2dd11af7aa62e44044a716164372138c95570975b",
-      "bytes": 104916,
+      "sha256": "8107cdcfb04c7c806daad1474351d478cd751891afe03e34a79d6593fabd1f1f",
+      "bytes": 105025,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "629b4309",
       "lastCommitDate": "2026-08-29",
