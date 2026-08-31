@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:loom_ux_judges/b25_capture_integrity.dart';
+import 'package:loom_ux_judges/b25_capture_package_provenance.dart';
 import 'package:loom_ux_judges/b25_device_dialog_guard.dart';
 import 'package:loom_ux_judges/b25_product_doc_interaction_models.dart';
+import 'package:loom_ux_judges/src/community_package_provenance.dart';
 
 const _fullB25Phases = <String>[
   'B12',
@@ -89,6 +91,15 @@ void main(List<String> args) async {
   }
   final appRoot = Directory.current;
   final repoRoot = appRoot.parent;
+  final communityProvenanceManifest =
+      CommunityPackageProvenanceManifest.fromFile(
+        communityProvenanceManifestFile(repoRoot),
+      );
+  final communityProvenanceIndex =
+      CommunityPackageProvenanceIndex.fromRepository(
+        repositoryRoot: repoRoot,
+        provenanceManifest: communityProvenanceManifest,
+      );
   final interactionModelAsset = generateB25InteractionModelAsset(
     repositoryRoot: repoRoot,
   );
@@ -436,6 +447,7 @@ void main(List<String> args) async {
     commandOutputPath: logPath,
     captureStartedAt: captureStartedAt,
     mode: mode,
+    communityProvenanceIndex: communityProvenanceIndex,
   );
 
   final screenshotCount = combinedSummary.screenshotCount;
@@ -713,11 +725,13 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
   required String commandOutputPath,
   required DateTime captureStartedAt,
   required String mode,
+  required CommunityPackageProvenanceIndex communityProvenanceIndex,
 }) async {
   var workflowCount = 0;
   var screenshotCount = 0;
   final manifestPaths = <String>[];
   final duplicateFrameFindings = <Map<String, Object?>>[];
+  final capturedCommunities = <B25CapturedCommunity>[];
 
   for (final phase in phases) {
     final manifestPath =
@@ -751,6 +765,12 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
       );
       exit(65);
     }
+    capturedCommunities.addAll(
+      recordB25CapturePackageProvenance(
+        manifest: manifest,
+        provenanceIndex: communityProvenanceIndex,
+      ),
+    );
     workflowCount += workflows.length;
     var phaseScreenshotCount = 0;
     final phaseDuplicateFrameFindings = <Map<String, Object?>>[];
@@ -798,10 +818,6 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
       manifest['failureReason'] =
           'Byte-identical frames were captured within a workflow; the capture '
           'cannot distinguish an unchanged screen from a duplicate write.';
-      await manifestFile.writeAsString(
-        const JsonEncoder.withIndent('  ').convert(manifest),
-        flush: true,
-      );
       await _markPhaseAuditFailedForDuplicateFrames(
         evidenceRoot: evidenceRoot,
         phase: phase,
@@ -809,6 +825,12 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
         duplicateFrameFindings: phaseDuplicateFrameFindings,
       );
     }
+    // The package provenance is part of the phase manifest even when no
+    // screenshot-integrity finding requires another mutation.
+    await manifestFile.writeAsString(
+      const JsonEncoder.withIndent('  ').convert(manifest),
+      flush: true,
+    );
     manifestPaths.add(manifestPath);
   }
 
@@ -835,6 +857,12 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
           .toList(growable: false),
       'workflowCount': workflowCount,
       'screenshotCount': screenshotCount,
+      'capturedCommunities': [
+        for (final community in combineB25CapturedCommunities(
+          capturedCommunities,
+        ))
+          community.toJson(),
+      ],
       'invalidScreenshotCount': duplicateFrameFindings.length,
       if (hasDuplicateFrames)
         'captureIntegrityFindings': duplicateFrameFindings,
