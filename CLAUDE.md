@@ -313,6 +313,28 @@ Both times it was found by deliberately comparing the three sources, never by an
 same check catches a second thing worth knowing: a locally built image that is *not* deployed is
 normal when a ticket said "build, do not deploy" — `loom-workflow-service:1.0.3` exists for exactly
 that reason — so an image with no matching deployment is not automatically drift.
+
+### The OpenAPI spec twins drift silently — check them, nothing else will
+
+The service contracts live **twice**: in `Loom/docs/API/OpenAPI/**` where the app writes clients
+against them, and in `loom-backend/spec/**` where the services implement them. They are meant to be
+byte-identical and **nothing enforces it**. The reference-doc mirror test works only because both of
+its copies sit in one repo; these do not, so no in-repo test can compare them, and a shared checksum
+manifest does not help either — each repo would check its spec against its own copy of the manifest,
+so a one-sided update passes on both sides.
+
+On 2026-08-30 the Loom copy was dated **13 August** and behind by **four operations** — `deleteRole`
+plus the whole invitation feature (`getInvitation`, `issueInvite`, `redeemInvite`), 168 lines, drifted
+for two weeks. Nothing failed. The app simply did not know those endpoints existed.
+
+    bash "docs/Build Plan V2/Tools/code/check_spec_parity.sh"     # exits 1 on drift
+
+**Run it whenever a spec changes, and as part of the post-deploy audit** — spec drift and an
+uncommitted manifest bump surface at the same moment, so check them together.
+
+**The comparison set is the backend's specs, not Loom's.** Loom carries ~50 and the backend 8; the 42
+Loom-only files are app-side contracts with no service counterpart and are **not** drift. A spec
+present in the backend and missing from Loom is.
 ### Publishing definitions is not a one-time step
 
 The backend stores a **copy** of every workflow definition, written by
