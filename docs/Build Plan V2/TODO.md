@@ -1439,6 +1439,39 @@ The corrected path, all existing APIs:
 
 
 
+
+### 2026-08-31 — the production bar is blocked on one Windows setting, and the installed APK is three weeks stale
+
+With the backend complete, the next step is proving it on a device. That is blocked, and the two
+reasons compound.
+
+**The emulator is fine.** `emulator-5554` is attached and `qemu-system-x86_64` is running on Windows,
+so the host half works.
+
+**The installed build is from 2026-08-11.** `com.example.loom_communities_demo` on the emulator
+predates essentially all of this effort — no notification gate, no replica mount, no acknowledgements
+view, none of the authorization fixes. The only APKs on disk are `app-debug.apk` (2026-08-11) and
+`app-release.apk` (2026-08-09).
+
+**A walkthrough against that would prove nothing and look like proof.** It would exercise three-week-
+old code while appearing to validate today's integration, which is the same failure family as a
+capture that quietly ran against a local engine — the reason `LOOM_ENV` throws on a typo rather than
+falling back.
+
+**The rebuild is blocked**, reproducing the 2026-08-30 finding:
+
+    Please enable Developer Mode in your system settings. Run
+      start ms-settings:developers
+
+Flutter needs Developer Mode for the symlink support plugins require. It is a system setting, not
+something a dispatch or an elevated shell here can set.
+
+- [ ] **NEEDS THE USER** — enable Developer Mode on Windows (`start ms-settings:developers`), then the
+      APK rebuilds and walkthroughs become possible
+- [ ] then rebuild and install before any walkthrough, because the on-device build must not predate
+      the code being verified
+- [ ] the five newly-runnable B25 rows are the natural first target, since they are the ones today's
+      seeding unblocked
 ### 2026-08-31 — what finishing the backend unblocked, and what it did not
 
 The build-out is complete, so this records which downstream items actually moved rather than leaving
