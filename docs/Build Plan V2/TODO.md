@@ -1292,6 +1292,28 @@ So there is no architecture decision outstanding. The work is provisioning, in o
 - [ ] `needs-decision` — **who holds `admin`.** This is the only question left for the user, and it
       is far smaller than the "bootstrap admin" framing: granting an existing platform role through
       `app_access` + `app_access_role` is ordinary provisioning, **not** a direct membership insert
+
+**STEP 1 DONE 2026-08-30 — the `admin` role exists.** User approved. Created via
+`POST /v1/apps/loom_communities/roles` (`201`), verified independently against `loom_app_access`
+rather than from the API's own response:
+
+| Check | Result |
+| --- | --- |
+| `app_role` row | `admin`, **`group_id = NULL`** — the shape `setAppAccess` requires |
+| Permissions | all five `community.*` attached |
+| `app_access_role` grants | **0** — the role holds no one |
+| App-level roles in the system | **1**, the first ever |
+
+`community.manage_members` is now held by two roles: `admin`, and the `cedar_commons_hoa_admin`
+one-off. That one-off should probably be retired once `admin` is granted, but not before — it is
+currently the only working approver.
+
+- [ ] `needs-decision` — **which fan id holds `admin`** (`PUT /v1/apps/loom_communities/access/{fanId}`
+      with `{state: "active", roleIds: ["admin"]}`). One grant covers every community, because the
+      role is app-level and `collectActiveRoleIds` adds it with no group filter
+- [ ] then seed the ~35–40 accounts through `requestGroupMembership` → `decideGroupMembership`,
+      approved by that admin, so every fixture has passed the real authorization check
+- [ ] afterwards: retire `cedar_commons_hoa_admin`, or keep it deliberately and say why
       that bypasses the authorization check the security fix just added
 - [ ] then seed the ~35–40 accounts through the real `requestGroupMembership` → `decideGroupMembership`
       flow, which is what makes the fixtures worth having
