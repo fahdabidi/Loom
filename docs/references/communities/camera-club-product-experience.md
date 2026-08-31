@@ -73,6 +73,17 @@ and validation statuses for every requested prompt workflow.
 Use image/photography cues and clear event/submission surfaces. Avoid generated text that describes the
 Skill instead of the photo club task.
 
+
+### Notification Delivery
+
+Camera Club reaches members two ways, and both are offered: the in-app inbox, and a notification on
+their device. Both are on by default, because the time-sensitive things here — a photo walk filling
+up, a gear loan coming due, a critique request waiting on a reply — are useless to a member who only
+learns about them the next time they happen to open the app.
+
+A member who mutes stops the interruption and keeps the record: the notification still arrives in the
+inbox and is there when they look. Muting is not unsubscribing.
+
 ### B25 Semantic Interaction Models
 
 This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.
