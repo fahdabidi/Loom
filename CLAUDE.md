@@ -163,6 +163,34 @@ matches, read them, then kill a specific pid.
 This is the same family as the existing `pgrep` note below: **process searches match things you did
 not mean, in both directions.**
 
+### Your own command line is part of the haystack, and stale files answer for dead requests
+
+Three checks lied on 2026-08-30, all by reporting something other than what was asked.
+
+**`pgrep -f` matches your own echo text, not just the bracketed pattern.** The `[b]uild.sh` trick
+protects the *pattern*, and does nothing about the rest of the command. This reported a live build
+after both processes were confirmed dead:
+
+    pgrep -fc "[b]uild.sh"   # returns 1
+    echo "  build.sh alive: ..."   # <- THIS is what it matched
+
+The label text contained the literal string. Same for `docker build`, `codex`, `java`. **Resolve the
+pid and check it directly** — `kill -0 $PID`, `ps -p $PID -o stat=,cmd=` — and when a count disagrees
+with `ps`, believe `ps`.
+
+**A failed `curl` leaves the previous file in place.** `curl -o /tmp/out.json` writes nothing when the
+connection fails, so `http=000` followed by reading `/tmp/out.json` returns *the last successful
+response*, which reads exactly like a real answer. It served a workflow instance as the body of a
+role deletion. **`rm -f` the output file first, or use a unique name per request**, and check the
+status code before the body.
+
+**Hung and slow look identical in one sample; they differ in a trend.** A `docker build` that had not
+advanced its log in ten minutes was assumed stalled and killed. Its client CPU was climbing the whole
+time — it was working, and the log was block-buffered, so a stale tail proved nothing. An earlier
+build in the same session *was* genuinely stalled, and the difference was visible only as flat CPU
+across two samples sixteen minutes apart. **Sample twice before concluding**, and prefer
+`/proc/<pid>/stat` deltas to log mtime.
+
 ### Orphaned loop emitters steal ticks silently
 
 `data/loop_emitter.sh` runs on **Windows**, one per Claude session, and **old ones survive the
