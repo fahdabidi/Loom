@@ -145,7 +145,7 @@ Open items from those entries are rows in the same trackers' **§8** queues, not
 - [ ] community isolation is a `WHERE community_id = ?` clause nothing enforces → ACWS §8
 - [ ] idempotency is reimplemented in three repositories that will diverge silently → ACWS §8
 - [ ] ten of eleven communities still have no members → Build Tracker §8
-- [x] authenticated walkthrough — **sign-in PROVEN on device 2026-08-31**; next blocker is app-access returning 401 to the signed-in member → Build Tracker §8
+- [x] authenticated walkthrough — **sign-in PROVEN on device**, and the follow-on 401 fixed: `JWT_ISSUER` now matches the advertised host, app-access returns 200 with real membership → Build Tracker §8
 - [ ] the B25 denominator overstates: 12 rows — 3 renames, 9 not community workflows at all → Build Tracker §8
 - [ ] walkthrough evidence records no package identity, so staleness is undetectable → Build Tracker §8
 - [ ] pass-42's two blockers — `c14` vision review is ~97% scaffold (7 of 204 screens carry real evidence), `c16` all 10 findings are key-name deviations from the documented schema; 3 real gaps remain after correction → Build Tracker §8
