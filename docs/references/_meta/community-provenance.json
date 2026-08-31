@@ -26,8 +26,8 @@
       "lastCommitSubject": "fix(ad-free): community funding is Owner work -- converge the doc's contradiction in the doc's favou"
     },
     "Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc": {
-      "sha256": "2f40067ef7af7acb7104003130902719bac62a3cd6b1226202b632a33dbec8c1",
-      "bytes": 61620,
+      "sha256": "4f0e1b3edc2435f56b37e15bb15e12a48dbf068266d78b0707be45b7316338ab",
+      "bytes": 61729,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "bba5aac2",
       "lastCommitDate": "2026-08-28",
@@ -45,9 +45,9 @@
       "sha256": "201d1b02d959dd221ec2abb6983f48a7030283b55e2e95175c447605e240a7cb",
       "bytes": 87602,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "2e8541af",
-      "lastCommitDate": "2026-08-28",
-      "lastCommitSubject": "fix(chessclub): declare who each tab is for"
+      "lastCommit": "a5ff165f",
+      "lastCommitDate": "2026-08-30",
+      "lastCommitSubject": "feat(chess-club): declare platformSource on checksum"
     },
     "Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc": {
       "sha256": "75d698fb1ad183ee20fedc6c79383117de633177c3dc5799f84c09c0afbe68ec",
