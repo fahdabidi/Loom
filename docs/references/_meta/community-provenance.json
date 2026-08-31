@@ -34,8 +34,8 @@
       "lastCommitSubject": "feat(camera-club): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc": {
-      "sha256": "c4c51663a4758b8b5a2fcf1851a694ca461b16a05c83c1734f43f588807f1bfe",
-      "bytes": 102855,
+      "sha256": "c3066d7c86c33799074f60f47fceb0c474e525a87c1902bf42e4b1356feb1bf9",
+      "bytes": 102964,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "5e96e434",
       "lastCommitDate": "2026-08-29",
@@ -45,9 +45,9 @@
       "sha256": "49f0c1d7239ffc28b018361d7735318553fb02b918e5e9de9f57f1816831e2a8",
       "bytes": 87711,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "a5ff165f",
-      "lastCommitDate": "2026-08-30",
-      "lastCommitSubject": "feat(chess-club): declare platformSource on checksum"
+      "lastCommit": "cad5c1bc",
+      "lastCommitDate": "2026-08-31",
+      "lastCommitSubject": "feat(chess-club): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc": {
       "sha256": "75d698fb1ad183ee20fedc6c79383117de633177c3dc5799f84c09c0afbe68ec",

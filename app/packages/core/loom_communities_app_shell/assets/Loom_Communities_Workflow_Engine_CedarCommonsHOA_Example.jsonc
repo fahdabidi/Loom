@@ -27,6 +27,10 @@
       "multiActionStyle": "speedDial",
       "presentationStyle": "slideOutBottom"
     },
+    "notifications": {
+      "allowedChannels": ["inbox", "push"],
+      "default": ["inbox", "push"]
+    },
 
     "roles": [
       {
