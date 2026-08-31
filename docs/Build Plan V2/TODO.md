@@ -1434,6 +1434,56 @@ The corrected path, all existing APIs:
 
 
 
+
+### 2026-08-30 — B3 and B6 mounted: every backend capability is now load-bearing
+
+`d47c1c31`. `LoomWorkflowReplicaCoordinator` had zero callers for `open()`, `refresh()` and
+`dispose()`, so the change feed and the replica were both fully built on both sides while a member
+got no benefit from either. Community entry now opens the member's replica, refreshes on entry when
+the feed is available, exposes a Refresh action only where a directory is configured, and disposes on
+leaving.
+
+**Stale reads are visible.** Replica-served data renders *"Showing saved data from N ago"*; a
+service-served read shows no such indicator. A replica read and a live read must not look identical —
+serving stale data that appears current is the failure this whole effort exists to remove.
+
+**Verified in the diff, not assumed**, because these are the properties a mounting change could
+quietly break:
+
+| Property | Evidence |
+| --- | --- |
+| A `403` surfaces and never consults the replica | test at `:329`, `expect(engine.lastRead, isNull)` at `:363` |
+| No background sync added | only match for timer/isolate/periodic is a *comment* saying so |
+| Staleness surfaced in members' terms | `'Showing saved data from … ago'` |
+| Assertions | none weakened |
+
+App shell **360 passing + 2 skipped, exit 0**, run here against a 358 + 2 baseline.
+
+**On the segfault.** The dispatch reported its app-shell run crashing at 283 tests with
+`TestDeviceException(Shell subprocess crashed with segmentation fault.)`. Worth taking seriously —
+the replica opens real SQLite files, and concurrent isolates over SQLite is a plausible genuine
+fault. It did **not** reproduce at default concurrency on an idle machine (load 1.46), so it was
+environmental, the same class as the load-sensitivity note in `CLAUDE.md`. My own grep for it
+matched `dart_style 3.1.7` via a too-broad `Dart_` pattern — a reminder that a non-zero count is not
+a finding until it is read.
+
+**Where the build-out stands:**
+
+| Item | State |
+| --- | --- |
+| B1 item queue | **Reachable** |
+| B2 per-member preferences | **Parked** (P1) — a member's own choice, deliberately deferred |
+| B3 change feed | **Reachable** |
+| B4 id generation | **Proven live** |
+| B5 documents + versioning | **Reachable** |
+| B6 offline replica | **Reachable** |
+| B7 definition publisher | Done |
+| B8 community notification config | Grammar written; **validator rules + Skill regeneration + app read outstanding** |
+
+- [ ] B8 is the only backend item with work left: the validator rules, then regenerate packages
+      through the Skill, then the app reads the community default
+- [ ] `new-ticket` — background sync policy: what it would need to decide is written up in the
+      dispatch summary, deliberately not chosen here
 ### 2026-08-30 — B5 is complete: the acknowledgements view is mounted
 
 `listDocumentAcknowledgements` had zero callers while its three siblings each had one. It is now
