@@ -107,6 +107,16 @@ details.
 Use trust-first payment surfaces with clear hierarchy, receipt details, and no ambiguity about ads or
 funding.
 
+
+### Notification Delivery
+
+Both channels are offered and both are on by default. An entitlement lapsing, a checkout that needs a
+second attempt, or a settlement that has landed are all things a member acts on rather than browses,
+and a receipt nobody sees is the same as no receipt.
+
+A member who mutes stops the interruption and keeps the record: the notification still arrives in
+the inbox and is there when they look. Muting is not unsubscribing.
+
 ### B25 Semantic Interaction Models
 
 This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.

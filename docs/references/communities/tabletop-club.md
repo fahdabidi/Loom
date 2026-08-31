@@ -469,6 +469,16 @@ and approve loans of their own games.
   real validators clean against the updated fixture. See `spec-version.json` →
   `resolvedInGrammar.generateRecurringInstancesEffect` for the complete implementation narrative.
 
+
+### Notification Delivery
+
+Both channels are offered and both are on by default. Equipment loans come due, event RSVPs close,
+and a game purchase proposal needs its votes before the decision is made. Each is a deadline a member
+can miss by not looking.
+
+A member who mutes stops the interruption and keeps the record: the notification still arrives in
+the inbox and is there when they look. Muting is not unsubscribing.
+
 ## 11. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |

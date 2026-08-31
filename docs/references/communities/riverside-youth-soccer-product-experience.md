@@ -95,6 +95,16 @@ guardian/player labels, redaction markers, and reminder channels.
 Use schedule-first mobile hierarchy, strong privacy/receipt indicators, and role-specific coach vs
 guardian surfaces. Avoid repeated cards that hide team logistics.
 
+
+### Notification Delivery
+
+Both channels are offered and both are on by default, and this community has the strongest case for
+it: a practice schedule change or a guardian approval reaches an adult who is arranging their day
+around it. A schedule change nobody sees is worse than no schedule.
+
+A member who mutes stops the interruption and keeps the record: the notification still arrives in
+the inbox and is there when they look. Muting is not unsubscribing.
+
 ### B25 Semantic Interaction Models
 
 This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.

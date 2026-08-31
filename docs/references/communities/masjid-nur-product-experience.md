@@ -130,6 +130,16 @@ receiver state.
 Use a respectful community hub with strong content hierarchy, clear privacy/giving treatment, and
 domain surfaces for announcements/donations/care. Avoid checklist modals and repeated task cards.
 
+
+### Notification Delivery
+
+Both channels are offered and both are on by default. Announcements and care requests are the reason:
+a community that gathers on a schedule needs its members reached before the gathering, and a care
+request seen late is help that did not arrive.
+
+A member who mutes stops the interruption and keeps the record: the notification still arrives in
+the inbox and is there when they look. Muting is not unsubscribing.
+
 ### B25 Semantic Interaction Models
 
 This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.

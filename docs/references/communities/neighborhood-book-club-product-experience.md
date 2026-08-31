@@ -126,6 +126,15 @@ candidates, digest citations, sender names, and export metadata.
 Use readable book-cycle sections, clear editorial hierarchy, discussion thread affordances, and compact
 meeting/vote cards. Avoid generic workflow-card repetition.
 
+
+### Notification Delivery
+
+Both channels are offered and both are on by default. Meeting RSVPs and nominations close on a date,
+and reading material posted the week before a meeting is only useful if members know it is there.
+
+A member who mutes stops the interruption and keeps the record: the notification still arrives in
+the inbox and is there when they look. Muting is not unsubscribing.
+
 ### B25 Semantic Interaction Models
 
 This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.

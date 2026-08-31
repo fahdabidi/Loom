@@ -101,6 +101,16 @@ no-fill copy.
 Use shell-native social components with clear affordances, not generic validation cards. Ads must be
 legible and not dominate core community tasks.
 
+
+### Notification Delivery
+
+Both channels are offered and both are on by default. This community is built on message threads and
+connections, which are conversational: a reply a member does not see until tomorrow has already
+ended the conversation.
+
+A member who mutes stops the interruption and keeps the record: the notification still arrives in
+the inbox and is there when they look. Muting is not unsubscribing.
+
 ### B25 Semantic Interaction Models
 
 This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.

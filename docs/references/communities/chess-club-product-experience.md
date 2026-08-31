@@ -163,6 +163,16 @@ labels, and at least one realistic club action.
 The arbitrary example should be simple but product-like: recognizable chess identity, no raw package
 debug labels, and no generic workflow proof screen.
 
+
+### Notification Delivery
+
+Both channels are offered and both are on by default. The pairing queue is the reason: a member whose
+turn has come needs to know while the club night is still running, not the next time they open the
+app. Match meetups and result confirmations carry the same urgency.
+
+A member who mutes stops the interruption and keeps the record: the notification still arrives in
+the inbox and is there when they look. Muting is not unsubscribing.
+
 ### B25 Semantic Interaction Models
 
 This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.

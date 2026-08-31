@@ -119,6 +119,16 @@ card.
 Use civic dashboard hierarchy, clear payment/document/request sections, and distinct board review
 surfaces. Avoid uniform cards across unrelated homeowner jobs.
 
+
+### Notification Delivery
+
+Both channels are offered and both are on by default. A committee decision on an architectural
+request, a dues deadline, and a facility reservation that has been granted or refused all have dates
+attached, and an owner who learns of them late has effectively not been told.
+
+A member who mutes stops the interruption and keeps the record: the notification still arrives in
+the inbox and is there when they look. Muting is not unsubscribing.
+
 ### B25 Semantic Interaction Models
 
 This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.
