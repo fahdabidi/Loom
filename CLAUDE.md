@@ -80,6 +80,34 @@ An idle KVM-less emulator costs ~70% CPU on the VM and roughly quadruples Flutte
 a suite TIMEOUT under that load is environmental. Re-run the single test in isolation before
 calling it a regression. A failed `expect` is a different matter.
 
+
+### Build the APK on the VM, not on Windows
+
+Windows cannot build this app without Developer Mode: Flutter creates symlinks for plugins
+(`.plugin_symlinks`) and Windows restricts symlink creation to admin or Developer Mode, so
+`flutter build apk` stops with **"Building with plugins requires symlink support."** Enabling it is an
+`HKLM` write, needs elevation, and is not available from an ordinary session.
+
+**That restriction is Windows-only, and the VM has a full Android toolchain** — `flutter doctor`
+reports `[✓] Android toolchain … Android SDK version 36.0.0`, with `JAVA_HOME` on Java 17, which is
+what the Flutter side needs (the backend's Java 21 override belongs to `loom-backend/build.sh` only).
+Linux has no symlink restriction, so the build simply works:
+
+    ssh loom-vm '. ~/.loom-env.sh; cd ~/Loom/app/apps/loom_communities_demo && flutter build apk --debug'
+    ssh loom-vm 'cat ~/Loom/app/apps/loom_communities_demo/build/app/outputs/flutter-apk/app-debug.apk' > /tmp/app.apk
+    "C:\Android\Sdk\platform-tools\adb.exe" install -r /tmp/app.apk
+
+Proven 2026-08-31: built in ~5 minutes, 166,844,907 bytes, transferred byte-identical, installed to
+`emulator-5554` over the stale 2026-08-11 build, launched clean with no `FATAL EXCEPTION` in logcat.
+
+**The emulator still belongs on Windows** — that has not changed, and the VM has no AVD. What changes
+is that *building* and *running* need not happen on the same host. The APK is a file; only the
+emulator needs the Windows hypervisor.
+
+**The wider lesson.** "Blocked on a Windows setting" was recorded as a blocker on 2026-08-30 and
+repeated as one for a day, because the build was only ever tried in one place. Before reporting a
+platform limitation as a blocker, check whether it is intrinsic to the task or incidental to where the
+task happens to be running.
 ## Verification traps — checks that pass for the wrong reason
 
 Every rule below cost real time on 2026-08-29/30, and they share one shape: **a signal that looked
