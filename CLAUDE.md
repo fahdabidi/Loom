@@ -163,6 +163,32 @@ matches, read them, then kill a specific pid.
 This is the same family as the existing `pgrep` note below: **process searches match things you did
 not mean, in both directions.**
 
+
+### `grep -c` and `pgrep -fc` return "0" *and* exit non-zero
+
+This one broke three consecutive completion checks on 2026-08-31, each time reporting a running
+dispatch as finished:
+
+    done=$(ssh vm 'grep -c "codex exec exited" /tmp/log || echo 0')
+
+When there are no matches `grep -c` prints `0` **and** exits 1, so `|| echo 0` fires and appends a
+second zero. The variable holds `"00"`, and `[ "$done" != "0" ]` is true. The check reports success on
+its very first poll, before the thing being watched has done anything. `pgrep -fc` behaves the same
+way.
+
+**Use a form that always exits 0 and prints one number:**
+
+    running=$(ssh vm 'pgrep -f "[c]odex exec" | wc -l')   # wc always succeeds
+    [ "$running" = "0" ] && echo done
+
+Two habits that catch this class of bug regardless of the mechanism:
+
+- **One value per poll.** Two values joined with `tr '\n' '|'` and split with `cut` silently shift
+  when the first command outputs nothing, so the second value lands in the first field. That is how a
+  `pgrep` count of 5 got reported as an exit status of 5.
+- **When a parsed status contradicts the raw evidence, the raw evidence wins.** A 253 KB log that was
+  still growing and six live processes said "running" while the check said "done". The contradiction
+  appeared on the first report and was believed three times before it was investigated.
 ### Your own command line is part of the haystack, and stale files answer for dead requests
 
 Three checks lied on 2026-08-30, all by reporting something other than what was asked.
