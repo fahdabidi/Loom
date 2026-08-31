@@ -189,6 +189,7 @@ Two habits that catch this class of bug regardless of the mechanism:
 - **When a parsed status contradicts the raw evidence, the raw evidence wins.** A 253 KB log that was
   still growing and six live processes said "running" while the check said "done". The contradiction
   appeared on the first report and was believed three times before it was investigated.
+
 ### Your own command line is part of the haystack, and stale files answer for dead requests
 
 Three checks lied on 2026-08-30, all by reporting something other than what was asked.
