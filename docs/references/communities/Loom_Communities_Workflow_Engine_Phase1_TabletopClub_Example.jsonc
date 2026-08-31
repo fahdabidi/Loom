@@ -84,6 +84,10 @@
       "multiActionStyle": "speedDial",
       "presentationStyle": "popup"
     },
+    "notifications": {
+      "allowedChannels": ["inbox", "push"],
+      "default": ["inbox", "push"]
+    },
     "tabCreatableActionStyles": {
       "calendar": {
         "presentationStyle": "slideOutBottom"

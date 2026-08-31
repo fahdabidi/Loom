@@ -90,8 +90,8 @@
       "lastCommitSubject": "feat(neighborhood-book-club): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc": {
-      "sha256": "b24c1f564f9498f04e2b1bc2f1e7fcac449bd8e8e7d08fbb5fe868d67b36812a",
-      "bytes": 131183,
+      "sha256": "e639a2f837e8e828231f7cc505e628c7b67246fdef5614b417cfaf870d5476b2",
+      "bytes": 131292,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "a0184b0c",
       "lastCommitDate": "2026-08-22",
@@ -101,9 +101,9 @@
       "sha256": "d275802897ef325dfebcbffe8c10c9a4c29307d1f81a629fa34b17ad9b29d665",
       "bytes": 107452,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "4933a3de",
-      "lastCommitDate": "2026-08-29",
-      "lastCommitSubject": "feat(youth-soccer): declare platformSource on the three platform-written fields"
+      "lastCommit": "7ee9aa2c",
+      "lastCommitDate": "2026-08-31",
+      "lastCommitSubject": "feat(riverside-youth-soccer): declare experience.notifications"
     }
   }
 }
