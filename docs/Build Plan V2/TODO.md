@@ -296,6 +296,74 @@ so the app reads the community default and stops there.
 - [ ] regenerate packages through the Skill
 - [ ] app reads the community default. **No member overlay** -- that is parked in P1
 
+
+### 2026-08-30 — B8 step 1: proposed `experience.notifications`, for approval before it is written
+
+Grammar additions "stop and ask", so this is the design, not a change. Nothing has been edited in
+`docs/references/**`.
+
+**The channel set must be exactly fan-passport's, or the two halves cannot compose.** fan-passport's
+`NotificationChannel` is a closed `enum: [inbox, push]`, and its own description is careful about
+what those mean:
+
+> `inbox` is the in-app notification list — the `notificationInbox` archetype … `push` is a
+> device-delivered alert. Both already have working delivery paths on a running device
+> (`FlutterLocalNotificationsPlugin`). **Server-initiated push, for a member whose app is closed, is a
+> separate and currently-unimplemented capability.**
+
+So `experience.notifications` reuses `[inbox, push]` verbatim. It must **not** invent a third value,
+and must not imply that a closed app can be reached — that capability is a placeholder
+(`push-delivery-api.openapi.yaml`, version `0.0.0-placeholder`), and a config key promising it would
+be the fabricated-value failure this effort exists to remove.
+
+**Proposed shape**, beside `theme` and `creatableAction` under `experience`:
+
+```jsonc
+"experience": {
+  "theme": { "accent": "#C4703F" },
+  "notifications": {
+    "channels": ["inbox", "push"],   // what this community OFFERS. Non-empty. Closed set.
+    "default":  ["inbox"],           // what a member gets before choosing. Subset of channels.
+    "muted": false                   // default interruption state; inbox stays readable when true
+  }
+}
+```
+
+**Why these three keys and not fewer.** `channels` and `default` are genuinely different facts: a
+community may offer push while defaulting to inbox-only, and collapsing them would make "we do not
+offer push" indistinguishable from "we offer it but do not default to it". `muted` mirrors
+fan-passport's own semantics — it suppresses interruption while leaving the notification readable,
+so silence is `["inbox"]` + `muted: true`, never an empty list. fan-passport returns `400` on an
+empty `channels` precisely because an empty array reads as "no opinion" to a client and "no delivery"
+to a server, and those must not be the same value. The package grammar should reject it for the same
+reason.
+
+**Proposed validator rules:**
+
+| Rule | Severity |
+| --- | --- |
+| `notifications.channels` non-empty, unique, all within `[inbox, push]` | error |
+| `notifications.default` non-empty and a **subset of** `channels` | error |
+| unknown key under `notifications` | error |
+| `muted: true` with `inbox` absent from `default` | error — mutes into silence with nothing readable |
+
+**Mechanism check, per the standing rule.** Every field must be computable and consumable:
+
+- *Written by* — the Skill, from the product doc's notification section
+- *Read by* — the app when delivering. `LocalNotificationDeliveryService` already exists and already
+  delivers both channels on a running device, and the reminder sweeper already calls it. The consumer
+  is real, not planned
+- *Not read by* — anything server-side. There is no server push, so nothing consults this to reach a
+  closed app
+
+**Proposed home:** `reference/platform-services.md`, immediately after §"Scheduled notifications",
+which documents *when* a notification comes due and is silent on *how* it is delivered — the two
+belong together. That doc is mirrored to `chatgpt-upload/14-platform-services.md` and
+`chatgpt_bundle_mirror_test.dart` enforces byte-identity, **so both must change in the same commit**;
+a grammar edit that broke exactly this mirror turned the judges suite red earlier in this effort.
+
+- [ ] **awaiting approval** — this is a new grammar block, not a correctness fix
+- [ ] then: validator rules (dispatch), Skill regeneration, app reads the default
 ### Status vocabulary — four states, because "done" was hiding the difference
 
 Measured 2026-08-29 by looking for real call sites, after the labels in my own reports drifted apart:
@@ -1327,6 +1395,53 @@ The corrected path, all existing APIs:
    provisioning call
 3. everyone else through `requestGroupMembership` → `decideGroupMembership`, approved by that admin,
    so every fixture has passed the real check
+
+### 2026-08-30 — CORRECTION: `admin` is community-scoped, and I created it wrong
+
+User correction, and it is right: **`admin` is the community's default first role**, typically the
+creator or root user of that community, with other members possibly granted admin privileges later.
+It is **not** an app-level role, which is how I read `permissions.md` §7 and what I created.
+
+**What the data says, and it matches the user, not my reading.** The existing pattern is already
+there in two communities:
+
+| Role | Group | `community.*` perms |
+| --- | --- | ---: |
+| `cedar_commons_hoa_admin` | `loom_communities_cedar_commons_hoa` | 5 |
+| `masjid-admin` | `loom_communities_masjid-nur` | **0** |
+| `admin` *(mine, wrong)* | **NULL** | 5 |
+
+So I also mischaracterised `cedar_commons_hoa_admin` as a hand-made one-off. It is the intended
+shape. Masjid has its equivalent too — it simply carries no governance permissions yet.
+
+**The schema forces the naming.** `app_role_pkey PRIMARY KEY (app_id, role_id)` means `role_id` is
+unique per app, so a bare `admin` can exist exactly once app-wide and **cannot** be per-community.
+Community-scoped admin roles must therefore be named per community, which is precisely why the
+existing ones read `cedar_commons_hoa_admin` and `masjid-admin`.
+
+**Corrected model:**
+
+- one admin role per community, `group_id` = that community's group
+- holding the five `community.*` permissions
+- granted to the community's first/creator user, via `setGroupMembership`
+- additional admins later are just further grants of the same role
+
+**Consequences to clear up:**
+
+- [ ] `needs-decision` — **the stray app-level `admin` role.** It holds nobody
+      (`app_access_role` = 0, `group_membership_role` = 0), so it grants nothing, but it is wrong and
+      should not linger. **There is no delete-role operation in the API** — only `getRole` and
+      `setRolePermissions` — so removing it means a direct database delete, which is destructive on
+      the auth system and needs an explicit go-ahead. The alternative is stripping its permissions
+      with `setRolePermissions` to leave it inert
+- [ ] `new-ticket` — **`masjid-admin` has no `community.*` permissions**, so Masjid's admin cannot
+      admit anyone either. Every community's admin role needs the five governance grants, not just a
+      name that reads like "admin"
+- [ ] `needs-decision` — **canonical group spelling, and this now blocks the work.** 24 groups for
+      ~11 communities, and Cedar has memberships under **both**: `fan-test-alice` holds `hoa-board`
+      in `loom_communities_cedar-commons-hoa` while `fan_alice` holds `cedar_commons_hoa_admin` in
+      `loom_communities_cedar_commons_hoa`. Which spelling gets the admin role decides which group is
+      real
 **STEP 1 DONE 2026-08-30 — the `admin` role exists.** User approved. Created via
 `POST /v1/apps/loom_communities/roles` (`201`), verified independently against `loom_app_access`
 rather than from the API's own response:
