@@ -1437,6 +1437,61 @@ The corrected path, all existing APIs:
 
 
 
+
+### 2026-08-31 — B8 complete: every backend capability is now built, deployed and load-bearing
+
+`20561518`. The notification config is read and gates delivery, which closes the last item in the
+build-out.
+
+| Step | State |
+| --- | --- |
+| Grammar — `experience.notifications` | `32477e12`, mirrored byte-identically |
+| Validator — five error rules | `ffde5bc3`, both-ways conformance green |
+| Product docs | 11/11 (`e1561c0a`, `56c93e80`) |
+| Packages | **11/11**, each verified individually |
+| App read | `20561518` |
+
+**The gate, and the part that was easy to get backwards:**
+
+```dart
+bool get deviceDeliveryEnabled => !muted && defaultChannels.contains('push');
+```
+
+Gated on `default`, **not** `allowedChannels`. `allowedChannels` is what the community *offers*;
+`default` is what a member *gets*. A channel offered but not defaulted must not deliver. Suppressed
+delivery leaves the inbox record intact — muting stops the interruption, not the record — and a
+failed enabled delivery still un-tracks so the next sweep retries.
+
+**Behaviour-preserving, checked against the assets rather than the report.** All ten bundled packages
+declare `default: ["inbox","push"]` and `muted` defaults to `false`, so no community lost device
+delivery. That property is the entire reason the packages and the read had to ship coupled: the read
+alone would have silenced every community, with nothing failing.
+
+**The dispatch corrected me.** My ticket said the app bundles eleven packages; it found **ten** and
+reported the discrepancy instead of proceeding. Tabletop is not in the app-shell pubspec, so 10/10 is
+right and my 11 was wrong. Worth recording because the agent's refusal to accept a stated premise is
+what made the verification meaningful.
+
+**What the eleven-package pass actually protected against.** Every package was diffed against its
+predecessor and validated with that predecessor as a control, because *deletion and correct addition
+produce identical validator reports*. All eleven produced exactly **+109 bytes and a 4-line diff** —
+uniformity that made a differing delta the cheapest possible tripwire. Two real defects surfaced:
+
+- **renamed asset mirrors** — `MasjidNur`→`Mosque`, `NeighborhoodBookClub`→`BookClub`,
+  `RiversideYouthSoccer`→`YouthSoccer`. Three communities would have kept stale app packages **while
+  the demo suite passed**, because that suite reads the very file that would have been stale
+- **Tabletop has no mirror**, which is correct — the pubspec declares ten assets. Confirmed before
+  installing, so `NO MIRROR EXISTS` could be read as expected rather than chased as a bug
+
+Suites at close: app shell **365 + 2** (up from 360 for five new tests), demo 160, engine 312 + 5,
+judges 473. Stack verified **serving** afterwards, not merely `Running`: token ok, `changes` 200,
+zero restarts on `postgres-0` and `workflow-service`.
+
+- [x] B8 complete
+- [ ] `new-ticket` — background sync policy, still deliberately undecided
+- [ ] `new-ticket` — `.dockerignore` for the service image build (6 GB context)
+- [ ] `new-ticket` — parity test for the OpenAPI spec twins, which drifted four operations unnoticed
+- [ ] **pre-GA** — the 35 seeded accounts all share `LoomTest123!` and belong on the rotation list
 ### 2026-08-31 — B8 package regeneration, running record
 
 Product docs: **11 of 11 done** (`e1561c0a`, `56c93e80`). Each states what its community offers and
