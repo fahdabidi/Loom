@@ -61,13 +61,13 @@
       "sha256": "8107cdcfb04c7c806daad1474351d478cd751891afe03e34a79d6593fabd1f1f",
       "bytes": 105025,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "629b4309",
-      "lastCommitDate": "2026-08-29",
-      "lastCommitSubject": "feat(garden-club): declare platformSource on checksum and transferId"
+      "lastCommit": "f91e02b4",
+      "lastCommitDate": "2026-08-31",
+      "lastCommitSubject": "feat(garden-club): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc": {
-      "sha256": "0186f2cb9beb789004e14aba632ee62bb25868b9a1a851307d834c0017830917",
-      "bytes": 91986,
+      "sha256": "a6b84350f4bd8f60d06e264e60127c1c14ca6486b4a56e5d455502e8bf2fc3bc",
+      "bytes": 92095,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "04eb71ad",
       "lastCommitDate": "2026-08-27",
