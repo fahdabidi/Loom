@@ -69,13 +69,13 @@
       "sha256": "a6b84350f4bd8f60d06e264e60127c1c14ca6486b4a56e5d455502e8bf2fc3bc",
       "bytes": 92095,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "04eb71ad",
-      "lastCommitDate": "2026-08-27",
-      "lastCommitSubject": "fix(mosque): declare the event reminder, and name the writers honestly"
+      "lastCommit": "f2b456d6",
+      "lastCommitDate": "2026-08-31",
+      "lastCommitSubject": "feat(masjid-nur): declare experience.notifications, and fix the asset mirror mapping"
     },
     "Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc": {
-      "sha256": "44c093126d5347c7b2502940b994e755114b57f28563e7b86ff66fba5cddec81",
-      "bytes": 45122,
+      "sha256": "9db09c6d80794bca06e5b9480ddb92b42d601edbf3cde294e52a043cd2edaf51",
+      "bytes": 45231,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "f50e047f",
       "lastCommitDate": "2026-08-27",

@@ -23,6 +23,10 @@
         "admin": { "accent": "#283593" }
       }
     },
+    "notifications": {
+      "allowedChannels": ["inbox", "push"],
+      "default": ["inbox", "push"]
+    },
 
     // The four legacy personas are named people, not roles. Per identity-types.md case 2,
     // their two distinct roleLabel values collapse to these two role declarations.
