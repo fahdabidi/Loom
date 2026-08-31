@@ -1293,6 +1293,40 @@ So there is no architecture decision outstanding. The work is provisioning, in o
       is far smaller than the "bootstrap admin" framing: granting an existing platform role through
       `app_access` + `app_access_role` is ordinary provisioning, **not** a direct membership insert
 
+
+**RETRACTION 2026-08-30 — there was never a bootstrap problem.** I raised it twice as a hard blocker
+and proposed eleven direct database inserts to get around it. Both were wrong, and the user pointed
+at the answer: the admin role is already system-defined.
+
+`permissions.md` §7 defines it exactly as created — `admin`, **not** declared in community JSON, an
+**app-level template role** on `loom_communities`, assignable in any community's group, holding the
+five `community.*` permissions. It had simply never been created in the running system.
+
+And the grant path exists too. `requireGroupAdministrator` is called from exactly **two** places —
+`issueInvite` (line 620) and `decideGroupMembership` (line 830). **`setGroupMembership` does not call
+it**, and its spec entry says why:
+
+> The fan-to-group mapping tool, and the group-scoped role assignment in the same record. Every
+> `roleId` must be either a role bound to this group **or an app-level template role**.
+
+So `PUT /v1/apps/{appId}/groups/{groupId}/members/{fanId}` is the designed provisioning endpoint: it
+needs no existing administrator and explicitly accepts `admin`. Seeding the first admin is an
+ordinary service-authenticated call, not a database insert that bypasses authorization.
+
+**How I got it wrong.** I checked `requestGroupMembership` and `decideGroupMembership`, found the
+second required an admin, and concluded no path existed — without reading the third endpoint sitting
+beside them in the same file. This is precisely the "a search that finds nothing is not evidence of
+absence" rule, which I had cited earlier the same day. The control I should have run: *"is there any
+endpoint that writes `group_membership` without an authorization check?"* — one grep for callers of
+`requireGroupAdministrator` would have answered it in seconds, and did, once asked.
+
+The corrected path, all existing APIs:
+
+1. `POST /v1/apps/loom_communities/roles` — **done**, `admin` exists, app-level, holding nobody
+2. `PUT /v1/apps/loom_communities/groups/{groupId}/members/{fanId}` — `{roleIds: ["admin"]}`, the
+   provisioning call
+3. everyone else through `requestGroupMembership` → `decideGroupMembership`, approved by that admin,
+   so every fixture has passed the real check
 **STEP 1 DONE 2026-08-30 — the `admin` role exists.** User approved. Created via
 `POST /v1/apps/loom_communities/roles` (`201`), verified independently against `loom_app_access`
 rather than from the API's own response:
