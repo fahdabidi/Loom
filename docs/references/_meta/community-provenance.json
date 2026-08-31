@@ -29,9 +29,9 @@
       "sha256": "4f0e1b3edc2435f56b37e15bb15e12a48dbf068266d78b0707be45b7316338ab",
       "bytes": 61729,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "bba5aac2",
-      "lastCommitDate": "2026-08-28",
-      "lastCommitSubject": "fix(cameraclub): name the writers, and keep the per-member reminder this time"
+      "lastCommit": "31652ee7",
+      "lastCommitDate": "2026-08-31",
+      "lastCommitSubject": "feat(camera-club): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc": {
       "sha256": "c4c51663a4758b8b5a2fcf1851a694ca461b16a05c83c1734f43f588807f1bfe",
@@ -42,8 +42,8 @@
       "lastCommitSubject": "feat(cedar-hoa): declare platform writers on checksum and transferId"
     },
     "Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc": {
-      "sha256": "201d1b02d959dd221ec2abb6983f48a7030283b55e2e95175c447605e240a7cb",
-      "bytes": 87602,
+      "sha256": "49f0c1d7239ffc28b018361d7735318553fb02b918e5e9de9f57f1816831e2a8",
+      "bytes": 87711,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "a5ff165f",
       "lastCommitDate": "2026-08-30",

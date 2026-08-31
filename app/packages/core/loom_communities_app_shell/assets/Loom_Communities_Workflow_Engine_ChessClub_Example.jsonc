@@ -29,6 +29,10 @@
       "multiActionStyle": "speedDial",
       "presentationStyle": "popup"
     },
+    "notifications": {
+      "allowedChannels": ["inbox", "push"],
+      "default": ["inbox", "push"]
+    },
     "roles": [
       {
         "roleId": "chess-organizer",
