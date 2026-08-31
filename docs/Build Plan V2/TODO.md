@@ -1430,6 +1430,48 @@ The corrected path, all existing APIs:
 3. everyone else through `requestGroupMembership` → `decideGroupMembership`, approved by that admin,
    so every fixture has passed the real check
 
+
+### 2026-08-30 — the group spelling was never a decision, and the answer changes the admin picture
+
+I asked the user to choose a canonical group spelling. **That was not a decision to make** — the
+deployed configuration already settles it, and I should have read it before asking.
+
+`LOOM_COMMUNITY_GROUP_IDS` in the `workflow-service-config` secret maps **all eleven** communities to
+the **hyphenated** groups:
+
+```
+"community_cedar_commons_hoa": "loom_communities_cedar-commons-hoa"
+"community_camera_club":       "loom_communities_camera-club"
+"community_mosque":            "loom_communities_masjid-nur"
+```
+
+`MapCommunityGroupIdResolver` returns `null` for anything absent and the service then fails closed,
+so a group not in that map is unreachable by construction. The underscored duplicates are orphans.
+
+**And that retracts "Cedar works, the other ten do not."** Memberships by group:
+
+| Group | Members | Routed to? |
+| --- | ---: | --- |
+| `loom_communities_cedar-commons-hoa` | 1 — `fan-test-alice` as `hoa-board` | **yes, live** |
+| `loom_communities_cedar_commons_hoa` | 2 — incl. `fan_alice` as `cedar_commons_hoa_admin` | **no, orphan** |
+
+The only role holding `community.manage_members` sits in the **orphaned** group. The live Cedar group
+holds `hoa-board` — 34 workflow permissions, **zero** `community.*`. Cedar looked like the working
+case only because every query I ran hit the orphan.
+
+**So the gap is uniform, which makes it simpler.** No community has a working admin in the group the
+service routes to. Every one of the eleven live hyphenated groups needs a community-scoped admin role
+carrying the five governance permissions, then its first member granted it. No per-community
+judgement and no spelling call.
+
+- [x] canonical spelling: **hyphenated**, determined by deployed config, not chosen
+- [ ] `new-ticket` — one admin role per live hyphenated group, five `community.*` permissions each.
+      `masjid-admin` already exists in a live group and needs the permissions added rather than a new
+      role; `cedar_commons_hoa_admin` is in an orphan group and is the wrong thing to reuse
+- [ ] `new-ticket` — the orphaned underscored groups and their memberships. They are unreachable, so
+      they are not urgent, but they will keep producing false readings exactly like this one until
+      they are gone. **Deleting them needs care**: `app_role_group_fk` is `ON DELETE CASCADE`, so
+      dropping a group takes its roles with it
 ### 2026-08-30 — CORRECTION: `admin` is community-scoped, and I created it wrong
 
 User correction, and it is right: **`admin` is the community's default first role**, typically the
