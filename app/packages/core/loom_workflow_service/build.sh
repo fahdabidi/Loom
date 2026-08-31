@@ -17,9 +17,29 @@ trap 'rm -rf "$SCRATCH"' EXIT
 
 echo "Staging build context in $SCRATCH ..."
 mkdir -p "$SCRATCH/home/fahd"
-cp -r "$HOME/.pub-cache" "$SCRATCH/home/fahd/.pub-cache"
+# The pub cache must keep the pre-resolved package sources, but it has no use
+# for VCS metadata in an AOT compilation.
+rsync -a --exclude='.git/' "$HOME/.pub-cache/" "$SCRATCH/home/fahd/.pub-cache/"
 mkdir -p "$SCRATCH/home/fahd/Loom"
-cp -r "$REPO_ROOT/app" "$SCRATCH/home/fahd/Loom/app"
+# Dart compiles against app/.dart_tool/package_config.json (see Dockerfile),
+# so retain that workspace-root directory and its cached sqlite3 build hook.
+# Every member's own .dart_tool, along with Flutter/build-runner outputs and
+# tests, is regenerable and outside the entrypoint's import graph.
+rsync -a \
+  --exclude='/apps/**/build/' \
+  --exclude='/packages/**/build/' \
+  --exclude='/apps/**/.dart_tool/' \
+  --exclude='/packages/**/.dart_tool/' \
+  --exclude='/apps/**/test/' \
+  --exclude='/packages/**/test/' \
+  --exclude='/apps/**/test_fixtures/' \
+  --exclude='/packages/**/test_fixtures/' \
+  --exclude='/.dart_tool/build/' \
+  --exclude='/.dart_tool/test/' \
+  --exclude='/.dart_tool/test_tmp/' \
+  --exclude='/.dart_tool/pub/bin/test/' \
+  --exclude='.git/' \
+  "$REPO_ROOT/app/" "$SCRATCH/home/fahd/Loom/app/"
 cp "$(dirname "${BASH_SOURCE[0]}")/Dockerfile" "$SCRATCH/Dockerfile"
 
 echo "Building loom-workflow-service:$IMAGE_TAG ..."
