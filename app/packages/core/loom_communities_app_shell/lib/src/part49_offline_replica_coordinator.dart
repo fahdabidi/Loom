@@ -41,6 +41,74 @@ final class LoomWorkflowReadMetadata {
   bool get cameFromReplica => source == LoomWorkflowReadSource.replica;
 }
 
+/// A member-facing treatment for data supplied by an offline replica.
+///
+/// This is deliberately absent for a completed remote read. A stored response
+/// must not look like a live one, even when its cursor is only a few seconds
+/// old.
+class LoomOfflineReplicaReadStatus extends StatelessWidget {
+  const LoomOfflineReplicaReadStatus({super.key, required this.metadata});
+
+  final LoomWorkflowReadMetadata metadata;
+
+  @override
+  Widget build(BuildContext context) {
+    final message =
+        'Showing saved data from ${_replicaAgeLabel(metadata.replicaCursorAge)} ago';
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: message,
+      child: DecoratedBox(
+        key: const ValueKey('offline-replica-read-status'),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: scheme.outlineVariant),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(Icons.cloud_off_outlined, color: scheme.onSurfaceVariant),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _replicaAgeLabel(Duration? age) {
+  if (age == null) return 'an unknown time';
+  if (age < const Duration(seconds: 1)) return 'just now';
+  if (age < const Duration(minutes: 1)) {
+    final seconds = age.inSeconds;
+    return '$seconds ${seconds == 1 ? 'second' : 'seconds'}';
+  }
+  if (age < const Duration(hours: 1)) {
+    final minutes = age.inMinutes;
+    return '$minutes ${minutes == 1 ? 'minute' : 'minutes'}';
+  }
+  if (age < const Duration(days: 1)) {
+    final hours = age.inHours;
+    return '$hours ${hours == 1 ? 'hour' : 'hours'}';
+  }
+  final days = age.inDays;
+  return '$days ${days == 1 ? 'day' : 'days'}';
+}
+
 /// Owns the one active server-fed replica for a signed-in member/community.
 ///
 /// A host creates this only after injecting a writable [databaseDirectory].

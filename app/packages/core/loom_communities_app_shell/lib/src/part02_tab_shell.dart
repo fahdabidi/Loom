@@ -1036,6 +1036,7 @@ typedef _WorkflowSurfaceBuilder =
 
 class _TabNativeRenderer extends StatelessWidget {
   const _TabNativeRenderer({
+    super.key,
     required this.experience,
     required this.actorIdentity,
     required this.selectedTab,

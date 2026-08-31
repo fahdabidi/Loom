@@ -186,6 +186,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   String? _selectedRoleId;
   bool? _communityEntryAllowed;
   bool _entryGateHasPendingApproval = false;
+  bool _offlineReplicaEnabled = false;
+  bool _isRefreshingOfflineReplica = false;
+  int _offlineReplicaRefreshRevision = 0;
   int _entryGateRevision = 0;
   Future<void>? _engineAuthorizationSync;
 
@@ -332,17 +335,49 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     // engines and hosts without an injected offline directory are no-ops.
     // An unavailable sync keeps an already stored replica available; a real
     // response failure such as 403 continues to surface from this call.
+    var offlineReplicaEnabled = false;
     if (hasActiveAccount) {
-      await openOfflineReplicaForExtensionId(
+      offlineReplicaEnabled = await openOfflineReplicaForExtensionId(
         extensionId: community.extensionId,
         fanId: signedInAccountId,
       );
+      // [open] establishes the fan/community handle. The follow-up refresh
+      // is the explicit entry sync: it is never driven by a read or timer.
+      // An unavailable open has already retained the saved snapshot, so do
+      // not replace it with the explicit refresh error before the surface can
+      // make its availability-only fallback read.
+      if (offlineReplicaEnabled &&
+          loomWorkflowReplicaCoordinator?.lastOpenSyncFailure == null) {
+        await refreshOfflineReplicaForExtensionId(
+          extensionId: community.extensionId,
+        );
+      }
       if (!mounted) return;
     }
     setState(() {
       _communityEntryAllowed = hasActiveAccount;
       _entryGateHasPendingApproval = hasPendingApproval;
+      _offlineReplicaEnabled = offlineReplicaEnabled;
     });
+  }
+
+  Future<void> _refreshOfflineReplica() async {
+    if (_isRefreshingOfflineReplica) return;
+    setState(() => _isRefreshingOfflineReplica = true);
+    try {
+      await refreshOfflineReplicaForExtensionId(
+        extensionId: community.extensionId,
+      );
+      if (!mounted) return;
+      setState(() => _offlineReplicaRefreshRevision += 1);
+    } on Object catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not refresh community: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _isRefreshingOfflineReplica = false);
+    }
   }
 
   Widget _communityEntryChecking() {
@@ -578,6 +613,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
 
   @override
   void dispose() {
+    disposeOfflineReplicaForExtensionId(extensionId: community.extensionId);
     _surfaceScrollController
       ..removeListener(_updateFocusedSurfaceFromScroll)
       ..dispose();
@@ -1428,6 +1464,21 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         backgroundColor: accent,
         foregroundColor: Colors.white,
         actions: [
+          if (_offlineReplicaEnabled)
+            IconButton(
+              key: const ValueKey('community-offline-refresh-button'),
+              tooltip: 'Refresh community',
+              onPressed: _isRefreshingOfflineReplica
+                  ? null
+                  : _refreshOfflineReplica,
+              icon: _isRefreshingOfflineReplica
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.refresh),
+            ),
           if (experience.resolvedNotificationPresentationStyle == 'bell')
             NotificationBellButton(
               extensionId: community.extensionId,
@@ -1661,6 +1712,10 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 fanId: activeActorIdentity.fanId,
               ),
             _TabNativeRenderer(
+              key: ValueKey(
+                'tab-native-renderer-${community.extensionId}-'
+                '$_offlineReplicaRefreshRevision',
+              ),
               experience: experience,
               actorIdentity: activeActorIdentity,
               selectedTab: selectedTab,

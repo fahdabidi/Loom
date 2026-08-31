@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:loom_auth_session/loom_auth_session.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
+import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 final class _MemoryStorage implements LoomAuthSecureStorageBackend {
@@ -60,12 +62,13 @@ Map<String, Object?> _snapshot(String instanceId, {int updatedAt = 5000}) =>
 http.Response _changePage({
   required List<Map<String, Object?>> changed,
   required List<String> visibleInstanceIds,
+  String communityId = 'garden',
   int nextUpdatedSince = 5000,
   String nextAfterInstanceId = 'notice-1',
   String nextRoleCursor = 'role-cursor',
 }) => http.Response(
   jsonEncode(<String, Object?>{
-    'communityId': 'garden',
+    'communityId': communityId,
     'changed': changed,
     'visibleInstanceIds': visibleInstanceIds,
     'nextUpdatedSince': nextUpdatedSince,
@@ -77,6 +80,97 @@ http.Response _changePage({
   200,
   headers: const {'content-type': 'application/json'},
 );
+
+const _statusMachine = LoomWorkflowStateMachine(
+  workflowType: 'notice',
+  initialState: 'published',
+  states: <String, LoomWorkflowState>{
+    'published': LoomWorkflowState(label: 'Published'),
+  },
+  transitions: <LoomWorkflowTransition>[],
+  renderBindings: <RenderBinding>[
+    RenderBinding(
+      states: <String>['published'],
+      role: 'any',
+      tabId: 'home',
+      cardSurfaceFamily: 'workflow-status',
+      bindingKind: 'primary',
+    ),
+  ],
+);
+
+Widget _readStatusHost(WorkflowEngineApi engine) => MaterialApp(
+  home: Scaffold(
+    body: EngineNativeBindingDispatcher(
+      engine: engine,
+      definitions: const <String, LoomWorkflowStateMachine>{
+        'notice': _statusMachine,
+      },
+      tabId: 'home',
+      fanId: 'alice',
+      builder: (context, bindings, _) =>
+          Text('Loaded ${bindings.length} saved item'),
+    ),
+  ),
+);
+
+http.Response _remotePage({String instanceId = 'notice-1'}) => http.Response(
+  jsonEncode(<String, Object?>{
+    'items': <Map<String, Object?>>[
+      <String, Object?>{
+        'instanceId': instanceId,
+        'workflowType': 'notice',
+        'currentState': 'published',
+        'instanceData': <String, Object?>{'title': instanceId},
+      },
+    ],
+    'pageInfo': <String, Object?>{'hasMore': false},
+  }),
+  200,
+  headers: const {'content-type': 'application/json'},
+);
+
+LocalInstalledCommunity _mountedCommunity(String extensionId) =>
+    LocalInstalledCommunity(
+      communityId: 'offline-screen',
+      displayName: 'Offline screen fixture',
+      extensionId: extensionId,
+      logoAssetId: null,
+      cardImageAssetId: null,
+      heroImageAssetId: null,
+      accentColor: '#246B62',
+      specVersion: currentCommunitySpecVersion,
+      experienceConfiguration: const <String, Object?>{
+        'tagline': 'A mounted offline replica test fixture.',
+        'roles': <Map<String, Object?>>[
+          <String, Object?>{
+            'roleId': 'member',
+            'label': 'Member',
+            'roleLabel': 'Member',
+            'description': 'Can read the community.',
+            'accessMode': 'open',
+          },
+        ],
+        'workflowDefinitions': <String, Object?>{
+          'notice': <String, Object?>{
+            'initialState': 'published',
+            'states': <String, Object?>{
+              'published': <String, Object?>{'label': 'Published'},
+            },
+            'transitions': <Object?>[],
+            'renderBindings': <Object?>[
+              <String, Object?>{
+                'states': <String>['published'],
+                'audience': 'any',
+                'tabId': 'home',
+                'cardSurfaceFamily': 'workflow-status',
+                'bindingKind': 'primary',
+              },
+            ],
+          },
+        },
+      },
+    );
 
 http.Response _remoteError(
   int statusCode, {
@@ -102,6 +196,13 @@ Future<void> _expectOfflineWrite(Future<dynamic> operation) => expectLater(
 );
 
 void main() {
+  tearDown(() {
+    resetLoomOfflineReplicaSupportForTesting();
+    resetEngineNativeCommunityFactoryRegistrationsForTesting();
+    resetEngineNativeCommunityEngineFactoryForTesting();
+    resetProductionEngineNativeCommunityEngineFactoryForTesting();
+  });
+
   group('offline replica coordinator', () {
     late Directory directory;
 
@@ -384,6 +485,145 @@ void main() {
           'afterInstanceId': 'first',
           'roleCursor': 'first-role-cursor',
         });
+      },
+    );
+
+    testWidgets(
+      'a replica-served read visibly states its cursor age while a fresh read does not',
+      (tester) async {
+        final changes = MockClient(
+          (_) async => _changePage(
+            changed: <Map<String, Object?>>[_snapshot('notice-1')],
+            visibleInstanceIds: const ['notice-1'],
+          ),
+        );
+        final coordinator = LoomWorkflowReplicaCoordinator(
+          databaseDirectory: directory.path,
+          visibleChangesClient: _changesClient(changes),
+          now: () => DateTime.utc(1970, 1, 1, 0, 0, 8),
+        );
+        addTearDown(coordinator.dispose);
+        addTearDown(changes.close);
+        await coordinator.open(fanId: 'alice', communityId: 'garden');
+
+        final unavailableRemote = MockClient((_) async => _remoteError(503));
+        addTearDown(unavailableRemote.close);
+        await tester.pumpWidget(
+          _readStatusHost(
+            coordinator.wrap(
+              _remoteEngine(unavailableRemote),
+              communityId: 'garden',
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const ValueKey('offline-replica-read-status')),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Showing saved data from 3 seconds ago'),
+          findsOneWidget,
+        );
+
+        final freshRemote = MockClient((_) async => _remotePage());
+        addTearDown(freshRemote.close);
+        await tester.pumpWidget(
+          _readStatusHost(
+            coordinator.wrap(_remoteEngine(freshRemote), communityId: 'garden'),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const ValueKey('offline-replica-read-status')),
+          findsNothing,
+        );
+        expect(find.text('Loaded 1 saved item'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'entering opens and refreshes the member replica, then leaving closes it fail-closed',
+      (tester) async {
+        var syncs = 0;
+        final changes = MockClient((_) async {
+          syncs += 1;
+          return _changePage(
+            changed: <Map<String, Object?>>[_snapshot('notice-1')],
+            visibleInstanceIds: const ['notice-1'],
+            communityId: 'offline-screen-extension',
+          );
+        });
+        addTearDown(changes.close);
+        const extensionId = 'offline-screen-extension';
+        final remote = MockClient((_) async => _remoteError(503));
+        addTearDown(remote.close);
+        final services = LoomRemoteServiceConfiguration(
+          session: _Session(),
+          workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+          appAccessBaseUri: Uri.parse('https://app-access.test/api/'),
+          fanPassportBaseUri: Uri.parse('https://fan-passport.test/api/'),
+          communityGroupIds: const <String, String>{},
+        );
+        configureLoomOfflineReplicaSupportForProduction(
+          databaseDirectory: directory.path,
+          remoteServices: services,
+          httpClient: changes,
+        );
+        enableRemoteEngineForCommunity(
+          extensionId: extensionId,
+          session: services.session,
+          workflowServiceBaseUri: services.workflowServiceBaseUri,
+          httpClient: remote,
+          offlineReplicaCoordinator: loomWorkflowReplicaCoordinator,
+        );
+        final authApi = LocalAuthApi()
+          ..seedAccounts(extensionId, const <LoomAccount>[
+            LoomAccount(
+              accountId: 'alice',
+              displayName: 'Alice Member',
+              roleId: 'member',
+            ),
+          ]);
+        await authApi.signIn(accountId: 'alice');
+        await tester.pumpWidget(
+          MaterialApp(
+            home: LocalExtensionScreen(
+              community: _mountedCommunity(extensionId),
+              seedDataFiles: const <String>[],
+              authApi: authApi,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const ValueKey('community-offline-refresh-button')),
+          findsOneWidget,
+        );
+        final coordinator = loomWorkflowReplicaCoordinator!;
+        expect(coordinator.activeFanId, 'alice');
+        expect(coordinator.activeCommunityId, extensionId);
+        expect(syncs, 2);
+
+        await tester.tap(
+          find.byKey(const ValueKey('community-offline-refresh-button')),
+        );
+        await tester.pumpAndSettle();
+        expect(syncs, 3);
+
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        expect(coordinator.activeReplica, isNull);
+        await expectLater(
+          openOfflineReplicaForExtensionId(
+            extensionId: extensionId,
+            fanId: 'bob',
+          ),
+          throwsA(isA<StateError>()),
+        );
       },
     );
   });

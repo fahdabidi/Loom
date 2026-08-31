@@ -350,20 +350,21 @@ Future<WorkflowEngineApi> workflowEngineForExtensionId(
 }
 
 /// Opens the opt-in offline replica for the member currently entering a
-/// remote-backed community. It is a no-op for local engines and for hosts that
-/// did not configure an offline directory, preserving the previous path.
-Future<void> openOfflineReplicaForExtensionId({
+/// remote-backed community.
+///
+/// Returns whether a configured remote engine was opened. The false branch is
+/// deliberately a no-op for local engines and for hosts that did not configure
+/// an offline directory, preserving the previous path.
+Future<bool> openOfflineReplicaForExtensionId({
   required String extensionId,
   required String fanId,
 }) async {
   final engine = await workflowEngineForExtensionId(extensionId);
-  if (engine is! LoomReplicaFallbackWorkflowEngineApi) return;
+  if (engine is! LoomReplicaFallbackWorkflowEngineApi) return false;
   final coordinator = loomWorkflowReplicaCoordinator;
-  if (coordinator == null) return;
-  await coordinator.open(
-    fanId: fanId,
-    communityId: engine.communityId,
-  );
+  if (coordinator == null) return false;
+  await coordinator.open(fanId: fanId, communityId: engine.communityId);
+  return true;
 }
 
 /// Performs the explicit refresh requested by a surface for the active
@@ -383,6 +384,23 @@ Future<void> refreshOfflineReplicaForExtensionId({
     );
   }
   await coordinator.refresh();
+}
+
+/// Closes the active member/community replica when its screen leaves.
+///
+/// The coordinator is host-owned and one active replica is intentionally not
+/// shared with another community route. A subsequent unavailable read through
+/// the wrapped engine therefore fails closed rather than consulting the row
+/// that belonged to the departed member.
+void disposeOfflineReplicaForExtensionId({required String extensionId}) {
+  final engine = _EngineNativeCommunityStore._stores[extensionId]?.engine;
+  if (engine is! LoomReplicaFallbackWorkflowEngineApi) return;
+  final coordinator = loomWorkflowReplicaCoordinator;
+  if (coordinator == null ||
+      coordinator.activeCommunityId != engine.communityId) {
+    return;
+  }
+  coordinator.dispose();
 }
 
 /// One reminder sweeper per community, built on first use.

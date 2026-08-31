@@ -89,6 +89,7 @@ class _EngineNativeBindingDispatcherState
     extends State<EngineNativeBindingDispatcher> {
   int _generation = 0;
   List<EngineNativeResolvedBinding>? _bindings;
+  LoomWorkflowReadMetadata? _readMetadata;
   Object? _error;
 
   @override
@@ -133,7 +134,10 @@ class _EngineNativeBindingDispatcherState
       // Mutation callbacks re-query the same context. Retaining the last
       // successful result keeps the enclosing scrollable's extent stable
       // until the refreshed bindings are ready to replace it.
-      if (clearBindings) _bindings = null;
+      if (clearBindings) {
+        _bindings = null;
+        _readMetadata = null;
+      }
       _error = null;
     });
     _load(
@@ -159,6 +163,7 @@ class _EngineNativeBindingDispatcherState
     try {
       final instances = <WorkflowInstance>[];
       final seenCursors = <String>{};
+      LoomWorkflowReadMetadata? readMetadata;
       String? cursor;
       while (true) {
         final page = await engine.queryInstances(
@@ -171,6 +176,9 @@ class _EngineNativeBindingDispatcherState
         // further pagination work (or a later stale publication).
         if (!mounted || generation != _generation) return;
         instances.addAll(page.items);
+        if (engine case final LoomReplicaFallbackWorkflowEngineApi replica) {
+          readMetadata = replica.lastRead;
+        }
         if (!page.hasMore) break;
         final nextCursor = page.nextCursor;
         if (nextCursor == null ||
@@ -216,7 +224,7 @@ class _EngineNativeBindingDispatcherState
           }
         }
       }
-      _publishSuccess(generation, output);
+      _publishSuccess(generation, output, readMetadata);
     } catch (error) {
       if (!mounted || generation != _generation) return;
       setState(() => _error = error);
@@ -226,11 +234,13 @@ class _EngineNativeBindingDispatcherState
   void _publishSuccess(
     int generation,
     List<EngineNativeResolvedBinding> value,
+    LoomWorkflowReadMetadata? readMetadata,
   ) {
     if (!mounted || generation != _generation) return;
-    setState(
-      () => _bindings = List<EngineNativeResolvedBinding>.unmodifiable(value),
-    );
+    setState(() {
+      _bindings = List<EngineNativeResolvedBinding>.unmodifiable(value);
+      _readMetadata = readMetadata;
+    });
   }
 
   @override
@@ -272,9 +282,20 @@ class _EngineNativeBindingDispatcherState
             : result;
       }
     }
+    final readMetadata = _readMetadata;
+    final decoratedChild = readMetadata?.cameFromReplica == true
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              LoomOfflineReplicaReadStatus(metadata: readMetadata!),
+              const SizedBox(height: 12),
+              child,
+            ],
+          )
+        : child;
     return KeyedSubtree(
       key: Key('engine-native-bindings-$tabId'),
-      child: child,
+      child: decoratedChild,
     );
   }
 }
