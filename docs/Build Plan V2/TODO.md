@@ -146,7 +146,7 @@ Open items from those entries are rows in the same trackers' **§8** queues, not
 - [ ] idempotency is reimplemented in three repositories that will diverge silently → ACWS §8
 - [ ] ten of eleven communities still have no members → Build Tracker §8
 - [ ] Android cannot obtain a bearer token, so no authenticated walkthrough is possible → Build Tracker §8
-- [ ] the B25 denominator overstates: 12 rows name workflows their package does not ship → Build Tracker §8
+- [ ] the B25 denominator overstates: 12 rows — 3 renames, 9 not community workflows at all → Build Tracker §8
 - [ ] walkthrough evidence records no package identity, so staleness is undetectable → Build Tracker §8
 - [ ] pass-42's two blockers — `c14` vision review is ~97% scaffold (7 of 204 screens carry real evidence), `c16` is a schema regression (judge wants boolean `tabsPass`, evidence supplies string `tabs: "pass"`) plus 3 renderer contracts with no proof → Build Tracker §8
 
