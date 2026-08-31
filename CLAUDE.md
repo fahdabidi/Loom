@@ -263,6 +263,28 @@ nothing further was eaten.
 Note the registry lives in the **Windows** repo, not the VM's. Checking `~/Loom/data/loops` on the
 VM shows a different, stale set and will tell you the loop is dead when it is not.
 
+
+### A deploy is not finished until the manifest bump is committed
+
+This happened **twice on 2026-08-30/31**, the same way both times: build the image, import it, edit
+the manifest's image tag, `kubectl apply`, watch the rollout succeed — and never commit the manifest.
+The repo then says `0.3.1` while the cluster runs `0.3.2`.
+
+**It survives a successful deploy, which is why it recurs.** The cluster is correct. The service
+answers. Every probe is green. Only the *record* is wrong, so nothing fails and nothing surfaces it.
+It is invisible until someone reads the manifest and believes it — or until a later deploy is built
+from a tag that was never really shipped.
+
+Both times it was found by deliberately comparing the three sources, never by anything breaking:
+
+    kubectl get deploy <svc> -n loom -o jsonpath='{.spec.template.spec.containers[0].image}'
+    grep -hoE 'image: [a-z/-]+:[0-9.]+' ~/loom-backend/deploy/k8s/*.yaml
+    cd ~/loom-backend && git status --short
+
+**Run that audit after any deploy, and treat the deploy as incomplete until the tree is clean.** The
+same check catches a second thing worth knowing: a locally built image that is *not* deployed is
+normal when a ticket said "build, do not deploy" — `loom-workflow-service:1.0.3` exists for exactly
+that reason — so an image with no matching deployment is not automatically drift.
 ### Publishing definitions is not a one-time step
 
 The backend stores a **copy** of every workflow definition, written by
