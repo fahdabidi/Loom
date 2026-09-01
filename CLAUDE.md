@@ -223,6 +223,14 @@ way.
     running=$(ssh vm 'pgrep -f "[c]odex exec" | wc -l')   # wc always succeeds
     [ "$running" = "0" ] && echo done
 
+
+**A third variant, hit 2026-08-31: `grep` on a dispatch log counts zero because the log is
+*binary*.** `codex` writes control sequences, so `grep "codex exec exited" /tmp/impl.log | wc -l`
+returns **0** while printing `grep: /tmp/impl.log: binary file matches` — the match is found and the
+matching line is never emitted. The dispatch had finished with status 0 and the check said it had not
+even started. **Use `grep -a` on any dispatch log**, and note this is the same shape as the other two:
+the count disagreed with the raw evidence — the log's own tail showed the completion banner — and the
+raw evidence was right.
 Two habits that catch this class of bug regardless of the mechanism:
 
 - **One value per poll.** Two values joined with `tr '\n' '|'` and split with `cut` silently shift
