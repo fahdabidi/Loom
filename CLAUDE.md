@@ -541,10 +541,10 @@ There are **five**, and the demo app is the one that gets forgotten — it was o
 migration too, and a Chess regeneration broke it for a full day in 2026-08 because I was running the
 other four and calling that "the suites".
 
-| Suite | Path | Baseline (2026-08-30, measured) |
+| Suite | Path | Baseline (2026-09-01, all five re-measured) |
 | --- | --- | ---: |
-| UX judges | `app/packages/tooling/loom_ux_judges` | 464 |
-| App shell | `app/packages/core/loom_communities_app_shell` | 354 (+2 skipped) |
+| UX judges | `app/packages/tooling/loom_ux_judges` | **485** (0 skipped) — was 464; grew with the c16 absent-vs-failed tests, the platformSource narrowing and the bespoke-create work 
+| App shell | `app/packages/core/loom_communities_app_shell` | **371** (+2 skipped) — was 354; grew with the settings surface, replica sync policy and notification-preference client 
 | Workflow engine | `app/packages/core/loom_workflow_engine` | 312 (+5 skipped) |
 | Workflow service | `app/packages/core/loom_workflow_service` | 148 (+1 skipped, with PG credentials; 139 (+10) without) |
 | Demo app | `app/apps/loom_communities_demo` | 160 |
