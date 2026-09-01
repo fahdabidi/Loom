@@ -1278,7 +1278,7 @@ service."* **That is no longer true.** `export-bundle-api.openapi.yaml` implemen
 and *"only `verifyExportBundle` may set"* it true. The comment describes a gap that has been closed
 since 2026-08-27.
 
-- [ ] `needs-spec-decision` — **what `platformSource` does a `checksumVerified` field declare?** The
+- [x] `DECIDED 2026-08-31 — none. platformSource is declared only where a dispatcher resolves the value; checksumVerified is written directly by the download handler` — ~~`needs-spec-decision`~~ **what `platformSource` does a `checksumVerified` field declare?** The
   closed set is `checksum` and `opaqueId`, and neither fits: the field is a verification **result**,
   a bool set by a different operation on the same service, not a hash value produced at transition
   time. Three options, none obviously right:
@@ -1325,7 +1325,7 @@ Two tools now derive from the shipped package rather than from memory:
   silently refused by the permission guard and the provenance tool then ran against a half-applied
   state
 
-- [ ] remaining: Garden Club (running), Masjid Nur, Member Social Space, Neighborhood Book Club,
+- [x] `B8 COMPLETE 2026-08-31` — remaining: Garden Club (running), Masjid Nur, Member Social Space, Neighborhood Book Club,
       Riverside Youth Soccer, Tabletop Club, Data Portability
 - [ ] then the app read, which **must ship with the last package** — the read alone switches device
       notifications off, the packages alone are inert
@@ -1352,17 +1352,17 @@ loses delivery.
 first switches notifications off; shipping the packages first is inert. That coupling is the whole
 risk of this item.
 
-- [ ] regenerate eleven packages to declare `experience.notifications`, **through the Skill only** —
+- [x] `B8 COMPLETE 2026-08-31` — regenerate eleven packages to declare `experience.notifications`, **through the Skill only** —
       community JSON is never hand-authored. Use a **targeted-edit brief**: an authoring-mode
       dispatch re-authors from scratch and drops shipped workflows and tabs
-- [ ] verify each against its predecessor **field by field**, not just with the validator —
+- [x] `B8 COMPLETE 2026-08-31` — verify each against its predecessor **field by field**, not just with the validator —
       deletion is invisible in a validator run, so a package that quietly lost a workflow and one
       that correctly gained a config block produce identical reports
-- [ ] run `tool/update_community_provenance.dart` in the **same commit**, or the judges suite goes red
-- [ ] then the app read: deliver the device notification iff `push` is in `default` **and**
+- [x] `B8 COMPLETE 2026-08-31` — run `tool/update_community_provenance.dart` in the **same commit**, or the judges suite goes red
+- [x] `B8 COMPLETE 2026-08-31` — then the app read: deliver the device notification iff `push` is in `default` **and**
       `muted` is false; the inbox record is unaffected, because muting stops the interruption and
       not the record
-- [ ] **pilot one community first** and verify it exhaustively before touching the other ten
+- [x] `B8 COMPLETE 2026-08-31` — **pilot one community first** and verify it exhaustively before touching the other ten
 
 
 ---
