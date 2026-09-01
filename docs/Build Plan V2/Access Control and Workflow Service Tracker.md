@@ -1954,3 +1954,39 @@ All five governance permissions are present in the 127-entry catalog.
 - [ ] `needs-verification` — **in-memory also means per-device, which is the worse half.** Two members hold private copies and never see each other's state, so one borrowing an item does not make it unavailable to another. Lending, queueing and RSVP capacity are all inherently multi-party, so local-only is not a degraded version of those features — it is a different thing that resembles them. Any B25 row proven against a default build proves single-device behaviour only
 - [x] `needs-verification` — **corrected my own claim that "the loan lifecycle already works".** It does not. The effects are correctly authored and the state machine is right — that part stands — but authored is not backed. `listing-loan-api.openapi.yaml`'s framing paragraph is rewritten: the queue is *unauthored*, custody and loans are *authored but unbacked*, and both need the service
 
+
+---
+
+### The app-level admin authority and the role-deletion exemption are the same gap
+
+*Found 2026-09-01 while researching the two open security/design decisions, which turn out to share a
+root.*
+
+Three facts that fit together:
+
+1. **The spec already names the authority.** `setAppAccess`'s own description gives the example *"this
+   fan has access to `loom_communities` as `platform_admin`"*. So app-level administration is meant to
+   be a `platform_admin` role held via `app_access_role`, distinct from group-scoped roles.
+2. **A reserved id exists but does nothing.** `PLATFORM_ADMIN_ROLE_ID = "admin"` is referenced in
+   exactly one place — the role-deletion exemption at `AppAccessService:522` — and **never** in an
+   authorization check. It is a spelling (`"admin"`) that does not even match the spec's example
+   (`platform_admin`).
+3. **Nobody holds an app-level role.** `app_access_role` is empty. The eleven community admins are
+   group-scoped (`hoa-admin` etc.), not app-level.
+
+So both open decisions reduce to one: **define the app-level administrator.** Once a `platform_admin`
+role exists and is held by someone:
+
+- `setAppAccess` / `revokeAppAccess` can require it → closes the app-level escalation half.
+- the install role-deletion exemption can spare *that* role (and, if community admins are declared as
+  package roles, spare nothing else) → unblocks the calendar apply.
+
+This does not merge the two into one action, but it means they should be decided together, because
+choosing an app-admin scheme for the security half constrains the deletion-exemption for the calendar
+half. A recommendation, for the user to weigh:
+
+- introduce a real `platform_admin` app-level role (matching the spec), grant it to a single
+  bootstrap/operator account, and require it on `setAppAccess`/`revokeAppAccess`;
+- separately, for the calendar apply, declare community admin roles in the packages (option A from the
+  role-deletion analysis) so install stops treating them as undeclared. The reserved-id exemption then
+  protects only the genuine platform role, which is what it was always for.
