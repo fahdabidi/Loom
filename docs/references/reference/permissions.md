@@ -231,6 +231,7 @@ checkable instead of folklore.
 
 | Action | Grants | Observed transitions it covers |
 |---|---|---|
+| `create` | `equipment_loan.create` | listing an item for loan or giveaway. Declared by a `kind: "create"` render-binding action; `list_item` below publishes an existing listing and is not the same act. |
 | `view` | `equipment_loan.view` | read-only bindings |
 | `list_item` | `equipment_loan.list_item` | `publish-listing`, `resume-listing`, `resume-giveaway` |
 | `pause_listing` | `equipment_loan.pause_listing` | `pause-listing`, `pause-giveaway` |
@@ -250,6 +251,7 @@ checkable instead of folklore.
 
 | Action | Grants | Observed transitions it covers |
 |---|---|---|
+| `create` | `document_library.create` | adding a document. Declared by a `kind: "create"` render-binding action; `upload` below is the *content* step and is a different capability. |
 | `view` | `document_library.view` | read-only bindings |
 | `upload` | `document_library.upload` | creation actions, `prepare-new-document-version` |
 | `edit` | `document_library.edit` | revising a document's own content or metadata |
@@ -276,6 +278,7 @@ checkable instead of folklore.
 
 | Action | Grants | Observed transitions it covers |
 |---|---|---|
+| `create` | `export_wizard.create` | starting a new export. Declared by a `kind: "create"` render-binding action rather than by a transition — the wizard's own steps are the transitions below. |
 | `view` | `export_wizard.view` | read-only bindings |
 | `configure_scope` | `export_wizard.configure_scope` | `change-*`, `select-export-scope` |
 | `preview` | `export_wizard.preview` | `preview-*`, `start-preview-*`, `open-redaction-preview`, `review-redaction-preview` |
@@ -333,6 +336,7 @@ The genuine member-level withdrawal does exist — Book Club's `clear-vote` — 
 
 | Action | Grants | Observed transitions it covers |
 |---|---|---|
+| `create` | `search_ai_answer.create` | opening a new question surface. Declared by a `kind: "create"` render-binding action rather than by a transition, which is why the column below lists none — §1's derivation grants it from the action's `byRoleIds`. |
 | `view` | `search_ai_answer.view` | read-only bindings |
 | `ask` | `search_ai_answer.ask` | `submit-query`, `refine-search-query` |
 | `withdraw_query` | `search_ai_answer.withdraw_query` | `withdraw-query` |
