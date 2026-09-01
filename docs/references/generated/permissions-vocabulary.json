@@ -275,6 +275,7 @@
         "record_outcome",
         "reopen",
         "respond",
+        "send_reminder",
         "set_reminder",
         "view",
         "withdraw_response"
@@ -289,6 +290,7 @@
         "event_rsvp.record_outcome",
         "event_rsvp.reopen",
         "event_rsvp.respond",
+        "event_rsvp.send_reminder",
         "event_rsvp.set_reminder",
         "event_rsvp.view",
         "event_rsvp.withdraw_response"
