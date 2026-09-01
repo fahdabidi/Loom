@@ -1619,12 +1619,15 @@ class WorkflowValidator {
     }
   }
 
-  /// Platform writers name the service mechanism that supplies their value.
+  /// Platform-source declarations name a generic dispatcher, not every
+  /// platform writer.
   ///
-  /// The missing-source case is deliberately a single warning for this
-  /// package, rather than an error per field. Existing shipped packages use
-  /// the old grammar, and failing all of them at once would make the new rule
-  /// less trustworthy than the incomplete declarations it is identifying.
+  /// A source is required only when a dispatcher needs it to resolve a field
+  /// without knowing the field name. Today the only such dispatcher is the
+  /// opaque-id minting loop. The grammar has no separate marker for "this
+  /// field needs generic dispatch": `platformSource: "opaqueId"` is that
+  /// marker. A platform-written field without a source is therefore valid
+  /// handler-owned bookkeeping, not evidence of a missing declaration.
   void _checkPlatformSourceDeclarations(
     Map<String, LoomWorkflowStateMachine> workflows,
     List<ValidationFinding> findings,
@@ -1668,7 +1671,13 @@ class WorkflowValidator {
           );
         }
 
-        if (field.writableBy == 'platform' && platformSource == null) {
+        // Do not infer generic dispatch from writableBy alone. Without a
+        // source declaration, the schema cannot distinguish a field written
+        // by an archetype/service handler from one a generic dispatcher owes.
+        // Retain this finding for the grammar's explicit generic-dispatch
+        // case; under the current grammar that declaration is the source
+        // itself, so a source-less field cannot enter this branch.
+        if (_requiresGenericPlatformDispatch(field) && platformSource == null) {
           fieldsMissingSource.add((workflow.key, schemaEntry.key));
         }
       }
@@ -1684,16 +1693,20 @@ class WorkflowValidator {
         isWarning: true,
         message:
             '$count ${count == 1 ? 'field is' : 'fields are'} declared '
-            'writableBy "platform" without platformSource. Those declarations '
-            'are incomplete because the service cannot tell which value each '
-            'field is owed. This is intentionally non-fatal while shipped '
-            'packages use the old grammar; regeneration is what closes it.',
+            'for generic platform dispatch without platformSource. The '
+            'dispatcher cannot resolve which value to provide without the '
+            'declared source; name the dispatched source (for example, '
+            '"opaqueId") or use a handler that writes its known field '
+            'directly.',
         location:
             'experience/workflowDefinitions/${first.$1}/'
             'instanceDataSchema/${first.$2}/writableBy',
       ),
     );
   }
+
+  bool _requiresGenericPlatformDispatch(InstanceDataField field) =>
+      field.platformSource == 'opaqueId';
 
   /// A create-action prefill is a platform write at instance creation.
   ///

@@ -9,7 +9,9 @@ const _workflowType = 'opaque-id-test';
 
 LoomWorkflowStateMachine _machine({
   required String writableBy,
-  required String platformSource,
+  String? platformSource,
+  String fieldName = 'platformValue',
+  String fieldType = 'text?',
 }) => LoomWorkflowStateMachine.fromJson({
   'initialState': 'open',
   'states': {
@@ -25,23 +27,34 @@ LoomWorkflowStateMachine _machine({
     },
   ],
   'instanceDataSchema': {
-    'platformValue': {
-      'type': 'text?',
+    fieldName: {
+      'type': fieldType,
       'writableBy': writableBy,
-      'platformSource': platformSource,
+      if (platformSource != null) 'platformSource': platformSource,
     },
   },
 }, _workflowType);
 
 ValidationReport _validate({
   required String writableBy,
-  required String platformSource,
+  String? platformSource,
+  String fieldName = 'platformValue',
+  String fieldType = 'text?',
 }) => WorkflowValidator().validate({
   _workflowType: _machine(
     writableBy: writableBy,
     platformSource: platformSource,
+    fieldName: fieldName,
+    fieldType: fieldType,
   ),
 });
+
+Iterable<ValidationFinding> _missingPlatformSourceFindings(
+  ValidationReport report,
+) => report.findings.where(
+  (finding) =>
+      finding.type == 'platform_writable_field_missing_platform_source',
+);
 
 File _shippedMosquePackage() {
   const relativePath =
@@ -60,6 +73,34 @@ File _shippedMosquePackage() {
 
 void main() {
   group('platformSource declarations', () {
+    test('accepts an opaque-id field that a generic dispatcher resolves', () {
+      final report = _validate(
+        writableBy: 'platform',
+        platformSource: 'opaqueId',
+      );
+
+      expect(_missingPlatformSourceFindings(report), isEmpty);
+    });
+
+    test(
+      'does not require a source for handler-owned platform bookkeeping',
+      () {
+        final checksumVerified = _validate(
+          writableBy: 'platform',
+          fieldName: 'checksumVerified',
+          fieldType: 'bool',
+        );
+        final readFanIds = _validate(
+          writableBy: 'platform',
+          fieldName: 'readFanIds',
+          fieldType: 'fanId[]',
+        );
+
+        expect(_missingPlatformSourceFindings(checksumVerified), isEmpty);
+        expect(_missingPlatformSourceFindings(readFanIds), isEmpty);
+      },
+    );
+
     test('requires writableBy platform instead of acting as a shorthand', () {
       final findings = _validate(
         writableBy: 'effect',
@@ -104,7 +145,7 @@ void main() {
     });
 
     test(
-      'reports legacy platform fields in a shipped package without failing it',
+      'does not require sources for bookkeeping in a shipped package',
       () async {
         final package = await ParsedCommunityPackage.fromFile(
           _shippedMosquePackage(),
@@ -117,26 +158,28 @@ void main() {
                   field.platformSource == null,
             )
             .length;
+        final bookkeepingFields = package.workflowDefinitions.values
+            .expand((workflow) => workflow.instanceDataSchema.entries)
+            .where(
+              (entry) =>
+                  entry.value.writableBy == 'platform' &&
+                  entry.value.platformSource == null,
+            )
+            .map((entry) => entry.key)
+            .toSet();
 
         expect(expectedCount, greaterThan(0));
+        expect(
+          bookkeepingFields,
+          containsAll(['readFanIds', 'reminderHistory']),
+        );
         final report = WorkflowValidator().validate(
           package.workflowDefinitions,
         );
-        final findings = report.warnings
-            .where(
-              (finding) =>
-                  finding.type ==
-                  'platform_writable_field_missing_platform_source',
-            )
-            .toList();
+        final findings = _missingPlatformSourceFindings(report).toList();
 
         expect(report.passed, isTrue);
-        expect(findings, hasLength(1));
-        expect(findings.single.message, contains('$expectedCount '));
-        expect(
-          findings.single.message,
-          contains('regeneration is what closes it'),
-        );
+        expect(findings, isEmpty);
       },
     );
   });
