@@ -39,78 +39,58 @@ known answer for every kind of thing it claims to find, not just one.**
 
 ## Open
 
-### WHERE THIS ACTUALLY STANDS — 2026-08-31
+### WHERE THIS ACTUALLY STANDS — 2026-09-01
 
 Written because "BACKEND SERVICES BUILD-OUT — COMPLETE" is true and reads as far more finished than
 the project is. The backend was one workstream.
 
-**48 open items across the four trackers' §8 queues** as of the 2026-08-31 migration — ACWS 24,
-Build 16, Community JSON 7, TabId 1. That is a floor, not a total: the blocks migrated into the
-tracker bodies carry 54 further checkboxes that moved without being re-adjudicated, and sweeping them
-is itself an open row in each tracker.
+**71 open items in the four §8 queues** — ACWS 24, Build 39, Community JSON 7, TabId 1 — plus **93**
+checkboxes still open inside the migrated §9 bodies. The body count is falling as the staleness sweep
+works through it (121 → 93 so far); a checkbox in a §9 block is a record of what was true the day it
+was written, not current state.
 
-#### Done and verified live
+#### Proven live, and re-verified rather than recalled
 
 | | |
 | --- | --- |
-| B1–B8 | built, deployed, load-bearing; exercised against the running stack |
-| Packages | 11/11 on `specVersion: 4`, all regenerated today, each diffed and validated with a control |
+| B1–B8 | built, deployed, load-bearing, exercised against the running stack |
+| Android sign-in | **works end to end on `emulator-5554`** — Keycloak page, token stored, gate error changed to one only an authenticated caller reaches |
+| Packages | 10/10 shipped carry `experience.notifications`; all on `specVersion: 4` |
 | Accounts | 35 across 11 communities, every one through `requestGroupMembership` → `decideGroupMembership` |
-| Security | privilege escalation closed (`403 fan_identity_mismatch`), verified live |
-| Resilience | Postgres-restart recovery proven by deleting `postgres-0`: same pod, `restarts=0`, 24s |
-| Tooling | build context 6.885 GB → 917.9 MB; APK buildable on the VM; spec-parity check in both repos |
-| Device | `emulator-5554` runs code built at `c969a991` |
+| Security | privilege escalation closed (`403 fan_identity_mismatch`) |
+| Resilience | Postgres-restart recovery proven by deleting `postgres-0` — same pod, 24s |
+| Suites | all five re-measured 2026-09-01: judges **485**, app shell **371** (+2), engine **316** (+1 credentialed), workflow service **148** (+1 credentialed), demo **160** |
 
-#### The production bar is 3 of 79, and **both numbers are unreliable**
+#### The one thing blocking the critical path
 
-- **Denominator overstates.** 12 rows name workflows their package does not ship. The reachability
-  sweep also only checks that a row's workflow and role *exist*, never that the role can *act* — so
-  the true unprovable count is **≥ 12** and is discoverable only by running walkthroughs.
-- **Numerator is unverifiable.** The 3 proven Camera Club rows carry no package identity and classify
-  as `unknown` under the provenance model shipped today.
-- **The last judge pass failed.** `b25-v4-pass-42`: judge status `fail`, 16/18 criteria, **2 blocking
-  criterion failures** — and an **empty findings table**, so what failed was not recorded. Its own
-  next action says to remediate, rebuild, recapture and rerun. That never happened.
+**`installCommunityPackage` deletes every group-scoped role a package does not declare** — measured:
+23 declared, 39 existing, **16 destroyed**, including all 11 community admin roles. It is not
+recoverable by re-running, because the five `community.*` permissions those roles hold are not
+archetype-derived. Three options with their trade-offs are in `Build Tracker` §8; this is a design
+decision, not more work.
 
-#### Proposed order, and why
+Everything downstream waits on it: instance creation is refused today (`403`), which blocks proving
+the reminder chain, which blocks the capture campaign, which is the production bar.
 
-**1. Repair the ability to measure, before measuring.** Three things make the current numbers
-meaningless, and all are cheap relative to a walkthrough campaign:
+Prepared and idle behind that gate: `loom/app-access:0.3.4` built and verified to carry the nine
+`calendar.*` ids, the provisioning plan derived and dry-run, the vocabulary synced and at parity.
 
-- the 12 rows that name non-existent workflows — correct or strike them (`needs-skill-dispatch`)
-- pass-42's 2 blocking failures: `c16` is now diagnosed and its judge fixed; `c14` needs a fresh capture plus a real vision-judge pass
-  to regenerate them
-- re-prove the 3 Camera Club rows so they carry package identity, or accept them as `unknown`
-  deliberately
+#### Decisions waiting on the user
 
-**2. Then the walkthrough campaign.** Start with the five rows the account seeding unblocked, because
-they are the ones whose blocker we removed and understand. Rebuild the APK before every capture — a
-build went stale within two hours today.
+- **role deletion** — A declare admin in packages / B reserved naming / C provenance tracking
+- **fan-passport identity** — decided (seeding mints the passport first); the **re-keying** step is
+  what still needs a go-ahead, since it rewrites memberships
+- **B25 table unit** — are Masjid's 3 persona rows B25 rows at all, and are Data Portability's 9
+  identical rows nine proofs or one?
+- **`community.surface.navigation.*` vs `community.manage_settings`** — the fourth spec decision,
+  which gates Phase E
 
-**3. In parallel, the work that does not need a device:** 59 `new-ticket`, 19 `needs-verification`.
-Several "verification" items are stale claims rather than real work — three were closed today by
-checking rather than building.
+#### Measurement, and why the production bar number is not yet meaningful
 
-**4. Larger phases** (17 `new-milestone`) — Phase A/A.1 bookkeeping and response-row fan-out, C auth
-broker, D deploy, E access authority, G.4 Ad-Free revert, the export checksum service. These are
-features, not cleanup, and want sequencing decisions.
-
-#### Blocked on the user
-
-**1 `needs-decision` + 4 `needs-spec-decision`** — down from 17 after the 2026-08-31 triage, which
-found twelve already answered and never struck (that record is now `Build Tracker` §9). These gate
-other work and cannot be resolved by building.
-
-The four spec decisions, in the order they block things:
-
-- [x] **DECIDED** — `app_group.external_resource_*` populated server-side and returned with each group; the app's compile-time `communityGroupIds` constant is retired → Build Tracker §8
-      columns the group→community mapping, or does it live elsewhere? → ACWS §8
-- [x] **DECIDED** — `platformSource` required iff a generic dispatcher resolves the value (today `opaqueId` only); the warning narrows, `checksum` stays as documentation, no regeneration → Build Tracker §8
-      fits, and the field cannot be computed without one → ACWS §8
-- [x] **DECIDED** — both paths supported; `event-rsvp` gains `send_reminder` for the manual trigger alongside `deliver_reminder` for the scheduled one → Build Tracker §8
-      `permissions.md` §4 and §6, and §4 is hard-locked → Build §8
-- [ ] two permission vocabularies that do not meet: `community.surface.navigation.*` vs
-      `community.manage_settings` — prerequisite for Phase E → Build §8
+`c14` and `c16` are both **diagnosed**: `c16` was never an app defect — all ten findings were
+evidence-shape problems, and the judge now says so. `c14`'s artifact is ~97% scaffold. The denominator
+is wrong too: 12 of 79 rows name a workflow their package does not ship, and **9 of those 12 are not
+community workflows at all**. Repairing measurement precedes measuring.
 
 ### BACKEND SERVICES BUILD-OUT — complete 2026-08-31
 
