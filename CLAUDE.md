@@ -545,7 +545,7 @@ other four and calling that "the suites".
 | --- | --- | ---: |
 | UX judges | `app/packages/tooling/loom_ux_judges` | **485** (0 skipped) — was 464; grew with the c16 absent-vs-failed tests, the platformSource narrowing and the bespoke-create work 
 | App shell | `app/packages/core/loom_communities_app_shell` | **371** (+2 skipped) — was 354; grew with the settings surface, replica sync policy and notification-preference client 
-| Workflow engine | `app/packages/core/loom_workflow_engine` | 312 (+5 skipped) |
+| Workflow engine | `app/packages/core/loom_workflow_engine` | **316** (+1 skipped, with PG credentials; **312 (+5)** without — four PostgreSQL tests skip silently, same trap as the row below) 
 | Workflow service | `app/packages/core/loom_workflow_service` | 148 (+1 skipped, with PG credentials; 139 (+10) without) |
 | Demo app | `app/apps/loom_communities_demo` | 160 |
 
