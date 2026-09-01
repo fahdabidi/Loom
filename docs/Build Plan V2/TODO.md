@@ -103,7 +103,7 @@ other work and cannot be resolved by building.
 
 The four spec decisions, in the order they block things:
 
-- [ ] `app_group.external_resource_type`/`external_resource_id` are NULL for all 24 groups — are these
+- [x] **DECIDED** — `app_group.external_resource_*` populated server-side and returned with each group; the app's compile-time `communityGroupIds` constant is retired → Build Tracker §8
       columns the group→community mapping, or does it live elsewhere? → ACWS §8
 - [ ] what `platformSource` a `checksumVerified` field declares — neither `checksum` nor `opaqueId`
       fits, and the field cannot be computed without one → ACWS §8
