@@ -2274,7 +2274,7 @@ app-access `:30080`, fan-passport `:30081` — plus the full community-to-group 
 build targets the deployed stack. Only `LOOM_OFFLINE_REPLICA_DIRECTORY` still needs one, to switch
 offline browse on.
 
-- [ ] `needs-user-action` — **`flutter build apk` fails: "Building with plugins requires symlink
+- [x] `CLOSED 2026-08-31 — the restriction is Windows-only and the VM builds it; NOT a user action` — ~~`needs-user-action`~~ **`flutter build apk` fails: "Building with plugins requires symlink
   support. Please enable Developer Mode in your system settings."** This needs Windows Developer Mode
   (`start ms-settings:developers`), which this session cannot set.
 
@@ -2707,7 +2707,7 @@ falling back.
 Flutter needs Developer Mode for the symlink support plugins require. It is a system setting, not
 something a dispatch or an elevated shell here can set.
 
-- [ ] **NEEDS THE USER** — enable Developer Mode on Windows (`start ms-settings:developers`), then the
+- [x] `CLOSED 2026-08-31 — Developer Mode is NOT required; the APK builds on the Linux VM (193,629,874 bytes today) and installs to emulator-5554` — ~~NEEDS THE USER~~: enable Developer Mode on Windows (`start ms-settings:developers`), then the
       APK rebuilds and walkthroughs become possible
 - [ ] then rebuild and install before any walkthrough, because the on-device build must not predate
       the code being verified
