@@ -7554,6 +7554,8 @@ String _appShellCapabilityLabel(String gapType) {
       return 'button and interaction transition proof';
     case 'app-shell-review-depth-gap':
       return 'screenshot-specific app shell critique depth';
+    case 'app-shell-review-schema-gap':
+      return 'App Shell review schema evidence';
     default:
       return 'app shell capability';
   }
@@ -7579,6 +7581,8 @@ String _appShellCapabilityDirectQuestion(String gapType) {
       return 'Do screenshots prove actionable controls were tapped and caused the correct visible state transition, including change/undo/result states where the workflow requires them?';
     case 'app-shell-review-depth-gap':
       return 'Does the App Shell capability review cite visible screenshot text, screenshot hashes, tab/renderer-specific critique, and direct answers rather than pass flags alone?';
+    case 'app-shell-review-schema-gap':
+      return 'Does the App Shell capability review use the documented boolean capability keys and rendererContractId rows so the judge can distinguish absent evidence from a failed capability?';
     default:
       return 'Do current screenshots prove the required App Shell capability is visible, appropriate, and usable for the role/task?';
   }
@@ -7615,6 +7619,8 @@ String _appShellCapabilityTargetExperience(String gapType) {
       return 'Every important button and action proves a real interaction: the before screenshot, tapped/review state, and after screenshot show a changed status, result, receipt, or editable/undoable continuation.';
     case 'app-shell-review-depth-gap':
       return 'The App Shell review is a real visual critique: it cites screenshot-visible evidence, answers direct questions per tab/renderer, and fails weak or generic UI even when source flags say a feature exists.';
+    case 'app-shell-review-schema-gap':
+      return 'The App Shell review uses the documented evidence schema so missing or malformed review data is visible as an evidence issue instead of being misreported as a product capability failure.';
     default:
       return _targetExperienceForB25Criterion(
         'b25-c16-app-shell-capability-utilization',
@@ -7675,6 +7681,12 @@ List<String> _appShellCapabilityImprovements(String gapType) {
         'Replace pass-flag-only App Shell review rows with screenshot-specific critique.',
         'Each row must quote visible text, cite screenshot hashes, name the tab/renderer contract, and answer whether the UI behaves like that product surface.',
         'Do not reuse a generic rationale across unrelated tabs or communities.',
+      ];
+    case 'app-shell-review-schema-gap':
+      return <String>[
+        'Regenerate the App Shell capability review in the documented shape; do not hand-edit the evidence artifact.',
+        'Use boolean `tabsPass`, `presentationStatesPass`, `mainCommunityCardStatesPass`, `themeCustomizationPass`, and `rendererSelectionPass` fields.',
+        'Use `rendererContractId` and `affectedScreenRowIds` on every tabRendererResults row.',
       ];
     case 'app-shell-customization-gap':
       return <String>[
@@ -7739,6 +7751,11 @@ List<String> _appShellCapabilityImplementationGuidance(String gapType) {
         'Regenerate the App Shell review from screenshots and visible text, not from implementation declarations.',
         'Make weak LLM reviews fail by leaving `status=fail` until visual critique is screen-specific.',
       ];
+    case 'app-shell-review-schema-gap':
+      return <String>[
+        'Repair the review generator or its schema mapping, then regenerate the evidence artifact; do not change App Shell UI solely to satisfy a malformed review row.',
+        'Keep the documented keys strict so the judge can distinguish absent review evidence from an explicitly failed capability.',
+      ];
     default:
       return <String>[
         ...shared,
@@ -7799,6 +7816,12 @@ List<String> _appShellCapabilityAcceptanceChecks(String gapType) {
         'Every App Shell review row includes visible text excerpts and screenshot hashes.',
         'Every App Shell review row has non-boilerplate critique naming the tab, renderer, visible UI, and product-quality decision.',
         'A pass verdict is not based only on feature flags, source-code declarations, or absence of deterministic pixel findings.',
+      ];
+    case 'app-shell-review-schema-gap':
+      return <String>[
+        'Every documented App Shell capability field is present as a boolean, rather than a string or differently named substitute.',
+        'Every required tab renderer row uses `rendererContractId` and canonical affected-screen evidence keys.',
+        'The regenerated review lets the judge report explicit `false` capability failures separately from absent or wrong-typed evidence fields.',
       ];
     case 'app-shell-customization-gap':
       return <String>[
@@ -11139,34 +11162,69 @@ _DerivedFailure? _failOnAppShellCapabilityReview(JsonMap evidence) {
   final missingCapabilities = _asStringList(review['missingCapabilities']);
   final findings = _appShellCapabilityBlockingFindings(evidence);
   final communityResults = _asMapList(review['communityResults']);
-  final failingCommunities = <String>[];
+  final explicitlyFailedCapabilities = <String>[];
+  final malformedCapabilityReports = <String>[];
+  final statusFailedCommunities = <String>[];
   for (final row in communityResults) {
-    final failedChecks = _failedAppShellCapabilityChecks(row);
-    if (_asString(row['status']) == 'fail' || failedChecks.isNotEmpty) {
-      final community = _asString(row['communityName'], fallback: 'community');
-      final role = _asString(row['role']);
-      failingCommunities.add(
-        role.isEmpty
-            ? '$community (${failedChecks.join(',')})'
-            : '$community/$role (${failedChecks.join(',')})',
-      );
+    final checks = _failedAppShellCapabilityChecks(row);
+    final communityAndRole = _appShellCommunityAndRole(row);
+    for (final check in checks) {
+      switch (check.state) {
+        case _AppShellCapabilityCheckState.passed:
+          break;
+        case _AppShellCapabilityCheckState.explicitlyFailed:
+          explicitlyFailedCapabilities.add(
+            '$communityAndRole (${check.expectedKey})',
+          );
+          break;
+        case _AppShellCapabilityCheckState.absentOrWrongTyped:
+          malformedCapabilityReports.add(
+            '$communityAndRole (${check.expectedKey})',
+          );
+          break;
+      }
+    }
+    if (_asString(row['status']) == 'fail') {
+      statusFailedCommunities.add(communityAndRole);
     }
   }
   final blockingFindings = findings
       .map(_findingId)
       .where((id) => id.isNotEmpty)
       .toList();
+  final missingRendererRows = findings
+      .where(
+        (finding) => _findingId(finding).endsWith('-NO-MATCHING-ROW'),
+      )
+      .map(_findingId)
+      .toList();
+  final unprovenRendererRows = findings
+      .where((finding) => _findingId(finding).endsWith('-MISSING-PROOF'))
+      .map(_findingId)
+      .toList();
   if (status != 'pass' ||
       missingCapabilities.isNotEmpty ||
       blockingFindings.isNotEmpty ||
-      failingCommunities.isNotEmpty) {
+      explicitlyFailedCapabilities.isNotEmpty ||
+      malformedCapabilityReports.isNotEmpty ||
+      statusFailedCommunities.isNotEmpty) {
     return _DerivedFailure(
       score: 35,
       message:
-          'App Shell capability utilization review failed. missingCapabilities=${missingCapabilities.join(', ')} failingCommunities=${failingCommunities.join('; ')} blockingFindings=${blockingFindings.join(', ')}.',
+          'App Shell capability utilization review is not passing. '
+          'The review explicitly reports failed capabilities: ${_appShellFailureList(explicitlyFailedCapabilities)}. '
+          'The review did not report these capabilities in the documented shape: ${_appShellFailureList(malformedCapabilityReports)}. '
+          'Community/role rows explicitly marked status=fail: ${_appShellFailureList(statusFailedCommunities)}. '
+          'Renderer contracts with no matching review row: ${_appShellFailureList(missingRendererRows)}. '
+          'Matched renderer rows that remain unproven: ${_appShellFailureList(unprovenRendererRows)}. '
+          'missingCapabilities=${missingCapabilities.join(', ')} blockingFindings=${blockingFindings.join(', ')}.',
       evidenceUsed: <String>[
         ...missingCapabilities,
-        ...failingCommunities,
+        ...explicitlyFailedCapabilities,
+        ...malformedCapabilityReports,
+        ...statusFailedCommunities,
+        ...missingRendererRows,
+        ...unprovenRendererRows,
         ...blockingFindings,
       ],
     );
@@ -11174,27 +11232,83 @@ _DerivedFailure? _failOnAppShellCapabilityReview(JsonMap evidence) {
   return null;
 }
 
-List<String> _failedAppShellCapabilityChecks(JsonMap row) {
-  final failed = <String>[];
-  if (row['tabsPass'] != true) {
-    failed.add('tabsPass');
+String _appShellCommunityAndRole(JsonMap row) {
+  final community = _asString(row['communityName'], fallback: 'community');
+  final role = _asString(row['role']);
+  return role.isEmpty ? community : '$community/$role';
+}
+
+String _appShellFailureList(List<String> values) =>
+    values.isEmpty ? 'none' : values.join('; ');
+
+enum _AppShellCapabilityCheckState {
+  passed,
+  explicitlyFailed,
+  absentOrWrongTyped,
+}
+
+class _AppShellCapabilityCheck {
+  const _AppShellCapabilityCheck({
+    required this.expectedKey,
+    required this.state,
+    required this.keyIsPresent,
+    this.actualValue,
+  });
+
+  final String expectedKey;
+  final _AppShellCapabilityCheckState state;
+  final bool keyIsPresent;
+  final Object? actualValue;
+}
+
+List<_AppShellCapabilityCheck> _failedAppShellCapabilityChecks(JsonMap row) {
+  return <_AppShellCapabilityCheck>[
+    _booleanAppShellCapabilityCheck(row, 'tabsPass'),
+    _pinningPolicyCapabilityCheck(row),
+    _booleanAppShellCapabilityCheck(row, 'presentationStatesPass'),
+    _booleanAppShellCapabilityCheck(row, 'mainCommunityCardStatesPass'),
+    _booleanAppShellCapabilityCheck(row, 'themeCustomizationPass'),
+    _booleanAppShellCapabilityCheck(row, 'rendererSelectionPass'),
+  ];
+}
+
+_AppShellCapabilityCheck _booleanAppShellCapabilityCheck(
+  JsonMap row,
+  String expectedKey,
+) {
+  final keyIsPresent = row.containsKey(expectedKey);
+  final value = row[expectedKey];
+  return _AppShellCapabilityCheck(
+    expectedKey: expectedKey,
+    keyIsPresent: keyIsPresent,
+    actualValue: value,
+    state: value == true
+        ? _AppShellCapabilityCheckState.passed
+        : value == false
+        ? _AppShellCapabilityCheckState.explicitlyFailed
+        : _AppShellCapabilityCheckState.absentOrWrongTyped,
+  );
+}
+
+_AppShellCapabilityCheck _pinningPolicyCapabilityCheck(JsonMap row) {
+  final keyIsPresent = row.containsKey('pinningPolicyPass');
+  final value = row['pinningPolicyPass'];
+  if (keyIsPresent && value is! bool) {
+    return _AppShellCapabilityCheck(
+      expectedKey: 'pinningPolicyPass',
+      keyIsPresent: true,
+      actualValue: value,
+      state: _AppShellCapabilityCheckState.absentOrWrongTyped,
+    );
   }
-  if (_pinningPolicyFails(row)) {
-    failed.add('pinningPolicyPass');
-  }
-  if (row['presentationStatesPass'] != true) {
-    failed.add('presentationStatesPass');
-  }
-  if (row['mainCommunityCardStatesPass'] != true) {
-    failed.add('mainCommunityCardStatesPass');
-  }
-  if (row['themeCustomizationPass'] != true) {
-    failed.add('themeCustomizationPass');
-  }
-  if (row['rendererSelectionPass'] != true) {
-    failed.add('rendererSelectionPass');
-  }
-  return failed;
+  return _AppShellCapabilityCheck(
+    expectedKey: 'pinningPolicyPass',
+    keyIsPresent: keyIsPresent,
+    actualValue: value,
+    state: _pinningPolicyFails(row)
+        ? _AppShellCapabilityCheckState.explicitlyFailed
+        : _AppShellCapabilityCheckState.passed,
+  );
 }
 
 bool _pinningPolicyFails(JsonMap row) {
@@ -11401,21 +11515,57 @@ List<JsonMap> _appShellCapabilityBlockingFindings(JsonMap evidence) {
   }
 
   for (final row in communityResults) {
-    final failed = _failedAppShellCapabilityChecks(row);
+    final failed = _failedAppShellCapabilityChecks(row)
+        .where(
+          (check) => check.state != _AppShellCapabilityCheckState.passed,
+        )
+        .toList();
     if (failed.isEmpty && _asString(row['status']) != 'fail') {
       continue;
     }
-    for (final check in failed.isEmpty ? <String>['status'] : failed) {
+    if (failed.isEmpty) {
       findings.add(
         _appShellCapabilityFinding(
-          gapType: _gapTypeForAppShellCheck(check),
+          gapType: 'app-shell-capability-gap',
           findingId:
-              'B25-APP-SHELL-${_slug(_asString(row['communityName'], fallback: 'community'))}-${_slug(_asString(row['role'], fallback: 'role'))}-${_slug(check)}',
-          title: 'App Shell capability failed: $check',
+              'B25-APP-SHELL-${_slug(_asString(row['communityName'], fallback: 'community'))}-${_slug(_asString(row['role'], fallback: 'role'))}-STATUS',
+          title: 'App Shell capability review explicitly failed',
           summary:
-              'Community `${_asString(row['communityName'], fallback: 'community')}` role `${_asString(row['role'], fallback: 'role')}` does not prove `$check` from screenshot evidence.',
+              'Community `${_asString(row['communityName'], fallback: 'community')}` role `${_asString(row['role'], fallback: 'role')}` is explicitly marked status=fail by the App Shell capability review.',
           requiredFix:
-              'Update the product doc or UI, recapture after-screenshots, and regenerate appShellCapabilityReview so `$check` passes from visible evidence.',
+              'Resolve the explicitly failed App Shell capability review, recapture after-screenshots, and regenerate appShellCapabilityReview with status=pass only when the review can prove the capabilities.',
+          row: row,
+        ),
+      );
+      continue;
+    }
+    for (final check in failed) {
+      final findingBaseId =
+          'B25-APP-SHELL-${_slug(_asString(row['communityName'], fallback: 'community'))}-${_slug(_asString(row['role'], fallback: 'role'))}-${_slug(check.expectedKey)}';
+      if (check.state == _AppShellCapabilityCheckState.explicitlyFailed) {
+        findings.add(
+          _appShellCapabilityFinding(
+            gapType: _gapTypeForAppShellCheck(check.expectedKey),
+            findingId: findingBaseId,
+            title: 'App Shell capability explicitly failed: ${check.expectedKey}',
+            summary:
+                'Community `${_asString(row['communityName'], fallback: 'community')}` role `${_asString(row['role'], fallback: 'role')}` explicitly reports `${check.expectedKey}=false`; this is a capability failure from screenshot evidence.',
+            requiredFix:
+                'Update the product doc or UI, recapture after-screenshots, and regenerate appShellCapabilityReview so `${check.expectedKey}` passes from visible evidence.',
+            row: row,
+          ),
+        );
+        continue;
+      }
+      findings.add(
+        _appShellCapabilityFinding(
+          gapType: 'app-shell-review-schema-gap',
+          findingId: '$findingBaseId-ABSENT-OR-WRONG-TYPED',
+          title:
+              'App Shell review field is absent or wrong-typed: ${check.expectedKey}',
+          summary: _appShellCapabilityShapeProblem(check, row),
+          requiredFix:
+              'Regenerate appShellCapabilityReview using the documented boolean `${check.expectedKey}` field. Do not substitute a differently named string field for the documented key.',
           row: row,
         ),
       );
@@ -11426,6 +11576,39 @@ List<JsonMap> _appShellCapabilityBlockingFindings(JsonMap evidence) {
   findings.addAll(_missingInteractionTransitionFindings(evidence, review));
   findings.addAll(_weakAppShellReviewEvidenceFindings(review));
   return findings;
+}
+
+String _appShellCapabilityShapeProblem(
+  _AppShellCapabilityCheck check,
+  JsonMap row,
+) {
+  final presentKeys = row.keys.toList()..sort();
+  final presentKeysDescription = presentKeys.isEmpty
+      ? '(none)'
+      : presentKeys.map((key) => '`$key`').join(', ');
+  if (!check.keyIsPresent) {
+    return 'The App Shell review did not report `${check.expectedKey}` in the documented shape: expected boolean key `${check.expectedKey}` is absent. Keys actually present on the row: $presentKeysDescription. This is an absent/malformed review field, not a capability failure.';
+  }
+  return 'The App Shell review did not report `${check.expectedKey}` in the documented shape: expected boolean key `${check.expectedKey}` is wrong-typed as `${_appShellEvidenceTypeName(check.actualValue)}`. Keys actually present on the row: $presentKeysDescription. This is an absent/malformed review field, not a capability failure.';
+}
+
+String _appShellEvidenceTypeName(Object? value) {
+  if (value == null) {
+    return 'null';
+  }
+  if (value is String) {
+    return 'String';
+  }
+  if (value is num) {
+    return 'number';
+  }
+  if (value is List<Object?>) {
+    return 'list';
+  }
+  if (value is Map<Object?, Object?>) {
+    return 'map';
+  }
+  return value.runtimeType.toString();
 }
 
 String _gapTypeForAppShellCheck(String check) {
@@ -11526,27 +11709,46 @@ List<JsonMap> _missingTabRendererContractFindings(
   for (final contract in _requiredTabRendererContracts) {
     final row = byContract[contract];
     final relatedRows = _screenRowsForRendererContract(evidence, contract);
+    if (row == null) {
+      findings.add(
+        _appShellCapabilityFinding(
+          gapType: 'app-shell-review-schema-gap',
+          findingId:
+              'B25-APP-SHELL-${_slug(contract)}-NO-MATCHING-ROW',
+          title: '$contract has no matching renderer-contract review row',
+          summary:
+              'No tabRendererResults row supplies the documented `rendererContractId` key with value `$contract`. ${_rendererContractRowKeysDescription(rendererRows)} This is no matching row, not a matched-but-unproven renderer row.',
+          requiredFix:
+              'Regenerate tabRendererResults with one row whose `rendererContractId` is `$contract`, then provide its screenshot-backed status, visible evidence, critique, and affectedScreenRowIds.',
+          rendererContractId: contract,
+          tabId: _tabIdForRendererContract(contract),
+          tabLabel: _tabLabelForRendererContract(contract),
+          cardSurfaceFamily: _cardSurfaceFamilyForRendererContract(contract),
+          screenRows: relatedRows,
+        ),
+      );
+      continue;
+    }
     final hasScreenshotProof =
-        row != null &&
-        (_asStringList(row['affectedScreenRowIds']).isNotEmpty ||
+        _asStringList(row['affectedScreenRowIds']).isNotEmpty ||
             _asStringList(row['screenshotHashes']).isNotEmpty ||
-            _asStringList(row['affectedScreenshotHashes']).isNotEmpty);
+            _asStringList(row['affectedScreenshotHashes']).isNotEmpty;
     final statusPass =
-        row != null &&
         _asString(row['status'], fallback: _asString(row['verdict'])) ==
             'pass' &&
         row['blocksPass'] != true;
-    final visibleProof = _visibleEvidenceText(row ?? const <String, Object?>{});
+    final visibleProof = _visibleEvidenceText(row);
     if (!statusPass || !hasScreenshotProof || visibleProof.length < 24) {
       findings.add(
         _appShellCapabilityFinding(
           gapType: 'app-shell-tab-renderer-contract-gap',
           findingId: 'B25-APP-SHELL-${_slug(contract)}-MISSING-PROOF',
-          title: '$contract is not proven by screenshot-backed review',
+          title:
+              '$contract has a matching review row but is unproven by screenshots',
           summary:
-              '$contract must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.',
+              'A tabRendererResults row for `$contract` is present, but it does not yet prove the tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.',
           requiredFix:
-              'Add a tabRendererResults row for `$contract` with status=pass only after screenshots prove the tab-native UI, visible content, interaction states, and direct-question critique. If it fails, keep this as an implementation ticket.',
+              'Complete the matching tabRendererResults row for `$contract` with status=pass only after screenshots prove the tab-native UI, visible content, interaction states, and direct-question critique. If it fails, keep this as an implementation ticket.',
           row: row,
           rendererContractId: contract,
           tabId: _tabIdForRendererContract(contract),
@@ -11558,6 +11760,22 @@ List<JsonMap> _missingTabRendererContractFindings(
     }
   }
   return findings;
+}
+
+String _rendererContractRowKeysDescription(List<JsonMap> rows) {
+  if (rows.isEmpty) {
+    return 'tabRendererResults contains no rows.';
+  }
+  final keySets = rows
+      .map((row) {
+        final keys = row.keys.toList()..sort();
+        return keys.isEmpty
+            ? '(none)'
+            : keys.map((key) => '`$key`').join(', ');
+      })
+      .toSet()
+      .join(' | ');
+  return 'Keys actually present on tabRendererResults row(s): $keySets.';
 }
 
 List<JsonMap> _missingInteractionTransitionFindings(
