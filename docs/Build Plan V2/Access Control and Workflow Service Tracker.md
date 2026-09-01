@@ -1990,3 +1990,39 @@ half. A recommendation, for the user to weigh:
 - separately, for the calendar apply, declare community admin roles in the packages (option A from the
   role-deletion analysis) so install stops treating them as undeclared. The reserved-id exemption then
   protects only the genuine platform role, which is what it was always for.
+
+---
+
+### CORRECTION 2026-09-01: the product needs no platform_admin — the app-level endpoints are provisioning
+
+*The user pushed back on my linked recommendation above ("why do we need an app/platform admin — what
+does it do that a community admin doesn't?"). Checked, and the pushback is correct. Recording the
+reversal so the earlier recommendation is not followed by mistake.*
+
+Evidence that no cross-community human actor exists or is needed:
+
+- **No member surface calls `setAppAccess`/`revokeAppAccess`.** Only the generated contract client
+  defines them; nothing in the app shell or demo invokes them.
+- **No shipped package references an app-level role**; none names `platform_admin`.
+- **No product doc or B25 row describes a cross-community / platform-admin persona.** Every persona
+  is community-scoped — the community's admin *is* the ceiling.
+- `app_access_role` is **empty**. Nobody holds an app-level role, and nothing has ever needed to.
+
+So `platform_admin` in the `setAppAccess` spec example is describing a *capability the endpoint can
+express*, not a role the product requires a person to hold. Inventing it would add a cross-community
+super-user the product deliberately does not have.
+
+**Corrected fix for the app-level escalation.** `setAppAccess`/`revokeAppAccess` (and by the same logic
+the provisioning endpoints — `registerApp`, `installCommunityPackage`, `replacePermissionCatalog`,
+`createGroup`, `createRole`, `deleteRole`, `setRolePermissions`) are **operator/provisioning
+operations, not member features**. The spec already carries a `LoomServiceAuth` scheme beside
+`LoomUserOAuth`, so the boundary exists in the design. The fix is to require the **service** authority
+on these, so a member token cannot reach them at all — not to gate them behind a new human role. That
+closes the escalation and matches the product's model: communities are self-contained, admin is
+community-scoped, and cross-community acts belong to the platform operator, which is a service, not a
+logged-in person.
+
+**This decouples the two decisions again.** The calendar role-deletion is now independent and simpler:
+declare community admin roles as package roles (option A) so the installer stops deleting them; the
+dead `PLATFORM_ADMIN_ROLE_ID = "admin"` exemption can be dropped rather than repurposed, because there
+is no platform role to protect. No platform_admin anywhere.
