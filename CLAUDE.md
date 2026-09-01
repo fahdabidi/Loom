@@ -315,6 +315,25 @@ Note the registry lives in the **Windows** repo, not the VM's. Checking `~/Loom/
 VM shows a different, stale set and will tell you the loop is dead when it is not.
 
 
+
+### A dry run shows what the client sends, not what the server does with it
+
+Twice on 2026-09-01 I recommended running `apply_app_access_provisioning --apply` as "one go-ahead
+away and safe," because the tool has a dry-run mode and the dry run printed clean, plausible request
+bodies. Reading the **receiving** code — `installCommunityPackage` in `AppAccessService` — showed the
+apply would first **replace** every declared role's permissions (`setRolePermissions` deletes then
+saves) and then **delete every group-scoped role the package does not declare**, sparing only one
+reserved id. That would have destroyed all 11 community admin roles, unrecoverably, since their
+`community.*` grants are not archetype-derived and a re-install cannot restore them.
+
+The dry run could not have revealed this: it renders the POST bodies the client would send, and the
+destruction happens server-side on receipt. **A dry-run mode is evidence about the client's intent,
+never about the server's effect.** Before calling any apply/import/sync safe, read what the endpoint
+does with the request — deletes, replaces, cascades — not just what the request contains. The same
+shape sank the "3 of 79 rows proven" trust: the assertion ran against the engine's state, not the
+rendered UI, so it proved a different thing than it appeared to.
+
+
 ### A deploy is not finished until the manifest bump is committed
 
 This happened **twice on 2026-08-30/31**, the same way both times: build the image, import it, edit
