@@ -2324,7 +2324,7 @@ the entire backend build-out and would have made a device test look successful w
 1. no authenticated session exists, so `RemoteWorkflowEngineApi` has no bearer token
 2. nothing navigated to a surface that lists workflow *instances*, which is what would fetch
 
-- [ ] `new-ticket` — **drive the app to an authenticated instance fetch on device.** The path exists
+- [ ] `new-ticket` — **drive the app to an authenticated instance fetch on device.** The path exists **PARTIAL 2026-08-31**: sign-in itself is **proven on device** — Garden Club → entry gate → Keycloak → token stored (`FlutterSecureStorage` fsync, and the gate's error changed to one only an authenticated caller reaches). The *instance fetch* is still unreached, now behind two identified blockers: the fan-passport identity gap, and the missing `calendar.*` permissions which refuse creation outright.
   in code; I could not drive it blind through the UI. Entry points, for whoever does the walkthrough:
 
   | Where | What |
@@ -2574,7 +2574,7 @@ than the recorded 7 implied, and it is worth knowing before anyone measures prog
 
 - [ ] `needs-skill-dispatch` — the five Masjid rows: correct the product doc's B25 table, or remove
       them if they were never real workflows
-- [ ] the original 7 remain as recorded
+- [x] `SUPERSEDED 2026-08-31 — re-derived independently as 12, not 7, by joining all 79 rows to the 10 shipped packages on extensionId (67 matched); the 5 missed were wf_-prefixed rows wearing Masjid Nur's extensionId` — ~~the original 7 remain as recorded~~
 
 
 
@@ -2656,7 +2656,7 @@ unknown". The detail lives in `production-ux-criteria-scorecard.json`, keyed on 
   across five capability areas. That is a genuine remediation batch, and the largest single named
   obstacle to the production bar found so far.
 
-- [ ] `new-ticket` — c16: fix the producing agent's schema (boolean `*Pass` keys, not string `"pass"` values), then capture real proof for the Calendar, Marketplace and WorkflowStatus renderer contracts
+- [ ] `new-ticket` — c16: fix the producing agent's schema (boolean `*Pass` keys, not string `"pass"` values), then capture real proof for the Calendar, Marketplace and WorkflowStatus renderer contracts **HALF DONE 2026-08-31 (`ab8720f0`)**: the *judge* half landed — `c16` now reports zero capability failures and labels all ten findings as evidence-shape problems (`ABSENT-OR-WRONG-TYPED`, `NO-MATCHING-ROW`). What remains is regenerating the artifact in the documented schema. **Do not hand-edit it** — correcting evidence by hand is fabrication.
 - [ ] after a fresh capture: rerun the vision judge for c14
 - [ ] treat any scorecard without checking `generatedAt` as suspect — this one was two months stale
       and nothing said so
