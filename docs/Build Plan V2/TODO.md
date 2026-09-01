@@ -57,23 +57,30 @@ was written, not current state.
 | Android sign-in | **works end to end on `emulator-5554`** — Keycloak page, token stored, gate error changed to one only an authenticated caller reaches |
 | Packages | 10/10 shipped carry `experience.notifications`; all on `specVersion: 4` |
 | Accounts | 35 across 11 communities, every one through `requestGroupMembership` → `decideGroupMembership` |
-| Security | privilege escalation closed (`403 fan_identity_mismatch`) |
+| Security | **the whole confirmed privilege-escalation class closed and proven live** — group endpoints (0.3.5) and app-level setAppAccess/revokeAppAccess (0.3.6), each verified by re-running the exact exploit: member 403, was 200 |
 | Resilience | Postgres-restart recovery proven by deleting `postgres-0` — same pod, 24s |
 | Suites | all five re-measured 2026-09-01: judges **485**, app shell **371** (+2), engine **316** (+1 credentialed), workflow service **148** (+1 credentialed), demo **160** |
 
 #### The one thing blocking the critical path
 
-**`installCommunityPackage` deletes every group-scoped role a package does not declare** — measured:
-23 declared, 39 existing, **16 destroyed**, including all 11 community admin roles. It is not
-recoverable by re-running, because the five `community.*` permissions those roles hold are not
-archetype-derived. Three options with their trade-offs are in `Build Tracker` §8; this is a design
-decision, not more work.
+**The deployed authorization state was hand-assembled and diverges from the generated tooling in two
+dimensions**, so no vocabulary-driven provisioning operation is safe to run:
 
-Everything downstream waits on it: instance creation is refused today (`403`), which blocks proving
-the reminder chain, which blocks the capture campaign, which is the production bar.
+- *Grants*: the 11 community admin roles hold five `community.*` governance permissions each, by the
+  2026-08-30 hand-grant. The deriver has no path to reproduce them.
+- *Catalog*: the live `permission` table has 127 ids (21 hand-added stopgaps incl. `community.*`), and
+  no `calendar.*` — even after `0.3.6` bundles the 111-id vocabulary, because deploying the image does
+  not write the catalog.
 
-Prepared and idle behind that gate: `loom/app-access:0.3.4` built and verified to carry the nine
-`calendar.*` ids, the provisioning plan derived and dry-run, the vocabulary synced and at parity.
+`install` and `replacePermissionCatalog` are both vocabulary-driven, so running either to add
+`calendar.*` would drop the hand-added `community.*` and delete undeclared roles. The decision is a
+governance-model choice, detailed in `Access Control` §8: either `community.*` gets its own generated
+source the catalog build includes, or the provisioning ops become merge-safe against permissions they
+do not own.
+
+Everything downstream waits on it: `calendar.create` cannot reach a role until it is in the catalog,
+so instance creation stays refused (`403`), which blocks the reminder-chain proof, the capture
+campaign, and the production bar.
 
 #### Decisions waiting on the user
 
