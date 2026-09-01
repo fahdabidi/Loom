@@ -1765,7 +1765,7 @@ remains unreachable and is tracked separately.
 - [x] `deleteRole` built, verified, deployed in `0.3.3`
 - [x] the mistaken app-level `admin` deleted through it
 - [x] eleven community-scoped admin roles, all on live hyphenated groups
-- [ ] grant each to a first/creator account, then seed the rest through
+- [x] `DONE 2026-08-30, verified 2026-09-01` — grant each to a first/creator account, then seed the rest through
       `requestGroupMembership` → `decideGroupMembership`
 
 ### 2026-08-30 — the group spelling was never a decision, and the answer changes the admin picture
@@ -1802,7 +1802,7 @@ carrying the five governance permissions, then its first member granted it. No p
 judgement and no spelling call.
 
 - [x] canonical spelling: **hyphenated**, determined by deployed config, not chosen
-- [ ] `new-ticket` — one admin role per live hyphenated group, five `community.*` permissions each.
+- [x] `DONE 2026-08-30, verified 2026-09-01` — **11 admin roles exist, each with exactly 5 `community.*` permissions** (ad-off, book, camera-club, chess, garden, hoa, masjid, portability, soccer, social, tabletop), confirmed by querying `role_permission` — ~~`new-ticket`~~ one admin role per live hyphenated group, five `community.*` permissions each.
       `masjid-admin` already exists in a live group and needs the permissions added rather than a new
       role; `cedar_commons_hoa_admin` is in an orphan group and is the wrong thing to reuse
 - [ ] `new-ticket` — the orphaned underscored groups and their memberships. They are unreachable, so
@@ -1848,7 +1848,7 @@ existing ones read `cedar_commons_hoa_admin` and `masjid-admin`.
       `setRolePermissions` — so removing it means a direct database delete, which is destructive on
       the auth system and needs an explicit go-ahead. The alternative is stripping its permissions
       with `setRolePermissions` to leave it inert
-- [ ] `new-ticket` — **`masjid-admin` has no `community.*` permissions**, so Masjid's admin cannot
+- [x] `FIXED, verified 2026-09-01 — `masjid-admin` now holds 5 `community.*` permissions (28 total)` — ~~`new-ticket`~~ **`masjid-admin` has no `community.*` permissions**, so Masjid's admin cannot
       admit anyone either. Every community's admin role needs the five governance grants, not just a
       name that reads like "admin"
 - [x] `RESOLVED 2026-08-31` — **canonical group spelling, and this now blocks the work.** 24 groups for
@@ -1874,11 +1874,11 @@ currently the only working approver.
 - [x] `RESOLVED 2026-08-31` — **which fan id holds `admin`** (`PUT /v1/apps/loom_communities/access/{fanId}`
       with `{state: "active", roleIds: ["admin"]}`). One grant covers every community, because the
       role is app-level and `collectActiveRoleIds` adds it with no group filter
-- [ ] then seed the ~35–40 accounts through `requestGroupMembership` → `decideGroupMembership`,
+- [x] `DONE 2026-08-30, verified 2026-09-01` — 40 memberships exist, seeded through the real flow — then seed the ~35–40 accounts through `requestGroupMembership` → `decideGroupMembership`,
       approved by that admin, so every fixture has passed the real authorization check
 - [ ] afterwards: retire `cedar_commons_hoa_admin`, or keep it deliberately and say why
       that bypasses the authorization check the security fix just added
-- [ ] then seed the ~35–40 accounts through the real `requestGroupMembership` → `decideGroupMembership`
+- [x] `DONE 2026-08-30, verified 2026-09-01` — 40 memberships exist, seeded through the real flow — then seed the ~35–40 accounts through the real `requestGroupMembership` → `decideGroupMembership`
       flow, which is what makes the fixtures worth having
 
 **RESOLVED 2026-08-30 — the `invalid_role_scope` guard is the opposite of a problem, and the whole
