@@ -831,8 +831,8 @@ mistakes — no JSON-level fix exists for either until the underlying engine tic
 ## 20. A platform-written field names **which** platform value it gets — and an id for something that never happened stays empty
 
 `writableBy: "platform"` says a service writes the field. It does not say *which* service or *what
-value*, and without that nothing can run: these two are byte-identical apart from the field name, and
-the field name is exactly what must never be read for meaning.
+value*. For a **dispatched** value that difference is load-bearing — these two are byte-identical
+apart from the field name, and the field name is exactly what must never be read for meaning:
 
 ```jsonc
 // Indistinguishable. One wants a hash of bytes; the other wants a minted id.
@@ -900,3 +900,59 @@ Ask what would have to have happened for the id to be meaningful, and whether it
 |---|---|---|
 | `transferId`, `exportReceiptId` | A bundle was generated and stored | **Yes** |
 | `receiptId`, `paymentConfirmationId`, `settlementId` | Money moved | **No — deferred with payment** |
+
+## 21. `platformSource` is declared **only where a dispatcher reads it** — a marker on bookkeeping is noise
+
+Found 2026-08-31 auditing why `checksumVerified` had no source. It did not need one, and neither do
+**55 other shipped fields** that the validator was warning about.
+
+`platformSource` has exactly **one** runtime consumer: `workflow_service.dart` walks every field in a
+community's schema and mints an id for each one declaring `opaqueId` that is still empty. That is what
+the marker buys — a community declares an id field and the platform fills it with **no code change**,
+where otherwise the service would hardcode `transferId`, `exportReceiptId` and every future name.
+
+Nothing dispatches on any other value. `platformSource: "checksum"` is descriptive: the export handler
+writes `checksum` and `checksumAlgorithm` by literal key name and never reads the marker.
+
+### Wrong — a marker on a field no dispatcher resolves
+
+Plausible, because the field really is written by the platform and the warning really did fire on it.
+
+```jsonc
+// WRONG. The archetype handler writes this and already knows the field name.
+"readFanIds":       { "type": "fanIdList", "writableBy": "platform", "platformSource": "bookkeeping" },
+"checksumVerified": { "type": "bool",      "writableBy": "platform", "platformSource": "checksum" }
+```
+
+`bookkeeping` is not in the closed set, so the first is a hard `unknown_platform_source`. The second
+validates and is still wrong: it claims the checksum dispatcher owes this field a value, and that
+dispatcher does not exist. A marker that describes a mechanism nobody implements is the same class of
+defect as a canned checksum string — it reads as a wired mechanism and is not one.
+
+### Correct — verified against Cedar Commons HOA and Garden Club
+
+```jsonc
+// Dispatched: the platform must resolve this without knowing the name.
+"transferId":       { "type": "text?",     "writableBy": "platform", "platformSource": "opaqueId" },
+
+// Not dispatched: a specific handler writes it, and already knows which field.
+"checksumVerified": { "type": "bool",      "writableBy": "platform" },
+"readFanIds":       { "type": "fanIdList", "writableBy": "platform" }
+```
+
+`checksumVerified` is genuinely computed — the download handler recomputes `sha256` and compares
+against **both** the stored checksum and the byte size, because comparing the hash alone would let a
+replacement or a truncation verify unconditionally. It simply is not resolved *by declaration*.
+
+### The test to apply
+
+Ask: **could the platform write this field if the field were renamed?**
+
+| | Renamed still works? | Declare `platformSource` |
+|---|---|---|
+| `transferId` → `shipmentId` | Yes — the dispatcher reads the marker, not the name | **Yes**, `opaqueId` |
+| `checksumVerified` → `bundleOk` | No — the handler writes a name it knows | No |
+| `readFanIds` → `seenBy` | No — the archetype writes a name it knows | No |
+
+A platform-written field with **no** `platformSource` is therefore usually correct, not incomplete.
+`platform_writable_field_missing_platform_source` fires only where a dispatcher is genuinely owed.
