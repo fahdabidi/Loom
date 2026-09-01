@@ -3064,3 +3064,61 @@ Two things worth keeping from this:
   configuration; asking the user would have been asking them to choose something the system had
   chosen. That is the third time this session I framed a determined fact as a question.
 
+
+---
+
+### Decision analysis: `platformSource` for `checksumVerified` — and the 55 fields behind it
+
+*Researched 2026-08-31, before putting options to the user. Recorded here so the reasoning survives
+the decision.*
+
+**The question is wider than the field it was filed under.** The open item read "what `platformSource`
+should `checksumVerified` declare — neither `checksum` nor `opaqueId` fits". Measuring first:
+
+- `_knownPlatformSources` is the closed set `{'checksum', 'opaqueId'}`.
+- The validator rule `platform_writable_field_missing_platform_source` is **`isWarning: true`**, and
+  says so deliberately: *"intentionally non-fatal while shipped packages use the old grammar;
+  regeneration is what closes it."* So nothing is red today.
+- **55 fields** across the shipped packages are `writableBy: "platform"` with **no** `platformSource`.
+  This is not one field's problem.
+- `checksumVerified` **already has a real mechanism**, contrary to how the item was framed.
+  `workflow_service.dart` writes `false` when the bundle is created, then on download recomputes
+  `sha256` over the bytes and compares against **both** the stored checksum and the byte size before
+  writing the result. The inline comment records why both: comparing the hash alone *"would make a
+  replacement or truncation verify unconditionally."* A guard consumes it
+  (`instanceDataEquals: {key: checksumVerified, value: true}`).
+
+**What the 55 actually are**, sampled: `reminderHistory`, `readFanIds`, `messages`, `waitlistFanIds`,
+`signedUpFanIds`, `statusHistory`, `revisionHistory`, `scheduleHistory`, `signupHistory`,
+`saveAnswerHistory`, `reportedByFanIds`, `unreadForA`/`unreadForB`, `syncState`, `senderFanId`,
+`requesterFanId`, `redactionConfirmed`, `receiptId`.
+
+Overwhelmingly **engine bookkeeping** — collections and counters the archetype maintains as a side
+effect of transitions. `platformSource` as designed names *which external service supplies a value*
+(`checksum` → the hashing service; `opaqueId` → the id minter). Bookkeeping has no external supplier;
+the engine computes it. `receiptId` is the exception and is correctly unwritten, because payment
+processing is deferred and a receipt id for a payment that never happened is fabrication.
+
+**So the real question: does `platformSource` mean "which external service owes this value", or
+"who writes this field"?** Today's closed set answers the first. The warning's wording assumes the
+second, which is why it fires on 55 fields that are behaving correctly.
+
+**Options put to the user** (each production-grade; no option that stubs, fabricates, or defers a
+value it claims to have):
+
+1. **Reuse `checksum`, disambiguated by field type.** `text?` → the hash, `bool` → the verification
+   outcome. *For:* no grammar growth; the source already names the service, and a service owing two
+   values of different types is unambiguous. *Against:* one source owes two things; a reader must
+   consult the type; strains if the service ever owes a third value. Leaves all 55 bookkeeping fields
+   still warned about.
+2. **Add `checksumVerification`, and a bookkeeping source for the rest.** One source, one value.
+   *For:* explicit and self-describing; matches the discriminator's stated purpose; closes all 55.
+   *Against:* grows a closed set; touches the hard-locked `05-validation.md` (doc-first, and the
+   conformance test runs both ways), the grammar docs, the validator, and needs package regeneration.
+3. **Narrow the rule: `platformSource` is only for externally-supplied values.** Engine bookkeeping
+   declares `writableBy: "platform"` and needs no source; the warning fires only where an external
+   service genuinely owes a value. *For:* no package regeneration; matches what the code already does;
+   removes a warning that is wrong on 55 of its ~56 targets. *Against:* needs a principled, testable
+   definition of "externally supplied" or the exemption becomes a loophole; `checksumVerified` sits on
+   the boundary, since the service does compute it.
+
