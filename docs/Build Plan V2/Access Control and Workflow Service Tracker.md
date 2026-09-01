@@ -874,7 +874,7 @@ Found while trying to mount the notification-preference control, which must show
 communities. It blocks more than that: **any** per-member, per-community feature needs this, including
 B3's per-viewer change feed.
 
-- [ ] `needs-spec-decision` — **the mapping columns exist and are empty.** `app_group` carries
+- [x] `DECIDED 2026-08-31 — the mapping moves server-side: columns populated, added to the app-access spec in both repos, returned with each group, and the app's compile-time constant retired` — ~~`needs-spec-decision`~~ **the mapping columns exist and are empty.** `app_group` carries
   `external_resource_type` and `external_resource_id` — exactly the shape needed to point a group at
   its workflow community — and they are **NULL for all 24 groups**. The schema anticipated this and
   nothing populates it. Filling them is probably the smallest correct fix, and it is a decision about
@@ -1137,7 +1137,7 @@ remains, disabled-by-neglect rather than deleted, pending the account-seeding wo
   decided. Self-approval must be refused outright.
 - [ ] `new-ticket` — **audit every app-access endpoint that takes `X-Loom-Actor`** for the same shape.
   A header-supplied identity that nothing ties to the token is a pattern, not one endpoint.
-- [ ] `new-ticket` — seeding test accounts is **blocked on the fix**. Seeding through the flow as it
+- [x] `CLOSED 2026-08-30 — the escalation fix landed and seeding completed through the real flow; 40 memberships exist across 24 groups` — ~~`new-ticket`~~ seeding test accounts is **blocked on the fix**. Seeding through the flow as it
   stands would mean using the vulnerability as the mechanism, and the resulting memberships would be
   indistinguishable from an attack.
 
@@ -1244,7 +1244,7 @@ compiles `bin/loom_workflow_service.dart` to an AOT binary. There is no `.docker
 the build path, so every build copies all of it, twice: once into the scratch dir, once into a
 Docker layer.
 
-- [ ] `new-ticket` — exclude build output from the image context. Either write a `.dockerignore`
+- [x] `CLOSED — done via the OTHER branch: build.sh rsyncs the staging dir with --exclude for /apps/**/build/, /packages/**/build/ and both .dart_tool trees. No .dockerignore exists and none is needed; context went 6.885 GB → 917.9 MB` — ~~`new-ticket`~~ exclude build output from the image context. Either write a `.dockerignore`
       into the scratch dir from `build.sh` (it is the context root, so it has to be placed there,
       not beside the Dockerfile in the package), or stage with an exclude list instead of `cp -r`.
       Exclude at minimum `build/`, `.dart_tool/`, `.git/`, and test fixtures
@@ -1574,8 +1574,8 @@ judges 473. Stack verified **serving** afterwards, not merely `Running`: token o
 zero restarts on `postgres-0` and `workflow-service`.
 
 - [x] B8 complete
-- [ ] `new-ticket` — background sync policy, still deliberately undecided
-- [ ] `new-ticket` — `.dockerignore` for the service image build (6 GB context)
+- [x] `CLOSED 2026-08-31 — all four policies shipped member-chosen in part50_replica_sync_policy.dart, exposed in app-shell settings` — ~~`new-ticket`~~ background sync policy, still deliberately undecided
+- [x] `CLOSED — same as above: solved by rsync --exclude in build.sh rather than a .dockerignore` — ~~`new-ticket`~~ `.dockerignore` for the service image build (6 GB context)
 - [ ] `new-ticket` — parity test for the OpenAPI spec twins, which drifted four operations unnoticed
 - [ ] **pre-GA** — the 35 seeded accounts all share `LoomTest123!` and belong on the rotation list
 
