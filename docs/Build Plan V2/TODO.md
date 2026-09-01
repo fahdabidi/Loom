@@ -107,7 +107,7 @@ The four spec decisions, in the order they block things:
       columns the group→community mapping, or does it live elsewhere? → ACWS §8
 - [x] **DECIDED** — `platformSource` required iff a generic dispatcher resolves the value (today `opaqueId` only); the warning narrows, `checksum` stays as documentation, no regeneration → Build Tracker §8
       fits, and the field cannot be computed without one → ACWS §8
-- [ ] `deliver_reminder` applies to 2 of 4 candidates; Chess and Soccer expose a contradiction between
+- [x] **DECIDED** — both paths supported; `event-rsvp` gains `send_reminder` for the manual trigger alongside `deliver_reminder` for the scheduled one → Build Tracker §8
       `permissions.md` §4 and §6, and §4 is hard-locked → Build §8
 - [ ] two permission vocabularies that do not meet: `community.surface.navigation.*` vs
       `community.manage_settings` — prerequisite for Phase E → Build §8

@@ -148,29 +148,42 @@ author the action the transition actually performs and say so.
 | `respond` | `event_rsvp.respond` | `rsvp-going`, `rsvp-maybe`, `rsvp-not-going`, `respond-going`, `respond-maybe`, `respond-declined`, `accept-match`, `decline-match` |
 | `withdraw_response` | `event_rsvp.withdraw_response` | `rsvp-withdraw`, `cancel-rsvp` |
 | `join_waitlist` | `event_rsvp.join_waitlist` | `join-event-waitlist`, `respond-waitlist` |
-| `set_reminder` | `event_rsvp.set_reminder` | `add-reminder`, `add-event-reminder`, `set-reminder`, `enable-reservation-reminder`, `disable-reservation-reminder`, `send-next-reminder`, `request-calendar-sync` |
-| `deliver_reminder` | `event_rsvp.deliver_reminder` | `send-reminder` — **platform-applied, never user-tapped.** The Calendar sweep applies it through the `dueNotifications({asOf})` platform service. **No role is granted it**, so it renders as no button anywhere, by the ordinary derivation in §1 rather than any special case. |
+| `set_reminder` | `event_rsvp.set_reminder` | `add-reminder`, `add-event-reminder`, `set-reminder`, `enable-reservation-reminder`, `disable-reservation-reminder`, `request-calendar-sync` — a member asking to be reminded, about their own row. |
+| `send_reminder` | `event_rsvp.send_reminder` | `send-reminder`, `send-next-reminder` — **a human sending one now, on purpose.** An organiser or coach taps it; it is guarded by `allowedRoleIds` and **renders as a button**, like any other role-gated action. Distinct from `deliver_reminder` below: same outcome for the recipient, different actor. |
+| `deliver_reminder` | `event_rsvp.deliver_reminder` | `deliver-reminder` — **platform-applied, never user-tapped.** Driven by the workflow's declarative `reminder` block and applied by the Calendar sweep through `dueNotifications({asOf})`. **No role is granted it**, so it renders as no button anywhere, by the ordinary derivation in §1 rather than any special case. |
 | `propose_change` | `event_rsvp.propose_change` | `suggest-new-time` |
 | `record_outcome` | `event_rsvp.record_outcome` | `record-result`, `flag-reservation-conflict` |
 
 
-**`set_reminder` versus `deliver_reminder`** — these look alike and are opposite, in the same way
-`cancel-rsvp` and `cancel-tournament` are. `set_reminder` is a member asking to be reminded, and the
-product docs treat it as an ordinary action: Garden Club's lists "RSVP / **add reminder**" beside
-RSVP itself. `deliver_reminder` is the platform sending the reminder it was asked for; Tabletop's
-describes it as a "Calendar reminder-scheduling API" with an idempotency stamp, not as something a
-member does.
+**Three reminder actions, and they are genuinely different things.** `set_reminder` is a member asking
+to be reminded, about their own row — Garden Club's doc lists "RSVP / **add reminder**" beside RSVP
+itself. `send_reminder` is an organiser or coach deciding to send one **now**: a deliberate human act,
+role-guarded, and a button like any other. `deliver_reminder` is the platform sending the reminder it
+was already asked for, on the schedule the workflow declared.
 
-The distinction has to be declared because **nothing structural separates them**. Guard shape nearly
-does — a member-tapped reminder usually carries `allowedRoleIds` while a delivered one is guarded by
-`actorEqualsField` alone — but that gets 8 of the corpus's 10 reminder transitions right and breaks
-on the other two, so it is a correlation, not the rule.
+Both delivery paths are supported on purpose, and a community may use either or both. The automatic
+one is configured declaratively:
 
-Declaring it as a distinct action is what makes it enforceable, and it needs no new mechanism: a
-`deliver_reminder` transition names no role, so §1's derivation grants it to nobody, so it renders
-as no button. Until 2026-08-20 the app shell instead kept a hardcoded list of transition **ids** to
-hide, which silently hid nothing in the eight communities that spell theirs differently.
+```jsonc
+"reminder": { "anchorDateField": "eventDate", "anchorTimeField": "eventTime", "leadHours": 24 }
+```
 
+and swept by `dueNotifications({asOf})`. The manual one is an ordinary role-gated transition. The
+recipient sees the same notification either way; what differs is who caused it, and that is exactly
+what the permission has to capture.
+
+**The ids are what separate them, and nothing else does.** `send-reminder` and `deliver-reminder`
+differ by one word and are opposite in every way that matters. Guard shape *correlates* — a manual
+send carries `allowedRoleIds`, a delivered one does not — but it is a correlation and was never the
+rule: it got 8 of the corpus's 10 reminder transitions right and broke on the other two. Chess Club's
+`send-reminder` (`chess-organizer`) and Youth Soccer's (`soccer-coach`) are those two, and under the
+earlier mapping they would have resolved to `deliver_reminder`, been granted to nobody, and **lost a
+primary button an organiser legitimately taps.**
+
+A `deliver_reminder` transition names no role, so §1's derivation grants it to nobody, so it renders
+as no button — no special case required. Until 2026-08-20 the app shell instead kept a hardcoded list
+of transition **ids** to hide, which silently hid nothing in the eight communities that spell theirs
+differently.
 `cancel-rsvp` and `cancel-tournament` read alike and mean opposite things — withdrawing your own
 attendance versus calling off the event for everyone. The literal `cancel-rsvp` entry under
 `withdraw_response` is what keeps the `cancel-*` pattern from swallowing it.
