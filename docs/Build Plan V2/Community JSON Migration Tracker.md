@@ -1291,7 +1291,7 @@ since 2026-08-27.
   Small, and blocking nothing. Worth deciding rather than guessing, because option 1 is the tempting
   one and the least reversible.
 
-- [ ] `new-ticket` — **delete Garden's stale `checksumVerified` comment** regardless of which option
+- [ ] `new-ticket` — **delete Garden's stale `checksumVerified` comment** regardless of which option **CONFIRMED STILL PRESENT AND NOW DEMONSTRABLY FALSE, 2026-08-31.** Garden's comment reads *"NEEDS IMPLEMENTATION (platform service): checksum verification is unavailable with the checksum service"* — but `checksumVerified` **is** implemented: the download handler recomputes `sha256` and compares against both the stored checksum and the byte size before writing it. This is precisely what solved-patterns §20 warns about — *"a NEEDS IMPLEMENTATION note that outlives its implementation is worse than no note, because the next reader trusts it and re-reports a closed gap."* Needs a **Skill dispatch**; the JSON cannot be hand-edited.
   wins. A `NEEDS IMPLEMENTATION` note that outlives its implementation is worse than none: the next
   reader trusts it and re-reports a closed gap.
 
@@ -1327,7 +1327,7 @@ Two tools now derive from the shipped package rather than from memory:
 
 - [x] `B8 COMPLETE 2026-08-31` — remaining: Garden Club (running), Masjid Nur, Member Social Space, Neighborhood Book Club,
       Riverside Youth Soccer, Tabletop Club, Data Portability
-- [ ] then the app read, which **must ship with the last package** — the read alone switches device
+- [x] `B8 COMPLETE 2026-08-31 — the app read shipped with the packages; part44 gates on deviceDeliveryEnabled` — then the app read, which **must ship with the last package** — the read alone switches device
       notifications off, the packages alone are inert
 
 ### 2026-08-30 — the absent-block default would have silently switched off device notifications
@@ -1418,5 +1418,5 @@ Open, in order:
 - [ ] `needs-verification` — **Garden Club is regenerated but NOT installed.** Run 1 deleted `reminderAt` *and* `reminderOffsetHours`, removing a capability the product doc promises; run 2, against the corrected instructions, declared the `reminder` block correctly and kept the offset. Re-dispatch once more so the prefill fields land as `platform` in the same pass, then install
 - [ ] `new-ticket` — **the `chmod 444` anti-hand-editing guard is not durable.** All eleven packages are 444 again as of 2026-08-27 (AdFreeCommunity and ChessClub had drifted to 664), but git does not track that permission bit, so a fresh clone gets them writable and the guard silently disappears. It is a local speed bump, not an enforced rule — the actual enforcement is the standing instruction in CLAUDE.md. If it should be real, it needs something the repo carries: a test that fails when a community `*.jsonc` changes without a corresponding Skill dispatch record, or a committed pre-commit hook plus a documented install step. Worth deciding rather than leaving a guard that looks stronger than it is
 - [ ] `new-milestone` — **the export checksum service** (user-queued 2026-08-27, still next after the writer pass): 10 markers across 8 workflows in 6 communities. Spec-first — `migration-export-api` has no checksum concept, and nothing produces an export *bundle* for one to hash
-- [ ] `needs-verification` — **`dueNotifications` has never been proven live.** `loom-workflow-service:0.4.0` is deployed with the endpoint; no community is provisioned into the service with a reminder-bearing instance, so the sweep has never returned a real row
+- [ ] `needs-verification` — **`dueNotifications` has never been proven live.** `loom-workflow-service:0.4.0` is deployed with the endpoint; no community is provisioned into the service with a reminder-bearing instance, so the sweep has never returned a real row **UPDATED 2026-08-31 — the endpoint IS live; what is unproven is narrower.** `GET /v1/communities/{id}/notifications/due?asOf=` returns **200** and rejects a non-ISO-8601 `asOf` with `400 invalid_as_of`. The stored definitions are current (6 carry a reminder key, matching the 6 shipped packages that declare one). What has never happened is a reminder actually becoming due: the only 3 instances in the service are probe artifacts created by direct calls that bypassed the app-side `reminderEnabled: false` prefill, so the formula yields null. Proving it is now blocked behind the `calendar.*` permission gap, since creation is refused.
 
