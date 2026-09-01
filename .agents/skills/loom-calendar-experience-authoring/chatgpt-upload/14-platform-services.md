@@ -155,6 +155,26 @@ The workflow service mints an `opaqueId` **once**, on the first transition after
 declared and still empty, and never rewrites it. An id that changes is not an identifier: everything
 that quoted the previous value silently stops matching.
 
+**When a field needs `platformSource`, and when it does not.** Declare it **only where a generic
+dispatcher must resolve the value without knowing the field's name.** Today that is `opaqueId` alone:
+`workflow_service.dart` walks every field in the schema and mints an id for each one declaring
+`opaqueId` that is still empty. That is what the marker buys — a new community declares an id field
+and the platform fills it with **no code change**, where otherwise the service would hardcode
+`transferId`, `exportReceiptId` and every future name.
+
+`platformSource: "checksum"` is **descriptive, not dispatched.** The export handler writes `checksum`
+and `checksumAlgorithm` by literal key name and never reads the marker. It is kept because it
+truthfully records who writes the value — which is not the same as a field claiming a writer it does
+not have — but do not expect it to cause anything to happen.
+
+**So a platform-written field with no `platformSource` is usually correct**, not incomplete. Engine
+bookkeeping — `readFanIds`, `reminderHistory`, `signedUpFanIds`, `statusHistory`, `unreadForA` — is
+written by archetype handlers that already know which field they are writing, and a marker would buy
+them nothing. `checksumVerified` is the same: the download handler writes it directly, after
+recomputing `sha256` and comparing against **both** the stored checksum and the byte size, because
+comparing the hash alone would let a replacement or a truncation verify unconditionally.
+
+
 **Scope, and why it is not all of them.** Only ids for things that actually happen are minted:
 `transferId` and `exportReceiptId`, where a bundle really is produced. `receiptId`,
 `paymentConfirmationId` and `settlementId` stay declared-and-unwritten alongside **payment
