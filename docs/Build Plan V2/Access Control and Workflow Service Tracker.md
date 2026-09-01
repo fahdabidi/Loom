@@ -2027,3 +2027,48 @@ logged-in person.
 declare community admin roles as package roles (option A) so the installer stops deleting them; the
 dead `PLATFORM_ADMIN_ROLE_ID = "admin"` exemption can be dropped rather than repurposed, because there
 is no platform role to protect. No platform_admin anywhere.
+
+---
+
+### Decision walkthrough: managing `community.*` governance permissions (2026-09-01)
+
+*Requested by the user. The catalog/vocabulary divergence that blocks the calendar apply is two
+problems; only one is a real decision.*
+
+**Group 1 — resolver incompleteness (~21 ids), NOT a decision.** `approval_queue.*`,
+`discussion_thread.*`, `notification_inbox.send`, `payment_checkout.*`, `event_rsvp.manage_attendees`
+and others are archetype actions packages use but `ArchetypeResolver`'s action lists omit — verified:
+`approve`, `reply`, `send`, `pay`, `manage_attendees` are absent from the resolver. Same bug class as
+item 1l. Fix = complete the action lists + regenerate. Mandatory either way, mechanical, testable in
+isolation. Once done, the catalog and vocabulary agree on everything except the 5 below.
+
+**Group 2 — `community.*` governance (5), THE decision.** `view`, `invite`, `manage_members`,
+`manage_roles`, `manage_settings`, deliberately not archetype-derived. Held **uniformly**: 12 roles
+hold them in 2 shapes — 11 admins hold all 5, the underscored-dup anomaly holds 1. So the rule is
+"a community's admin role holds the 5 `community.*` permissions."
+
+**Option A — governance becomes first-class generated data.** The generator emits the admin→community.*
+rule into the vocabulary/catalog and role derivation; the hand-grant goes away.
+- Pros: ends the divergence permanently (single source of truth); future installs safe by construction;
+  codifies governance as versioned data instead of an invisible manual psql step; small because the
+  mapping is uniform.
+- Cons: needs a governance *source* — either the install request contract grows to carry governance
+  grants (an OpenAPI twin change, and those already drift) or a separate platform-governance config;
+  a design commitment that must later accommodate non-uniform governance if it ever arises.
+
+**Option B — provisioning ops become merge-safe.** `install`/`replacePermissionCatalog` replace only
+the archetype-derived subset and preserve what they don't own (`community.*`).
+- Pros: small localized change (merge logic in two methods); no contract/config change; unblocks the
+  calendar apply immediately; a defensive invariant that also protects future unknown hand-grants;
+  directly matches this session's "a tool must not mutate what it doesn't own" principle.
+- Cons: governance stays outside the source of truth — hand-assembled indefinitely, so a cluster
+  rebuild still needs the manual community.* grant re-applied (the "state nowhere in git" item stays
+  open); the merge boundary is a subtler invariant to maintain (too aggressive strips, too permissive
+  accumulates cruft) than "regenerate everything."
+
+**Recommendation.** Do Group 1 regardless. For the governance 5, lean **A** because the uniform mapping
+makes it cheap to generate and it is the only option that *ends* the hand-assembly — the root disease
+behind three findings this session (stale catalog, state-nowhere-in-git, the near-miss role deletion).
+Choose **B** if the priority is unblocking the calendar chain fastest with least risk; it is a good
+safety invariant but leaves governance permanently un-generated. Either way, sequence: resolver
+completeness → governance mechanism → calendar apply, each verified live before the next.
