@@ -3133,3 +3133,43 @@ value it claims to have):
    definition of "externally supplied" or the exemption becomes a loophole; `checksumVerified` sits on
    the boundary, since the service does compute it.
 
+
+---
+
+### Decision analysis: how to stop `installCommunityPackage` deleting the community admin roles
+
+*Researched 2026-09-01. The apply is blocked because install deletes every group-scoped role a
+package does not declare, sparing only `PLATFORM_ADMIN_ROLE_ID`. Measured: 23 declared, 39 existing,
+**16 would be destroyed**, including all 11 community admin roles.*
+
+**What the exemption actually is.** `AppAccessService:102` — `PLATFORM_ADMIN_ROLE_ID = "admin"`, a
+single literal id, checked with `equals`. **No role currently uses it**: the app-level `admin` was
+deleted through `deleteRole` after the user corrected that admin is community-scoped, not app-level.
+So the exemption exists and protects nothing today, while the 11 roles that need protecting are named
+`hoa-admin`, `garden-admin`, `chess-admin` and so on.
+
+**Option A — declare the admin role in each package's `roles[]`.**
+*For:* it matches the user's own definition — *"the community's default first role, and typically the
+creator"*. If admin is the community's first role, it **is** package content, and declaring it makes
+install's "not declared means remove" rule correct rather than dangerous. No service change; the rule
+stays simple and uniform. *Against:* eleven packages regenerate through the Skill, and the admin role
+must then carry its `community.*` grants — which the vocabulary deliberately does not derive, so
+either those grants stay outside the derivation or the vocabulary gains a governance family.
+
+**Option B — reserve a naming convention.** Spare `*-admin`, or any id in a configured set.
+*For:* smallest change, no package or data migration. *Against:* an exemption keyed on a name is the
+same class of thing as matching product vocabulary by substring — it silently protects
+`not-really-admin` and silently fails to protect a role someone names `owner`. It also encodes
+provisioning policy in a string match inside the service.
+
+**Option C — track provenance: install only deletes roles install created.**
+*For:* the most honest rule — the installer owns what it made and nothing else, which is exactly the
+invariant being violated. Robust against any future hand-provisioned role, not just admins.
+*Against:* a schema migration on `app_role`, and a decision about how existing rows are classified —
+every current role would need marking, and guessing wrong in either direction either strands roles
+or re-exposes them to deletion.
+
+**Not an option: run the apply and re-create the roles afterwards.** The five `community.*`
+permissions those roles hold are not in the generated vocabulary, so a re-install cannot restore
+them; the grants were made by hand and would have to be made by hand again, for eleven roles, with
+no record of exactly what each held beyond what is queried before the deletion.
