@@ -360,6 +360,19 @@ Loom-only files are app-side contracts with no service counterpart and are **not
 present in the backend and missing from Loom is.
 ### Publishing definitions is not a one-time step
 
+**It now covers generated artifacts too, because they drift the same way.**
+`permissions-vocabulary.json` is generated in Loom from `ArchetypeResolver` and **copied**
+into `loom-backend`, where app-access loads it **from the classpath**. On 2026-08-31 the
+backend copy held 97 ids and **no `calendar.*` at all** while Loom's held 106 — so
+`CommunityPermissionDeriver` could not grant a permission it had never heard of, and **every
+calendar-archetype workflow was uncreatable by anyone**. No test failed; the deployed
+catalog simply lacked nine ids.
+
+For these, **Loom is authoritative** — it is where they are generated. Regenerate there,
+copy into the backend, then **rebuild the service**: editing the file on disk changes
+nothing until a new image bundles it. That last step is what makes this different from the
+spec twins, where syncing the file is the whole fix.
+
 The backend stores a **copy** of every workflow definition, written by
 `bin/publish_workflow_definitions.dart`. Change a community package and the deployed copy is stale
 until you publish again. **Nothing tells you.** No test fails, no route errors, no probe goes red:
