@@ -78,7 +78,7 @@ is itself an open row in each tracker.
 meaningless, and all are cheap relative to a walkthrough campaign:
 
 - the 12 rows that name non-existent workflows — correct or strike them (`needs-skill-dispatch`)
-- pass-42's 2 blocking failures with no findings recorded — establish what actually failed, or rerun
+- pass-42's 2 blocking failures: `c16` is now diagnosed and its judge fixed; `c14` needs a fresh capture plus a real vision-judge pass
   to regenerate them
 - re-prove the 3 Camera Club rows so they carry package identity, or accept them as `unknown`
   deliberately
@@ -148,7 +148,7 @@ Open items from those entries are rows in the same trackers' **§8** queues, not
 - [x] authenticated walkthrough — **sign-in PROVEN on device**, and the follow-on 401 fixed: `JWT_ISSUER` now matches the advertised host, app-access returns 200 with real membership → Build Tracker §8
 - [ ] the B25 denominator overstates: 12 rows — 3 renames, 9 not community workflows at all → Build Tracker §8
 - [ ] walkthrough evidence records no package identity, so staleness is undetectable → Build Tracker §8
-- [ ] pass-42's two blockers — `c14` vision review is ~97% scaffold (7 of 204 screens carry real evidence), `c16` all 10 findings are key-name deviations from the documented schema; 3 real gaps remain after correction → Build Tracker §8
+- [ ] pass-42 blockers — `c14` vision review is ~97% scaffold (7 of 204 screens carry real evidence); **`c16` judge FIXED `ab8720f0`** — it now reports zero capability failures and names all ten as evidence-shape problems, so what remains is regenerating the artifact in the documented schema → Build Tracker §8
 
 ### 2026-08-30 — this file stopped following its own header — RESOLVED 2026-08-31
 
