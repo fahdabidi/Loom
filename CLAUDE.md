@@ -231,6 +231,7 @@ matching line is never emitted. The dispatch had finished with status 0 and the 
 even started. **Use `grep -a` on any dispatch log**, and note this is the same shape as the other two:
 the count disagreed with the raw evidence — the log's own tail showed the completion banner — and the
 raw evidence was right.
+
 Two habits that catch this class of bug regardless of the mechanism:
 
 - **One value per poll.** Two values joined with `tr '\n' '|'` and split with `cut` silently shift
