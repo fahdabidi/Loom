@@ -184,6 +184,7 @@
       "actions": [
         "acknowledge",
         "archive",
+        "create",
         "delete",
         "download",
         "edit",
@@ -205,6 +206,7 @@
       "permissions": [
         "document_library.acknowledge",
         "document_library.archive",
+        "document_library.create",
         "document_library.delete",
         "document_library.download",
         "document_library.edit",
@@ -228,6 +230,7 @@
       "permissionPrefix": "equipment_loan",
       "actions": [
         "claim",
+        "create",
         "decide_request",
         "delist",
         "join_queue",
@@ -244,6 +247,7 @@
       ],
       "permissions": [
         "equipment_loan.claim",
+        "equipment_loan.create",
         "equipment_loan.decide_request",
         "equipment_loan.delist",
         "equipment_loan.join_queue",
@@ -296,6 +300,7 @@
         "approve_redaction",
         "cancel",
         "configure_scope",
+        "create",
         "decide_transfer",
         "download",
         "preview",
@@ -309,6 +314,7 @@
         "export_wizard.approve_redaction",
         "export_wizard.cancel",
         "export_wizard.configure_scope",
+        "export_wizard.create",
         "export_wizard.decide_transfer",
         "export_wizard.download",
         "export_wizard.preview",
@@ -324,6 +330,7 @@
       "actions": [
         "add_citation",
         "ask",
+        "create",
         "curate",
         "moderate",
         "report",
@@ -333,6 +340,7 @@
       "permissions": [
         "search_ai_answer.add_citation",
         "search_ai_answer.ask",
+        "search_ai_answer.create",
         "search_ai_answer.curate",
         "search_ai_answer.moderate",
         "search_ai_answer.report",

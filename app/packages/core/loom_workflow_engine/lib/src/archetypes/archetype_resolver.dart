@@ -339,6 +339,7 @@ class ArchetypeResolver {
     },
     'equipment-loan': {
       'view',
+      'create',
       'list_item',
       'pause_listing',
       'delist',
@@ -355,6 +356,7 @@ class ArchetypeResolver {
     },
     'documentLibrary': {
       'view',
+      'create',
       'upload',
       // A document has a life before it is published. Without these three, an
       // ordinary policy -- "only the Board may edit, publish or delete;
@@ -380,6 +382,7 @@ class ArchetypeResolver {
     },
     'exportWizard': {
       'view',
+      'create',
       'configure_scope',
       'preview',
       'approve_redaction',
@@ -401,6 +404,7 @@ class ArchetypeResolver {
     },
     'searchAiAnswer': {
       'view',
+      'create',
       'ask',
       'withdraw_query',
       'curate',

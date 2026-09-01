@@ -101,6 +101,40 @@ void main() {
       },
     );
 
+    test(
+      'the four creatable bespoke archetypes expose their create permissions',
+      () {
+        const expectedCreatePermissions = {
+          'equipment-loan': 'equipment_loan.create',
+          'documentLibrary': 'document_library.create',
+          'exportWizard': 'export_wizard.create',
+          'searchAiAnswer': 'search_ai_answer.create',
+        };
+        const resolver = ArchetypeResolver();
+        final bespoke = artifact['bespokeArchetypes'] as Map<String, Object?>;
+
+        for (final entry in expectedCreatePermissions.entries) {
+          final family = entry.key;
+          final permission = entry.value;
+          final generatedFamily = bespoke[family] as Map<String, Object?>;
+
+          expect(
+            ArchetypeResolver.bespokeVocabularies[family],
+            contains('create'),
+            reason:
+                '$family must permit the create action declared by its '
+                'render bindings.',
+          );
+          expect(resolver.permissionId(family, 'create'), permission);
+          expect(
+            (generatedFamily['permissions'] as List).cast<String>(),
+            contains(permission),
+            reason: '$family createRoleIds must derive $permission.',
+          );
+        }
+      },
+    );
+
     test('declares the single spec version it was generated for', () {
       expect(
         artifact['specVersion'],
