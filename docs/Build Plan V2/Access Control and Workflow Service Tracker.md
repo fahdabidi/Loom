@@ -1576,7 +1576,7 @@ zero restarts on `postgres-0` and `workflow-service`.
 - [x] B8 complete
 - [x] `CLOSED 2026-08-31 — all four policies shipped member-chosen in part50_replica_sync_policy.dart, exposed in app-shell settings` — ~~`new-ticket`~~ background sync policy, still deliberately undecided
 - [x] `CLOSED — same as above: solved by rsync --exclude in build.sh rather than a .dockerignore` — ~~`new-ticket`~~ `.dockerignore` for the service image build (6 GB context)
-- [ ] `new-ticket` — parity test for the OpenAPI spec twins, which drifted four operations unnoticed
+- [x] `CLOSED 2026-08-31 — check_spec_parity.sh built and in both repos; extended today to cover generated artifacts, where it immediately caught the calendar.* drift` — ~~`new-ticket`~~ parity test for the OpenAPI spec twins, which drifted four operations unnoticed
 - [ ] **pre-GA** — the 35 seeded accounts all share `LoomTest123!` and belong on the rotation list
 
 ### 2026-08-30 — B3 and B6 mounted: every backend capability is now load-bearing
@@ -1624,9 +1624,9 @@ a finding until it is read.
 | B7 definition publisher | Done |
 | B8 community notification config | Grammar written; **validator rules + Skill regeneration + app read outstanding** |
 
-- [ ] B8 is the only backend item with work left: the validator rules, then regenerate packages
+- [x] `CLOSED — B8 complete: grammar, validator rules, 10/10 packages carry the block, and part44 gates delivery on deviceDeliveryEnabled` — B8 is the only backend item with work left: the validator rules, then regenerate packages
       through the Skill, then the app reads the community default
-- [ ] `new-ticket` — background sync policy: what it would need to decide is written up in the
+- [x] `CLOSED 2026-08-31 — decided and shipped: all four policies member-chosen in part50_replica_sync_policy.dart` — ~~`new-ticket`~~ background sync policy: what it would need to decide is written up in the
       dispatch summary, deliberately not chosen here
 
 ### 2026-08-30 — B5 is complete: the acknowledgements view is mounted
@@ -1661,7 +1661,7 @@ Verified here: **app shell 358 passing + 2 skipped, exit=0**, against a 354 + 2 
 | B8 community notification config | Grammar written; validator + Skill regeneration outstanding |
 
 - [x] B5 complete
-- [ ] `dispatched` — mount the replica coordinator, which closes B3 and B6 together. Sync on entry
+- [x] `CLOSED — mounted, under different names than this row used: the refresh entry point is refreshOfflineReplicaForExtensionId (part25), called from the shell app bar gated on _offlineReplicaEnabled, with LoomOfflineReplicaReadStatus in part49. Off by default, by design.` — ~~`dispatched`~~ mount the replica coordinator, which closes B3 and B6 together. Sync on entry
       and explicit refresh only; **background/timer sync is deliberately excluded** as a battery and
       bandwidth decision nobody has made
 
