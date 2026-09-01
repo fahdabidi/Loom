@@ -105,7 +105,7 @@ The four spec decisions, in the order they block things:
 
 - [x] **DECIDED** — `app_group.external_resource_*` populated server-side and returned with each group; the app's compile-time `communityGroupIds` constant is retired → Build Tracker §8
       columns the group→community mapping, or does it live elsewhere? → ACWS §8
-- [ ] what `platformSource` a `checksumVerified` field declares — neither `checksum` nor `opaqueId`
+- [x] **DECIDED** — `platformSource` required iff a generic dispatcher resolves the value (today `opaqueId` only); the warning narrows, `checksum` stays as documentation, no regeneration → Build Tracker §8
       fits, and the field cannot be computed without one → ACWS §8
 - [ ] `deliver_reminder` applies to 2 of 4 candidates; Chess and Soccer expose a contradiction between
       `permissions.md` §4 and §6, and §4 is hard-locked → Build §8
