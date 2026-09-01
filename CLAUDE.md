@@ -412,6 +412,28 @@ Each produced a confident report of missing work that already existed, and two r
 hit. If the control also returns nothing, the query is broken, not the codebase. Prefer reading the
 definition and its callers over one pattern coming back empty.
 
+**2026-08-31 produced five more in one session, and they are a different flavour worth naming: the
+query was broken, not narrow.** The earlier three asked the wrong question; these failed to ask at
+all, and every one printed a clean empty that read as data:
+
+| What "nothing" actually meant | The tell |
+|---|---|
+| `find` for a `.dockerignore` printed nothing — **not even its own `\|\| echo` fallback** | a fallback that does not fire means the command never ran |
+| `psql ... where definition::text like …` returned no rows | the column is `definition_json`; **stderr was suppressed by `2>/dev/null`** |
+| `\dt` "showed" no `role_permission` table | I had piped it through `head -14` and it was **row 14** |
+| `scp` to `…/bin/` reported success and copied nothing | the package has no `bin/` directory; **stderr was suppressed** |
+| `grep -rln OfflineReplicaCoordinator` returned zero files | the class is `LoomOfflineReplicaReadStatus` and the entry point is a **function**, `refreshOfflineReplicaForExtensionId` |
+
+Three habits, in the order they would have saved the most time:
+
+- **Never suppress stderr on a command whose silence you intend to interpret.** `2>/dev/null` turns
+  "column does not exist" into "no rows", which is a different fact.
+- **Never truncate a listing you are about to conclude from.** `head -N` on `\dt`, on a `find`, or on
+  a `grep -l` invents absences at the boundary.
+- **When a name returns nothing, search for the neighbourhood before concluding** — the file, the
+  callers, any symbol from the same feature. Four of the five above were real, working code sitting
+  under a name I had assumed rather than checked.
+
 ## Evidence rules
 
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A
