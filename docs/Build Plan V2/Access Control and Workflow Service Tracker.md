@@ -2109,3 +2109,34 @@ grants that the next install's `setRolePermissions` will wipe to the 5 `communit
 role? (2) underscored duplicate group `loom_communities_cedar_commons_hoa` (roles `cedar_commons_hoa_admin` +
 `cedar_commons_hoa_member`, members `fan_alice`/`fan_bob`, created 2026-08-13) — a full duplicate install of Cedar
 Commons HOA beside the hyphenated real one; delete entirely?
+
+## Autonomous batch plan (APPROVED 2026-09-02) — 3 threads in priority order
+
+**THREAD 1 — community provenance regeneration** (Chess ✓ done, byte-identical `2dfcebe5`). For each
+remaining community: sync (HEAD==origin/main + VM ~/Loom), `ssh loom-vm setsid nohup bash
+data/call_skill_authoring_agent.sh docs/references/communities/<handle>-product-experience.md <handle>-regen`,
+then when codex exits diff the scratch package `~/.codex-skill-authoring-scratch/<handle>-regen/*.jsonc`
+against the shipped asset. **Byte-identical →** adopt any doc correction (cp scratch doc over the product
+doc), `chmod 444` both mirrors (`app/.../assets/` + `docs/references/communities/`), commit+push. **Differs →**
+diff tells you the gap; fix the DOC or a SKILL worked-example (never hand-edit JSON), re-dispatch; surface a
+genuine dropped feature. Handle→asset name map:
+
+| handle | shipped asset name |
+|---|---|
+| ad-free-community | AdFreeCommunity |
+| camera-club | CameraClub |
+| cedar-commons-hoa | CedarCommonsHOA |
+| data-portability-community | DataPortabilityCommunity |
+| garden-club | GardenClub |
+| masjid-nur | Mosque |
+| member-social-space | MemberSocialSpace |
+| neighborhood-book-club | BookClub |
+| riverside-youth-soccer | YouthSoccer |
+
+**THREAD 2 — external_resource (after thread 1).** Spec already carries `communityId` (`e436c95`/`f9e3ade`).
+Dispatch backend (`installCommunityPackage` passes `externalRef {resourceType:"community", resourceId:communityId}`
+to `createGroup`) from `~/loom-backend`; dispatch Loom-side (provisioning applier sends `communityId`; app builds
+group→community from the response `externalRef`, config map as fallback) from `~/Loom`; build+deploy app-access
+`0.3.8` + manifest bump + drift audit; backfill the 10 real groups; verify end-to-end.
+
+**THREAD 3 — persistence.** HOLD — the engine-server-authoritative rewrite; scope-check with the user before dispatching.
