@@ -2077,3 +2077,32 @@ behind three findings this session (stale catalog, state-nowhere-in-git, the nea
 Choose **B** if the priority is unblocking the calendar chain fastest with least risk; it is a good
 safety invariant but leaves governance permanently un-generated. Either way, sequence: resolver
 completeness → governance mechanism → calendar apply, each verified live before the next.
+
+## Admin-role migration plan (APPROVED 2026-09-02, autonomous)
+
+Assignment-preserving canonical admin-role migration. **DB:** `loom_app_access` via
+`kubectl exec -i -n loom postgres-0 -- psql -U loom -d loom_app_access`, `app_id=loom_communities`.
+**Verified facts:** no triggers; admin roles referenced ONLY by `group_membership_role` (FK ON DELETE
+CASCADE); app-access is stateless. Columns: `app_role(app_id,role_id,group_id,display_name,description,created_at)`,
+`role_permission(app_id,role_id,permission_id)`, `group_membership_role(app_id,group_id,fan_id,role_id)`.
+
+**Per-community transaction** (`BEGIN; … COMMIT;`):
+1. `INSERT INTO app_role SELECT app_id,'<canon>',group_id,display_name,description,now() FROM app_role WHERE app_id='loom_communities' AND role_id='<old>';`
+2. `INSERT INTO role_permission SELECT app_id,'<canon>',permission_id FROM role_permission WHERE app_id='loom_communities' AND role_id='<old>';`
+3. `UPDATE group_membership_role SET role_id='<canon>' WHERE app_id='loom_communities' AND role_id='<old>';`
+4. `DELETE FROM app_role WHERE app_id='loom_communities' AND role_id='<old>';` (cascades old grants; membership already re-pointed)
+
+**Verify each:** canonical role exists with same grant count + same fan; old id absent (control query).
+**Canary FIRST:** ad-free-community, verify, then the rest.
+
+**Mappings (old → canon):** ad-off-admin→ad-free-community-admin; hoa-admin→cedar-commons-hoa-admin;
+chess-admin→chess-club-admin; portability-admin→data-portability-community-admin; garden-admin→garden-club-admin;
+social-admin→member-social-space-admin; book-admin→neighborhood-book-club-admin; soccer-admin→riverside-youth-soccer-admin;
+tabletop-admin→tabletop-club-admin; masjid-admin→masjid-nur-admin (preserve all 28 grants).
+**SKIP** camera-club-admin (already canonical).
+
+**ANOMALIES — REPORT for user decision, do NOT auto-delete:** (1) `masjid-nur-admin` carries 23 extra archetype
+grants that the next install's `setRolePermissions` will wipe to the 5 `community.*` — trim now or promote to a real
+role? (2) underscored duplicate group `loom_communities_cedar_commons_hoa` (roles `cedar_commons_hoa_admin` +
+`cedar_commons_hoa_member`, members `fan_alice`/`fan_bob`, created 2026-08-13) — a full duplicate install of Cedar
+Commons HOA beside the hyphenated real one; delete entirely?
