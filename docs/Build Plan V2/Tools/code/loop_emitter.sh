@@ -104,6 +104,30 @@ warn_once() {
   emit "LOOP-SKIP $2 :: $3"
 }
 
+
+# ---------------------------------------------------------------------------
+# Singleton guard. Multiple Monitors serving the same registry steal each
+# other's ticks: whichever fires first stamps last_fired, so the others stay
+# quiet, and an orphan (one surviving a dead session, or a harness that restarts
+# a persistent monitor under a fresh task id) silently consumes the live
+# channel's cadence. See the orphaned-emitter note in CLAUDE.md. One lock means
+# exactly one emitter is ever live, regardless of how many are launched -- the
+# losers exit immediately rather than fight over the registry.
+LOCK_DIR="$REG_DIR/.emitter.lock"
+if mkdir "$LOCK_DIR" 2>/dev/null; then
+  printf '%s\n' "$$" > "$LOCK_DIR/pid"
+  trap 'rm -rf "$LOCK_DIR"' EXIT INT TERM
+else
+  holder="$(cat "$LOCK_DIR/pid" 2>/dev/null || true)"
+  if [ -n "$holder" ] && kill -0 "$holder" 2>/dev/null; then
+    emit "EMITTER-SINGLETON :: another emitter (pid $holder) already serves $REG_DIR; exiting"
+    exit 0
+  fi
+  # Stale lock (previous holder gone): take it over.
+  printf '%s\n' "$$" > "$LOCK_DIR/pid"
+  trap 'rm -rf "$LOCK_DIR"' EXIT INT TERM
+fi
+
 while true; do
   now="$(date +%s)"
 
