@@ -1,12 +1,14 @@
 /// Emits the machine-readable permissions vocabulary consumed by both the
 /// community-package validator (Dart) and the App Access installer (Java).
 ///
-/// Derivation runs in the App Access service, but its rules are defined once,
-/// here, in `ArchetypeResolver`. Without a shared artifact the Java side would
-/// re-implement the archetype classification and all ~70 vocabulary entries by
-/// hand — and this repo has already been broken twice by the same rules living
-/// in two places and drifting apart. A derivation that disagreed with the
-/// validator would grant permissions for a package the validator had passed.
+/// Derivation runs in the App Access service, but the archetype rules are
+/// defined once here in `ArchetypeResolver`; the per-community governance
+/// family below is intentionally not archetype-derived. Without a shared
+/// artifact the Java side would re-implement the archetype classification and
+/// all vocabulary entries by hand — and this repo has already been broken
+/// twice by the same rules living in two places and drifting apart. A
+/// derivation that disagreed with the validator would grant permissions for a
+/// package the validator had passed.
 ///
 /// Only the *data* is shared. The resolution algorithm is small and is
 /// implemented on each side; a conformance test over the real fixtures is what
@@ -29,6 +31,19 @@ import 'package:loom_workflow_engine/src/spec_version.dart';
 const outputPath = 'docs/references/generated/permissions-vocabulary.json';
 
 Map<String, Object?> buildVocabulary() {
+  const governanceActions = [
+    'view',
+    'invite',
+    'manage_members',
+    'manage_roles',
+    'manage_settings',
+  ];
+  const governancePermissionPrefix = 'community';
+  final governancePermissions = [
+    for (final action in governanceActions)
+      '$governancePermissionPrefix.$action',
+  ];
+
   final bespoke = <String, Object?>{};
   for (final family
       in (ArchetypeResolver.bespokeVocabularies.keys.toList()..sort())) {
@@ -92,7 +107,8 @@ Map<String, Object?> buildVocabulary() {
   return {
     '_comment': [
       'GENERATED — do not edit by hand.',
-      'Source: app/packages/core/loom_workflow_engine/lib/src/archetypes/archetype_resolver.dart',
+      'Source: ArchetypeResolver plus the governance declaration in '
+          'app/packages/tooling/loom_ux_judges/bin/generate_permissions_vocabulary.dart',
       'Regenerate: dart run bin/generate_permissions_vocabulary.dart',
       '',
       'Consumed by the community-package validator (Dart) and the App Access',
@@ -112,6 +128,16 @@ Map<String, Object?> buildVocabulary() {
     },
     'bespokeArchetypes': bespoke,
     'genericArchetypes': generic,
+    'governance': {
+      'permissionPrefix': governancePermissionPrefix,
+      'actions': governanceActions,
+      'permissions': governancePermissions,
+      'adminRole': {
+        'isSystemDefault': true,
+        'idTemplate': '<communityHandle>-admin',
+        'grantedPermissions': governancePermissions,
+      },
+    },
     'genericDerivation': {
       '_comment':
           'permissions.md §5. Generic families declare no action; it is derived '

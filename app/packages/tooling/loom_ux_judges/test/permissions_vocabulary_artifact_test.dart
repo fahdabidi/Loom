@@ -1,4 +1,5 @@
-/// Keeps the generated permissions vocabulary in step with `ArchetypeResolver`.
+/// Keeps the generated permissions vocabulary in step with `ArchetypeResolver`
+/// and its non-archetype governance declaration.
 ///
 /// The artifact is what the App Access installer reads, so a stale copy means
 /// the service derives permissions from one vocabulary while the validator
@@ -90,6 +91,20 @@ void main() {
             all.addAll(permissions);
           }
         }
+        final governance = artifact['governance'] as Map<String, Object?>;
+        final governancePrefix = governance['permissionPrefix'] as String;
+        final governanceActions = (governance['actions'] as List)
+            .cast<String>();
+        final governancePermissions = (governance['permissions'] as List)
+            .cast<String>();
+        expect(
+          governancePermissions,
+          equals([
+            for (final action in governanceActions) '$governancePrefix.$action',
+          ]),
+          reason: 'Governance permission ids do not match its actions.',
+        );
+        all.addAll(governancePermissions);
         expect(
           all.length,
           equals(all.toSet().length),
@@ -100,6 +115,35 @@ void main() {
         expect(all, isNotEmpty);
       },
     );
+
+    test('declares community governance and its system-default admin role', () {
+      final governance = artifact['governance'] as Map<String, Object?>;
+      const expectedPermissions = [
+        'community.view',
+        'community.invite',
+        'community.manage_members',
+        'community.manage_roles',
+        'community.manage_settings',
+      ];
+
+      expect(governance['permissionPrefix'], 'community');
+      expect(
+        governance['actions'],
+        equals([
+          'view',
+          'invite',
+          'manage_members',
+          'manage_roles',
+          'manage_settings',
+        ]),
+      );
+      expect(governance['permissions'], equals(expectedPermissions));
+
+      final adminRole = governance['adminRole'] as Map<String, Object?>;
+      expect(adminRole['isSystemDefault'], isTrue);
+      expect(adminRole['idTemplate'], '<communityHandle>-admin');
+      expect(adminRole['grantedPermissions'], equals(expectedPermissions));
+    });
 
     test(
       'the four creatable bespoke archetypes expose their create permissions',

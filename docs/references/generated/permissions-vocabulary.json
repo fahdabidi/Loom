@@ -1,7 +1,7 @@
 {
   "_comment": [
     "GENERATED — do not edit by hand.",
-    "Source: app/packages/core/loom_workflow_engine/lib/src/archetypes/archetype_resolver.dart",
+    "Source: ArchetypeResolver plus the governance declaration in app/packages/tooling/loom_ux_judges/bin/generate_permissions_vocabulary.dart",
     "Regenerate: dart run bin/generate_permissions_vocabulary.dart",
     "",
     "Consumed by the community-package validator (Dart) and the App Access",
@@ -474,6 +474,34 @@
         "table.create",
         "table.terminate",
         "table.view"
+      ]
+    }
+  },
+  "governance": {
+    "permissionPrefix": "community",
+    "actions": [
+      "view",
+      "invite",
+      "manage_members",
+      "manage_roles",
+      "manage_settings"
+    ],
+    "permissions": [
+      "community.view",
+      "community.invite",
+      "community.manage_members",
+      "community.manage_roles",
+      "community.manage_settings"
+    ],
+    "adminRole": {
+      "isSystemDefault": true,
+      "idTemplate": "<communityHandle>-admin",
+      "grantedPermissions": [
+        "community.view",
+        "community.invite",
+        "community.manage_members",
+        "community.manage_roles",
+        "community.manage_settings"
       ]
     }
   },
