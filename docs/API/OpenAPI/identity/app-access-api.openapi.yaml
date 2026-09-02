@@ -1205,6 +1205,14 @@ components:
         communityHandle:
           type: string
           description: Becomes the group id, as `loom_communities_<communityHandle>`.
+        communityId:
+          type: string
+          description: >-
+            The package's canonical `communityId` (e.g. `community_chess_club`), stored on the created
+            group as `externalRef` ({resourceType: "community", resourceId: communityId}) so a group can be
+            mapped to its community package without deriving the key from the group id. The two spellings
+            differ (group `chess-club` vs community `community_chess_club`) and deriving one from the other
+            is unsafe. Optional for backward compatibility; when omitted, no `externalRef` is set on install.
         displayName:
           type: string
         grammarVersion:
