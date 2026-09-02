@@ -467,13 +467,19 @@ Step 3d is deliberate and distinct: the three `mark-read` notification workflows
 no `responseTable` owner. They are driven by effects from other workflows, are never rendered as an
 invocable surface, and correctly derive nothing.
 
-## 7. The platform `admin` role
+## 7. The `admin` role — a system-created default per community
 
-`admin` is **not declared in community JSON**. It is an app-level template role on
-`loom_communities`, assignable in any community's group, and it is the only role present in every
-community.
+`admin` is **not declared in community JSON**, and the Skill never authors it. It is a **system
+default**: when a community is created — i.e. when its package is installed — the platform
+automatically creates the community's admin role, scoped to that community's group. It is the seed
+root the community needs to start operating, and every community gets exactly one.
 
-It holds the `community.*` permissions:
+Its id is derived from the community, as `<communityHandle>-admin` (the group is
+`loom_communities_<communityHandle>`, so Garden Club's is `garden-club-admin`). Nothing in the package
+names it; the identifier is a deterministic function of the community, so the same community always
+resolves to the same admin role.
+
+It holds the `community.*` governance permissions, and only the admin role holds them:
 
 | Permission | Capability |
 |---|---|
@@ -483,8 +489,17 @@ It holds the `community.*` permissions:
 | `community.invite` | add a member by Fan Passport id |
 | `community.manage_settings` | community configuration |
 
-`admin` is a **platform** role and coexists with domain roles: a real person may hold
-`[admin, hoa-board]`. No fixture declares a role named `admin`, so this is purely additive.
+**Governance is generated data, owned by community creation — not archetype-derived and not
+hand-granted.** `community.*` is emitted into the permissions vocabulary as its own family (it is not
+tied to any workflow archetype), and the create-a-community step both **creates** the `<handle>-admin`
+role and **grants** it those five. Because creation owns this role, re-running it is safe: it re-creates
+or preserves the admin role rather than treating it as undeclared, and it grants `community.*` rather
+than stripping them. This is the mechanism that lets the provisioning tooling reproduce the full
+authorization state without a manual step.
+
+`admin` coexists with the domain roles a package does declare: a real person may hold
+`[garden-club-admin, garden-coordinator]`. It is additive — a package's own `roles[]` is unchanged by
+its existence.
 
 User management is an App Shell experience gated on `community.manage_members`, never a workflow.
 Adding a member is by **Fan Passport id only** — there is deliberately no user search, so an admin
