@@ -2152,3 +2152,25 @@ group→community from the response `externalRef`, config map as fallback) from 
 `0.3.8` + manifest bump + drift audit; backfill the 10 real groups; verify end-to-end.
 
 **THREAD 3 — persistence.** HOLD — the engine-server-authoritative rewrite; scope-check with the user before dispatching.
+
+## Autonomous batch plan v2 (APPROVED 2026-09-02) — 3 threads in priority order
+
+**THREAD A — skill + validator correctness enhancements (make every future regen correct at the source).**
+1. **Skill guidance** (edit `docs/references/reference/solved-patterns.md` directly + mirror to
+   `.agents/skills/loom-calendar-experience-authoring/chatgpt-upload/`): (a) **archetype-selection** — a
+   requirement shape maps to exactly one correct archetype family (cite the Cedar facility-reservation case);
+   (b) **KEEP-BUT-WARN** — a doc-promised affordance whose backing API is not built must be **KEPT** and marked
+   `not_implemented` in traceability, **not dropped** (refines the mute case, which the skill wrongly dropped).
+2. **Validator warning** — register a new finding code in `docs/references/guide/05-validation.md` + its
+   skill-bundle mirror FIRST (conformance test runs both ways), THEN dispatch the rule (loom_ux_judges) to WARN
+   on a dead affordance (a `to:null` transition with no effect / no backing mechanism).
+3. **deriver_test** — update the stale Cedar facility-reservation assertion (shipped `calendar` vs test
+   `event-rsvp`) to match the corpus, or fix per the doc.
+
+**THREAD B — adopt the divergent regens (after A).** Pure add-only (ad-free [proven 0-regression], cedar,
+data-portability, garden-club): re-dispatch skill → validate on :8787 → adopt both mirrors → demo suite (160) →
+if clean, commit + chmod 444. masjid-nur + neighborhood-book-club (dropped mute): **RE-REGENERATE with the
+A-fixed skill** so mute is kept+warned, then adopt. member-social-space stays post-production.
+
+**THREAD C — verify persistence wiring (after B).** Prove the remote engine's writes reach workflow-service and
+sync via the change feed end-to-end on the running stack; confirm production activates the remote path.
