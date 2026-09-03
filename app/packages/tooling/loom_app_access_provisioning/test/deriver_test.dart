@@ -59,7 +59,7 @@ void main() {
     final reservation = cedar.request.workflows.singleWhere(
       (workflow) => workflow.workflowType == 'hoa-facility-reservation',
     );
-    expect(reservation.cardSurfaceFamily, 'event-rsvp');
+    expect(reservation.cardSurfaceFamily, 'calendar');
     expect(reservation.createRoleIds, ['hoa-board', 'hoa-member']);
   });
 
