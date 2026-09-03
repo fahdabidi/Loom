@@ -956,3 +956,43 @@ Ask: **could the platform write this field if the field were renamed?**
 
 A platform-written field with **no** `platformSource` is therefore usually correct, not incomplete.
 `platform_writable_field_missing_platform_source` fires only where a dispatcher is genuinely owed.
+
+## 22. Choose the archetype by interaction shape, not a keyword — a scheduled booking is `calendar`, not `event-rsvp`
+
+**Requirement shape:** a workflow that books a resource for a time — a facility/room reservation, a court
+booking, an equipment slot. The words "reserve"/"book"/"sign up" tempt `event-rsvp`.
+
+**Plausible-but-wrong shape:** model it as `event-rsvp` because members "sign up" for a slot. `event-rsvp` is
+for members answering **yes/no to an organizer's single event** (going/declined lists), not a bookable
+resource schedule.
+
+**Verified-correct shape:** `calendar` — a scheduled booking on a shared calendar (a resource booked for a
+date/time; states scheduled → cancelled/completed). Pick the archetype whose **states + interactions** match
+the requirement, never a keyword: "book a resource for a time" = `calendar`; "members RSVP yes/no to an
+organizer's event" = `event-rsvp`; "a queue of items awaiting a decision" = `approvalQueueItem`. When two look
+close, list each candidate's states and check them against the doc's stated states in Step 3, before the
+archetype choice locks anything in.
+
+**Found in:** Cedar Commons HOA facility reservation (2026-09-02) — ships and regenerates as `calendar`; a
+locked `deriver_test` asserting `event-rsvp` was stale corpus drift, not a skill error.
+
+## 23. A doc-promised affordance whose backing service does not exist is KEPT and marked `not_implemented` — never faked, never silently dropped
+
+**Requirement shape:** the product doc promises a member action whose real mechanism needs a platform service
+that is not built yet — e.g. **Mute thread** (needs per-member mute state / a messaging API), a push toggle, a
+server-minted receipt.
+
+**Plausible-but-wrong shape (two ways, both wrong):** (a) ship a live-looking button as a **no-op** — a
+`to:null` transition with no effect — a dead affordance that lies to the member; or (b) **drop** the affordance
+entirely because there is no mechanism, silently removing a doc-promised experience.
+
+**Verified-correct shape:** **KEEP** the affordance (the doc promised it) and mark it honestly — declare the
+transition, add a `// NEEDS IMPLEMENTATION (platform service): <what is missing>` comment, and record it
+`not_implemented` in the Step 9.5 traceability with `reasoning` citing the missing service. It renders as a
+visible placeholder; the gap shows in traceability and (once the rule lands) as a validator **warning** —
+never a silent hole. Never resolve a missing-backend affordance by faking a value OR by deleting the
+requirement; both hide an unmet promise.
+
+**Found in:** Masjid Nur / Neighborhood Book Club `mute` (2026-09-02) — a regen dropped the button because
+per-member mute state has no backing API; correct handling is keep-and-warn, with the messaging API tracked as
+a post-production gap (`docs/Build Plan V2/Tickets/GAP-messaging-api.md`).
