@@ -272,11 +272,7 @@
                             "capacity": "{capacity}", "reminderOffsetHours": "{reminderOffsetHours}",
                             "seriesId": "$newSeriesId" },
                 "recurrenceRule": { "freq": "{input.freq}", "count": "{input.count}" } }
-            ] },
-          { "id": "set-meeting-reminder", "action": "set_reminder", "label": "Add reminder",
-            "icon": "notifications_active", "tone": "secondary",
-            "from": ["open"], "to": null,
-            "guard": { "allowedRoleIds": ["book-member", "book-organizer"] } }
+            ] }
         ],
         "renderBindings": [
           { "states": ["open"], "audience": "any", "tabId": "calendar",
@@ -368,6 +364,22 @@
             "icon": "undo", "tone": "secondary",
             "from": ["going", "maybe", "waitlisted"], "to": "pending",
             "guard": { "allowedRoleIds": ["book-member", "book-organizer"] } },
+          // A response-row reminder is a member-owned choice, distinct from the parent event's
+          // workflow-level reminder block. The effect materialises a real notification for this fan.
+          { "id": "set-personal-reminder", "action": "set_reminder", "label": "Add my reminder",
+            "icon": "notifications_active", "tone": "secondary",
+            "from": ["pending", "going", "maybe", "declined", "waitlisted"], "to": null,
+            "guard": { "actorEqualsField": { "key": "fanId" } },
+            "inputs": {
+              "dueAt": { "type": "text", "required": true },
+              "title": { "type": "text", "required": true },
+              "body": { "type": "text", "required": true }
+            },
+            "effects": [
+              { "op": "createInstance", "workflowType": "book-notification",
+                "fields": { "recipientFanId": "{fanId}", "title": "{input.title}",
+                  "body": "{input.body}", "dueAt": "{input.dueAt}", "createdAt": "$timestamp" } }
+            ] },
           { "id": "event-cancelled", "action": "cancel", "label": "Meeting cancelled", "tone": "destructive",
             "from": ["pending", "going", "maybe", "declined", "waitlisted"], "to": "cancelled",
             "guard": { "allowedRoleIds": ["book-organizer"] } }
@@ -421,35 +433,60 @@
         "transitions": [
           { "id": "record-open", "action": "open", "label": "Record open", "icon": "open_in_new", "tone": "secondary",
             "from": ["active"], "to": null,
-            "guard": { "allowedRoleIds": ["book-member", "book-organizer"] } },
+            "guard": { "allowedRoleIds": ["book-member", "book-organizer"] },
+            "effects": [ { "op": "append", "key": "engagementAudit",
+              "value": { "event": "opened", "fanId": "$actor", "at": "$timestamp" } } ] },
+          { "id": "record-download", "action": "download", "label": "Download", "icon": "download", "tone": "secondary",
+            "from": ["active"], "to": null,
+            "guard": { "allowedRoleIds": ["book-member", "book-organizer"] },
+            "effects": [ { "op": "append", "key": "engagementAudit",
+              "value": { "event": "downloaded", "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "acknowledge-material", "action": "acknowledge", "label": "Acknowledge", "icon": "check_circle_outline", "tone": "primary",
             "from": ["active"], "to": null,
-            "guard": { "allowedRoleIds": ["book-member"] } },
+            "guard": { "allowedRoleIds": ["book-member"] },
+            "effects": [ { "op": "append", "key": "engagementAudit",
+              "value": { "event": "acknowledged", "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "mark-unread", "action": "mark_unread", "label": "Mark unread", "icon": "mark_email_unread", "tone": "secondary",
             "from": ["active"], "to": null,
-            "guard": { "allowedRoleIds": ["book-member"] } },
+            "guard": { "allowedRoleIds": ["book-member"] },
+            "effects": [ { "op": "append", "key": "engagementAudit",
+              "value": { "event": "marked-unread", "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "save-material", "action": "save", "label": "Save", "icon": "bookmark_outline", "tone": "secondary",
             "from": ["active"], "to": null,
-            "guard": { "allowedRoleIds": ["book-member"] } },
+            "guard": { "allowedRoleIds": ["book-member"] },
+            "effects": [ { "op": "append", "key": "engagementAudit",
+              "value": { "event": "saved", "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "unsave-material", "action": "unsave", "label": "Remove saved material", "icon": "bookmark_remove", "tone": "secondary",
             "from": ["active"], "to": null,
-            "guard": { "allowedRoleIds": ["book-member"] } },
+            "guard": { "allowedRoleIds": ["book-member"] },
+            "effects": [ { "op": "append", "key": "engagementAudit",
+              "value": { "event": "unsaved", "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "request-access", "action": "request_access", "label": "Request access", "icon": "lock_outline", "tone": "secondary",
             "from": ["active"], "to": null,
             "guard": { "allowedRoleIds": ["book-member"],
-              "instanceDataEquals": { "key": "accessType", "value": "private" } } },
+              "instanceDataEquals": { "key": "accessType", "value": "private" } },
+            "effects": [ { "op": "append", "key": "engagementAudit",
+              "value": { "event": "access-requested", "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "withdraw-access-request", "action": "withdraw_access_request", "label": "Withdraw access request", "icon": "undo", "tone": "secondary",
             "from": ["active"], "to": null,
             "guard": { "allowedRoleIds": ["book-member"],
-              "instanceDataEquals": { "key": "accessType", "value": "private" } } },
+              "instanceDataEquals": { "key": "accessType", "value": "private" } },
+            "effects": [ { "op": "append", "key": "engagementAudit",
+              "value": { "event": "access-request-withdrawn", "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "approve-access", "action": "grant_access", "label": "Approve access", "icon": "how_to_reg", "tone": "primary",
             "from": ["active"], "to": null,
             "guard": { "allowedRoleIds": ["book-organizer"] },
-            "inputs": { "member": { "type": "text", "required": true } } },
+            "inputs": { "member": { "type": "text", "required": true } },
+            "effects": [ { "op": "append", "key": "engagementAudit",
+              "value": { "event": "access-approved", "member": "{input.member}",
+                "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "share-within-club", "action": "share", "label": "Share within club", "icon": "group_add", "tone": "secondary",
             "from": ["active"], "to": null,
             "guard": { "allowedRoleIds": ["book-organizer"] },
-            "inputs": { "member": { "type": "text", "required": true } } },
+            "inputs": { "member": { "type": "text", "required": true } },
+            "effects": [ { "op": "append", "key": "engagementAudit",
+              "value": { "event": "shared", "member": "{input.member}",
+                "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "archive-material", "action": "archive", "label": "Archive", "icon": "archive_outlined", "tone": "destructive",
             "from": ["active"], "to": "archived",
             "guard": { "allowedRoleIds": ["book-organizer"] } }
@@ -480,7 +517,10 @@
             "displayIcon": "visibility_outlined", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "materialUrl": { "type": "url", "required": true, "writableBy": "formEntry", "openMode": "choice",
             "displayIcon": "description", "labelTemplate": "Open {value}",
-            "displayContexts": ["tile", "detail"] }
+            "displayContexts": ["tile", "detail"] },
+          "engagementAudit": { "type": "list", "writableBy": "effect",
+            "displayIcon": "fact_check_outlined", "labelTemplate": "{value.length} engagement events",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] }
         }
       },
 
@@ -504,6 +544,24 @@
             "effects": [
               { "op": "set", "key": "ownerFanId", "value": "$actor" },
               { "op": "set", "key": "availabilityState", "value": "available" }
+            ] },
+          { "id": "pause-listing", "action": "pause_listing", "label": "Pause listing", "icon": "pause_circle_outline", "tone": "secondary",
+            "from": ["published"], "to": null,
+            "guard": { "actorEqualsField": { "key": "ownerFanId" },
+                       "instanceDataEquals": { "key": "availabilityState", "value": "available" } },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "paused" },
+              { "op": "append", "key": "libraryActivityAudit",
+                "value": { "event": "listing-paused", "fanId": "$actor", "at": "$timestamp" } }
+            ] },
+          { "id": "resume-listing", "action": "list_item", "label": "Resume listing", "icon": "play_circle_outline", "tone": "secondary",
+            "from": ["published"], "to": null,
+            "guard": { "actorEqualsField": { "key": "ownerFanId" },
+                       "instanceDataEquals": { "key": "availabilityState", "value": "paused" } },
+            "effects": [
+              { "op": "set", "key": "availabilityState", "value": "available" },
+              { "op": "append", "key": "libraryActivityAudit",
+                "value": { "event": "listing-resumed", "fanId": "$actor", "at": "$timestamp" } }
             ] },
           { "id": "request-loan", "action": "request", "label": "Request loan", "icon": "arrow_forward", "tone": "primary",
             "from": ["published"], "to": null,
@@ -551,10 +609,14 @@
           { "id": "join-queue", "action": "join_queue", "label": "Join waitlist", "icon": "groups", "tone": "secondary",
             "from": ["published"], "to": null,
             "guard": { "allowedRoleIds": ["book-member"],
-                       "formula": "if(ownerFanId == $actor, false, if(availabilityState == 'available', false, true))" } },
+                       "formula": "if(ownerFanId == $actor, false, if(availabilityState == 'available', false, true))" },
+            "effects": [ { "op": "append", "key": "libraryActivityAudit",
+              "value": { "event": "joined-queue", "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "leave-queue", "action": "leave_queue", "label": "Leave queue", "icon": "remove_circle_outline", "tone": "secondary",
             "from": ["published"], "to": null,
-            "guard": { "allowedRoleIds": ["book-member"] } },
+            "guard": { "allowedRoleIds": ["book-member"] },
+            "effects": [ { "op": "append", "key": "libraryActivityAudit",
+              "value": { "event": "left-queue", "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "return-item", "action": "return", "label": "Return item", "icon": "assignment_return", "tone": "primary",
             "from": ["published"], "to": null,
             "guard": { "allowedRoleIds": ["book-member", "book-organizer"],
@@ -622,6 +684,9 @@
           "lastReturnedAt": { "type": "date?", "writableBy": "effect", "sortable": true,
             "displayIcon": "assignment_return", "labelTemplate": "Returned {value}",
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "libraryActivityAudit": { "type": "list", "writableBy": "effect",
+            "displayIcon": "history", "labelTemplate": "{value.length} queue events",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "isOverdue": { "type": "bool", "formula": "if(dueDate == null, false, isPast(dueDate))",
             "displayIcon": "warning_amber_outlined", "labelTemplate": "Overdue", "displayContexts": ["tile", "detail"] },
           "isAvailable": { "type": "bool", "formula": "availabilityState == 'available'" }
@@ -644,15 +709,23 @@
               { "op": "append", "key": "messages",
                 "value": { "senderFanId": "$actor", "body": "{input.body}", "timestamp": "$timestamp" } }
             ] },
+          // NEEDS IMPLEMENTATION (platform service): per-member thread read position belongs to the
+          // messaging API; keeping the promised control visible avoids silently dropping it.
           { "id": "mark-thread-read", "label": "Mark read", "icon": "done_all", "tone": "secondary",
             "from": ["open"], "to": null,
             "guard": { "allowedRoleIds": ["book-member", "book-organizer"] } },
+          // NEEDS IMPLEMENTATION (platform service): per-member thread unread state belongs to the
+          // messaging API; the workflow cannot honestly persist it today.
           { "id": "mark-thread-unread", "label": "Mark unread", "icon": "mark_email_unread", "tone": "secondary",
             "from": ["open"], "to": null,
             "guard": { "allowedRoleIds": ["book-member", "book-organizer"] } },
+          // NEEDS IMPLEMENTATION (platform service): per-member thread mute state belongs to the
+          // messaging API; muting must not suppress the inbox record.
           { "id": "mute-thread", "label": "Mute", "icon": "notifications_off", "tone": "secondary",
             "from": ["open"], "to": null,
             "guard": { "allowedRoleIds": ["book-member", "book-organizer"] } },
+          // NEEDS IMPLEMENTATION (platform service): restoring per-member thread interruption state
+          // belongs to the messaging API and cannot be represented as shared workflow data.
           { "id": "unmute-thread", "label": "Unmute", "icon": "notifications_active", "tone": "secondary",
             "from": ["open"], "to": null,
             "guard": { "allowedRoleIds": ["book-member", "book-organizer"] } },
@@ -947,7 +1020,7 @@
         "instanceDataSchema": {
           "scope": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayContexts": [] },
-          "ownerFanId": { "type": "fanId", "required": true, "writableBy": "formEntry",
+          "ownerFanId": { "type": "fanId", "required": true, "writableBy": "platform",
             "displayContexts": [] },
           "scopeDisplay": { "type": "text", "formula": "if($viewer == ownerFanId, scope, 'Protected export scope')",
             "displayIcon": "filter_alt_outlined", "labelTemplate": "Scope: {value}",
