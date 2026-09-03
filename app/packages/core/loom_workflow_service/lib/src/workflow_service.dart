@@ -16,6 +16,7 @@ import 'document_access.dart';
 import 'document_object_store.dart';
 import 'document_repository.dart';
 import 'export_bundle_repository.dart';
+import 'idempotency.dart';
 import 'identity.dart';
 import 'item_queue_repository.dart';
 import 'queue_offer_hold_windows.dart';
@@ -2168,13 +2169,23 @@ class WorkflowService {
       bytes: payload.bytes,
       contentType: 'application/octet-stream',
     );
-    await context.repository.insert(bundle, idempotencyKey: idempotencyKey);
+    final bundleWrite = await context.repository.insertIdempotently(
+      bundle,
+      idempotencyKey: idempotencyKey,
+    );
+    if (!bundleWrite.created) {
+      return _exportBundleResponse(
+        bundleWrite.record,
+        context.correlationId,
+        200,
+      );
+    }
 
     // This is platform bookkeeping, not a member field edit. The checksum is
     // intentionally written through the same merge path as document URLs.
     final updates = <String, dynamic>{
-      'checksum': bundle.checksum,
-      'checksumAlgorithm': bundle.checksumAlgorithm,
+      'checksum': bundleWrite.record.checksum,
+      'checksumAlgorithm': bundleWrite.record.checksumAlgorithm,
     };
     if (await _declaresField(
       communityId,
@@ -2188,7 +2199,11 @@ class WorkflowService {
       fieldUpdates: updates,
     );
 
-    return _exportBundleResponse(bundle, context.correlationId, 201);
+    return _exportBundleResponse(
+      bundleWrite.record,
+      context.correlationId,
+      201,
+    );
   });
 
   Future<Response> _getExportBundle(
@@ -2780,13 +2795,23 @@ class WorkflowService {
       bytes: bytes,
       contentType: document.contentType,
     );
-    await context.repository.insert(
-      document,
-      idempotencyKey:
-          (idempotencyKey != null && idempotencyKey.trim().isNotEmpty)
-          ? idempotencyKey
-          : null,
-    );
+    late final IdempotentWrite<StoredDocument> documentWrite;
+    if (idempotencyKey != null && idempotencyKey.trim().isNotEmpty) {
+      documentWrite = await context.repository.insertIdempotently(
+        document,
+        idempotencyKey: idempotencyKey,
+      );
+    } else {
+      await context.repository.insert(document);
+      documentWrite = IdempotentWrite(record: document, created: true);
+    }
+    if (!documentWrite.created) {
+      return _documentResponse(
+        documentWrite.record,
+        context.correlationId,
+        200,
+      );
+    }
 
     // Publish the reference into the instance field the upload named.
     //
@@ -2804,10 +2829,12 @@ class WorkflowService {
     // transition had to be available to this fan.
     await _database.mergeInstanceFields(
       instanceId: instanceId,
-      fieldUpdates: <String, dynamic>{fieldName: document.contentUrl},
+      fieldUpdates: <String, dynamic>{
+        fieldName: documentWrite.record.contentUrl,
+      },
     );
 
-    return _documentResponse(document, context.correlationId, 201);
+    return _documentResponse(documentWrite.record, context.correlationId, 201);
   });
 
   Future<Response> _listInstanceDocuments(
@@ -3091,11 +3118,11 @@ class WorkflowService {
       bytes: bytes,
       contentType: revision.contentType,
     );
-    await context.repository.addRevision(
+    final revisionWrite = await context.repository.addRevisionIdempotently(
       revision,
       idempotencyKey: idempotencyKey,
     );
-    return _documentResponse(revision, context.correlationId, 201);
+    return _documentResponse(revisionWrite.record, context.correlationId, 201);
   });
 
   Future<Response> _getDocumentMemberState(

@@ -1,6 +1,7 @@
 import 'package:postgres/postgres.dart' as pg;
 
 import 'document_object_store.dart';
+import 'idempotency.dart';
 import 'postgres_connection.dart';
 
 /// Metadata for one immutable export payload.
@@ -49,6 +50,13 @@ class StoredExportBundle {
 /// Persistent metadata for stored export bundles.
 abstract interface class ExportBundleRepository {
   Future<void> insert(
+    StoredExportBundle bundle, {
+    required String idempotencyKey,
+  });
+
+  /// Atomically persists [bundle] or returns the prior bundle associated with
+  /// [idempotencyKey].
+  Future<IdempotentWrite<StoredExportBundle>> insertIdempotently(
     StoredExportBundle bundle, {
     required String idempotencyKey,
   });
@@ -132,6 +140,57 @@ class PostgresExportBundleRepository implements ExportBundleRepository {
   });
 
   @override
+  Future<IdempotentWrite<StoredExportBundle>> insertIdempotently(
+    StoredExportBundle bundle, {
+    required String idempotencyKey,
+  }) => runIdempotent<StoredExportBundle>(
+    executor: _transactionExecutor,
+    communityId: bundle.communityId,
+    lookup: () => findByIdempotencyKey(
+      communityId: bundle.communityId,
+      idempotencyKey: idempotencyKey,
+    ),
+    create: () async {
+      final rows = await _session.execute(
+        pg.Sql.named('''
+          INSERT INTO workflow_export_bundles (
+            export_id, community_id, instance_id, checksum, checksum_algorithm,
+            byte_size, record_count, redacted, generated_at, object_key,
+            idempotency_key
+          ) VALUES (
+            @exportId, @communityId, @instanceId, @checksum, @checksumAlgorithm,
+            @byteSize, @recordCount, @redacted, @generatedAt, @objectKey,
+            @idempotencyKey
+          ) ON CONFLICT (community_id, idempotency_key) DO NOTHING
+          RETURNING $_columns
+        '''),
+        parameters: <String, Object?>{
+          'exportId': bundle.exportId,
+          'communityId': bundle.communityId,
+          'instanceId': bundle.instanceId,
+          'checksum': bundle.checksum,
+          'checksumAlgorithm': bundle.checksumAlgorithm,
+          'byteSize': bundle.byteSize,
+          'recordCount': bundle.recordCount,
+          'redacted': bundle.redacted,
+          'generatedAt': bundle.generatedAt.millisecondsSinceEpoch,
+          'objectKey': bundle.objectKey,
+          'idempotencyKey': idempotencyKey,
+        },
+      );
+      return rows.isEmpty ? null : _fromRow(rows.single.toColumnMap());
+    },
+    reload: () async =>
+        (await findByIdempotencyKey(
+          communityId: bundle.communityId,
+          idempotencyKey: idempotencyKey,
+        )) ??
+        (throw StateError(
+          'Export bundle disappeared after an idempotency conflict.',
+        )),
+  );
+
+  @override
   Future<StoredExportBundle?> findById({
     required String communityId,
     required String exportId,
@@ -168,17 +227,21 @@ class PostgresExportBundleRepository implements ExportBundleRepository {
   });
 
   Future<T> _withCommunity<T>(String communityId, Future<T> Function() action) {
+    return runWithPostgresCommunity<T>(
+      executor: _transactionExecutor,
+      communityId: communityId,
+      action: action,
+    );
+  }
+
+  pg.SessionExecutor get _transactionExecutor {
     final executor = _connection as pg.SessionExecutor?;
     if (executor == null) {
       throw StateError(
         'PostgresExportBundleRepository requires a transaction-capable session.',
       );
     }
-    return runWithPostgresCommunity<T>(
-      executor: executor,
-      communityId: communityId,
-      action: action,
-    );
+    return executor;
   }
 
   static const _columns =
@@ -216,6 +279,24 @@ class InMemoryExportBundleRepository implements ExportBundleRepository {
   }) async {
     _bundles['${bundle.communityId}/${bundle.exportId}'] = bundle;
     _idempotencyKeys['${bundle.communityId}/$idempotencyKey'] = bundle.exportId;
+  }
+
+  @override
+  Future<IdempotentWrite<StoredExportBundle>> insertIdempotently(
+    StoredExportBundle bundle, {
+    required String idempotencyKey,
+  }) {
+    final existingExportId =
+        _idempotencyKeys['${bundle.communityId}/$idempotencyKey'];
+    final existing = existingExportId == null
+        ? null
+        : _bundles['${bundle.communityId}/$existingExportId'];
+    if (existing != null) {
+      return Future.value(IdempotentWrite(record: existing, created: false));
+    }
+    _bundles['${bundle.communityId}/${bundle.exportId}'] = bundle;
+    _idempotencyKeys['${bundle.communityId}/$idempotencyKey'] = bundle.exportId;
+    return Future.value(IdempotentWrite(record: bundle, created: true));
   }
 
   @override

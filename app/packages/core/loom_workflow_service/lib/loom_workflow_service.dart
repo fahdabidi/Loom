@@ -5,6 +5,7 @@ export 'src/document_access.dart';
 export 'src/document_object_store.dart';
 export 'src/document_repository.dart';
 export 'src/export_bundle_repository.dart';
+export 'src/idempotency.dart';
 export 'src/identity.dart';
 export 'src/item_queue_repository.dart';
 export 'src/jwt_identity_extractor.dart';

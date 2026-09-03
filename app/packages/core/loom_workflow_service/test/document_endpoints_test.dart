@@ -146,6 +146,35 @@ void main() {
     },
   );
 
+  test(
+    'document create replay returns the original document with 200',
+    () async {
+      final instanceId = await _createInstance(service, _boardFan);
+      const idempotencyKey = 'same-document-intent';
+
+      final first = await _upload(
+        service,
+        _boardFan,
+        instanceId,
+        idempotencyKey: idempotencyKey,
+      );
+      final replay = await _upload(
+        service,
+        _boardFan,
+        instanceId,
+        idempotencyKey: idempotencyKey,
+      );
+
+      expect(first.statusCode, 201);
+      expect(replay.statusCode, 200);
+      final firstBody =
+          jsonDecode(await first.readAsString()) as Map<String, dynamic>;
+      final replayBody =
+          jsonDecode(await replay.readAsString()) as Map<String, dynamic>;
+      expect(replayBody['documentId'], firstBody['documentId']);
+    },
+  );
+
   test('a member without an upload transition is refused', () async {
     final instanceId = await _createInstance(service, _boardFan);
 
@@ -259,6 +288,34 @@ void main() {
       expect(await objectStore.get(retained.objectKey), _fileBytes);
     },
   );
+
+  test('document revision replay keeps its established 201 status', () async {
+    final instanceId = await _createInstance(service, _boardFan);
+    final documentId = await _uploadAndReadId(service, instanceId);
+    const idempotencyKey = 'same-revision-intent';
+
+    final first = await _revision(
+      service,
+      _boardFan,
+      documentId,
+      idempotencyKey: idempotencyKey,
+    );
+    final replay = await _revision(
+      service,
+      _boardFan,
+      documentId,
+      idempotencyKey: idempotencyKey,
+    );
+
+    expect(first.statusCode, 201);
+    expect(replay.statusCode, 201);
+    final firstBody =
+        jsonDecode(await first.readAsString()) as Map<String, dynamic>;
+    final replayBody =
+        jsonDecode(await replay.readAsString()) as Map<String, dynamic>;
+    expect(replayBody['documentId'], firstBody['documentId']);
+    expect(replayBody['version'], firstBody['version']);
+  });
 
   test('a caller-supplied document version is rejected', () async {
     final instanceId = await _createInstance(service, _boardFan);
@@ -545,6 +602,7 @@ Future<Response> _upload(
   String fanId,
   String instanceId, {
   String fieldName = 'attachmentUrl',
+  String? idempotencyKey,
 }) async {
   final head = StringBuffer()
     ..write('--$_boundary\r\n')
@@ -567,7 +625,7 @@ Future<Response> _upload(
         '$instanceId/documents',
       ),
       headers: {
-        ..._headers(fanId),
+        ..._headers(fanId, idempotencyKey: idempotencyKey),
         'content-type': 'multipart/form-data; boundary=$_boundary',
       },
       body: <int>[
@@ -595,6 +653,7 @@ Future<Response> _revision(
   String fanId,
   String documentId, {
   String? suppliedVersion,
+  String? idempotencyKey,
 }) async {
   final head = StringBuffer()
     ..write('--$_boundary\r\n')
@@ -625,7 +684,7 @@ Future<Response> _revision(
         '$documentId/revisions',
       ),
       headers: {
-        ..._headers(fanId),
+        ..._headers(fanId, idempotencyKey: idempotencyKey),
         'content-type': 'multipart/form-data; boundary=$_boundary',
       },
       body: <int>[
@@ -722,10 +781,11 @@ Future<Response> _getDocument(
 /// claim.
 int _idempotencySequence = 0;
 
-Map<String, String> _headers(String fanId) => {
+Map<String, String> _headers(String fanId, {String? idempotencyKey}) => {
   'content-type': 'application/json',
   'x-loom-correlation-id': _correlationId,
-  'idempotency-key': 'document-test-${_idempotencySequence++}',
+  'idempotency-key':
+      idempotencyKey ?? 'document-test-${_idempotencySequence++}',
   HeaderWorkflowIdentityExtractor.defaultHeaderName: fanId,
 };
 

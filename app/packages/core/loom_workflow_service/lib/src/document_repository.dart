@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:postgres/postgres.dart' as pg;
 
 import 'document_object_store.dart';
+import 'idempotency.dart';
 import 'postgres_connection.dart';
 
 /// One stored document's metadata. The bytes live in object storage.
@@ -179,6 +180,13 @@ class StoredDocumentAcknowledgement {
 abstract interface class DocumentRepository {
   Future<void> insert(StoredDocument document, {String? idempotencyKey});
 
+  /// Atomically persists [document] or returns the prior document associated
+  /// with [idempotencyKey].
+  Future<IdempotentWrite<StoredDocument>> insertIdempotently(
+    StoredDocument document, {
+    required String idempotencyKey,
+  });
+
   Future<StoredDocument?> findById({
     required String communityId,
     required String documentId,
@@ -197,6 +205,13 @@ abstract interface class DocumentRepository {
   /// Stores an immutable revision. [revision.version] is assigned by the
   /// service and must be exactly one later than the document it read.
   Future<void> addRevision(
+    StoredDocument revision, {
+    required String idempotencyKey,
+  });
+
+  /// Atomically persists [revision] or returns the revision created by the
+  /// prior request with this document-scoped idempotency key.
+  Future<IdempotentWrite<StoredDocument>> addRevisionIdempotently(
     StoredDocument revision, {
     required String idempotencyKey,
   });
@@ -388,6 +403,63 @@ class PostgresDocumentRepository implements DocumentRepository {
       });
 
   @override
+  Future<IdempotentWrite<StoredDocument>> insertIdempotently(
+    StoredDocument document, {
+    required String idempotencyKey,
+  }) => runIdempotent<StoredDocument>(
+    executor: _transactionExecutor,
+    communityId: document.communityId,
+    lookup: () => findByIdempotencyKey(
+      communityId: document.communityId,
+      idempotencyKey: idempotencyKey,
+    ),
+    create: () async {
+      final rows = await _session.execute(
+        pg.Sql.named('''
+          INSERT INTO workflow_documents (
+            document_id, community_id, instance_id, workflow_type, field_name,
+            title, filename, content_type, byte_size, owner_fan_id, object_key,
+            uploaded_at, idempotency_key
+          ) VALUES (
+            @documentId, @communityId, @instanceId, @workflowType, @fieldName,
+            @title, @filename, @contentType, @byteSize, @ownerFanId, @objectKey,
+            @uploadedAt, @idempotencyKey
+          ) ON CONFLICT (community_id, idempotency_key)
+            WHERE idempotency_key IS NOT NULL DO NOTHING
+          RETURNING $_columns
+        '''),
+        parameters: <String, Object?>{
+          'documentId': document.documentId,
+          'communityId': document.communityId,
+          'instanceId': document.instanceId,
+          'workflowType': document.workflowType,
+          'fieldName': document.fieldName,
+          'title': document.title,
+          'filename': document.filename,
+          'contentType': document.contentType,
+          'byteSize': document.byteSize,
+          'ownerFanId': document.ownerFanId,
+          'objectKey': document.objectKey,
+          'uploadedAt': document.uploadedAt.millisecondsSinceEpoch,
+          'idempotencyKey': idempotencyKey,
+        },
+      );
+      if (rows.isEmpty) return null;
+      final inserted = _fromRow(rows.single.toColumnMap());
+      await _insertRevision(inserted);
+      return inserted;
+    },
+    reload: () async =>
+        (await findByIdempotencyKey(
+          communityId: document.communityId,
+          idempotencyKey: idempotencyKey,
+        )) ??
+        (throw StateError(
+          'Document disappeared after an idempotency conflict.',
+        )),
+  );
+
+  @override
   Future<StoredDocument?> findById({
     required String communityId,
     required String documentId,
@@ -476,6 +548,49 @@ class PostgresDocumentRepository implements DocumentRepository {
       },
     );
   });
+
+  @override
+  Future<IdempotentWrite<StoredDocument>> addRevisionIdempotently(
+    StoredDocument revision, {
+    required String idempotencyKey,
+  }) => runIdempotent<StoredDocument>(
+    executor: _transactionExecutor,
+    communityId: revision.communityId,
+    lookup: () => findRevisionByIdempotencyKey(
+      communityId: revision.communityId,
+      documentId: revision.documentId,
+      idempotencyKey: idempotencyKey,
+    ),
+    create: () async {
+      final requestRows = await _session.execute(
+        pg.Sql.named('''
+          INSERT INTO workflow_document_revision_requests (
+            community_id, document_id, idempotency_key, version
+          ) VALUES (@communityId, @documentId, @idempotencyKey, @version)
+          ON CONFLICT (community_id, document_id, idempotency_key) DO NOTHING
+          RETURNING version
+        '''),
+        parameters: <String, Object?>{
+          'communityId': revision.communityId,
+          'documentId': revision.documentId,
+          'idempotencyKey': idempotencyKey,
+          'version': revision.version,
+        },
+      );
+      if (requestRows.isEmpty) return null;
+      await _insertRevision(revision);
+      return revision;
+    },
+    reload: () async =>
+        (await findRevisionByIdempotencyKey(
+          communityId: revision.communityId,
+          documentId: revision.documentId,
+          idempotencyKey: idempotencyKey,
+        )) ??
+        (throw StateError(
+          'Document revision disappeared after an idempotency conflict.',
+        )),
+  );
 
   Future<void> _insertRevision(StoredDocument revision) => _session.execute(
     pg.Sql.named('''
@@ -798,17 +913,21 @@ class PostgresDocumentRepository implements DocumentRepository {
   });
 
   Future<T> _withCommunity<T>(String communityId, Future<T> Function() action) {
+    return runWithPostgresCommunity<T>(
+      executor: _transactionExecutor,
+      communityId: communityId,
+      action: action,
+    );
+  }
+
+  pg.SessionExecutor get _transactionExecutor {
     final executor = _connection as pg.SessionExecutor?;
     if (executor == null) {
       throw StateError(
         'PostgresDocumentRepository requires a transaction-capable session.',
       );
     }
-    return runWithPostgresCommunity<T>(
-      executor: executor,
-      communityId: communityId,
-      action: action,
-    );
+    return executor;
   }
 
   static const _columns =
@@ -885,6 +1004,35 @@ class InMemoryDocumentRepository implements DocumentRepository {
   }
 
   @override
+  Future<IdempotentWrite<StoredDocument>> insertIdempotently(
+    StoredDocument document, {
+    required String idempotencyKey,
+  }) {
+    final existingDocumentId =
+        _idempotencyKeys['${document.communityId}/$idempotencyKey'];
+    final existingRevisions = existingDocumentId == null
+        ? null
+        : _revisions['${document.communityId}/$existingDocumentId'];
+    final existing = existingRevisions == null || existingRevisions.isEmpty
+        ? (existingDocumentId == null
+              ? null
+              : _documents['${document.communityId}/$existingDocumentId'])
+        : existingRevisions.values.reduce(
+            (first, second) => first.version > second.version ? first : second,
+          );
+    if (existing != null) {
+      return Future.value(IdempotentWrite(record: existing, created: false));
+    }
+    _documents['${document.communityId}/${document.documentId}'] = document;
+    _revisions['${document.communityId}/${document.documentId}'] = {
+      document.version: document,
+    };
+    _idempotencyKeys['${document.communityId}/$idempotencyKey'] =
+        document.documentId;
+    return Future.value(IdempotentWrite(record: document, created: true));
+  }
+
+  @override
   Future<StoredDocument?> findById({
     required String communityId,
     required String documentId,
@@ -937,6 +1085,34 @@ class InMemoryDocumentRepository implements DocumentRepository {
         revision;
     _revisionRequests['${revision.communityId}/${revision.documentId}/$idempotencyKey'] =
         revision.version;
+  }
+
+  @override
+  Future<IdempotentWrite<StoredDocument>> addRevisionIdempotently(
+    StoredDocument revision, {
+    required String idempotencyKey,
+  }) {
+    final requestKey =
+        '${revision.communityId}/${revision.documentId}/$idempotencyKey';
+    final existingVersion = _revisionRequests[requestKey];
+    final existing = existingVersion == null
+        ? null
+        : _revisions['${revision.communityId}/${revision.documentId}']?[existingVersion];
+    if (existing != null) {
+      return Future.value(IdempotentWrite(record: existing, created: false));
+    }
+    if (existingVersion != null) {
+      return Future.error(
+        StateError(
+          'Document revision disappeared after an idempotency conflict.',
+        ),
+      );
+    }
+    _revisions['${revision.communityId}/${revision.documentId}']![revision
+            .version] =
+        revision;
+    _revisionRequests[requestKey] = revision.version;
+    return Future.value(IdempotentWrite(record: revision, created: true));
   }
 
   @override
