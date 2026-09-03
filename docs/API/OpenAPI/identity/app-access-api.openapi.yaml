@@ -690,6 +690,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/ListGroupMembershipsResponse'
 
+  /v1/fans/{fanId}/communities:
+    get:
+      operationId: listFanCommunities
+      summary: List every community one fan belongs to, across apps.
+      description: >-
+        Returns the fan's group memberships only where the group is linked to a community by its
+        `externalRef`. Each row carries that community identity and the group's display name, so callers
+        do not need a separate group lookup for every membership.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/FanId'
+        - name: appId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Restrict to one app.
+      responses:
+        '200':
+          description: Community memberships for this fan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFanCommunitiesResponse'
+
   # ── Runtime authorization ───────────────────────────────────────────────
   /v1/apps/{appId}/community-installations:
     post:
@@ -1183,6 +1208,19 @@ components:
             Optional free text from the fan with their request. Never rendered as anything but plain
             text, and never used in a decision automatically.
 
+    FanCommunityMembership:
+      allOf:
+        - $ref: '#/components/schemas/GroupMembership'
+        - type: object
+          required: [communityId, displayName]
+          properties:
+            communityId:
+              type: string
+              description: The community id from the group's `externalRef.resourceId`.
+            displayName:
+              type: string
+              description: The community group's display name.
+
     SetGroupMembershipRequest:
       type: object
       required: [roleIds]
@@ -1400,6 +1438,15 @@ components:
             $ref: '#/components/schemas/GroupMembership'
         pageInfo:
           $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+
+    ListFanCommunitiesResponse:
+      type: object
+      required: [communities]
+      properties:
+        communities:
+          type: array
+          items:
+            $ref: '#/components/schemas/FanCommunityMembership'
 
     AccessDecisionRequest:
       type: object
