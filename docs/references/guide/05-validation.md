@@ -145,6 +145,7 @@ If an error genuinely cannot be fixed within the grammar, **stop and report the 
 | `dangling_requires_workflows_complete` | Prerequisite workflow doesn't exist | Declare it, or drop the guard |
 | `dependency_cycle` | Cyclic `requiresWorkflowsComplete` | Break the cycle |
 | `dangling_linked_workflow_id` (warning) | `linkedWorkflowId` not in the set | Declare it, or accept if genuinely external |
+| `noop_affordance` (warning) | A transition changes no state (`to: null`) **and** declares no `effects` — a button that renders but does nothing | If its backing service is not built yet, KEEP it as a placeholder and mark it `not_implemented` with a `// NEEDS IMPLEMENTATION (platform service): <what is missing>` comment (see [solved-patterns.md](../reference/solved-patterns.md) pattern 23) — never a silent no-op and never dropped; otherwise add the effect/state change it is missing. |
 
 ### Fields and formulas
 
