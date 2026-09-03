@@ -996,3 +996,32 @@ requirement; both hide an unmet promise.
 **Found in:** Masjid Nur / Neighborhood Book Club `mute` (2026-09-02) — a regen dropped the button because
 per-member mute state has no backing API; correct handling is keep-and-warn, with the messaging API tracked as
 a post-production gap (`docs/Build Plan V2/Tickets/GAP-messaging-api.md`).
+
+## 24. RSVP/vote responses are DATA on the parent — never a per-response `*-response` state machine
+
+**Requirement shape:** members RSVP going/maybe/declined to an event, or cast a vote on a ballot. Each
+member has an independent answer, and many members answer at once.
+
+**Plausible-but-wrong shape:** create a *second* workflow (`event-rsvp-response`, `meeting-rsvp-response`,
+`vote-response`) with **one state per answer** — `pending → going / maybe / declined / waitlisted /
+withdrawn`. This is the states-vs-data violation (authoring procedure Step 3): a member's answer is
+simultaneous with every other member's, so it is **data, not state**. The per-response state machine spawns
+answer-states that need no card, so reachable states end up with no render binding
+(`no_render_binding_for_reachable_state`) **and** the structure diverges from the harness/catalog, failing
+`product_community_walkthrough_conformance_test`.
+
+**Verified-correct shape:** ONE event/ballot workflow (states `open`/`cancelled`, ballot `open`/`closed`)
+carrying the responses as **data lists** on that instance — `goingPersonaIds`, `maybePersonaIds`,
+`declinedPersonaIds`, `waitlistedPersonaIds` (or a `ballots` map) — each written by an **orthogonal
+`to:null` transition** (`rsvp-going`: appendUnique to `goingPersonaIds`, removeValue from the others).
+Counts and derived status are formulas (`size(goingPersonaIds)`). There is **no** separate response instance
+and **no** response state machine.
+
+**The rule:** the moment you are about to declare a workflow type whose name ends in `-response`, or whose
+states are answer values (going/maybe/declined/yes/no/waitlisted), STOP — that is data on the parent.
+Re-read Step 3's decision table row: "Member has RSVP'd going → **data** (`goingPersonaIds`)."
+
+**Found in:** masjid-nur `mosque-event-rsvp-response` and neighborhood-book-club `book-meeting-rsvp-response`
++ `book-vote-response` regens (2026-09-02) — each spawned a per-response state machine with 6–7 unbound
+states, breaking walkthrough conformance; the shipped packages correctly model responses as data on the
+single event/ballot.
