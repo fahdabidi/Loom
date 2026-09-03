@@ -191,7 +191,7 @@ class HttpAppAccessProvisioningApplier {
         path:
             'v1/apps/${Uri.encodeComponent(config.appId)}/'
             'community-installations',
-        body: community.request.toJson(),
+        body: community.toInstallationRequestBody(),
         mutating: true,
         acceptedStatusCodes: const {HttpStatus.unprocessableEntity},
       );

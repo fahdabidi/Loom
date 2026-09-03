@@ -34,6 +34,10 @@ void main() {
         expect(entry.request.communityHandle, package.communityHandle);
         expect(entry.request.grammarVersion, package.specVersion);
         expect(
+          entry.toInstallationRequestBody()['communityId'],
+          package.communityId,
+        );
+        expect(
           entry.request.roles.map((role) => role.roleId).toSet(),
           equals(package.roles.map((role) => role.roleId).toSet()),
           reason: package.sourcePath,

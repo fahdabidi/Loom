@@ -63,7 +63,11 @@ void main() {
     final request = installationRequests.single;
     expect(request.correlationId, matches(_uuidV4));
     expect(request.idempotencyKey, startsWith('community-installation-'));
-    expect(request.body, _testPlan().communities.single.request.toJson());
+    expect(
+      request.body,
+      _testPlan().communities.single.toInstallationRequestBody(),
+    );
+    expect(request.body?['communityId'], 'community_test');
     expect(request.body, isNot(contains('omittedWorkflowTypes')));
     expect(
       fake.requests.where(

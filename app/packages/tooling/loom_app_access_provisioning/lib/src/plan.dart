@@ -66,10 +66,12 @@ class AppAccessProvisioningPlan {
   }
 }
 
-/// One local community identity paired with the exact App Access request.
+/// One local community identity paired with an App Access installation request.
 ///
-/// [communityId] is not sent to App Access. It associates the returned group
-/// id with the workflow service's `LOOM_COMMUNITY_GROUP_IDS` map.
+/// [communityId] is retained in the plan to associate the returned group id
+/// with the workflow service's `LOOM_COMMUNITY_GROUP_IDS` map, and is included
+/// in the installation request so App Access can retain the authoritative
+/// group-to-community reference.
 class CommunityInstallationPlanEntry {
   const CommunityInstallationPlanEntry({
     required this.communityId,
@@ -79,6 +81,16 @@ class CommunityInstallationPlanEntry {
 
   final String communityId;
   final InstallCommunityPackageRequest request;
+
+  /// The exact body for `POST /community-installations`.
+  ///
+  /// Keep the canonical package identity at the plan-entry level so plans
+  /// written before App Access accepted this optional request field remain
+  /// usable. The applier adds it only at the service boundary.
+  JsonMap toInstallationRequestBody() => <String, Object?>{
+    ...request.toJson(),
+    'communityId': communityId,
+  };
 
   /// Workflow types that derive no App Access installation input.
   ///
