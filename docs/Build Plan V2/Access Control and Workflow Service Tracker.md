@@ -2202,3 +2202,24 @@ join-queue/leave-queue transitions; outstanding DataPortability/AdFree prefill d
 guard durability. The architectural items (server-authoritative default, community-isolation RLS, idempotency
 unification, fan→community lookup) are DESIGN decisions — SURFACE for the user, do not dispatch blind.
 member-social-space + messaging/mute stay post-production (ticketed); push provider deferred.
+
+## Autonomous batch plan v4 (APPROVED 2026-09-03) — 4 architectural items in order
+
+**THREAD 1 — #2 Community isolation RLS backstop.** Add Postgres Row-Level Security to the workflow-service
+tenant tables (document/queue/export + workflow_instances) so a cross-community row is refused at the DB even
+if a Dart `WHERE community_id` is missed. Design: per-community queries set a transaction-scoped session var
+(`SET LOCAL app.current_community_id`); the policy is `USING (community_id = current_setting(...))`; genuine
+cross-community/admin queries use a bypass role or explicit exception — the ticket must handle both. Via
+call_implementation_agent.sh --fresh. Verify with a real test: a query without the right session context
+returns 0 rows / is refused, WITH a control (right context returns rows).
+
+**THREAD 2 — #4 fan→community single-call lookup.** Add `GET /v1/.../communities` resolving a fan's communities
+server-side from the stored `external_resource` mapping (just shipped). Spec change both repos (byte-identical)
++ backend. Verify: one call returns the fan's communities; matches the 3-hop path's result.
+
+**THREAD 3 — #1 server-authoritative default.** Confirm production build activates the remote engine (service
+URIs in env), keep local as explicit dev opt-out, and run ONE live smoke-test (remote-configured app →
+deployed workflow-service → Postgres → cross-device visibility). Mostly verification.
+
+**THREAD 4 — #3 idempotency unification.** Extract ONE shared idempotency primitive that document/queue/export
+repositories all call, behavior-preserving. Via implementation agent. Verify: all three suites green, one impl.
