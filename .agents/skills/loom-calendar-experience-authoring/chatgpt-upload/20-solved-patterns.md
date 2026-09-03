@@ -997,14 +997,6 @@ requirement; both hide an unmet promise.
 per-member mute state has no backing API; correct handling is keep-and-warn, with the messaging API tracked as
 a post-production gap (`docs/Build Plan V2/Tickets/GAP-messaging-api.md`).
 
-## 24. RSVP/vote response ROWS are canonical (Phase A.1) — and every reachable response state MUST be render-bound
+## 24. (RETRACTED 2026-09-03) — there was no response-modeling defect
 
-**Requirement shape:** members RSVP going/maybe/declined to an event, or vote on a ballot. Each member has an independent answer.
-
-**Canonical model (Phase A.1, 2026-08-14):** each member's answer is a **response ROW** — an instance in a `responseTable`, created by the parent event/ballot's **eager fan-out** (never a direct create; the engine refuses `ArchetypeOrigin.inheritedFromResponseTable` on the create endpoint). Rows are canonical because a single `respond` action would otherwise map to three different arrays (going/maybe/declined) and an archetype cannot tell which to fill; the row's state IS the answer, removing that ambiguity. 4 of the 5 RSVP communities in the shipped corpus already use response rows (BookClub, CameraClub, GardenClub, YouthSoccer); Masjid Nur's arrays are the outlier Phase A.1 plans to migrate TO rows.
-
-**Plausible-but-wrong shape (the real masjid/book-club regen bug):** emit the response-row workflow (states pending/going/maybe/declined/waitlisted/withdrawn) but leave those reachable states with **no render binding** — a bare state machine. The unbound states trip `no_render_binding_for_reachable_state` and the extra unrendered workflow diverges from the harness/catalog, failing `product_community_walkthrough_conformance_test`. The fault is the **missing render bindings**, not the response-row model.
-
-**Verified-correct shape:** the response-row workflow with **a render binding for every reachable state** — each answer state (going/maybe/declined/waitlisted) bound to the surface where a member sees their response (the RSVP card / roster), terminal states bound as `summary` where they should still appear, or deliberately unbound only where a state genuinely never renders. Do NOT invent a separate array model alongside the rows.
-
-**Found in:** masjid-nur `mosque-event-rsvp-response` + neighborhood-book-club `book-meeting-rsvp-response`/`book-vote-response` regens (2026-09-02/03) — spawned the correct response-row workflow but left 6-7 states unbound, breaking conformance. Fix is render bindings, not retiring rows. Supersedes the earlier (retracted) "responses are data, never *-response" framing; response ROWS are canonical per Phase A.1.
+The masjid/book-club regen "conformance failures" were an ADOPTION filename bug (wrong docs-mirror name creating a duplicate .jsonc), not a response-modeling problem. book-club regen passes the demo suite 160/160 with response ROWS and UNBOUND response states (the shipped packages have them too). Response rows are canonical (Phase A.1); unbound response-state validator warnings are non-blocking and expected. Neither "responses are data" nor "every response state must be render-bound" was correct — both retracted. (masjid separately has a real extra `open-linked-volunteer-shift` divergence, tracked in §8.)
