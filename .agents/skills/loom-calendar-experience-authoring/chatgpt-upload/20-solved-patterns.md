@@ -997,31 +997,14 @@ requirement; both hide an unmet promise.
 per-member mute state has no backing API; correct handling is keep-and-warn, with the messaging API tracked as
 a post-production gap (`docs/Build Plan V2/Tickets/GAP-messaging-api.md`).
 
-## 24. RSVP/vote responses are DATA on the parent — never a per-response `*-response` state machine
+## 24. RSVP/vote response ROWS are canonical (Phase A.1) — and every reachable response state MUST be render-bound
 
-**Requirement shape:** members RSVP going/maybe/declined to an event, or cast a vote on a ballot. Each
-member has an independent answer, and many members answer at once.
+**Requirement shape:** members RSVP going/maybe/declined to an event, or vote on a ballot. Each member has an independent answer.
 
-**Plausible-but-wrong shape:** create a *second* workflow (`event-rsvp-response`, `meeting-rsvp-response`,
-`vote-response`) with **one state per answer** — `pending → going / maybe / declined / waitlisted /
-withdrawn`. This is the states-vs-data violation (authoring procedure Step 3): a member's answer is
-simultaneous with every other member's, so it is **data, not state**. The per-response state machine spawns
-answer-states that need no card, so reachable states end up with no render binding
-(`no_render_binding_for_reachable_state`) **and** the structure diverges from the harness/catalog, failing
-`product_community_walkthrough_conformance_test`.
+**Canonical model (Phase A.1, 2026-08-14):** each member's answer is a **response ROW** — an instance in a `responseTable`, created by the parent event/ballot's **eager fan-out** (never a direct create; the engine refuses `ArchetypeOrigin.inheritedFromResponseTable` on the create endpoint). Rows are canonical because a single `respond` action would otherwise map to three different arrays (going/maybe/declined) and an archetype cannot tell which to fill; the row's state IS the answer, removing that ambiguity. 4 of the 5 RSVP communities in the shipped corpus already use response rows (BookClub, CameraClub, GardenClub, YouthSoccer); Masjid Nur's arrays are the outlier Phase A.1 plans to migrate TO rows.
 
-**Verified-correct shape:** ONE event/ballot workflow (states `open`/`cancelled`, ballot `open`/`closed`)
-carrying the responses as **data lists** on that instance — `goingPersonaIds`, `maybePersonaIds`,
-`declinedPersonaIds`, `waitlistedPersonaIds` (or a `ballots` map) — each written by an **orthogonal
-`to:null` transition** (`rsvp-going`: appendUnique to `goingPersonaIds`, removeValue from the others).
-Counts and derived status are formulas (`size(goingPersonaIds)`). There is **no** separate response instance
-and **no** response state machine.
+**Plausible-but-wrong shape (the real masjid/book-club regen bug):** emit the response-row workflow (states pending/going/maybe/declined/waitlisted/withdrawn) but leave those reachable states with **no render binding** — a bare state machine. The unbound states trip `no_render_binding_for_reachable_state` and the extra unrendered workflow diverges from the harness/catalog, failing `product_community_walkthrough_conformance_test`. The fault is the **missing render bindings**, not the response-row model.
 
-**The rule:** the moment you are about to declare a workflow type whose name ends in `-response`, or whose
-states are answer values (going/maybe/declined/yes/no/waitlisted), STOP — that is data on the parent.
-Re-read Step 3's decision table row: "Member has RSVP'd going → **data** (`goingPersonaIds`)."
+**Verified-correct shape:** the response-row workflow with **a render binding for every reachable state** — each answer state (going/maybe/declined/waitlisted) bound to the surface where a member sees their response (the RSVP card / roster), terminal states bound as `summary` where they should still appear, or deliberately unbound only where a state genuinely never renders. Do NOT invent a separate array model alongside the rows.
 
-**Found in:** masjid-nur `mosque-event-rsvp-response` and neighborhood-book-club `book-meeting-rsvp-response`
-+ `book-vote-response` regens (2026-09-02) — each spawned a per-response state machine with 6–7 unbound
-states, breaking walkthrough conformance; the shipped packages correctly model responses as data on the
-single event/ballot.
+**Found in:** masjid-nur `mosque-event-rsvp-response` + neighborhood-book-club `book-meeting-rsvp-response`/`book-vote-response` regens (2026-09-02/03) — spawned the correct response-row workflow but left 6-7 states unbound, breaking conformance. Fix is render bindings, not retiring rows. Supersedes the earlier (retracted) "responses are data, never *-response" framing; response ROWS are canonical per Phase A.1.
