@@ -1,6 +1,9 @@
 # GAP TICKET — RLS community-isolation backstop is inert (service runs as a Postgres superuser)
 
-**Status:** OPEN — decision needed on the runtime-role model before the deployed service changes
+**Status:** IN PROGRESS (2026-09-03) — two-role split approved by the user. Role `loom_workflow_app`
+provisioned (`NOSUPERUSER NOBYPASSRLS`; creds in secret `postgres-workflow-app-credentials`;
+provisioning SQL at loom-backend `deploy/postgres/provision-loom-workflow-app-role.sql`, commit
+`364be85`). Runtime/migration code split dispatched; build + redeploy + live verification pending.
 **Severity:** security — a defense-in-depth isolation backstop exists in code but is bypassed in
 production, AND the service is over-privileged regardless of RLS
 **Found:** 2026-09-03, by the RLS-backstop dispatch (Batch v4, Thread 1). The agent implemented the
