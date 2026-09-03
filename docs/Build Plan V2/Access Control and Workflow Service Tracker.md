@@ -2180,3 +2180,21 @@ A-fixed skill** so mute is kept+warned, then adopt. member-social-space stays po
 
 **THREAD C — verify persistence wiring (after B).** Prove the remote engine's writes reach workflow-service and
 sync via the change feed end-to-end on the running stack; confirm production activates the remote path.
+
+## Autonomous batch plan v3 (APPROVED 2026-09-03) — de-stale + remaining work
+
+**THREAD 1 — finish the staleness sweep.** For each remaining open row across the four trackers (Build,
+Access Control §8/§9, Community JSON Migration, TabId-Archetype Gap) + TODO.md: VERIFY against the current
+codebase / git / DB whether it is actually done; if demonstrably done, mark `✅ Closed (swept 2026-09-03)`
+with a dated reason; if genuinely open, leave it and keep it in the accurate open list. A handful of rows
+per tick, commit+push each batch. Pass 1 (`b3793cfb`) already closed 12.
+
+**THREAD 2 — regenerate masjid-nur + book-club** with the pattern-#24-fixed skill. Re-dispatch each; confirm
+NO `*-response` state machine and no unbound reachable states; validate on :8787; demo suite (160); adopt if
+clean (commit + chmod 444). Surface if still not clean.
+
+**THREAD 3 — genuinely-actionable remaining items** (from thread 1): JSON polish via Skill (dead
+join-queue/leave-queue transitions; outstanding DataPortability/AdFree prefill dispatches); the `chmod 444`
+guard durability. The architectural items (server-authoritative default, community-isolation RLS, idempotency
+unification, fan→community lookup) are DESIGN decisions — SURFACE for the user, do not dispatch blind.
+member-social-space + messaging/mute stay post-production (ticketed); push provider deferred.
