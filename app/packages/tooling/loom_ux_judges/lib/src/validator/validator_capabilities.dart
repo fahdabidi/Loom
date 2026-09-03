@@ -89,6 +89,7 @@ const Set<String> communityPackageValidatorFindingCodes = <String>{
   'no_destructive_exit_for_managed_type',
   'no_read_visibility_declared',
   'no_render_binding_for_reachable_state',
+  'noop_affordance',
   'notification_default_not_offered',
   'notification_muted_without_inbox',
   'orphaned_response_rows',

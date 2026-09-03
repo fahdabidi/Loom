@@ -194,26 +194,30 @@ void main() {
       expect(json['findings'], isEmpty);
     });
 
-    test('POST /validate surfaces the expected-affordance warnings for a type '
-        'with editableFields but no editGuard and no create path', () async {
-      final response = await post(
-        '/validate',
-        jsonEncode(_noEditGuardOrCreatePackage),
-      );
+    test(
+      'POST /validate surfaces expected-affordance warnings for a type '
+      'with editableFields but no editGuard, no create path, or effect',
+      () async {
+        final response = await post(
+          '/validate',
+          jsonEncode(_noEditGuardOrCreatePackage),
+        );
 
-      expect(response.statusCode, HttpStatus.ok);
-      final json = await readJson(response);
-      expect(json['status'], 'pass', reason: 'warnings never block pass');
-      expect(json['warningCount'], 3);
-      final types = (json['findings'] as List)
-          .map((f) => (f as Map<String, dynamic>)['type'])
-          .toSet();
-      expect(types, {
-        'editable_fields_without_edit_guard',
-        'no_creation_path_for_editable_type',
-        'transition_has_no_observable_effect',
-      });
-    });
+        expect(response.statusCode, HttpStatus.ok);
+        final json = await readJson(response);
+        expect(json['status'], 'pass', reason: 'warnings never block pass');
+        expect(json['warningCount'], 4);
+        final types = (json['findings'] as List)
+            .map((f) => (f as Map<String, dynamic>)['type'])
+            .toSet();
+        expect(types, {
+          'editable_fields_without_edit_guard',
+          'no_creation_path_for_editable_type',
+          'noop_affordance',
+          'transition_has_no_observable_effect',
+        });
+      },
+    );
 
     test('POST /validate on malformed JSON returns 400', () async {
       final response = await post('/validate', '{not valid json');

@@ -276,6 +276,7 @@ class CommunityPackageValidator {
     findings.addAll(_validateTransitionActions(rawDefinitions));
     findings.addAll(_validateResponseRowSweep(rawDefinitions));
     findings.addAll(_validateRedundantTransitions(rawDefinitions));
+    findings.addAll(_validateNoopAffordances(rawDefinitions));
     findings.addAll(_validateDocumentContentSource(rawDefinitions));
     final rawInstances = experience['workflowInstances'];
     if (rawInstances is! List) return ValidationReport(findings);
@@ -1558,6 +1559,43 @@ class CommunityPackageValidator {
             ),
           );
         }
+      }
+    }
+    return findings;
+  }
+
+  /// A transition that remains in its current state and declares no effects
+  /// still renders as an affordance, but cannot change anything for the
+  /// member who invokes it.
+  List<ValidationFinding> _validateNoopAffordances(Map<Object?, Object?> raw) {
+    final findings = <ValidationFinding>[];
+    for (final entry in raw.entries) {
+      final workflow = entry.value;
+      if (workflow is! Map) continue;
+      final transitions = workflow['transitions'];
+      if (transitions is! List) continue;
+
+      for (var i = 0; i < transitions.length; i++) {
+        final transition = transitions[i];
+        if (transition is! Map || transition['to'] != null) continue;
+        final effects = transition['effects'];
+        if (effects is List && effects.isNotEmpty) continue;
+
+        final id = transition['id'];
+        final label = id is String && id.isNotEmpty ? id : '[$i]';
+        findings.add(
+          _finding(
+            'noop_affordance',
+            'Transition "$label" in workflow "${entry.key}" declares '
+                '`to: null` and no effects, so its rendered affordance makes '
+                'no state or data change. Add a state change or an effect; if '
+                'its backing service is not implemented, keep it as a '
+                '`not_implemented` placeholder with a NEEDS IMPLEMENTATION '
+                'comment instead of shipping a silent no-op.',
+            'experience/workflowDefinitions/${entry.key}/transitions/$label',
+            warning: true,
+          ),
+        );
       }
     }
     return findings;
