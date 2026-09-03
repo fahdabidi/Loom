@@ -1,5 +1,7 @@
 import 'package:postgres/postgres.dart' as pg;
 
+import 'postgres_connection.dart';
+
 /// One member's durable place in an equipment-loan item queue.
 ///
 /// Queue positions are deliberately derived from [sequence], rather than
@@ -102,6 +104,8 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
 
   final pg.Session _connection;
 
+  pg.Session get _session => currentPostgresCommunitySession ?? _connection;
+
   Future<void> migrate() async {
     await _connection.execute('''
       CREATE TABLE IF NOT EXISTS workflow_item_queue_entries (
@@ -123,6 +127,10 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
       CREATE INDEX IF NOT EXISTS idx_item_queue_entries_fan
         ON workflow_item_queue_entries (community_id, fan_id, entry_id);
     ''');
+    await migrateCommunityIsolationPolicy(
+      _connection,
+      'workflow_item_queue_entries',
+    );
   }
 
   @override
@@ -131,8 +139,8 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
     required String instanceId,
     required String fanId,
     required DateTime joinedAt,
-  }) async {
-    final inserted = await _connection.execute(
+  }) => _withCommunity(communityId, () async {
+    final inserted = await _session.execute(
       pg.Sql.named('''
         INSERT INTO workflow_item_queue_entries (
           community_id, instance_id, fan_id, joined_at
@@ -163,32 +171,38 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
       throw StateError('Queue entry disappeared after an identity conflict.');
     }
     return ItemQueueJoinResult(entry: existing, created: false);
-  }
+  });
 
   @override
   Future<List<StoredItemQueueEntry>> listForItem({
     required String communityId,
     required String instanceId,
-  }) => _list(
-    '''
-      SELECT $_columns FROM workflow_item_queue_entries
-      WHERE community_id = @communityId AND instance_id = @instanceId
-      ORDER BY entry_id ASC
-    ''',
-    <String, dynamic>{'communityId': communityId, 'instanceId': instanceId},
+  }) => _withCommunity(
+    communityId,
+    () => _list(
+      '''
+        SELECT $_columns FROM workflow_item_queue_entries
+        WHERE community_id = @communityId AND instance_id = @instanceId
+        ORDER BY entry_id ASC
+      ''',
+      <String, dynamic>{'communityId': communityId, 'instanceId': instanceId},
+    ),
   );
 
   @override
   Future<List<StoredItemQueueEntry>> listForFan({
     required String communityId,
     required String fanId,
-  }) => _list(
-    '''
-      SELECT $_columns FROM workflow_item_queue_entries
-      WHERE community_id = @communityId AND fan_id = @fanId
-      ORDER BY entry_id ASC
-    ''',
-    <String, dynamic>{'communityId': communityId, 'fanId': fanId},
+  }) => _withCommunity(
+    communityId,
+    () => _list(
+      '''
+        SELECT $_columns FROM workflow_item_queue_entries
+        WHERE community_id = @communityId AND fan_id = @fanId
+        ORDER BY entry_id ASC
+      ''',
+      <String, dynamic>{'communityId': communityId, 'fanId': fanId},
+    ),
   );
 
   @override
@@ -196,8 +210,8 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
     required String communityId,
     required String instanceId,
     required String fanId,
-  }) async {
-    await _connection.execute(
+  }) => _withCommunity(communityId, () async {
+    await _session.execute(
       pg.Sql.named('''
         DELETE FROM workflow_item_queue_entries
         WHERE community_id = @communityId
@@ -210,7 +224,7 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
         'fanId': fanId,
       },
     );
-  }
+  });
 
   @override
   Future<void> recordOffer({
@@ -219,8 +233,8 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
     required String fanId,
     required DateTime offeredAt,
     required DateTime offerExpiresAt,
-  }) async {
-    await _connection.execute(
+  }) => _withCommunity(communityId, () async {
+    await _session.execute(
       pg.Sql.named('''
         UPDATE workflow_item_queue_entries
         SET offered_at = @offeredAt, offer_expires_at = @offerExpiresAt
@@ -236,14 +250,14 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
         'offerExpiresAt': offerExpiresAt.toUtc().millisecondsSinceEpoch,
       },
     );
-  }
+  });
 
   Future<StoredItemQueueEntry?> _findByIdentity({
     required String communityId,
     required String instanceId,
     required String fanId,
   }) async {
-    final rows = await _connection.execute(
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT $_columns FROM workflow_item_queue_entries
         WHERE community_id = @communityId
@@ -263,11 +277,25 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
     String statement,
     Map<String, dynamic> parameters,
   ) async {
-    final rows = await _connection.execute(
+    final rows = await _session.execute(
       pg.Sql.named(statement),
       parameters: parameters,
     );
     return rows.map((row) => _fromRow(row.toColumnMap())).toList();
+  }
+
+  Future<T> _withCommunity<T>(String communityId, Future<T> Function() action) {
+    final executor = _connection as pg.SessionExecutor?;
+    if (executor == null) {
+      throw StateError(
+        'PostgresItemQueueRepository requires a transaction-capable session.',
+      );
+    }
+    return runWithPostgresCommunity<T>(
+      executor: executor,
+      communityId: communityId,
+      action: action,
+    );
   }
 
   static const _columns =

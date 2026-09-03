@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:postgres/postgres.dart' as pg;
 
 import 'document_object_store.dart';
+import 'postgres_connection.dart';
 
 /// One stored document's metadata. The bytes live in object storage.
 class StoredDocument {
@@ -252,6 +253,8 @@ class PostgresDocumentRepository implements DocumentRepository {
 
   final pg.Session _connection;
 
+  pg.Session get _session => currentPostgresCommunitySession ?? _connection;
+
   /// Declares the schema, following the engine's `IF NOT EXISTS` convention so
   /// a redeploy against a populated database is a no-op rather than a wipe.
   Future<void> migrate() async {
@@ -339,12 +342,22 @@ class PostgresDocumentRepository implements DocumentRepository {
       CREATE INDEX IF NOT EXISTS idx_document_acknowledgements_document
         ON workflow_document_acknowledgements (community_id, document_id, version);
     ''');
+    for (final tableName in <String>[
+      'workflow_documents',
+      'workflow_document_revisions',
+      'workflow_document_revision_requests',
+      'workflow_document_member_states',
+      'workflow_document_acknowledgements',
+    ]) {
+      await migrateCommunityIsolationPolicy(_connection, tableName);
+    }
   }
 
   @override
-  Future<void> insert(StoredDocument document, {String? idempotencyKey}) async {
-    await _connection.execute(
-      pg.Sql.named('''
+  Future<void> insert(StoredDocument document, {String? idempotencyKey}) =>
+      _withCommunity(document.communityId, () async {
+        await _session.execute(
+          pg.Sql.named('''
         INSERT INTO workflow_documents (
           document_id, community_id, instance_id, workflow_type, field_name,
           title, filename, content_type, byte_size, owner_fan_id, object_key,
@@ -355,43 +368,43 @@ class PostgresDocumentRepository implements DocumentRepository {
           @uploadedAt, @idempotencyKey
         )
       '''),
-      parameters: {
-        'documentId': document.documentId,
-        'communityId': document.communityId,
-        'instanceId': document.instanceId,
-        'workflowType': document.workflowType,
-        'fieldName': document.fieldName,
-        'title': document.title,
-        'filename': document.filename,
-        'contentType': document.contentType,
-        'byteSize': document.byteSize,
-        'ownerFanId': document.ownerFanId,
-        'objectKey': document.objectKey,
-        'uploadedAt': document.uploadedAt.millisecondsSinceEpoch,
-        'idempotencyKey': idempotencyKey,
-      },
-    );
-    await _insertRevision(document);
-  }
+          parameters: {
+            'documentId': document.documentId,
+            'communityId': document.communityId,
+            'instanceId': document.instanceId,
+            'workflowType': document.workflowType,
+            'fieldName': document.fieldName,
+            'title': document.title,
+            'filename': document.filename,
+            'contentType': document.contentType,
+            'byteSize': document.byteSize,
+            'ownerFanId': document.ownerFanId,
+            'objectKey': document.objectKey,
+            'uploadedAt': document.uploadedAt.millisecondsSinceEpoch,
+            'idempotencyKey': idempotencyKey,
+          },
+        );
+        await _insertRevision(document);
+      });
 
   @override
   Future<StoredDocument?> findById({
     required String communityId,
     required String documentId,
-  }) async {
+  }) => _withCommunity(communityId, () async {
     final document = await _findBaseById(
       communityId: communityId,
       documentId: documentId,
     );
     if (document == null) return null;
     return _currentRevisionFor(document);
-  }
+  });
 
   Future<StoredDocument?> _findBaseById({
     required String communityId,
     required String documentId,
   }) async {
-    final rows = await _connection.execute(
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT ${_columns} FROM workflow_documents
         WHERE community_id = @communityId AND document_id = @documentId
@@ -411,8 +424,8 @@ class PostgresDocumentRepository implements DocumentRepository {
   Future<StoredDocument?> findByIdempotencyKey({
     required String communityId,
     required String idempotencyKey,
-  }) async {
-    final rows = await _connection.execute(
+  }) => _withCommunity(communityId, () async {
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT ${_columns} FROM workflow_documents
         WHERE community_id = @communityId AND idempotency_key = @key
@@ -421,14 +434,14 @@ class PostgresDocumentRepository implements DocumentRepository {
     );
     if (rows.isEmpty) return null;
     return _currentRevisionFor(_fromRow(rows.first.toColumnMap()));
-  }
+  });
 
   @override
   Future<List<StoredDocument>> listForInstance({
     required String communityId,
     required String instanceId,
-  }) async {
-    final rows = await _connection.execute(
+  }) => _withCommunity(communityId, () async {
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT ${_columns} FROM workflow_documents
         WHERE community_id = @communityId AND instance_id = @instanceId
@@ -441,15 +454,15 @@ class PostgresDocumentRepository implements DocumentRepository {
       documents.add(await _currentRevisionFor(_fromRow(row.toColumnMap())));
     }
     return documents;
-  }
+  });
 
   @override
   Future<void> addRevision(
     StoredDocument revision, {
     required String idempotencyKey,
-  }) async {
+  }) => _withCommunity(revision.communityId, () async {
     await _insertRevision(revision);
-    await _connection.execute(
+    await _session.execute(
       pg.Sql.named('''
         INSERT INTO workflow_document_revision_requests (
           community_id, document_id, idempotency_key, version
@@ -462,9 +475,9 @@ class PostgresDocumentRepository implements DocumentRepository {
         'version': revision.version,
       },
     );
-  }
+  });
 
-  Future<void> _insertRevision(StoredDocument revision) => _connection.execute(
+  Future<void> _insertRevision(StoredDocument revision) => _session.execute(
     pg.Sql.named('''
       INSERT INTO workflow_document_revisions (
         community_id, document_id, version, title, filename, content_type,
@@ -493,7 +506,7 @@ class PostgresDocumentRepository implements DocumentRepository {
     required String communityId,
     required String documentId,
     required int version,
-  }) async {
+  }) => _withCommunity(communityId, () async {
     final base = await _findBaseById(
       communityId: communityId,
       documentId: documentId,
@@ -509,15 +522,15 @@ class PostgresDocumentRepository implements DocumentRepository {
     return revision == null
         ? (version == 1 ? base : null)
         : _applyRevision(base, revision);
-  }
+  });
 
   @override
   Future<StoredDocument?> findRevisionByIdempotencyKey({
     required String communityId,
     required String documentId,
     required String idempotencyKey,
-  }) async {
-    final rows = await _connection.execute(
+  }) => _withCommunity(communityId, () async {
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT version FROM workflow_document_revision_requests
         WHERE community_id = @communityId AND document_id = @documentId
@@ -535,19 +548,19 @@ class PostgresDocumentRepository implements DocumentRepository {
       documentId: documentId,
       version: (rows.first.toColumnMap()['version'] as num).toInt(),
     );
-  }
+  });
 
   @override
   Future<List<StoredDocument>> listRevisions({
     required String communityId,
     required String documentId,
-  }) async {
+  }) => _withCommunity(communityId, () async {
     final base = await _findBaseById(
       communityId: communityId,
       documentId: documentId,
     );
     if (base == null) return const <StoredDocument>[];
-    final rows = await _connection.execute(
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT $_revisionColumns FROM workflow_document_revisions
         WHERE community_id = @communityId AND document_id = @documentId
@@ -569,10 +582,10 @@ class PostgresDocumentRepository implements DocumentRepository {
       revisions.insert(0, base);
     }
     return revisions;
-  }
+  });
 
   Future<StoredDocument> _currentRevisionFor(StoredDocument base) async {
-    final rows = await _connection.execute(
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT $_revisionColumns FROM workflow_document_revisions
         WHERE community_id = @communityId AND document_id = @documentId
@@ -590,8 +603,8 @@ class PostgresDocumentRepository implements DocumentRepository {
     required String communityId,
     required String documentId,
     required int version,
-  }) async {
-    final rows = await _connection.execute(
+  }) => _withCommunity(communityId, () async {
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT $_revisionColumns FROM workflow_document_revisions
         WHERE community_id = @communityId AND document_id = @documentId
@@ -604,7 +617,7 @@ class PostgresDocumentRepository implements DocumentRepository {
       },
     );
     return rows.isEmpty ? null : rows.first.toColumnMap();
-  }
+  });
 
   static StoredDocument _applyRevision(
     StoredDocument base,
@@ -628,8 +641,8 @@ class PostgresDocumentRepository implements DocumentRepository {
     required String communityId,
     required String documentId,
     required String fanId,
-  }) async {
-    final rows = await _connection.execute(
+  }) => _withCommunity(communityId, () async {
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT document_id, fan_id, is_read, read_at, is_saved, saved_at,
           acknowledged_at, acknowledged_version
@@ -644,14 +657,16 @@ class PostgresDocumentRepository implements DocumentRepository {
       },
     );
     return rows.isEmpty ? null : _memberStateFromRow(rows.first.toColumnMap());
-  }
+  });
 
   @override
   Future<void> saveMemberState({
     required String communityId,
     required StoredDocumentMemberState state,
-  }) => _connection.execute(
-    pg.Sql.named('''
+  }) => _withCommunity(
+    communityId,
+    () => _session.execute(
+      pg.Sql.named('''
       INSERT INTO workflow_document_member_states (
         community_id, document_id, fan_id, is_read, read_at, is_saved,
         saved_at, acknowledged_at, acknowledged_version
@@ -666,38 +681,42 @@ class PostgresDocumentRepository implements DocumentRepository {
         acknowledged_at = EXCLUDED.acknowledged_at,
         acknowledged_version = EXCLUDED.acknowledged_version
     '''),
-    parameters: <String, dynamic>{
-      'communityId': communityId,
-      'documentId': state.documentId,
-      'fanId': state.fanId,
-      'read': state.read,
-      'readAt': state.readAt?.millisecondsSinceEpoch,
-      'saved': state.saved,
-      'savedAt': state.savedAt?.millisecondsSinceEpoch,
-      'acknowledgedAt': state.acknowledgedAt?.millisecondsSinceEpoch,
-      'acknowledgedVersion': state.acknowledgedVersion,
-    },
+      parameters: <String, dynamic>{
+        'communityId': communityId,
+        'documentId': state.documentId,
+        'fanId': state.fanId,
+        'read': state.read,
+        'readAt': state.readAt?.millisecondsSinceEpoch,
+        'saved': state.saved,
+        'savedAt': state.savedAt?.millisecondsSinceEpoch,
+        'acknowledgedAt': state.acknowledgedAt?.millisecondsSinceEpoch,
+        'acknowledgedVersion': state.acknowledgedVersion,
+      },
+    ),
   );
 
   @override
   Future<void> recordAcknowledgement({
     required String communityId,
     required StoredDocumentAcknowledgement acknowledgement,
-  }) => _connection.execute(
-    pg.Sql.named('''
+  }) => _withCommunity(
+    communityId,
+    () => _session.execute(
+      pg.Sql.named('''
       INSERT INTO workflow_document_acknowledgements (
         community_id, document_id, fan_id, version, acknowledged_at
       ) VALUES (
         @communityId, @documentId, @fanId, @version, @acknowledgedAt
       ) ON CONFLICT (community_id, document_id, fan_id, version) DO NOTHING
     '''),
-    parameters: <String, dynamic>{
-      'communityId': communityId,
-      'documentId': acknowledgement.documentId,
-      'fanId': acknowledgement.fanId,
-      'version': acknowledgement.version,
-      'acknowledgedAt': acknowledgement.acknowledgedAt.millisecondsSinceEpoch,
-    },
+      parameters: <String, dynamic>{
+        'communityId': communityId,
+        'documentId': acknowledgement.documentId,
+        'fanId': acknowledgement.fanId,
+        'version': acknowledgement.version,
+        'acknowledgedAt': acknowledgement.acknowledgedAt.millisecondsSinceEpoch,
+      },
+    ),
   );
 
   @override
@@ -706,13 +725,13 @@ class PostgresDocumentRepository implements DocumentRepository {
     required String documentId,
     required bool currentVersionOnly,
     required int currentVersion,
-  }) async {
+  }) => _withCommunity(communityId, () async {
     final parameters = <String, dynamic>{
       'communityId': communityId,
       'documentId': documentId,
       if (currentVersionOnly) 'currentVersion': currentVersion,
     };
-    final rows = await _connection.execute(
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT fan_id, version, acknowledged_at
         FROM workflow_document_acknowledgements
@@ -734,47 +753,61 @@ class PostgresDocumentRepository implements DocumentRepository {
         ),
       );
     }).toList();
-  }
+  });
 
   @override
   Future<void> delete({
     required String communityId,
     required String documentId,
-  }) async {
-    await _connection.execute(
+  }) => _withCommunity(communityId, () async {
+    await _session.execute(
       pg.Sql.named('''
         DELETE FROM workflow_documents
         WHERE community_id = @communityId AND document_id = @documentId
       '''),
       parameters: {'communityId': communityId, 'documentId': documentId},
     );
-    await _connection.execute(
+    await _session.execute(
       pg.Sql.named('''
         DELETE FROM workflow_document_revisions
         WHERE community_id = @communityId AND document_id = @documentId
       '''),
       parameters: {'communityId': communityId, 'documentId': documentId},
     );
-    await _connection.execute(
+    await _session.execute(
       pg.Sql.named('''
         DELETE FROM workflow_document_revision_requests
         WHERE community_id = @communityId AND document_id = @documentId
       '''),
       parameters: {'communityId': communityId, 'documentId': documentId},
     );
-    await _connection.execute(
+    await _session.execute(
       pg.Sql.named('''
         DELETE FROM workflow_document_member_states
         WHERE community_id = @communityId AND document_id = @documentId
       '''),
       parameters: {'communityId': communityId, 'documentId': documentId},
     );
-    await _connection.execute(
+    await _session.execute(
       pg.Sql.named('''
         DELETE FROM workflow_document_acknowledgements
         WHERE community_id = @communityId AND document_id = @documentId
       '''),
       parameters: {'communityId': communityId, 'documentId': documentId},
+    );
+  });
+
+  Future<T> _withCommunity<T>(String communityId, Future<T> Function() action) {
+    final executor = _connection as pg.SessionExecutor?;
+    if (executor == null) {
+      throw StateError(
+        'PostgresDocumentRepository requires a transaction-capable session.',
+      );
+    }
+    return runWithPostgresCommunity<T>(
+      executor: executor,
+      communityId: communityId,
+      action: action,
     );
   }
 

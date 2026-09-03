@@ -48,6 +48,11 @@ Future<void> main(List<String> arguments) async {
     password: password,
   );
   try {
+    // This command is intentionally a cross-community publisher, but it
+    // writes only the global workflow_definitions table. Running the service
+    // schema migration first ensures the tenant tables it creates incidentally
+    // receive their forced RLS policies before any service starts.
+    await postgres.migrateWorkflowSchema();
     await WorkflowDefinitionPublisher(
       database: postgres.database,
       report: stdout.writeln,

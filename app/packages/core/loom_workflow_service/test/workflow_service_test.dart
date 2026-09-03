@@ -69,6 +69,35 @@ void main() {
     database.close();
   });
 
+  test('routes every community path through its transaction runner', () async {
+    final communities = <String>[];
+    final transactionService = WorkflowService(
+      database: database,
+      identityExtractor: const HeaderWorkflowIdentityExtractor(),
+      appAccessClient: appAccessClient,
+      communityGroupIdResolver: MapCommunityGroupIdResolver({
+        _communityId: 'loom_communities_service_unit',
+      }),
+      communityTransactionRunner:
+          <T>(String communityId, Future<T> Function() action) async {
+            communities.add(communityId);
+            return action();
+          },
+    );
+
+    final response = await transactionService.handler(
+      Request(
+        'GET',
+        Uri.parse(
+          'http://localhost/v1/communities/$_communityId/no-such-route',
+        ),
+      ),
+    );
+
+    expect(response.statusCode, 404);
+    expect(communities, [_communityId]);
+  });
+
   test(
     'createInstance keeps declaredBespoke and generic origins creatable',
     () async {
@@ -987,38 +1016,35 @@ void main() {
     },
   );
 
-  test(
-    'updateInstanceFields resolves roles for a role-guarded edit',
-    () async {
-      await _seedEditableInstance(database, roleGuarded: true);
-      appAccessClient.roleIds = {'hoa-board'};
+  test('updateInstanceFields resolves roles for a role-guarded edit', () async {
+    await _seedEditableInstance(database, roleGuarded: true);
+    appAccessClient.roleIds = {'hoa-board'};
 
-      final response = await service.handler(
-        _fieldUpdateRequest(
-          fanId: 'fan-board-member',
-          body: {
-            'fieldUpdates': {'title': 'Updated by board'},
-          },
-        ),
-      );
+    final response = await service.handler(
+      _fieldUpdateRequest(
+        fanId: 'fan-board-member',
+        body: {
+          'fieldUpdates': {'title': 'Updated by board'},
+        },
+      ),
+    );
 
-      expect(response.statusCode, 200);
-      expect(appAccessClient.roleResolutionCallCount, 1);
-      expect(appAccessClient.roleResolutionFanId, 'fan-board-member');
-      expect(appAccessClient.roleResolutionAppId, 'loom_communities');
-      expect(
-        appAccessClient.roleResolutionGroupId,
-        'loom_communities_service_unit',
-      );
-      expect(appAccessClient.roleResolutionCorrelationId, _correlationId);
-      expect(
-        jsonDecode(
-          (await database.readInstance(_editableInstanceId))!.instanceData,
-        ),
-        containsPair('title', 'Updated by board'),
-      );
-    },
-  );
+    expect(response.statusCode, 200);
+    expect(appAccessClient.roleResolutionCallCount, 1);
+    expect(appAccessClient.roleResolutionFanId, 'fan-board-member');
+    expect(appAccessClient.roleResolutionAppId, 'loom_communities');
+    expect(
+      appAccessClient.roleResolutionGroupId,
+      'loom_communities_service_unit',
+    );
+    expect(appAccessClient.roleResolutionCorrelationId, _correlationId);
+    expect(
+      jsonDecode(
+        (await database.readInstance(_editableInstanceId))!.instanceData,
+      ),
+      containsPair('title', 'Updated by board'),
+    );
+  });
 
   test(
     'updateInstanceFields refuses a member without the required role',

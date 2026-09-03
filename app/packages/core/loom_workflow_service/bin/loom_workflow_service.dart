@@ -142,6 +142,7 @@ Future<_StartedWorkflowService?> _startUntilReady({
       );
       final service = WorkflowService(
         database: postgres.database,
+        communityTransactionRunner: postgres.runWithCommunity,
         identityExtractor: identityExtractor,
         appAccessClient: appAccessClient,
         communityGroupIdResolver: MapCommunityGroupIdResolver.fromJson(

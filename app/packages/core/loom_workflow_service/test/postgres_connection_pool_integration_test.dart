@@ -124,50 +124,58 @@ void main() {
           },
         );
         await postgres.migrateWorkflowSchema();
-        await postgres.database.insertInstance(
-          instanceId: 'locked-instance',
-          communityId: 'pool-transaction-community',
-          workflowType: 'pool-transaction-workflow',
-          currentState: 'draft',
-          instanceData: const {'initial': true},
-          createdByFanId: 'member',
-        );
+        await postgres.runWithCommunity('pool-transaction-community', () {
+          return postgres!.database.insertInstance(
+            instanceId: 'locked-instance',
+            communityId: 'pool-transaction-community',
+            workflowType: 'pool-transaction-workflow',
+            currentState: 'draft',
+            instanceData: const {'initial': true},
+            createdByFanId: 'member',
+          );
+        });
 
         final backgroundBorrowerAcquired = Completer<void>();
         final rowLocked = Completer<void>();
-        firstTransaction = postgres.database.transaction(() async {
-          // A statement-based BEGIN would release its first borrowed
-          // connection before the action runs. This borrower then takes that
-          // connection, forcing the following FOR UPDATE onto another one.
-          // The transaction runner must instead keep the original connection
-          // reserved, leaving this borrower to use a second connection.
-          final backgroundBorrower = postgres!.connection.withConnection((
-            connection,
-          ) async {
-            backgroundBorrowerAcquired.complete();
-            await connection.execute('SELECT pg_sleep(1)');
-          });
-          await backgroundBorrowerAcquired.future.timeout(
-            const Duration(seconds: 5),
-          );
+        firstTransaction = postgres.runWithCommunity(
+          'pool-transaction-community',
+          () => postgres!.database.transaction(() async {
+            // A statement-based BEGIN would release its first borrowed
+            // connection before the action runs. This borrower then takes that
+            // connection, forcing the following FOR UPDATE onto another one.
+            // The transaction runner must instead keep the original connection
+            // reserved, leaving this borrower to use a second connection.
+            final backgroundBorrower = postgres!.connection.withConnection((
+              connection,
+            ) async {
+              backgroundBorrowerAcquired.complete();
+              await connection.execute('SELECT pg_sleep(1)');
+            });
+            await backgroundBorrowerAcquired.future.timeout(
+              const Duration(seconds: 5),
+            );
 
-          final row = await postgres.database.readInstanceForUpdate(
-            'locked-instance',
-          );
-          expect(row, isNotNull);
-          rowLocked.complete();
-          await releaseTransaction.future;
-          await backgroundBorrower;
-        });
+            final row = await postgres.database.readInstanceForUpdate(
+              'locked-instance',
+            );
+            expect(row, isNotNull);
+            rowLocked.complete();
+            await releaseTransaction.future;
+            await backgroundBorrower;
+          }),
+        );
 
         await rowLocked.future.timeout(const Duration(seconds: 5));
         var outsideUpdateCompleted = false;
-        final outsideUpdate = administrator
-            .execute(
-              'UPDATE $schema.workflow_instances '
-              "SET current_state = 'updated' WHERE instance_id = 'locked-instance'",
-            )
-            .then((_) {
+        final outsideUpdate =
+            runWithPostgresCommunity<void>(
+              executor: administrator,
+              communityId: 'pool-transaction-community',
+              action: () => currentPostgresCommunitySession!.execute(
+                'UPDATE $schema.workflow_instances '
+                "SET current_state = 'updated' WHERE instance_id = 'locked-instance'",
+              ),
+            ).then((_) {
               outsideUpdateCompleted = true;
             });
 

@@ -852,8 +852,31 @@ class WorkflowDatabase {
     await _executeTx(action);
   }
 
+  /// Runs [action] using a transaction executor supplied by a server adapter.
+  ///
+  /// PostgreSQL adapters use this to bind the engine to a request-scoped
+  /// transaction after installing database-local request context such as the
+  /// active community id. The executor is held in a zone, preserving the
+  /// existing isolation between concurrent requests without making the engine
+  /// depend on a particular server or PostgreSQL driver.
+  Future<T> runWithTransactionExecutor<T>(
+    QueryExecutor transactionExecutor,
+    Future<T> Function() action,
+  ) async {
+    await _ensureOpenAndMigrated();
+    await transactionExecutor.ensureOpen(_user);
+    return runZoned<Future<T>>(
+      action,
+      zoneValues: {_transactionExecutorZoneKey: transactionExecutor},
+    );
+  }
+
   Future<void> _executeTx(Future<void> Function() action) async {
     await _ensureOpenAndMigrated();
+    if (Zone.current[_transactionExecutorZoneKey] != null) {
+      await action();
+      return;
+    }
     final transactionRunner = _transactionRunner;
     if (transactionRunner != null) {
       await transactionRunner((transactionExecutor) async {

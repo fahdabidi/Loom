@@ -1,6 +1,7 @@
 import 'package:postgres/postgres.dart' as pg;
 
 import 'document_object_store.dart';
+import 'postgres_connection.dart';
 
 /// Metadata for one immutable export payload.
 ///
@@ -69,6 +70,8 @@ class PostgresExportBundleRepository implements ExportBundleRepository {
 
   final pg.Session _connection;
 
+  pg.Session get _session => currentPostgresCommunitySession ?? _connection;
+
   Future<void> migrate() async {
     await _connection.execute('''
       CREATE TABLE IF NOT EXISTS workflow_export_bundles (
@@ -89,14 +92,18 @@ class PostgresExportBundleRepository implements ExportBundleRepository {
       CREATE UNIQUE INDEX IF NOT EXISTS idx_export_bundles_idempotency
         ON workflow_export_bundles (community_id, idempotency_key);
     ''');
+    await migrateCommunityIsolationPolicy(
+      _connection,
+      'workflow_export_bundles',
+    );
   }
 
   @override
   Future<void> insert(
     StoredExportBundle bundle, {
     required String idempotencyKey,
-  }) async {
-    await _connection.execute(
+  }) => _withCommunity(bundle.communityId, () async {
+    await _session.execute(
       pg.Sql.named('''
         INSERT INTO workflow_export_bundles (
           export_id, community_id, instance_id, checksum, checksum_algorithm,
@@ -122,14 +129,14 @@ class PostgresExportBundleRepository implements ExportBundleRepository {
         'idempotencyKey': idempotencyKey,
       },
     );
-  }
+  });
 
   @override
   Future<StoredExportBundle?> findById({
     required String communityId,
     required String exportId,
-  }) async {
-    final rows = await _connection.execute(
+  }) => _withCommunity(communityId, () async {
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT $_columns FROM workflow_export_bundles
         WHERE community_id = @communityId AND export_id = @exportId
@@ -140,14 +147,14 @@ class PostgresExportBundleRepository implements ExportBundleRepository {
       },
     );
     return rows.isEmpty ? null : _fromRow(rows.first.toColumnMap());
-  }
+  });
 
   @override
   Future<StoredExportBundle?> findByIdempotencyKey({
     required String communityId,
     required String idempotencyKey,
-  }) async {
-    final rows = await _connection.execute(
+  }) => _withCommunity(communityId, () async {
+    final rows = await _session.execute(
       pg.Sql.named('''
         SELECT $_columns FROM workflow_export_bundles
         WHERE community_id = @communityId AND idempotency_key = @idempotencyKey
@@ -158,6 +165,20 @@ class PostgresExportBundleRepository implements ExportBundleRepository {
       },
     );
     return rows.isEmpty ? null : _fromRow(rows.first.toColumnMap());
+  });
+
+  Future<T> _withCommunity<T>(String communityId, Future<T> Function() action) {
+    final executor = _connection as pg.SessionExecutor?;
+    if (executor == null) {
+      throw StateError(
+        'PostgresExportBundleRepository requires a transaction-capable session.',
+      );
+    }
+    return runWithPostgresCommunity<T>(
+      executor: executor,
+      communityId: communityId,
+      action: action,
+    );
   }
 
   static const _columns =

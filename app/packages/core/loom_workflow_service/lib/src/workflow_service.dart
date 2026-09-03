@@ -20,6 +20,15 @@ import 'identity.dart';
 import 'item_queue_repository.dart';
 import 'queue_offer_hold_windows.dart';
 
+/// Runs one community HTTP request inside its database isolation boundary.
+typedef CommunityTransactionRunner =
+    Future<T> Function<T>(String communityId, Future<T> Function() action);
+
+Future<T> _runWithoutCommunityTransaction<T>(
+  String _,
+  Future<T> Function() action,
+) => action();
+
 /// Shelf HTTP adapter for the workflow-engine OpenAPI surface.
 ///
 /// Implements the workflow-engine OpenAPI operations over the shared engine,
@@ -62,6 +71,7 @@ class WorkflowService {
   final ItemQueueRepository? _itemQueueRepository;
   final Map<String, Duration> _queueOfferHoldWindows;
   final DateTime Function() _clock;
+  final CommunityTransactionRunner _communityTransactionRunner;
 
   // WorkflowDatabase's transaction boundary uses one externally-owned
   // PostgreSQL connection. Keep whole transitions sequential so statements
@@ -80,6 +90,7 @@ class WorkflowService {
     ItemQueueRepository? itemQueueRepository,
     Map<String, Duration> queueOfferHoldWindows = const <String, Duration>{},
     DateTime Function()? clock,
+    CommunityTransactionRunner? communityTransactionRunner,
   }) : _database = database,
        _documentRepository = documentRepository,
        _documentObjectStore = documentObjectStore,
@@ -89,6 +100,8 @@ class WorkflowService {
          Map<String, Duration>.of(queueOfferHoldWindows),
        ),
        _clock = clock ?? DateTime.now,
+       _communityTransactionRunner =
+           communityTransactionRunner ?? _runWithoutCommunityTransaction,
        _identityExtractor = identityExtractor,
        _appAccessClient = appAccessClient,
        _communityGroupIdResolver = communityGroupIdResolver,
@@ -96,7 +109,23 @@ class WorkflowService {
 
   Handler get handler => _handle;
 
-  Future<Response> _handle(Request request) async {
+  Future<Response> _handle(Request request) {
+    final segments = request.url.pathSegments;
+    final communityId =
+        segments.length >= 3 &&
+            segments[0] == 'v1' &&
+            segments[1] == 'communities' &&
+            segments[2].isNotEmpty
+        ? segments[2]
+        : null;
+    if (communityId == null) return _handleUnscoped(request);
+    return _communityTransactionRunner<Response>(
+      communityId,
+      () => _handleUnscoped(request),
+    );
+  }
+
+  Future<Response> _handleUnscoped(Request request) async {
     final segments = request.url.pathSegments;
 
     if (_matchesCollection(segments, 'workflow-definitions') &&
