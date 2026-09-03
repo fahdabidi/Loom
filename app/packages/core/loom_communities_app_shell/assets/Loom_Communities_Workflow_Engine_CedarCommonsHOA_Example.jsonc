@@ -7,7 +7,7 @@
   "extensionId": "ext_cedar_commons_hoa",
   "branding": { "accentColor": "#285A7B" },
   "seedDataFiles": [],
-  "idempotencyKey": "cedar-commons-hoa-experience-v4-2026-08-27-stored-documents",
+  "idempotencyKey": "cedar-commons-hoa-experience-v4-2026-09-02-notification-delivery",
 
   "experience": {
     "displayName": "Cedar Commons HOA",
@@ -589,6 +589,11 @@
           "readGuard": { "allowedRoleIds": ["hoa-board"] },
           "fields": { "parties": ["payerFanId", { "role": "hoa-board" }] }
         },
+        "reminder": {
+          "anchorDateField": "dueDate",
+          "anchorTimeField": "dueTime",
+          "leadHours": 72
+        },
         "states": {
           "due": {
             "label": "Dues due",
@@ -992,33 +997,51 @@
           {
             "id": "acknowledge-document", "action": "acknowledge", "label": "Acknowledge",
             "icon": "verified", "tone": "primary", "from": ["published"], "to": null,
-            "guard": { "allowedRoleIds": ["hoa-member"] }
+            "guard": { "allowedRoleIds": ["hoa-member"] },
+            "effects": [{ "op": "append", "key": "engagementAudit", "value": {
+              "action": "acknowledged", "actorFanId": "$actor", "at": "$timestamp"
+            } }]
           },
           {
             "id": "mark-document-unread", "action": "mark_unread", "label": "Mark unread",
             "icon": "mark_email_unread", "tone": "secondary", "from": ["published"], "to": null,
-            "guard": { "allowedRoleIds": ["hoa-member"] }
+            "guard": { "allowedRoleIds": ["hoa-member"] },
+            "effects": [{ "op": "append", "key": "engagementAudit", "value": {
+              "action": "marked-unread", "actorFanId": "$actor", "at": "$timestamp"
+            } }]
           },
           {
             "id": "save-document", "action": "save", "label": "Save document",
             "icon": "bookmark_add", "tone": "secondary", "from": ["published"], "to": null,
-            "guard": { "allowedRoleIds": ["hoa-member"] }
+            "guard": { "allowedRoleIds": ["hoa-member"] },
+            "effects": [{ "op": "append", "key": "engagementAudit", "value": {
+              "action": "saved", "actorFanId": "$actor", "at": "$timestamp"
+            } }]
           },
           {
             "id": "remove-saved-document", "action": "unsave", "label": "Remove saved document",
             "icon": "bookmark_remove", "tone": "secondary", "from": ["published"], "to": null,
-            "guard": { "allowedRoleIds": ["hoa-member"] }
+            "guard": { "allowedRoleIds": ["hoa-member"] },
+            "effects": [{ "op": "append", "key": "engagementAudit", "value": {
+              "action": "removed-saved", "actorFanId": "$actor", "at": "$timestamp"
+            } }]
           },
           {
             "id": "request-document-access", "action": "request_access", "label": "Request access",
             "icon": "lock_open", "tone": "secondary", "from": ["published"], "to": null,
-            "guard": { "allowedRoleIds": ["hoa-member"] }
+            "guard": { "allowedRoleIds": ["hoa-member"] },
+            "effects": [{ "op": "append", "key": "engagementAudit", "value": {
+              "action": "access-requested", "actorFanId": "$actor", "at": "$timestamp"
+            } }]
           },
           {
             "id": "withdraw-access-request", "action": "withdraw_access_request",
             "label": "Withdraw access request", "icon": "undo", "tone": "secondary",
             "from": ["published"], "to": null,
-            "guard": { "allowedRoleIds": ["hoa-member"] }
+            "guard": { "allowedRoleIds": ["hoa-member"] },
+            "effects": [{ "op": "append", "key": "engagementAudit", "value": {
+              "action": "access-request-withdrawn", "actorFanId": "$actor", "at": "$timestamp"
+            } }]
           },
           {
             "id": "share-document", "action": "share", "label": "Share document",
@@ -1084,6 +1107,8 @@
           "auditLabel": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "fact_check", "labelTemplate": "Audit: {value}", "displayContexts": ["detail"] },
           "explicitReaderFanIds": { "type": "fanId[]", "writableBy": "platform" },
+          "engagementAudit": { "type": "list", "writableBy": "effect", "displayIcon": "fact_check",
+            "labelTemplate": "Engagement events: {value.length}", "displayContexts": ["detail"] },
           "publishedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "publish",
             "labelTemplate": "Published {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "archivedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "archive",
@@ -1127,7 +1152,12 @@
             },
             "effects": [
               { "op": "set", "key": "reservedByFanId", "value": "$actor" },
-              { "op": "set", "key": "reservedAt", "value": "$timestamp" }
+              { "op": "set", "key": "reservedAt", "value": "$timestamp" },
+              { "op": "createInstance", "workflowType": "hoa-owner-notification", "fields": {
+                "title": "Facility reservation confirmed", "body": "Your facility reservation has been confirmed.",
+                "senderFanId": "$actor", "recipientFanId": "{requesterFanId}", "sentAt": "$timestamp",
+                "deliveryState": "Sent"
+              } }
             ]
           },
           {
@@ -1142,7 +1172,12 @@
             },
             "effects": [
               { "op": "set", "key": "reservedByFanId", "value": "{requesterFanId}" },
-              { "op": "set", "key": "reservedAt", "value": "$timestamp" }
+              { "op": "set", "key": "reservedAt", "value": "$timestamp" },
+              { "op": "createInstance", "workflowType": "hoa-owner-notification", "fields": {
+                "title": "Facility reservation confirmed", "body": "The HOA Board confirmed your facility reservation.",
+                "senderFanId": "$actor", "recipientFanId": "{requesterFanId}", "sentAt": "$timestamp",
+                "deliveryState": "Sent"
+              } }
             ]
           },
           // A failed overlap guard cannot mutate state. Board flagging is the auditable path to conflict.
@@ -1151,7 +1186,14 @@
             "icon": "event_busy", "tone": "destructive", "from": ["open"], "to": "conflict",
             "guard": { "allowedRoleIds": ["hoa-board"] },
             "inputs": { "conflictNote": { "type": "text", "required": true } },
-            "effects": [{ "op": "set", "key": "conflictNote", "value": "{input.conflictNote}" }]
+            "effects": [
+              { "op": "set", "key": "conflictNote", "value": "{input.conflictNote}" },
+              { "op": "createInstance", "workflowType": "hoa-owner-notification", "fields": {
+                "title": "Facility reservation needs a new time", "body": "{input.conflictNote}",
+                "senderFanId": "$actor", "recipientFanId": "{requesterFanId}", "sentAt": "$timestamp",
+                "deliveryState": "Sent"
+              } }
+            ]
           },
           {
             "id": "revise-conflicted-reservation", "action": "edit", "label": "Revise reservation",
@@ -1493,8 +1535,8 @@
               } }
             ]
           },
-          // The export-bundle platform service writes and verifies the checksum. Opaque transfer-ID
-          // generation remains unavailable, so transfer progress is never gated on transferId.
+          // The export-bundle platform service writes and verifies the checksum. The workflow service
+          // mints the opaque transfer ID, but transfer progress is never gated on that identifier.
           {
             "id": "start-export-transfer", "action": "run", "label": "Start transfer",
             "icon": "send", "tone": "primary", "from": ["ready"], "to": "transferring",

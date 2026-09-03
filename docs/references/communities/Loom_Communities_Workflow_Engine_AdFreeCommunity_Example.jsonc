@@ -183,6 +183,7 @@
                   "startedAt": "$timestamp",
                   "renewalDate": "{input.renewalDate}",
                   "expiryDate": "{input.expiryDate}",
+                  "reminderEnabled": true,
                   "currentPlan": "{billingPeriod}",
                   "affectedAdSurfaces": [
                     "Home feed promotions",
@@ -234,7 +235,18 @@
             },
             "effects": [
               { "op": "set", "key": "paymentFailureReason", "value": "{input.failureReason}" },
-              { "op": "set", "key": "paymentOutcomeRecordedAt", "value": "$timestamp" }
+              { "op": "set", "key": "paymentOutcomeRecordedAt", "value": "$timestamp" },
+              {
+                "op": "createInstance",
+                "workflowType": "ad-off-notification",
+                "fields": {
+                  "recipientFanId": "{memberFanId}",
+                  "title": "Ad-off checkout needs another attempt",
+                  "body": "Review the recorded payment issue and retry when ready.",
+                  "notificationKind": "checkout-retry",
+                  "createdAt": "$timestamp"
+                }
+              }
             ]
           },
           {
@@ -618,7 +630,6 @@
           // Declared for the product proof, intentionally never seeded or effect-written.
           "paymentConfirmationId": {
             "type": "text?",
-            "writableBy": "effect",
             "displayIcon": "fingerprint",
             "labelTemplate": "Payment confirmation: {value}",
             "hideWhenEmpty": true,
@@ -640,6 +651,11 @@
               { "role": "ad-off-owner" }
             ]
           }
+        },
+        "reminder": {
+          "anchorDateField": "expiryDate",
+          "leadHours": 72,
+          "enabledField": "reminderEnabled"
         },
         "states": {
           "unfunded": {
@@ -753,6 +769,7 @@
                 "workflowType": "ad-off-settlement-utility",
                 "fields": {
                   "fundingCheckoutId": "{id}",
+                  "payerFanId": "{payerFanId}",
                   "fundedAmount": "{fundedAmount}",
                   "currency": "{currency}",
                   "fundedAt": "$timestamp",
@@ -1094,7 +1111,6 @@
           // Declared for audit proof, intentionally never seeded or effect-written.
           "paymentConfirmationId": {
             "type": "text?",
-            "writableBy": "effect",
             "displayIcon": "fingerprint",
             "labelTemplate": "Payment confirmation: {value}",
             "hideWhenEmpty": true,
@@ -1239,6 +1255,7 @@
             },
             "effects": [
               { "op": "set", "key": "cancelledAt", "value": "$timestamp" },
+              { "op": "set", "key": "reminderEnabled", "value": false },
               { "op": "set", "key": "requestedPlan", "value": null }
             ]
           },
@@ -1254,6 +1271,7 @@
             },
             "effects": [
               { "op": "set", "key": "cancelledAt", "value": "$timestamp" },
+              { "op": "set", "key": "reminderEnabled", "value": false },
               { "op": "set", "key": "requestedPlan", "value": null }
             ]
           },
@@ -1301,6 +1319,7 @@
             "effects": [
               { "op": "set", "key": "renewalDate", "value": "{input.renewalDate}" },
               { "op": "set", "key": "expiryDate", "value": "{input.expiryDate}" },
+              { "op": "set", "key": "reminderEnabled", "value": true },
               { "op": "set", "key": "restoredAt", "value": "$timestamp" },
               { "op": "set", "key": "cancelledAt", "value": null },
               { "op": "set", "key": "decisionNote", "value": null }
@@ -1383,6 +1402,12 @@
             "displayIcon": "event_busy",
             "labelTemplate": "Entitlement ends {value}",
             "displayContexts": ["tile", "detail"]
+          },
+          "reminderEnabled": {
+            "type": "bool",
+            "required": true,
+            "writableBy": "effect",
+            "displayContexts": []
           },
           "currentPlan": {
             "type": "text",
@@ -1813,7 +1838,6 @@
           // Declared because the product requires it, intentionally never seeded or effect-written.
           "receiptId": {
             "type": "text?",
-            "writableBy": "effect",
             "displayIcon": "fingerprint",
             "labelTemplate": "Receipt ID: {value}",
             "hideWhenEmpty": true,
@@ -2053,7 +2077,18 @@
               "allowedRoleIds": ["ad-off-owner"]
             },
             "effects": [
-              { "op": "set", "key": "settledAt", "value": "$timestamp" }
+              { "op": "set", "key": "settledAt", "value": "$timestamp" },
+              {
+                "op": "createInstance",
+                "workflowType": "ad-off-notification",
+                "fields": {
+                  "recipientFanId": "{payerFanId}",
+                  "title": "Community ad-off settlement recorded",
+                  "body": "The funded utility allocation now has a recorded settlement outcome.",
+                  "notificationKind": "settlement-recorded",
+                  "createdAt": "$timestamp"
+                }
+              }
             ]
           },
           {
@@ -2141,6 +2176,12 @@
             "displayIcon": "link",
             "labelTemplate": "Funding record: {value}",
             "displayContexts": ["detail"]
+          },
+          "payerFanId": {
+            "type": "fanId",
+            "required": true,
+            "writableBy": "effect",
+            "displayContexts": []
           },
           "fundedAmount": {
             "type": "number",
@@ -2248,11 +2289,121 @@
           // Declared because the product requires it, intentionally never seeded or effect-written.
           "settlementId": {
             "type": "text?",
-            "writableBy": "effect",
             "displayIcon": "fingerprint",
             "labelTemplate": "Settlement ID: {value}",
             "hideWhenEmpty": true,
             "displayContexts": ["tile", "detail"]
+          }
+        }
+      },
+
+      "ad-off-notification": {
+        "initialState": "unread",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": {
+            "actorEqualsField": { "key": "recipientFanId" }
+          },
+          "fields": {
+            "recipient": "recipientFanId"
+          }
+        },
+        "states": {
+          "unread": {
+            "label": "New notification",
+            "tone": "info"
+          },
+          "read": {
+            "label": "Notification read",
+            "tone": "positive"
+          }
+        },
+        "transitions": [
+          {
+            "id": "mark-read",
+            "label": "Mark read",
+            "icon": "done",
+            "tone": "primary",
+            "from": ["unread"],
+            "to": "read",
+            "guard": {
+              "actorEqualsField": { "key": "recipientFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "readAt", "value": "$timestamp" }
+            ]
+          },
+          {
+            "id": "mark-unread",
+            "label": "Mark unread",
+            "icon": "mark_email_unread",
+            "tone": "secondary",
+            "from": ["read"],
+            "to": "unread",
+            "guard": {
+              "actorEqualsField": { "key": "recipientFanId" }
+            },
+            "effects": [
+              { "op": "set", "key": "readAt", "value": null }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["unread", "read"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "primary"
+          }
+        ],
+        "instanceDataSchema": {
+          "recipientFanId": {
+            "type": "fanId",
+            "required": true,
+            "writableBy": "effect",
+            "displayContexts": []
+          },
+          "title": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "notifications",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "body": {
+            "type": "textarea",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "info_outline",
+            "labelTemplate": "{value}",
+            "displayContexts": ["tile", "detail"]
+          },
+          "notificationKind": {
+            "type": "text",
+            "required": true,
+            "writableBy": "effect",
+            "displayIcon": "label_outline",
+            "labelTemplate": "Notice: {value}",
+            "displayContexts": ["detail"]
+          },
+          "createdAt": {
+            "type": "date",
+            "required": true,
+            "writableBy": "effect",
+            "sortable": true,
+            "displayIcon": "schedule",
+            "labelTemplate": "Created {value}",
+            "displayContexts": ["detail"]
+          },
+          "readAt": {
+            "type": "date?",
+            "writableBy": "effect",
+            "displayIcon": "done_all",
+            "labelTemplate": "Read {value}",
+            "hideWhenEmpty": true,
+            "displayContexts": ["detail"]
           }
         }
       }
@@ -2307,6 +2458,7 @@
           "startedAt": "2026-08-15T10:05:00Z",
           "renewalDate": "2026-09-15",
           "expiryDate": "2026-10-15",
+          "reminderEnabled": true,
           "currentPlan": "Monthly ad-off",
           "affectedAdSurfaces": [
             "Home feed promotions",
@@ -2371,6 +2523,7 @@
         "createdByFanId": "ad-off-owner",
         "instanceData": {
           "fundingCheckoutId": "ad-off-community-funded",
+          "payerFanId": "ad-off-owner",
           "fundedAmount": 250.00,
           "currency": "USD",
           "fundedAt": "2026-08-01T09:08:00Z",
@@ -2378,6 +2531,19 @@
           "utilityImpact": "Funds ad-free access while preserving community operations coverage.",
           "allocationDetails": "Allocated to community ad-serving replacement costs.",
           "settledAt": "2026-08-02T15:30:00Z"
+        }
+      },
+      {
+        "instanceId": "ad-off-notification-retry",
+        "workflowType": "ad-off-notification",
+        "currentState": "unread",
+        "createdByFanId": "ad-off-owner",
+        "instanceData": {
+          "recipientFanId": "ad-off-member",
+          "title": "Ad-off checkout needs another attempt",
+          "body": "Review the recorded payment issue and retry when ready.",
+          "notificationKind": "checkout-retry",
+          "createdAt": "2026-08-18T12:04:00Z"
         }
       }
     ]

@@ -217,6 +217,18 @@
                 "op": "append",
                 "key": "statusHistory",
                 "value": { "status": "complete", "at": "$timestamp", "by": "$actor" }
+              },
+              {
+                "op": "createInstance",
+                "workflowType": "export-notification",
+                "fields": {
+                  "recipientFanId": "$actor",
+                  "title": "Export operation complete",
+                  "body": "Your export, import, or transfer preview operation completed. Open the record to review the outcome.",
+                  "sourceWorkflowType": "export-import-preview",
+                  "sourceInstanceId": "{id}",
+                  "createdAt": "$timestamp"
+                }
               }
             ]
           },
@@ -337,6 +349,13 @@
             "bindingKind": "summary"
           },
           {
+            "states": ["draft", "previewed", "running", "complete", "error", "rolled-back", "cancelled"],
+            "audience": "any",
+            "tabId": "export",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
             "states": ["running", "complete", "error", "rolled-back"],
             "audience": "any",
             "tabId": "home",
@@ -404,7 +423,7 @@
           },
           "statusHistory": {
             "type": "list",
-            "writableBy": "effect",
+            "writableBy": "platform",
             "displayIcon": "history",
             "labelTemplate": "{value.length} history entries",
             "displayContexts": ["detail"]
@@ -502,6 +521,18 @@
                 "op": "append",
                 "key": "auditHistory",
                 "value": { "status": "replayed", "at": "$timestamp", "by": "$actor" }
+              },
+              {
+                "op": "createInstance",
+                "workflowType": "export-notification",
+                "fields": {
+                  "recipientFanId": "$actor",
+                  "title": "Import replay verified",
+                  "body": "The import replay passed validation and the receiver state is available for review.",
+                  "sourceWorkflowType": "export-import-replay",
+                  "sourceInstanceId": "{id}",
+                  "createdAt": "$timestamp"
+                }
               }
             ]
           },
@@ -518,7 +549,19 @@
             },
             "effects": [
               { "op": "set", "key": "validationStatus", "value": "failed" },
-              { "op": "set", "key": "errorExample", "value": "One replayed record did not match the destination schema." }
+              { "op": "set", "key": "errorExample", "value": "One replayed record did not match the destination schema." },
+              {
+                "op": "createInstance",
+                "workflowType": "export-notification",
+                "fields": {
+                  "recipientFanId": "$actor",
+                  "title": "Import replay needs attention",
+                  "body": "The replay failed validation. Open the replay record to review the error and retry or change the source.",
+                  "sourceWorkflowType": "export-import-replay",
+                  "sourceInstanceId": "{id}",
+                  "createdAt": "$timestamp"
+                }
+              }
             ]
           },
           {
@@ -606,6 +649,13 @@
             "bindingKind": "summary"
           },
           {
+            "states": ["prepared", "validating", "replayed", "failed", "cancelled"],
+            "audience": "any",
+            "tabId": "transfer",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
             "states": ["validating", "replayed", "failed"],
             "audience": "any",
             "tabId": "home",
@@ -620,7 +670,7 @@
           "affectedMemberNotice": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 500, "displayIcon": "campaign", "displayContexts": ["tile", "detail"] },
           "validationStatus": { "type": "text?", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Validation: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "receiverState": { "type": "text?", "writableBy": "effect", "displayIcon": "move_to_inbox", "labelTemplate": "Receiver: {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "auditHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
+          "auditHistory": { "type": "list", "writableBy": "platform", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
           "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
           "completedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
           "errorExample": { "type": "text?", "writableBy": "effect", "displayIcon": "error_outline", "hideWhenEmpty": true }
@@ -669,7 +719,19 @@
             },
             "effects": [
               { "op": "set", "key": "auditState", "value": "previewed" },
-              { "op": "set", "key": "previewedAt", "value": "$timestamp" }
+              { "op": "set", "key": "previewedAt", "value": "$timestamp" },
+              {
+                "op": "createInstance",
+                "workflowType": "export-notification",
+                "fields": {
+                  "recipientFanId": "$actor",
+                  "title": "Redaction review ready",
+                  "body": "The protected-data redaction preview is ready for your confirmation.",
+                  "sourceWorkflowType": "export-protected-redaction",
+                  "sourceInstanceId": "{id}",
+                  "createdAt": "$timestamp"
+                }
+              }
             ]
           },
           {
@@ -775,6 +837,13 @@
             "tabId": "admin",
             "cardSurfaceFamily": "exportWizard",
             "bindingKind": "summary"
+          },
+          {
+            "states": ["draft", "previewed", "confirmed", "failed", "cancelled"],
+            "audience": "any",
+            "tabId": "export",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
           },
           {
             "states": ["previewed", "confirmed", "failed"],
@@ -904,6 +973,13 @@
             "tabId": "admin",
             "cardSurfaceFamily": "exportWizard",
             "bindingKind": "summary"
+          },
+          {
+            "states": ["editable", "locked", "retired"],
+            "audience": "any",
+            "tabId": "export",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
           }
         ],
         "instanceDataSchema": {
@@ -913,7 +989,7 @@
           "excludedComponents": { "type": "list", "required": true, "writableBy": "formEntry", "displayIcon": "remove_circle", "labelTemplate": "{value.length} excluded", "displayContexts": ["tile", "detail"] },
           "protectedDataLabels": { "type": "list", "required": true, "writableBy": "formEntry", "displayIcon": "shield", "labelTemplate": "{value.length} protected labels", "displayContexts": ["tile", "detail"] },
           "nextStep": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "arrow_forward", "labelTemplate": "Next: {value}", "displayContexts": ["detail"] },
-          "packageGenerated": { "type": "bool", "writableBy": "effect", "displayIcon": "inventory_2", "labelTemplate": "Package generated: {value}", "displayContexts": ["detail"] },
+          "packageGenerated": { "type": "bool", "writableBy": "platform", "displayIcon": "inventory_2", "labelTemplate": "Package generated: {value}", "displayContexts": ["detail"] },
           "lockedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "lock_clock", "hideWhenEmpty": true },
           "generatedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true }
         }
@@ -989,7 +1065,19 @@
             "effects": [
               { "op": "set", "key": "generationStatus", "value": "complete" },
               { "op": "set", "key": "downloadState", "value": "waiting for verification" },
-              { "op": "set", "key": "generationCompletedAt", "value": "$timestamp" }
+              { "op": "set", "key": "generationCompletedAt", "value": "$timestamp" },
+              {
+                "op": "createInstance",
+                "workflowType": "export-notification",
+                "fields": {
+                  "recipientFanId": "$actor",
+                  "title": "Full bundle complete",
+                  "body": "The full export bundle is complete. Review verification before downloading it.",
+                  "sourceWorkflowType": "export-full-bundle",
+                  "sourceInstanceId": "{id}",
+                  "createdAt": "$timestamp"
+                }
+              }
             ]
           },
           {
@@ -1116,6 +1204,13 @@
             "bindingKind": "summary"
           },
           {
+            "states": ["draft", "generating", "complete", "error", "cancelled"],
+            "audience": "any",
+            "tabId": "documents",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
             "states": ["generating", "complete", "error"],
             "audience": "any",
             "tabId": "home",
@@ -1218,7 +1313,19 @@
             "effects": [
               { "op": "set", "key": "generationStatus", "value": "complete" },
               { "op": "set", "key": "downloadState", "value": "waiting for redaction validation" },
-              { "op": "set", "key": "generationCompletedAt", "value": "$timestamp" }
+              { "op": "set", "key": "generationCompletedAt", "value": "$timestamp" },
+              {
+                "op": "createInstance",
+                "workflowType": "export-notification",
+                "fields": {
+                  "recipientFanId": "$actor",
+                  "title": "Redacted bundle complete",
+                  "body": "The redacted export bundle is complete. Review redaction validation before downloading it.",
+                  "sourceWorkflowType": "export-redacted-bundle",
+                  "sourceInstanceId": "{id}",
+                  "createdAt": "$timestamp"
+                }
+              }
             ]
           },
           {
@@ -1345,6 +1452,13 @@
             "bindingKind": "summary"
           },
           {
+            "states": ["draft", "generating", "complete", "error", "cancelled"],
+            "audience": "any",
+            "tabId": "documents",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
             "states": ["generating", "complete", "error"],
             "audience": "any",
             "tabId": "home",
@@ -1430,6 +1544,18 @@
                 "op": "append",
                 "key": "auditHistory",
                 "value": { "result": "failed", "at": "$timestamp", "by": "$actor" }
+              },
+              {
+                "op": "createInstance",
+                "workflowType": "export-notification",
+                "fields": {
+                  "recipientFanId": "$actor",
+                  "title": "Checksum verification failed",
+                  "body": "The checksum did not verify. Open the evidence record to retry or cancel verification.",
+                  "sourceWorkflowType": "export-checksum-evidence",
+                  "sourceInstanceId": "{id}",
+                  "createdAt": "$timestamp"
+                }
               }
             ]
           },
@@ -1533,6 +1659,13 @@
             "bindingKind": "summary"
           },
           {
+            "states": ["pending", "verified", "failed", "cancelled"],
+            "audience": "any",
+            "tabId": "audit",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
             "states": ["pending", "verified", "failed"],
             "audience": "any",
             "tabId": "home",
@@ -1544,8 +1677,8 @@
           "evidenceLabel": { "type": "text", "required": true, "writableBy": "formEntry", "searchable": true, "displayIcon": "verified_user", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "scopeSummary": { "type": "textarea", "required": true, "writableBy": "formEntry", "maxLength": 1000, "displayIcon": "checklist", "displayContexts": ["tile", "detail"] },
           "verificationResult": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "fact_check", "labelTemplate": "Verification: {value}", "displayContexts": ["tile", "detail"] },
-          "transferEligibility": { "type": "text", "writableBy": "effect", "displayIcon": "swap_horiz", "labelTemplate": "Transfer: {value}", "displayContexts": ["tile", "detail"] },
-          "auditHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
+          "transferEligibility": { "type": "text", "writableBy": "platform", "displayIcon": "swap_horiz", "labelTemplate": "Transfer: {value}", "displayContexts": ["tile", "detail"] },
+          "auditHistory": { "type": "list", "writableBy": "platform", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
           "checksum": { "type": "text?", "writableBy": "platform", "platformSource": "checksum", "displayIcon": "fingerprint", "labelTemplate": "Checksum: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "verifiedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
           "transferEnabledAt": { "type": "date?", "writableBy": "effect", "displayIcon": "send_time_extension", "hideWhenEmpty": true },
@@ -1814,6 +1947,20 @@
             "bindingKind": "summary"
           },
           {
+            "states": ["draft", "transferring", "awaiting-provider", "verified", "failed", "cancelled"],
+            "audience": "any",
+            "tabId": "transfer",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
+            "states": ["awaiting-provider", "verified", "failed"],
+            "audience": "any",
+            "tabId": "documents",
+            "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          },
+          {
             "states": ["transferring", "awaiting-provider", "verified", "failed"],
             "audience": "any",
             "tabId": "home",
@@ -1829,7 +1976,7 @@
           "transferStatus": { "type": "text?", "writableBy": "effect", "displayIcon": "sync", "labelTemplate": "Status: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "verificationResult": { "type": "text?", "writableBy": "effect", "displayIcon": "fact_check", "labelTemplate": "Provider result: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "rollbackAvailability": { "type": "text?", "writableBy": "effect", "displayIcon": "restore", "labelTemplate": "Rollback: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
-          "auditHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
+          "auditHistory": { "type": "list", "writableBy": "platform", "displayIcon": "history", "labelTemplate": "{value.length} audit entries", "displayContexts": ["detail"] },
           "transferId": { "type": "text?", "writableBy": "platform", "platformSource": "opaqueId", "displayIcon": "confirmation_number", "labelTemplate": "Transfer ID: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
           "submittedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "send_time_extension", "hideWhenEmpty": true },
@@ -2007,6 +2154,13 @@
             "bindingKind": "summary"
           },
           {
+            "states": ["available", "running", "complete", "failed", "unavailable", "cancelled"],
+            "audience": "any",
+            "tabId": "transfer",
+            "cardSurfaceFamily": "exportWizard",
+            "bindingKind": "primary"
+          },
+          {
             "states": ["running", "complete", "failed"],
             "audience": "any",
             "tabId": "home",
@@ -2026,6 +2180,56 @@
           "startedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "play_circle", "hideWhenEmpty": true },
           "completedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "event_available", "hideWhenEmpty": true },
           "errorExample": { "type": "text?", "writableBy": "effect", "displayIcon": "error_outline", "hideWhenEmpty": true }
+        }
+      },
+
+      "export-notification": {
+        "initialState": "unread",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "actorEqualsField": { "key": "recipientFanId" } },
+          "fields": { "recipient": "recipientFanId" }
+        },
+        "states": {
+          "unread": { "label": "Unread", "tone": "info" },
+          "read": { "label": "Read", "tone": "positive" }
+        },
+        "transitions": [
+          {
+            "id": "mark-notification-read",
+            "label": "Mark read",
+            "icon": "mark_email_read",
+            "tone": "primary",
+            "from": ["unread"],
+            "to": "read",
+            "guard": { "actorEqualsField": { "key": "recipientFanId" } }
+          },
+          {
+            "id": "mark-notification-unread",
+            "label": "Mark unread",
+            "icon": "mark_email_unread",
+            "tone": "secondary",
+            "from": ["read"],
+            "to": "unread",
+            "guard": { "actorEqualsField": { "key": "recipientFanId" } }
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["unread", "read"],
+            "audience": "any",
+            "tabId": "home",
+            "cardSurfaceFamily": "notificationInbox",
+            "bindingKind": "primary"
+          }
+        ],
+        "instanceDataSchema": {
+          "recipientFanId": { "type": "fanId", "required": true, "writableBy": "effect" },
+          "title": { "type": "text", "required": true, "writableBy": "effect", "displayIcon": "notifications", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
+          "body": { "type": "textarea", "required": true, "writableBy": "effect", "maxLength": 1000, "displayIcon": "subject", "displayContexts": ["tile", "detail"] },
+          "sourceWorkflowType": { "type": "text", "required": true, "writableBy": "effect", "displayIcon": "account_tree", "labelTemplate": "Source: {value}", "displayContexts": ["detail"] },
+          "sourceInstanceId": { "type": "text", "required": true, "writableBy": "effect", "displayIcon": "link", "labelTemplate": "Record: {value}", "displayContexts": ["detail"] },
+          "createdAt": { "type": "date", "required": true, "writableBy": "effect", "displayIcon": "schedule", "labelTemplate": "Created: {value}", "displayContexts": ["tile", "detail"] }
         }
       }
     },
@@ -2209,6 +2413,43 @@
         "label": "Admin",
         "iconKey": "admin",
         "description": "Export scope, verification, provider transfer, rollback, and audit operations.",
+        "visibleRoleIds": [
+          "portability-owner",
+          "portability-receiving-provider"
+        ]
+      },
+      {
+        "tabId": "export",
+        "label": "Export",
+        "iconKey": "file_upload",
+        "description": "Export scope, schema, and protected-data redaction decisions.",
+        "visibleRoleIds": ["portability-owner"]
+      },
+      {
+        "tabId": "transfer",
+        "label": "Transfer",
+        "iconKey": "swap_horiz",
+        "description": "Import replay, provider transfer verification, and rollback operations.",
+        "visibleRoleIds": [
+          "portability-owner",
+          "portability-receiving-provider"
+        ]
+      },
+      {
+        "tabId": "documents",
+        "label": "Documents",
+        "iconKey": "folder",
+        "description": "Full and redacted bundle records plus provider transfer receipts.",
+        "visibleRoleIds": [
+          "portability-owner",
+          "portability-receiving-provider"
+        ]
+      },
+      {
+        "tabId": "audit",
+        "label": "Audit",
+        "iconKey": "fact_check",
+        "description": "Checksum evidence and integrity-verification history.",
         "visibleRoleIds": [
           "portability-owner",
           "portability-receiving-provider"
