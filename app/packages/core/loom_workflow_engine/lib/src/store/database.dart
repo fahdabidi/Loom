@@ -49,6 +49,7 @@ class WorkflowDatabase {
   final QueryExecutor _baseDb;
   final WorkflowSqlDialect _dialect;
   final WorkflowTransactionRunner? _transactionRunner;
+  final bool _migrationsManagedExternally;
   final _WorkflowDatabaseUser _user = _WorkflowDatabaseUser();
   Future<void>? _openAndMigrated;
 
@@ -56,7 +57,9 @@ class WorkflowDatabase {
     this._baseDb,
     this._dialect, {
     WorkflowTransactionRunner? transactionRunner,
-  }) : _transactionRunner = transactionRunner;
+    bool migrationsManagedExternally = false,
+  }) : _transactionRunner = transactionRunner,
+       _migrationsManagedExternally = migrationsManagedExternally;
 
   /// The transaction-bound executor when an adapter supplies one, otherwise
   /// the database's normal executor. Zones keep concurrent HTTP requests from
@@ -91,18 +94,21 @@ class WorkflowDatabase {
     QueryExecutor executor, {
     required WorkflowSqlDialect dialect,
     WorkflowTransactionRunner? transactionRunner,
+    bool migrationsManagedExternally = false,
   }) {
     return WorkflowDatabase._(
       executor,
       dialect,
       transactionRunner: transactionRunner,
+      migrationsManagedExternally: migrationsManagedExternally,
     );
   }
 
-  /// Opens the underlying database and completes all engine-owned migrations.
+  /// Opens the underlying database and completes engine-owned migrations.
   ///
-  /// Server startup calls this explicitly so readiness cannot report success
-  /// before its workflow tables and compatibility migrations exist.
+  /// Server deployments invoke this only through their privileged migration
+  /// connection. A request-serving executor sets
+  /// [migrationsManagedExternally], which opens it without issuing DDL.
   Future<void> initialize() => _ensureOpenAndMigrated();
 
   bool get isSqliteBacked => _dialect.isSqlite;
@@ -117,7 +123,9 @@ class WorkflowDatabase {
         // WAL is a SQLite concept; PostgreSQL is already write-ahead logged.
         await _db.runCustom('PRAGMA journal_mode=WAL;');
       }
-      await _migrate();
+      if (!_migrationsManagedExternally) {
+        await _migrate();
+      }
     }();
   }
 

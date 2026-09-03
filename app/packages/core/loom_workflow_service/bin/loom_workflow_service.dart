@@ -11,6 +11,12 @@ Future<void> main() async {
   if (postgresPassword == null || postgresPassword.isEmpty) {
     throw StateError('LOOM_POSTGRES_PASSWORD is required');
   }
+  final postgresUsername = environment['LOOM_POSTGRES_USERNAME'] ?? 'loom';
+  final runtimeCredentials = _runtimePostgresCredentials(
+    environment,
+    adminUsername: postgresUsername,
+    adminPassword: postgresPassword,
+  );
   final communityGroupIds = environment['LOOM_COMMUNITY_GROUP_IDS'];
   if (communityGroupIds == null || communityGroupIds.isEmpty) {
     throw StateError('LOOM_COMMUNITY_GROUP_IDS is required');
@@ -62,7 +68,9 @@ Future<void> main() async {
   try {
     startedService = await _startUntilReady(
       environment: environment,
+      postgresUsername: postgresUsername,
       postgresPassword: postgresPassword,
+      runtimeCredentials: runtimeCredentials,
       communityGroupIds: communityGroupIds,
       keycloakTokenUrl: keycloakTokenUrl,
       appAccessClientId: appAccessClientId,
@@ -87,7 +95,9 @@ Future<void> main() async {
 
 Future<_StartedWorkflowService?> _startUntilReady({
   required Map<String, String> environment,
+  required String postgresUsername,
   required String postgresPassword,
+  required _PostgresCredentials runtimeCredentials,
   required String communityGroupIds,
   required String keycloakTokenUrl,
   required String appAccessClientId,
@@ -99,29 +109,48 @@ Future<_StartedWorkflowService?> _startUntilReady({
   required Completer<void> shutdown,
 }) async {
   while (!shutdown.isCompleted) {
+    WorkflowPostgresConnection? administrator;
     WorkflowPostgresConnection? postgres;
     JwtWorkflowIdentityExtractor? identityExtractor;
     HttpAppAccessDecisionClient? appAccessClient;
     try {
+      administrator = await WorkflowPostgresConnection.open(
+        host:
+            environment['LOOM_POSTGRES_HOST'] ??
+            'postgres.loom.svc.cluster.local',
+        port: int.parse(environment['LOOM_POSTGRES_PORT'] ?? '5432'),
+        databaseName: workflowPostgresDatabaseName(environment),
+        username: postgresUsername,
+        password: postgresPassword,
+      );
+      await administrator.migrateWorkflowSchema();
+
+      // Every DDL statement, including all forced-RLS policy migrations, runs
+      // before the restricted runtime pool is opened. The repositories below
+      // receive only that runtime pool and never perform schema work.
+      await PostgresDocumentRepository(administrator.connection).migrate();
+      await PostgresExportBundleRepository(administrator.connection).migrate();
+      await PostgresItemQueueRepository(administrator.connection).migrate();
+      await administrator.close();
+      administrator = null;
+
       postgres = await WorkflowPostgresConnection.open(
         host:
             environment['LOOM_POSTGRES_HOST'] ??
             'postgres.loom.svc.cluster.local',
         port: int.parse(environment['LOOM_POSTGRES_PORT'] ?? '5432'),
         databaseName: workflowPostgresDatabaseName(environment),
-        username: environment['LOOM_POSTGRES_USERNAME'] ?? 'loom',
-        password: postgresPassword,
+        username: runtimeCredentials.username,
+        password: runtimeCredentials.password,
+        migrationsManagedExternally: true,
       );
       health.markPostgresConnected(readinessCheck: postgres.verifyReadiness);
-      await postgres.migrateWorkflowSchema();
 
       // Queue entries are core workflow-service state, not object storage.
-      // Migrate them before readiness so the equipment-loan queue API cannot
-      // receive traffic without its table and indexes.
+      // Their schema is already migrated through the administrator connection.
       final itemQueueRepository = PostgresItemQueueRepository(
         postgres.connection,
       );
-      await itemQueueRepository.migrate();
       final documentStorage = await _openOptionalDocumentStorage(
         environment: environment,
         postgres: postgres,
@@ -165,6 +194,7 @@ Future<_StartedWorkflowService?> _startUntilReady({
       health.markPostgresUnavailable();
       identityExtractor?.close(force: true);
       appAccessClient?.close(force: true);
+      await administrator?.close();
       await postgres?.close();
       stderr.writeln(
         'Workflow service startup failed; retrying Postgres in 5 seconds: '
@@ -219,11 +249,9 @@ Future<_OptionalDocumentStorage> _openOptionalDocumentStorage({
     );
     await store.ensureBucket();
     final repository = PostgresDocumentRepository(postgres.connection);
-    await repository.migrate();
     final exportRepository = PostgresExportBundleRepository(
       postgres.connection,
     );
-    await exportRepository.migrate();
     stdout.writeln('Document storage ready on $endpoint.');
     return _OptionalDocumentStorage(
       documentRepository: repository,
@@ -277,4 +305,40 @@ class _StartedWorkflowService {
 
 Map<String, Duration> _queueOfferHoldWindows(String? encoded) {
   return parseQueueOfferHoldWindows(encoded);
+}
+
+class _PostgresCredentials {
+  const _PostgresCredentials({required this.username, required this.password});
+
+  final String username;
+  final String password;
+}
+
+_PostgresCredentials _runtimePostgresCredentials(
+  Map<String, String> environment, {
+  required String adminUsername,
+  required String adminPassword,
+}) {
+  final appUsername = environment['LOOM_POSTGRES_APP_USERNAME'];
+  final appPassword = environment['LOOM_POSTGRES_APP_PASSWORD'];
+  if (appUsername != null &&
+      appUsername.isNotEmpty &&
+      appPassword != null &&
+      appPassword.isNotEmpty) {
+    return _PostgresCredentials(username: appUsername, password: appPassword);
+  }
+  if ((appUsername != null && appUsername.isNotEmpty) ||
+      (appPassword != null && appPassword.isNotEmpty)) {
+    throw StateError(
+      'LOOM_POSTGRES_APP_USERNAME and LOOM_POSTGRES_APP_PASSWORD must be '
+      'set together.',
+    );
+  }
+
+  stderr.writeln(
+    'WARNING: LOOM_POSTGRES_APP_USERNAME and LOOM_POSTGRES_APP_PASSWORD are '
+    'unset; the workflow runtime pool is falling back to the administrator '
+    'role, so PostgreSQL RLS is inert.',
+  );
+  return _PostgresCredentials(username: adminUsername, password: adminPassword);
 }

@@ -120,8 +120,13 @@ String workflowPostgresDatabaseName(Map<String, String> environment) =>
 class WorkflowPostgresConnection {
   final pg.Pool<Object?> _connection;
   final WorkflowDatabase database;
+  final bool _migrationsManagedExternally;
 
-  WorkflowPostgresConnection._(this._connection, this.database);
+  WorkflowPostgresConnection._(
+    this._connection,
+    this.database, {
+    required bool migrationsManagedExternally,
+  }) : _migrationsManagedExternally = migrationsManagedExternally;
 
   /// The raw pooled session, for tables the engine does not own.
   ///
@@ -145,6 +150,7 @@ class WorkflowPostgresConnection {
     required String password,
     pg.SslMode sslMode = pg.SslMode.disable,
     Future<void> Function(pg.Connection connection)? onConnectionOpen,
+    bool migrationsManagedExternally = false,
   }) async {
     final connection = pg.Pool<Object?>.withEndpoints(
       [
@@ -167,6 +173,7 @@ class WorkflowPostgresConnection {
     final workflowDatabase = WorkflowDatabase.withExecutor(
       pgDatabase,
       dialect: WorkflowSqlDialect.postgres,
+      migrationsManagedExternally: migrationsManagedExternally,
       transactionRunner: (action) async {
         await connection.runTx((transaction) async {
           final transactionDatabase = PgDatabase.opened(
@@ -181,11 +188,25 @@ class WorkflowPostgresConnection {
         });
       },
     );
-    return WorkflowPostgresConnection._(connection, workflowDatabase);
+    return WorkflowPostgresConnection._(
+      connection,
+      workflowDatabase,
+      migrationsManagedExternally: migrationsManagedExternally,
+    );
   }
 
   /// Completes migrations owned by the shared workflow engine.
+  ///
+  /// This is deliberately unavailable on a request-serving connection: schema
+  /// work must finish on the separately opened administrator connection before
+  /// the runtime pool is allowed to receive traffic.
   Future<void> migrateWorkflowSchema() async {
+    if (_migrationsManagedExternally) {
+      throw StateError(
+        'Cannot run workflow schema migrations through the runtime pool. '
+        'Use an administrator connection before opening it.',
+      );
+    }
     await database.initialize();
     await migrateCommunityIsolationPolicy(_connection, 'workflow_instances');
   }

@@ -10,7 +10,8 @@ void main() {
     Platform.environment,
   );
   final skip = configuration == null
-      ? 'Set LOOM_POSTGRES_PASSWORD to run against the k3s PostgreSQL '
+      ? 'Set LOOM_POSTGRES_PASSWORD and LOOM_POSTGRES_APP_USERNAME/'
+            'LOOM_POSTGRES_APP_PASSWORD to run against the k3s PostgreSQL '
             'port-forward.'
       : false;
 
@@ -110,20 +111,38 @@ void main() {
       final schema = _uniqueIdentifier('workflow_pool_transaction_test');
       final administrator = await _openDirectConnection(config);
       var schemaCreated = false;
+      WorkflowPostgresConnection? migrationConnection;
       WorkflowPostgresConnection? postgres;
+      pg.Connection? outsideRuntimeConnection;
       final releaseTransaction = Completer<void>();
       Future<void>? firstTransaction;
 
       try {
         await administrator.execute('CREATE SCHEMA $schema');
         schemaCreated = true;
+        await administrator.execute('SET search_path TO $schema');
+        migrationConnection = await _openAdminPool(
+          config,
+          onConnectionOpen: (connection) async {
+            await connection.execute('SET search_path TO $schema');
+          },
+        );
+        await migrationConnection.migrateWorkflowSchema();
+        await migrationConnection.close();
+        migrationConnection = null;
+        await _grantRuntimeAccess(administrator, schema, config);
         postgres = await _openPool(
           config,
           onConnectionOpen: (connection) async {
             await connection.execute('SET search_path TO $schema');
           },
         );
-        await postgres.migrateWorkflowSchema();
+        expect(
+          (await postgres.connection.execute(
+            'SELECT current_user',
+          )).single.single,
+          config.appUsername,
+        );
         await postgres.runWithCommunity('pool-transaction-community', () {
           return postgres!.database.insertInstance(
             instanceId: 'locked-instance',
@@ -167,9 +186,13 @@ void main() {
 
         await rowLocked.future.timeout(const Duration(seconds: 5));
         var outsideUpdateCompleted = false;
+        outsideRuntimeConnection = await _openRuntimeDirectConnection(
+          config,
+          schema,
+        );
         final outsideUpdate =
             runWithPostgresCommunity<void>(
-              executor: administrator,
+              executor: outsideRuntimeConnection,
               communityId: 'pool-transaction-community',
               action: () => currentPostgresCommunitySession!.execute(
                 'UPDATE $schema.workflow_instances '
@@ -200,6 +223,8 @@ void main() {
             // Preserve the assertion or setup error that is already in flight.
           }
         }
+        await outsideRuntimeConnection?.close();
+        await migrationConnection?.close();
         await postgres?.close();
         if (schemaCreated) {
           await administrator.execute('DROP SCHEMA $schema CASCADE');
@@ -216,27 +241,42 @@ class _PostgresConfiguration {
     required this.host,
     required this.port,
     required this.databaseName,
-    required this.username,
-    required this.password,
+    required this.adminUsername,
+    required this.adminPassword,
+    required this.appUsername,
+    required this.appPassword,
   });
 
   final String host;
   final int port;
   final String databaseName;
-  final String username;
-  final String password;
+  final String adminUsername;
+  final String adminPassword;
+  final String appUsername;
+  final String appPassword;
 
   static _PostgresConfiguration? fromEnvironment(
     Map<String, String> environment,
   ) {
-    final password = environment['LOOM_POSTGRES_PASSWORD'];
-    if (password == null || password.isEmpty) return null;
+    final adminPassword = environment['LOOM_POSTGRES_PASSWORD'];
+    final appUsername = environment['LOOM_POSTGRES_APP_USERNAME'];
+    final appPassword = environment['LOOM_POSTGRES_APP_PASSWORD'];
+    if (adminPassword == null ||
+        adminPassword.isEmpty ||
+        appUsername == null ||
+        appUsername.isEmpty ||
+        appPassword == null ||
+        appPassword.isEmpty) {
+      return null;
+    }
     return _PostgresConfiguration(
       host: environment['LOOM_POSTGRES_HOST'] ?? '127.0.0.1',
       port: int.parse(environment['LOOM_POSTGRES_PORT'] ?? '15432'),
       databaseName: workflowPostgresDatabaseName(environment),
-      username: environment['LOOM_POSTGRES_USERNAME'] ?? 'loom',
-      password: password,
+      adminUsername: environment['LOOM_POSTGRES_USERNAME'] ?? 'loom',
+      adminPassword: adminPassword,
+      appUsername: appUsername,
+      appPassword: appPassword,
     );
   }
 }
@@ -249,11 +289,24 @@ Future<WorkflowPostgresConnection> _openPool(
     host: configuration.host,
     port: configuration.port,
     databaseName: configuration.databaseName,
-    username: configuration.username,
-    password: configuration.password,
+    username: configuration.appUsername,
+    password: configuration.appPassword,
     onConnectionOpen: onConnectionOpen,
+    migrationsManagedExternally: true,
   );
 }
+
+Future<WorkflowPostgresConnection> _openAdminPool(
+  _PostgresConfiguration configuration, {
+  Future<void> Function(pg.Connection connection)? onConnectionOpen,
+}) => WorkflowPostgresConnection.open(
+  host: configuration.host,
+  port: configuration.port,
+  databaseName: configuration.databaseName,
+  username: configuration.adminUsername,
+  password: configuration.adminPassword,
+  onConnectionOpen: onConnectionOpen,
+);
 
 Future<pg.Connection> _openDirectConnection(
   _PostgresConfiguration configuration,
@@ -263,8 +316,8 @@ Future<pg.Connection> _openDirectConnection(
       host: configuration.host,
       port: configuration.port,
       database: configuration.databaseName,
-      username: configuration.username,
-      password: configuration.password,
+      username: configuration.adminUsername,
+      password: configuration.adminPassword,
     ),
     settings: const pg.ConnectionSettings(sslMode: pg.SslMode.disable),
   );
@@ -272,3 +325,39 @@ Future<pg.Connection> _openDirectConnection(
 
 String _uniqueIdentifier(String prefix) =>
     '${prefix}_${DateTime.now().microsecondsSinceEpoch}_$pid';
+
+Future<pg.Connection> _openRuntimeDirectConnection(
+  _PostgresConfiguration configuration,
+  String schema,
+) async {
+  final connection = await pg.Connection.open(
+    pg.Endpoint(
+      host: configuration.host,
+      port: configuration.port,
+      database: configuration.databaseName,
+      username: configuration.appUsername,
+      password: configuration.appPassword,
+    ),
+    settings: const pg.ConnectionSettings(sslMode: pg.SslMode.disable),
+  );
+  await connection.execute('SET search_path TO $schema');
+  return connection;
+}
+
+Future<void> _grantRuntimeAccess(
+  pg.Connection administrator,
+  String schema,
+  _PostgresConfiguration configuration,
+) async {
+  final role = _quoteIdentifier(configuration.appUsername);
+  await administrator.execute('GRANT USAGE ON SCHEMA $schema TO $role');
+  await administrator.execute(
+    'GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA $schema '
+    'TO $role',
+  );
+  await administrator.execute(
+    'GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA $schema TO $role',
+  );
+}
+
+String _quoteIdentifier(String value) => '"${value.replaceAll('"', '""')}"';
