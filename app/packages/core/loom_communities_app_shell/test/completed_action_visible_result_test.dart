@@ -155,6 +155,7 @@ void main() {
           machine: machine,
           engine: engine,
           fanId: 'camera-club-member',
+          roleId: 'camera-club-member',
         ),
       ),
     );

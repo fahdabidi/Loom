@@ -668,6 +668,139 @@ void main() {
   );
 
   testWidgets(
+    'statusTimeline generic cards hide guarded editors from unauthorized roles',
+    (tester) async {
+      const extensionId = 'ext-a7-status-timeline-edit-guard';
+      const workflowType = 'guarded-export';
+      const tabId = 'home';
+      final machine = LoomWorkflowStateMachine.fromJson({
+        'initialState': 'complete',
+        'states': {
+          'complete': {
+            'label': 'Complete',
+            'editableFields': ['redactionValidationResult'],
+            'editGuard': {
+              'allowedRoleIds': ['portability-owner'],
+            },
+          },
+        },
+        'transitions': <dynamic>[],
+        'instanceDataSchema': {
+          'title': {
+            'type': 'text',
+            'displayContexts': ['tile'],
+          },
+          'redactionValidationResult': {
+            'type': 'text',
+            'labelTemplate': 'Redaction validation',
+            'displayContexts': ['tile'],
+          },
+        },
+        'renderBindings': [
+          {
+            'tabId': tabId,
+            'states': ['complete'],
+            'audience': 'any',
+            'cardSurfaceFamily': 'statusTimeline',
+            'bindingKind': 'primary',
+          },
+        ],
+      }, workflowType);
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: extensionId,
+      );
+      api
+        ..registerDefinition(machine)
+        ..setRoleForFan('owner-account', 'portability-owner')
+        ..setRoleForFan('member-account', 'portability-member');
+      final instanceId = await api.createInstance(
+        workflowType: workflowType,
+        fanId: 'owner-account',
+        initialInstanceData: const {
+          'title': 'Export bundle',
+          'redactionValidationResult': 'Pending review',
+        },
+      );
+      final experience = LoomExperienceDefinition(
+        extensionId: extensionId,
+        displayName: 'Guarded export',
+        tagline: 'Guarded export test',
+        accentColor: 0xff536878,
+        workflows: const [],
+        workflowDefinitions: {workflowType: machine},
+      );
+
+      LoomActorIdentity actor({
+        required String fanId,
+        required String roleId,
+        required String label,
+      }) => LoomActorIdentity(
+        fanId: fanId,
+        roleId: roleId,
+        label: label,
+        roleLabel: label,
+        description: '$label actor',
+      );
+
+      Widget surface(LoomActorIdentity actorIdentity) => MaterialApp(
+        home: ActiveIdentityScope(
+          identity: ActiveIdentityContext(
+            accountId: null,
+            authApi: LocalAuthApi(),
+            roleId: actorIdentity.roleId,
+          ),
+          child: Scaffold(
+            body: EngineNativeListSurface(
+              experience: experience,
+              actorIdentity: actorIdentity,
+              tabId: tabId,
+              accent: Colors.blueGrey,
+              modernTheme: null,
+              engine: api,
+            ),
+          ),
+        ),
+      );
+
+      final editor = find.byKey(
+        ValueKey(
+          'generic-instance-editor-$instanceId-redactionValidationResult',
+        ),
+      );
+      final save = find.byKey(ValueKey('generic-instance-save-$instanceId'));
+
+      await tester.pumpWidget(
+        surface(
+          actor(
+            fanId: 'owner-account',
+            roleId: 'portability-owner',
+            label: 'Owner',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(GenericWorkflowInstanceCard), findsOneWidget);
+      expect(editor, findsOneWidget);
+      expect(save, findsOneWidget);
+
+      await tester.pumpWidget(
+        surface(
+          actor(
+            fanId: 'member-account',
+            roleId: 'portability-member',
+            label: 'Member',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(GenericWorkflowInstanceCard), findsOneWidget);
+      expect(editor, findsNothing);
+      expect(save, findsNothing);
+    },
+  );
+
+  testWidgets(
     'authoritative callback refreshes real state and rejects stale callbacks',
     (tester) async {
       final local = LocalWorkflowEngineApi(

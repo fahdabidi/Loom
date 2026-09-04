@@ -12,6 +12,7 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
     required this.machine,
     required this.engine,
     required this.fanId,
+    required this.roleId,
     this.displayContext = 'tile',
     this.onInstanceChanged,
     this.accent,
@@ -27,6 +28,7 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
   final LoomWorkflowStateMachine machine;
   final WorkflowEngineApi engine;
   final String fanId;
+  final String roleId;
   final String displayContext;
   final ValueChanged<WorkflowInstance>? onInstanceChanged;
   final Color? accent;
@@ -70,6 +72,7 @@ class _GenericWorkflowInstanceCardState
     super.didUpdateWidget(oldWidget);
     if (oldWidget.instance != widget.instance ||
         oldWidget.fanId != widget.fanId ||
+        oldWidget.roleId != widget.roleId ||
         oldWidget.machine != widget.machine ||
         oldWidget.engine != widget.engine) {
       _actionRequest++;
@@ -103,6 +106,16 @@ class _GenericWorkflowInstanceCardState
 
   List<String> get _editableKeys {
     final state = widget.machine.states[_instance.currentState];
+    final guard = state?.editGuard;
+    if (guard != null &&
+        !evaluateGuard(
+          guard,
+          widget.fanId,
+          _instance.instanceData,
+          roleId: widget.roleId,
+        )) {
+      return const <String>[];
+    }
     return [
       for (final key in state?.editableFields ?? const <String>[])
         if (widget.machine.instanceDataSchema[key] case final schema?)

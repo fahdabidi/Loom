@@ -367,6 +367,7 @@ GenericWorkflowInstanceCard _card(
   machine: machine ?? _machine(),
   engine: api,
   fanId: actorIdentity,
+  roleId: actorIdentity,
   displayContext: context,
 );
 
@@ -805,6 +806,7 @@ void main() {
           machine: machine,
           engine: api,
           fanId: 'person',
+          roleId: 'person',
           displayContext: 'tile',
         ),
       ),
@@ -858,6 +860,7 @@ void main() {
             machine: machine,
             engine: api,
             fanId: 'person',
+            roleId: 'person',
             displayContext: 'tile',
           ),
         ),
@@ -920,6 +923,7 @@ void main() {
             machine: machine,
             engine: api,
             fanId: 'person',
+            roleId: 'person',
             displayContext: 'tile',
           ),
         ),
@@ -993,6 +997,7 @@ void main() {
             machine: machine,
             engine: api,
             fanId: 'person',
+            roleId: 'person',
             displayContext: 'tile',
           ),
         ),
@@ -1454,6 +1459,7 @@ void main() {
             machine: vote,
             engine: api,
             fanId: 'denied',
+            roleId: 'denied',
           ),
         ),
       );
@@ -1466,6 +1472,7 @@ void main() {
             machine: vote,
             engine: api,
             fanId: 'allowed',
+            roleId: 'allowed',
           ),
         ),
       );
@@ -1593,6 +1600,7 @@ void main() {
           machine: machine,
           engine: engine,
           fanId: actorIdentity,
+          roleId: actorIdentity,
         ),
       );
       await tester.pumpWidget(card(a, 'person', machineA, controlledA));
@@ -1658,6 +1666,7 @@ void main() {
           machine: machine,
           engine: engine,
           fanId: actorIdentity,
+          roleId: actorIdentity,
           onInstanceChanged: callbacks.add,
         ),
       );
@@ -1747,6 +1756,7 @@ void main() {
             machine: machine,
             engine: controlled,
             fanId: 'person',
+            roleId: 'person',
           ),
         ),
       );
@@ -1818,6 +1828,7 @@ void main() {
         machine: machine,
         engine: controlled,
         fanId: actorIdentity,
+        roleId: actorIdentity,
       ),
     );
     await tester.pumpWidget(card(a, 'person'));
