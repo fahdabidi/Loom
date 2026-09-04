@@ -70,18 +70,24 @@
 # ~/.codex/config.toml (guest side, `/home/fahd/Loom`) -- done once, not by
 # this script.
 #
-# Model: defaults to GPT-5.3-Codex-Spark at XHIGH reasoning effort (switched
-# 2026-08-07 per user direction). Config: ~/.codex/gpt5_3_spark_xhigh.config.toml
-# (model = "gpt-5.3-codex-spark", model_reasoning_effort = "xhigh",
-# model_verbosity = "medium", model_context_window = 272000) -- a first-party
-# Codex/OpenAI model, no gateway dependency, no preflight health check needed.
-# Smoke-tested 2026-08-07 (`codex exec -p gpt5_3_spark_xhigh --sandbox
-# read-only "Reply with exactly: PROFILE_OK"` -> correct reply, exit 0)
-# before being made the default.
+# Model: defaults to GPT-5.6-Luna at XHIGH reasoning effort WITH FAST MODE
+# (switched 2026-09-03 per user direction). Config:
+# ~/.codex/gpt5_6_luna_xhigh.config.toml (model = "gpt-5.6-luna",
+# model_reasoning_effort = "xhigh", model_verbosity = "medium",
+# model_context_window = 272000, service_tier = "fast" -- the CLI key for
+# Codex "Speed: Fast", ~1.5x speed for more usage) -- a first-party Codex/OpenAI
+# model, no gateway dependency, no preflight health check needed. Smoke-tested
+# 2026-09-03 (`codex exec -p gpt5_6_luna_xhigh --sandbox read-only "Reply with
+# exactly: PROFILE_OK" < /dev/null` -> banner showed model: gpt-5.6-luna,
+# reasoning effort: xhigh; correct reply; exit 0) before being made the default.
 #
 # Model history, for reference (all still fully set up and usable via
 # CODEX_IMPLEMENTATION_PROFILE=<name>, none removed):
-#   - GPT-5.3-Codex-Spark @ xhigh -- the current default as of 2026-08-07.
+#   - GPT-5.6-Luna @ xhigh + fast ("gpt5_6_luna_xhigh", service_tier = "fast")
+#     -- the current default as of 2026-09-03, per user direction.
+#   - GPT-5.6-Terra @ xhigh + fast ("gpt5_6_terra_xhigh") -- the default from
+#     2026-08-07 through 2026-09-03 (also carried service_tier = "fast").
+#   - GPT-5.3-Codex-Spark @ xhigh ("gpt5_3_spark_xhigh") -- default 2026-08-07.
 #   - GPT-5.6-Luna @ max ("gpt5_6_luna_max") -- the default immediately prior,
 #     2026-07-31 through 2026-08-07.
 #   - GPT-5.6-Terra @ medium -- the original default, and briefly the default
@@ -156,7 +162,7 @@ set -euo pipefail
 PROMPT_FILE="${1:?usage: call_implementation_agent.sh <prompt-file> [--fresh]}"
 MODE="${2:-}"
 SANDBOX_MODE="${CODEX_IMPLEMENTATION_SANDBOX:-workspace-write}"
-PROFILE="${CODEX_IMPLEMENTATION_PROFILE-gpt5_6_terra_xhigh}"
+PROFILE="${CODEX_IMPLEMENTATION_PROFILE-gpt5_6_luna_xhigh}"
 PROFILE_ARGS=()
 if [ -n "$PROFILE" ]; then
   PROFILE_ARGS=(-p "$PROFILE")
