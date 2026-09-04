@@ -157,6 +157,17 @@ abstract class AppAccessApi {
     String? appId,
   });
 
+  /// Lists every community-backed group one fan belongs to.
+  ///
+  /// Each response row includes the canonical [FanCommunityMembership]
+  /// community id, group id, server-authoritative roles, and membership
+  /// state. Callers use it to resolve a fan's communities without deriving or
+  /// configuring group naming rules client-side.
+  Future<List<FanCommunityMembership>> listFanCommunities({
+    required String fanId,
+    String? appId,
+  });
+
   // ── Runtime authorization ─────────────────────────────────────────────
 
   /// Decides whether a fan holds one permission, optionally within a group.

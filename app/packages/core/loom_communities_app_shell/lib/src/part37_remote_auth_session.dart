@@ -1,12 +1,14 @@
 part of '../loom_communities_app_shell.dart';
 
-/// The app-level remote-service configuration built from compile-time values.
+/// The app-level remote-service configuration built from deployment values.
 ///
 /// [session] owns the persisted OAuth2 Authorization Code + PKCE session, and
 /// the three service URIs are production inputs for the workflow engine and
-/// remote community-auth implementations. [communityGroupIds] is the remote
-/// auth copy of the server-returned App Access mapping keyed by canonical
-/// community id; it is never derived from a package or extension id.
+/// remote community-auth implementations. [communityGroupIds] is an explicit
+/// fail-safe mapping for a failed or incomplete `listFanCommunities` response;
+/// the signed-in fan's live App Access memberships are authoritative whenever
+/// the endpoint returns them. Neither mapping is derived from a package or
+/// extension id.
 final class LoomRemoteServiceConfiguration {
   LoomRemoteServiceConfiguration({
     required this.session,
@@ -15,7 +17,9 @@ final class LoomRemoteServiceConfiguration {
     required this.fanPassportBaseUri,
     required Map<String, String> communityGroupIds,
     this.appId = 'loom_communities',
-  }) : communityGroupIds = Map.unmodifiable(communityGroupIds);
+  }) : communityGroupIds = Map.unmodifiable(communityGroupIds) {
+    session.addLogoutListener(_clearFanCommunityDirectories);
+  }
 
   final LoomAuthSession session;
   final Uri workflowServiceBaseUri;
@@ -24,12 +28,94 @@ final class LoomRemoteServiceConfiguration {
   final Map<String, String> communityGroupIds;
   final String appId;
 
-  /// Resolves a real App Access group only from the explicit deployment map.
+  final Map<String, Future<_FanCommunityDirectory>> _fanCommunityDirectories =
+      <String, Future<_FanCommunityDirectory>>{};
+
+  /// Resolves the explicit deployment fallback for one community.
   ///
-  /// The app-shell knows a community's canonical id at installation time, but
-  /// it deliberately does not know (or derive) the App Access naming rules.
-  String? groupIdForCommunity(String communityId) =>
+  /// The app-shell deliberately does not know (or derive) App Access naming
+  /// rules. This map is used only when the live fan-community lookup is
+  /// unavailable or does not list the requested community.
+  String? fallbackGroupIdForCommunity(String communityId) =>
       communityGroupIds[communityId];
+
+  /// Fetches a fan's community memberships once for this signed-in session.
+  ///
+  /// Every [RemoteLoomAuthApi] constructed from this configuration shares the
+  /// same future, so opening more than one community cannot multiply the
+  /// endpoint call. Endpoint failures are retained as an explicit failed
+  /// directory; callers then log their fallback lookup and use the deployment
+  /// map rather than being locked out.
+  Future<_FanCommunityDirectory> fanCommunityDirectoryFor({
+    required String fanId,
+    required http.Client httpClient,
+  }) {
+    if (fanId.trim().isEmpty) {
+      throw ArgumentError.value(fanId, 'fanId', 'must not be empty');
+    }
+    return _fanCommunityDirectories.putIfAbsent(
+      fanId,
+      () => _loadFanCommunityDirectory(fanId: fanId, httpClient: httpClient),
+    );
+  }
+
+  Future<_FanCommunityDirectory> _loadFanCommunityDirectory({
+    required String fanId,
+    required http.Client httpClient,
+  }) async {
+    try {
+      final memberships = await FanCommunityMembershipClient(
+        baseUri: appAccessBaseUri,
+        session: session,
+        httpClient: httpClient,
+      ).listFanCommunities(fanId: fanId, appId: appId);
+      final byCommunityId = <String, FanCommunityMembership>{};
+      for (final membership in memberships) {
+        if (membership.fanId != fanId || membership.appId != appId) {
+          throw StateError(
+            'App Access listFanCommunities returned membership for fan '
+            '"${membership.fanId}" and app "${membership.appId}", not '
+            'authenticated fan "$fanId" and app "$appId".',
+          );
+        }
+        if (byCommunityId.containsKey(membership.communityId)) {
+          throw StateError(
+            'App Access listFanCommunities returned duplicate community '
+            '"${membership.communityId}" for fan "$fanId".',
+          );
+        }
+        byCommunityId[membership.communityId] = membership;
+      }
+      return _FanCommunityDirectory.available(byCommunityId);
+    } on Object catch (error) {
+      // This is intentionally loud. The static deployment mapping is a
+      // fail-safe against a transient endpoint failure, not a second source of
+      // success evidence or a replacement for the server response.
+      debugPrint(
+        'Loom community-membership lookup failed for fan "$fanId"; '
+        'configured group-id fallbacks will be used: $error',
+      );
+      return _FanCommunityDirectory.unavailable(error);
+    }
+  }
+
+  void _clearFanCommunityDirectories() => _fanCommunityDirectories.clear();
+}
+
+/// The cached outcome of one `listFanCommunities` request.
+///
+/// A failure remains observable so the per-community resolver can report why
+/// it fell back instead of silently treating a failed lookup as an empty list.
+final class _FanCommunityDirectory {
+  const _FanCommunityDirectory.available(this.memberships) : failure = null;
+
+  const _FanCommunityDirectory.unavailable(this.failure)
+    : memberships = const <String, FanCommunityMembership>{};
+
+  final Map<String, FanCommunityMembership> memberships;
+  final Object? failure;
+
+  bool get isAvailable => failure == null;
 }
 
 LoomAuthSession? _loomAuthSession;

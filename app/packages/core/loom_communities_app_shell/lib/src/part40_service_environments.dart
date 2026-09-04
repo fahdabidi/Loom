@@ -34,9 +34,12 @@ final class LoomServiceEnvironment {
   final String appAccessBaseUri;
   final String fanPassportBaseUri;
 
-  /// Canonical community id -> App Access group id.
+  /// Canonical community id -> App Access group-id fallback.
   ///
-  /// These are **handle-derived and hyphenated**
+  /// These values are used only when the signed-in fan's live
+  /// `listFanCommunities` lookup fails or omits the community. A successful
+  /// server response remains the source of the fan's group id, roles, and
+  /// membership state. The fallback ids are **handle-derived and hyphenated**
   /// (`loom_communities_cedar-commons-hoa`), while the key is the underscored
   /// canonical community id. One cannot be derived from the other, and the
   /// authority is each `CommunityInstallationResult`'s returned `groupId`.
@@ -63,40 +66,39 @@ const String loomServiceEnvironmentName = String.fromEnvironment(
 const String loomLocalEnvironmentName = 'local';
 
 /// Every environment this app knows how to reach.
-const Map<String, LoomServiceEnvironment> loomServiceEnvironments =
-    <String, LoomServiceEnvironment>{
-      'dev': LoomServiceEnvironment(
-        name: 'dev',
-        // The k3s cluster on the Loom VM, reachable from the host and from an
-        // Android emulator over the host-only network. Plain HTTP: these
-        // services have no TLS, which is why the debug manifest carries a
-        // cleartext exemption scoped to exactly these hosts, and why TLS is on
-        // the pre-GA list — a JWT crosses this link.
-        authTokenEndpoint:
-            'http://192.168.56.10:30082/realms/loom/protocol/openid-connect/token',
-        authClientId: 'loom-test-client',
-        workflowServiceBaseUri: 'http://192.168.56.10:30083',
-        appAccessBaseUri: 'http://192.168.56.10:30080',
-        fanPassportBaseUri: 'http://192.168.56.10:30081',
-        communityGroupIds: <String, String>{
-          'community_ad_free_community': 'loom_communities_ad-free-community',
-          'community_camera_club': 'loom_communities_camera-club',
-          'community_cedar_commons_hoa': 'loom_communities_cedar-commons-hoa',
-          'community_chess_club': 'loom_communities_chess-club',
-          'community_data_portability':
-              'loom_communities_data-portability-community',
-          'community_garden_club': 'loom_communities_garden-club',
-          'community_member_social_space':
-              'loom_communities_member-social-space',
-          'community_mosque': 'loom_communities_masjid-nur',
-          'community_neighborhood_book_club':
-              'loom_communities_neighborhood-book-club',
-          'community_riverside_youth_soccer':
-              'loom_communities_riverside-youth-soccer',
-          'community_verify_tabletop_club': 'loom_communities_tabletop-club',
-        },
-      ),
-    };
+const Map<String, LoomServiceEnvironment>
+loomServiceEnvironments = <String, LoomServiceEnvironment>{
+  'dev': LoomServiceEnvironment(
+    name: 'dev',
+    // The k3s cluster on the Loom VM, reachable from the host and from an
+    // Android emulator over the host-only network. Plain HTTP: these
+    // services have no TLS, which is why the debug manifest carries a
+    // cleartext exemption scoped to exactly these hosts, and why TLS is on
+    // the pre-GA list — a JWT crosses this link.
+    authTokenEndpoint:
+        'http://192.168.56.10:30082/realms/loom/protocol/openid-connect/token',
+    authClientId: 'loom-test-client',
+    workflowServiceBaseUri: 'http://192.168.56.10:30083',
+    appAccessBaseUri: 'http://192.168.56.10:30080',
+    fanPassportBaseUri: 'http://192.168.56.10:30081',
+    communityGroupIds: <String, String>{
+      'community_ad_free_community': 'loom_communities_ad-free-community',
+      'community_camera_club': 'loom_communities_camera-club',
+      'community_cedar_commons_hoa': 'loom_communities_cedar-commons-hoa',
+      'community_chess_club': 'loom_communities_chess-club',
+      'community_data_portability':
+          'loom_communities_data-portability-community',
+      'community_garden_club': 'loom_communities_garden-club',
+      'community_member_social_space': 'loom_communities_member-social-space',
+      'community_mosque': 'loom_communities_masjid-nur',
+      'community_neighborhood_book_club':
+          'loom_communities_neighborhood-book-club',
+      'community_riverside_youth_soccer':
+          'loom_communities_riverside-youth-soccer',
+      'community_verify_tabletop_club': 'loom_communities_tabletop-club',
+    },
+  ),
+};
 
 /// Forces the in-memory engine regardless of [loomServiceEnvironmentName].
 ///

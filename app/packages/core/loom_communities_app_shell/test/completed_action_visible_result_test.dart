@@ -129,7 +129,7 @@ _seedDamageReport() async {
     EngineNativeResolvedBinding(
       instance: instance,
       machine: machine,
-      binding: RenderBinding(
+      binding: const RenderBinding(
         tabId: 'marketplace',
         states: const ['published'],
         role: 'any',

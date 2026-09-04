@@ -922,7 +922,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.byKey(ValueKey('engine-native-table-$tabId-$workflowType')),
+        find.byKey(const ValueKey('engine-native-table-$tabId-$workflowType')),
         findsOneWidget,
       );
       expect(
@@ -1079,7 +1079,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        find.byKey(ValueKey('engine-native-table-$tabId-$tableType')),
+        find.byKey(const ValueKey('engine-native-table-$tabId-$tableType')),
         findsOneWidget,
       );
       expect(

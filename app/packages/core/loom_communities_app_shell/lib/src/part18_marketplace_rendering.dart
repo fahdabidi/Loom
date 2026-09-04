@@ -852,10 +852,10 @@ class _DocumentLibraryEmbeddedUrlViewerState
       return;
     }
     try {
-      final controller = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setBackgroundColor(const Color(0x00000000))
-        ..loadRequest(uri);
+      final controller = WebViewController();
+      await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      await controller.setBackgroundColor(const Color(0x00000000));
+      await controller.loadRequest(uri);
       if (mounted) {
         setState(() {
           _controller = controller;

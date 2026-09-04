@@ -48,7 +48,10 @@ RemoteLoomAuthApi createRemoteLoomAuthApiForConfiguration({
   appId: configuration.appId,
   communityId: communityId,
   communityExtensionId: communityExtensionId,
-  communityGroupId: configuration.groupIdForCommunity(communityId),
+  remoteServiceConfiguration: configuration,
+  fallbackCommunityGroupId: configuration.fallbackGroupIdForCommunity(
+    communityId,
+  ),
   actorIdentityResolver: actorIdentityResolver,
   httpClient: httpClient,
 );
@@ -68,7 +71,8 @@ class RemoteLoomAuthApi implements LoomAuthApi {
     required String appId,
     required String communityId,
     required String communityExtensionId,
-    required String? communityGroupId,
+    required LoomRemoteServiceConfiguration remoteServiceConfiguration,
+    required String? fallbackCommunityGroupId,
     required List<LoomActorIdentity> Function(String communityExtensionId)
     actorIdentityResolver,
     http.Client? httpClient,
@@ -80,7 +84,8 @@ class RemoteLoomAuthApi implements LoomAuthApi {
          communityExtensionId,
          'communityExtensionId',
        ),
-       _communityGroupId = communityGroupId,
+       _remoteServiceConfiguration = remoteServiceConfiguration,
+       _fallbackCommunityGroupId = fallbackCommunityGroupId,
        _actorIdentityResolver = actorIdentityResolver,
        _httpClient = httpClient ?? http.Client() {
     // One HTTP client, shared. The passport client reuses this instance's
@@ -99,7 +104,8 @@ class RemoteLoomAuthApi implements LoomAuthApi {
   final String _appId;
   final String _communityId;
   final String _communityExtensionId;
-  final String? _communityGroupId;
+  final LoomRemoteServiceConfiguration _remoteServiceConfiguration;
+  final String? _fallbackCommunityGroupId;
   final List<LoomActorIdentity> Function(String communityExtensionId)
   _actorIdentityResolver;
   final http.Client _httpClient;
@@ -120,7 +126,14 @@ class RemoteLoomAuthApi implements LoomAuthApi {
     required String communityExtensionId,
   }) async {
     _requireCommunityExtensionId(communityExtensionId);
-    final memberships = await _listGroupMembers();
+    // The bearer token, rather than a locally selected actor identity,
+    // identifies the fan whose community directory must be read. This is also
+    // the first call
+    // after a secure login, so it warms the configuration-shared directory
+    // before the user picks their account from this community.
+    final fanId = await _fanIdFromCurrentSession();
+    final resolvedMembership = await _resolveCommunityMembership(fanId);
+    final memberships = await _listGroupMembers(resolvedMembership.groupId);
     return Future.wait(
       memberships.map((membership) async {
         final passport = await _getPassport(membership.fanId);
@@ -130,7 +143,11 @@ class RemoteLoomAuthApi implements LoomAuthApi {
             'community "$_communityId" has no Fan Passport record.',
           );
         }
-        return _accountFromMembership(membership, passport: passport);
+        return _accountFromMembership(
+          membership,
+          passport: passport,
+          expectedGroupId: resolvedMembership.groupId,
+        );
       }),
     );
   }
@@ -147,7 +164,12 @@ class RemoteLoomAuthApi implements LoomAuthApi {
             'session instead.',
       );
     }
-    final membership = await _getGroupMembership(fanId);
+    final resolvedMembership = await _resolveCommunityMembership(fanId);
+    final membership = resolvedMembership.serverMembership == null
+        ? await _getGroupMembership(fanId, resolvedMembership.groupId)
+        : _RemoteGroupMembership.fromFanCommunityMembership(
+            resolvedMembership.serverMembership!,
+          );
     if (membership == null) {
       throw LoomAuthException(
         code: LoomAuthErrorCode.accountNotFound,
@@ -163,7 +185,11 @@ class RemoteLoomAuthApi implements LoomAuthApi {
         'Passport record.',
       );
     }
-    final account = _accountFromMembership(membership, passport: passport);
+    final account = _accountFromMembership(
+      membership,
+      passport: passport,
+      expectedGroupId: resolvedMembership.groupId,
+    );
     if (account.status == MembershipStatus.pendingApproval) {
       throw const LoomAuthException(
         code: LoomAuthErrorCode.accountPendingApproval,
@@ -215,12 +241,18 @@ class RemoteLoomAuthApi implements LoomAuthApi {
         identity.accessMode == LoomActorIdentityAccessMode.requiresApproval
         ? 'requested'
         : 'active';
+    final resolvedMembership = await _resolveCommunityMembership(fanId);
     final membership = await _setGroupMembership(
+      groupId: resolvedMembership.groupId,
       fanId: fanId,
       roleIds: [roleId],
       state: desiredState,
     );
-    final account = _accountFromMembership(membership, passport: passport);
+    final account = _accountFromMembership(
+      membership,
+      passport: passport,
+      expectedGroupId: resolvedMembership.groupId,
+    );
     final expectedStatus = desiredState == 'active'
         ? MembershipStatus.active
         : MembershipStatus.pendingApproval;
@@ -274,7 +306,8 @@ class RemoteLoomAuthApi implements LoomAuthApi {
       );
     }
 
-    final pending = await _getGroupMembership(accountId);
+    final approverGroup = await _resolveCommunityMembership(approver.accountId);
+    final pending = await _getGroupMembership(accountId, approverGroup.groupId);
     if (pending == null) {
       throw LoomAuthException(
         code: LoomAuthErrorCode.accountNotFound,
@@ -290,6 +323,7 @@ class RemoteLoomAuthApi implements LoomAuthApi {
     }
     final roleId = _onlyRoleId(pending);
     final approved = await _decideMembership(
+      groupId: approverGroup.groupId,
       fanId: accountId,
       decision: 'approve',
       roleIds: [roleId],
@@ -301,7 +335,11 @@ class RemoteLoomAuthApi implements LoomAuthApi {
         'record.',
       );
     }
-    final account = _accountFromMembership(approved, passport: passport);
+    final account = _accountFromMembership(
+      approved,
+      passport: passport,
+      expectedGroupId: approverGroup.groupId,
+    );
     if (account.status != MembershipStatus.active) {
       throw StateError(
         'App Access returned membership state "${approved.state}" after '
@@ -341,14 +379,45 @@ class RemoteLoomAuthApi implements LoomAuthApi {
     );
   }
 
-  String get _groupId {
-    final groupId = _communityGroupId;
+  String get _fallbackGroupId {
+    final groupId = _fallbackCommunityGroupId;
     if (groupId != null && groupId.trim().isNotEmpty) return groupId;
     throw StateError(
       'Remote Loom auth is configured for canonical community "$_communityId" '
-      'but LOOM_COMMUNITY_GROUP_IDS has no App Access group id for it. Use '
-      'the server-returned mapping shared with the workflow service.',
+      'but neither listFanCommunities nor LOOM_COMMUNITY_GROUP_IDS provides '
+      'an App Access group id for it.',
     );
+  }
+
+  /// Resolves one signed-in fan's group for this community.
+  ///
+  /// A live directory row is authoritative, including its role ids and state.
+  /// A missing row or a failed directory lookup is a clearly logged fallback
+  /// to the deployment map so a transient endpoint failure cannot lock a fan
+  /// out of a community that the app otherwise knows how to open.
+  Future<_ResolvedCommunityMembership> _resolveCommunityMembership(
+    String fanId,
+  ) async {
+    final directory = await _remoteServiceConfiguration
+        .fanCommunityDirectoryFor(fanId: fanId, httpClient: _httpClient);
+    final membership = directory.memberships[_communityId];
+    if (membership != null) {
+      return _ResolvedCommunityMembership(
+        groupId: membership.groupId,
+        serverMembership: membership,
+      );
+    }
+
+    final reason = directory.isAvailable
+        ? 'the response omitted this community'
+        : 'the endpoint failed: ${directory.failure}';
+    final fallbackGroupId = _fallbackGroupId;
+    debugPrint(
+      'Loom community-membership fallback for fan "$fanId", community '
+      '"$_communityId": $reason. Using configured group '
+      '"$fallbackGroupId".',
+    );
+    return _ResolvedCommunityMembership(groupId: fallbackGroupId);
   }
 
   Future<String> _fanIdFromCurrentSession() async {
@@ -378,7 +447,7 @@ class RemoteLoomAuthApi implements LoomAuthApi {
     }
   }
 
-  Future<List<_RemoteGroupMembership>> _listGroupMembers() async {
+  Future<List<_RemoteGroupMembership>> _listGroupMembers(String groupId) async {
     final memberships = <_RemoteGroupMembership>[];
     String? cursor;
     do {
@@ -388,7 +457,7 @@ class RemoteLoomAuthApi implements LoomAuthApi {
         method: 'GET',
         uri: _appAccessUri(
           'groups',
-          _groupId,
+          groupId,
           'members',
         ).replace(queryParameters: queryParameters),
       );
@@ -410,10 +479,13 @@ class RemoteLoomAuthApi implements LoomAuthApi {
     return List.unmodifiable(memberships);
   }
 
-  Future<_RemoteGroupMembership?> _getGroupMembership(String fanId) async {
+  Future<_RemoteGroupMembership?> _getGroupMembership(
+    String fanId,
+    String groupId,
+  ) async {
     final response = await _request(
       method: 'GET',
-      uri: _appAccessUri('groups', _groupId, 'members', fanId),
+      uri: _appAccessUri('groups', groupId, 'members', fanId),
       acceptedStatusCodes: const {404},
     );
     if (response.statusCode == 404) return null;
@@ -424,13 +496,14 @@ class RemoteLoomAuthApi implements LoomAuthApi {
   }
 
   Future<_RemoteGroupMembership> _setGroupMembership({
+    required String groupId,
     required String fanId,
     required List<String> roleIds,
     required String state,
   }) async {
     final response = await _request(
       method: 'PUT',
-      uri: _appAccessUri('groups', _groupId, 'members', fanId),
+      uri: _appAccessUri('groups', groupId, 'members', fanId),
       body: <String, Object?>{'roleIds': roleIds, 'state': state},
       mutating: true,
     );
@@ -441,6 +514,7 @@ class RemoteLoomAuthApi implements LoomAuthApi {
   }
 
   Future<_RemoteGroupMembership> _decideMembership({
+    required String groupId,
     required String fanId,
     required String decision,
     required List<String> roleIds,
@@ -449,7 +523,7 @@ class RemoteLoomAuthApi implements LoomAuthApi {
       method: 'POST',
       uri: _appAccessUri(
         'groups',
-        _groupId,
+        groupId,
         'membership-requests',
         fanId,
         'decision',
@@ -477,12 +551,13 @@ class RemoteLoomAuthApi implements LoomAuthApi {
   LoomAccount _accountFromMembership(
     _RemoteGroupMembership membership, {
     required FanPassportRecord passport,
+    required String expectedGroupId,
   }) {
-    if (membership.appId != _appId || membership.groupId != _groupId) {
+    if (membership.appId != _appId || membership.groupId != expectedGroupId) {
       throw StateError(
         'App Access returned membership for app "${membership.appId}" and '
         'group "${membership.groupId}", not configured app "$_appId" and '
-        'group "$_groupId".',
+        'resolved group "$expectedGroupId".',
       );
     }
     if (membership.fanId != passport.fanId) {
@@ -648,11 +723,37 @@ class _RemoteGroupMembership {
     required this.state,
   });
 
+  factory _RemoteGroupMembership.fromFanCommunityMembership(
+    FanCommunityMembership membership,
+  ) => _RemoteGroupMembership(
+    appId: membership.appId,
+    groupId: membership.groupId,
+    fanId: membership.fanId,
+    roleIds: membership.roleIds,
+    state: membership.state.name,
+  );
+
   final String appId;
   final String groupId;
   final String fanId;
   final List<String> roleIds;
   final String state;
+}
+
+/// The group selected for one community after consulting the fan directory.
+///
+/// [serverMembership] is non-null only when App Access explicitly returned
+/// this community. A null value means the caller has taken the logged
+/// compile-time-map fallback and must continue through the ordinary group
+/// membership endpoint.
+final class _ResolvedCommunityMembership {
+  const _ResolvedCommunityMembership({
+    required this.groupId,
+    this.serverMembership,
+  });
+
+  final String groupId;
+  final FanCommunityMembership? serverMembership;
 }
 
 Map<String, Object?> _requiredObject(

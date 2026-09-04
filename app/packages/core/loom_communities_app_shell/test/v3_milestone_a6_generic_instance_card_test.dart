@@ -1079,7 +1079,7 @@ void main() {
       final resolved = EngineNativeResolvedBinding(
         instance: instance,
         machine: machine,
-        binding: RenderBinding(
+        binding: const RenderBinding(
           states: const ['open'],
           role: 'member',
           tabId: 'documents',
@@ -1228,7 +1228,7 @@ void main() {
       final resolved = EngineNativeResolvedBinding(
         instance: instance,
         machine: machine,
-        binding: RenderBinding(
+        binding: const RenderBinding(
           states: const ['available'],
           role: 'chess-organizer',
           tabId: 'documents',

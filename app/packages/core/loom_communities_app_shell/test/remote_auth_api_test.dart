@@ -49,6 +49,15 @@ void main() {
       final session = _RemoteTestSession('fan-alice');
       final client = MockClient((request) async {
         _expectRemoteHeaders(request, expectedToken: session.token);
+        if (request.url.path == '/api/v1/fans/fan-alice/communities') {
+          expect(request.method, 'GET');
+          expect(request.url.queryParameters, {'appId': _appId});
+          return _jsonResponse({
+            'communities': [
+              _communityMembership(fanId: 'fan-alice', roleId: 'hoa-member'),
+            ],
+          });
+        }
         if (request.url.path ==
             '/api/v1/apps/$_appId/groups/$_groupId/members') {
           expect(request.method, 'GET');
@@ -107,35 +116,107 @@ void main() {
     },
   );
 
-  test('signIn uses the real session identity and membership', () async {
-    final session = _RemoteTestSession('fan-alice');
-    final client = MockClient((request) async {
-      _expectRemoteHeaders(request, expectedToken: session.token);
-      if (request.url.path ==
-          '/api/v1/apps/$_appId/groups/$_groupId/members/fan-alice') {
-        expect(request.method, 'GET');
-        return _jsonResponse(
-          _membership(fanId: 'fan-alice', roleId: 'hoa-member'),
+  test(
+    'signIn resolves its group and role from the live fan community membership',
+    () async {
+      final session = _RemoteTestSession('fan-alice');
+      const liveGroupId = 'server-authoritative-cedar-group';
+      var fanCommunityRequests = 0;
+      final client = MockClient((request) async {
+        _expectRemoteHeaders(request, expectedToken: session.token);
+        if (request.url.path == '/api/v1/fans/fan-alice/communities') {
+          expect(request.method, 'GET');
+          expect(request.url.queryParameters, {'appId': _appId});
+          fanCommunityRequests += 1;
+          return _jsonResponse({
+            'communities': [
+              _communityMembership(
+                fanId: 'fan-alice',
+                groupId: liveGroupId,
+                roleId: 'server-board',
+              ),
+            ],
+          });
+        }
+        if (request.url.path == '/api/v1/fan-passports/fan-alice') {
+          return _jsonResponse(_passport('fan-alice', 'Alice Active'));
+        }
+        if (request.url.path ==
+            '/api/v1/apps/$_appId/groups/$liveGroupId/members') {
+          expect(request.method, 'GET');
+          return _jsonResponse({
+            'items': [
+              _membership(
+                fanId: 'fan-alice',
+                groupId: liveGroupId,
+                roleId: 'server-board',
+              ),
+            ],
+            'pageInfo': {'hasMore': false, 'nextCursor': null},
+          });
+        }
+        throw StateError(
+          'Unexpected request: ${request.method} ${request.url}',
         );
-      }
-      if (request.url.path == '/api/v1/fan-passports/fan-alice') {
-        return _jsonResponse(_passport('fan-alice', 'Alice Active'));
-      }
-      throw StateError('Unexpected request: ${request.method} ${request.url}');
-    });
-    addTearDown(client.close);
-    final api = _remoteApi(session, client);
+      });
+      addTearDown(client.close);
+      final api = _remoteApi(session, client);
 
-    final signedIn = await api.signIn(accountId: 'fan-alice');
+      final signedIn = await api.signIn(accountId: 'fan-alice');
 
-    expect(signedIn.account.displayName, 'Alice Active');
-    expect(signedIn.account.roleId, 'hoa-member');
-    expect(api.currentSession, same(signedIn));
-    await expectLater(
-      api.signIn(accountId: 'fan-someone-else'),
-      throwsA(isA<LoomAuthException>()),
-    );
-  });
+      expect(signedIn.account.displayName, 'Alice Active');
+      expect(signedIn.account.roleId, 'server-board');
+      expect(api.currentSession, same(signedIn));
+      final accounts = await api.listAccounts(
+        communityExtensionId: _extensionId,
+      );
+      expect(accounts.single.roleId, 'server-board');
+      expect(fanCommunityRequests, 1);
+      await expectLater(
+        api.signIn(accountId: 'fan-someone-else'),
+        throwsA(isA<LoomAuthException>()),
+      );
+    },
+  );
+
+  test(
+    'signIn falls back to the configured group when fan community lookup fails',
+    () async {
+      final session = _RemoteTestSession('fan-alice');
+      var fanCommunityRequests = 0;
+      var fallbackMembershipRequests = 0;
+      final client = MockClient((request) async {
+        _expectRemoteHeaders(request, expectedToken: session.token);
+        if (request.url.path == '/api/v1/fans/fan-alice/communities') {
+          expect(request.method, 'GET');
+          fanCommunityRequests += 1;
+          return http.Response('temporarily unavailable', 503);
+        }
+        if (request.url.path ==
+            '/api/v1/apps/$_appId/groups/$_groupId/members/fan-alice') {
+          expect(request.method, 'GET');
+          fallbackMembershipRequests += 1;
+          return _jsonResponse(
+            _membership(fanId: 'fan-alice', roleId: 'hoa-member'),
+          );
+        }
+        if (request.url.path == '/api/v1/fan-passports/fan-alice') {
+          return _jsonResponse(_passport('fan-alice', 'Alice Active'));
+        }
+        throw StateError(
+          'Unexpected request: ${request.method} ${request.url}',
+        );
+      });
+      addTearDown(client.close);
+      final api = _remoteApi(session, client);
+
+      final signedIn = await api.signIn(accountId: 'fan-alice');
+
+      expect(signedIn.account.roleId, 'hoa-member');
+      expect(fanCommunityRequests, 1);
+      expect(fallbackMembershipRequests, 1);
+    },
+  );
 
   test(
     'open signUp creates the passport then creates an active membership',
@@ -143,6 +224,10 @@ void main() {
       final session = _RemoteTestSession('fan-new');
       final client = MockClient((request) async {
         _expectRemoteHeaders(request, expectedToken: session.token);
+        if (request.url.path == '/api/v1/fans/fan-new/communities') {
+          expect(request.method, 'GET');
+          return _jsonResponse(<String, Object?>{'communities': <Object?>[]});
+        }
         if (request.url.path == '/api/v1/fan-passports/fan-new') {
           expect(request.method, 'GET');
           return http.Response('', 404);
@@ -191,6 +276,10 @@ void main() {
       final session = _RemoteTestSession('fan-applicant');
       final client = MockClient((request) async {
         _expectRemoteHeaders(request, expectedToken: session.token);
+        if (request.url.path == '/api/v1/fans/fan-applicant/communities') {
+          expect(request.method, 'GET');
+          return _jsonResponse(<String, Object?>{'communities': <Object?>[]});
+        }
         if (request.url.path == '/api/v1/fan-passports/fan-applicant') {
           return _jsonResponse(_passport('fan-applicant', 'Avery Applicant'));
         }
@@ -234,6 +323,14 @@ void main() {
     final client = MockClient((request) async {
       _expectRemoteHeaders(request, expectedToken: session.token);
       final path = request.url.path;
+      if (path == '/api/v1/fans/fan-admin/communities') {
+        expect(request.method, 'GET');
+        return _jsonResponse({
+          'communities': [
+            _communityMembership(fanId: 'fan-admin', roleId: 'hoa-board'),
+          ],
+        });
+      }
       if (path == '/api/v1/apps/$_appId/groups/$_groupId/members/fan-admin') {
         return _jsonResponse(
           _membership(fanId: 'fan-admin', roleId: 'hoa-board'),
@@ -281,20 +378,24 @@ void main() {
     expect(approved.roleId, 'hoa-member');
   });
 
-  test('signOut delegates to the real session and clears the app session',
-      () async {
-    final session = _RemoteTestSession('fan-alice');
-    final client = MockClient((request) async {
-      throw StateError('Unexpected request: ${request.method} ${request.url}');
-    });
-    addTearDown(client.close);
-    final api = _remoteApi(session, client);
+  test(
+    'signOut delegates to the real session and clears the app session',
+    () async {
+      final session = _RemoteTestSession('fan-alice');
+      final client = MockClient((request) async {
+        throw StateError(
+          'Unexpected request: ${request.method} ${request.url}',
+        );
+      });
+      addTearDown(client.close);
+      final api = _remoteApi(session, client);
 
-    await api.signOut();
+      await api.signOut();
 
-    expect(session.wasLoggedOut, isTrue);
-    expect(api.currentSession, isNull);
-  });
+      expect(session.wasLoggedOut, isTrue);
+      expect(api.currentSession, isNull);
+    },
+  );
 
   test(
     'invite members fail loudly because the deployed API has no code store',
@@ -377,10 +478,11 @@ LoomExperienceDefinition _experience() => const LoomExperienceDefinition(
 Map<String, Object?> _membership({
   required String fanId,
   required String roleId,
+  String groupId = _groupId,
   String state = 'active',
 }) => {
   'appId': _appId,
-  'groupId': _groupId,
+  'groupId': groupId,
   'fanId': fanId,
   'roleIds': [roleId],
   'state': state,
@@ -389,6 +491,17 @@ Map<String, Object?> _membership({
   'decidedAt': state == 'active' ? '2026-08-26T12:00:00Z' : null,
   'decidedByFanId': state == 'active' ? 'fan-admin' : null,
   'requestNote': null,
+};
+
+Map<String, Object?> _communityMembership({
+  required String fanId,
+  required String roleId,
+  String groupId = _groupId,
+  String state = 'active',
+}) => <String, Object?>{
+  ..._membership(fanId: fanId, roleId: roleId, groupId: groupId, state: state),
+  'communityId': _communityId,
+  'displayName': 'Cedar Commons HOA',
 };
 
 Map<String, Object?> _passport(String fanId, String displayName) => {

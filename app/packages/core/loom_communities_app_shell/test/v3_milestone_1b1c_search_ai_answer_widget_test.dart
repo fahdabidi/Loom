@@ -30,7 +30,7 @@ _seedSearchAiAnswerFixture({
     fanId: 'member',
     initialInstanceData: initialInstanceData,
   );
-  final resolved = RenderBinding(
+  final resolved = const RenderBinding(
     tabId: 'search',
     states: const ['open'],
     role: 'member',
@@ -148,7 +148,7 @@ void main() {
     expect(find.text('AI answer: Draft from model'), findsNothing);
     expect(find.text('Curated answer: Admin curated'), findsNothing);
     expect(
-      find.byKey(ValueKey('workflow-fact-list-url-citations-0-source')),
+      find.byKey(const ValueKey('workflow-fact-list-url-citations-0-source')),
       findsOneWidget,
     );
   });

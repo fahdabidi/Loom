@@ -1,5 +1,9 @@
 /// Lifecycle state shared by app access and group membership assignments.
-enum AssignmentState { active, suspended, revoked }
+///
+/// The App Access service retains requested and rejected assignments so that
+/// membership decisions remain auditable. They are first-class response
+/// states, rather than an absence of a membership record.
+enum AssignmentState { requested, active, suspended, revoked, rejected }
 
 /// One fan's access to one app, with any app-level roles they hold there.
 ///
@@ -55,4 +59,32 @@ class GroupMembership {
   final List<String> roleIds;
   final AssignmentState state;
   final DateTime joinedAt;
+}
+
+/// One fan's membership of a community-backed App Access group.
+///
+/// This is the server's join of [GroupMembership] with the community linked by
+/// the group's external reference. It is intentionally distinct from a
+/// client-side community configuration: [groupId], [roleIds], and [state] are
+/// all returned by App Access for the authenticated fan.
+///
+/// Maps to the `FanCommunityMembership` schema in
+/// `docs/API/OpenAPI/identity/app-access-api.openapi.yaml`.
+class FanCommunityMembership extends GroupMembership {
+  const FanCommunityMembership({
+    required super.appId,
+    required super.groupId,
+    required super.fanId,
+    required super.roleIds,
+    required super.state,
+    required super.joinedAt,
+    required this.communityId,
+    required this.displayName,
+  });
+
+  /// Canonical community id from the group's external reference.
+  final String communityId;
+
+  /// The display name configured for the App Access group.
+  final String displayName;
 }
