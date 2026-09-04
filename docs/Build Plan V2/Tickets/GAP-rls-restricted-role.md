@@ -1,9 +1,16 @@
 # GAP TICKET — RLS community-isolation backstop is inert (service runs as a Postgres superuser)
 
-**Status:** IN PROGRESS (2026-09-03) — two-role split approved by the user. Role `loom_workflow_app`
-provisioned (`NOSUPERUSER NOBYPASSRLS`; creds in secret `postgres-workflow-app-credentials`;
-provisioning SQL at loom-backend `deploy/postgres/provision-loom-workflow-app-role.sql`, commit
-`364be85`). Runtime/migration code split dispatched; build + redeploy + live verification pending.
+**Status:** ✅ DONE (2026-09-03) — two-role split shipped and the RLS backstop enforces live. Role
+`loom_workflow_app` provisioned (`NOSUPERUSER NOBYPASSRLS`; creds in secret
+`postgres-workflow-app-credentials`; provisioning SQL at loom-backend
+`deploy/postgres/provision-loom-workflow-app-role.sql`, `364be85`). Code split — migrations as admin
+`loom`, runtime pool as `loom_workflow_app`, pool hardened to refuse DDL (Loom `5a90042e`). Deployed
+`loom-workflow-service:1.0.3` with `LOOM_POSTGRES_APP_*` wired (backend `d84e09a`). **Live proof:**
+`FORCE ROW LEVEL SECURITY` now active on the tenant tables; as `loom_workflow_app` a no-context query
+returns 0 rows, with the correct community context 3 rows, admin 3 (control). Isolation test RUNS+PASSES
+under the restricted role; suite skip count dropped 2→1. **Remaining (separate, lower priority):** sweep
+the OTHER services (app-access, fan-passport, keycloak) off the `loom` superuser onto their own
+least-privilege roles — they have no RLS policies today, so this is hygiene, not an active isolation gap.
 **Severity:** security — a defense-in-depth isolation backstop exists in code but is bypassed in
 production, AND the service is over-privileged regardless of RLS
 **Found:** 2026-09-03, by the RLS-backstop dispatch (Batch v4, Thread 1). The agent implemented the
