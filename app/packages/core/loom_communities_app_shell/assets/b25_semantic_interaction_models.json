@@ -555,7 +555,7 @@
         "generate again",
         "cancel export"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show selected scope, generated/downloaded status or rollback/cancel status, and that checksum remains pending rather than fabricated."
+      "resultAndReceiverState": "Fresh screenshots must show selected scope, generated/downloaded status or rollback/cancel status, and the real platform-generated checksum after generation."
     },
     {
       "communityId": "community_chess_club",
