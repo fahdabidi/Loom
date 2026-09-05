@@ -18,76 +18,76 @@
   "algorithm": "sha-256",
   "packages": {
     "Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc": {
-      "sha256": "513e03006190d2e5751ce5fc2fc0a4a5ff702dc407e2777db2e7cee2f3257dcc",
-      "bytes": 87980,
+      "sha256": "114b9b969c0fb904cb7d1d740667d699235a9edcab70744e4d558c9afbb4ea17",
+      "bytes": 88007,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "56dc7998",
-      "lastCommitDate": "2026-09-02",
-      "lastCommitSubject": "feat(communities): adopt regenerated ad-free, cedar, data-portability, garden-club packages"
+      "lastCommit": "c6ec6116",
+      "lastCommitDate": "2026-09-05",
+      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc": {
-      "sha256": "4f0e1b3edc2435f56b37e15bb15e12a48dbf068266d78b0707be45b7316338ab",
-      "bytes": 61729,
+      "sha256": "199913fcc8d76fcb345d889d09631fce09efd6cd0bced6b9cf0d2b5c8fa254f9",
+      "bytes": 61756,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "31652ee7",
-      "lastCommitDate": "2026-08-31",
-      "lastCommitSubject": "feat(camera-club): declare experience.notifications"
+      "lastCommit": "c6ec6116",
+      "lastCommitDate": "2026-09-05",
+      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc": {
-      "sha256": "b0d18291ed7587adf914ba7e4b7f048a668b2fe81d18e2762a21ed4f42781dfc",
-      "bytes": 105535,
+      "sha256": "3cd4491705724519d17772c9dbef295a639b75deec66f97786489e132b7d1654",
+      "bytes": 105562,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "56dc7998",
-      "lastCommitDate": "2026-09-02",
-      "lastCommitSubject": "feat(communities): adopt regenerated ad-free, cedar, data-portability, garden-club packages"
+      "lastCommit": "c6ec6116",
+      "lastCommitDate": "2026-09-05",
+      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc": {
-      "sha256": "49f0c1d7239ffc28b018361d7735318553fb02b918e5e9de9f57f1816831e2a8",
-      "bytes": 87711,
+      "sha256": "92547b0c0be7292771748ab9c11083ffc5b759d494c5da522290e921b392a609",
+      "bytes": 87738,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "cad5c1bc",
-      "lastCommitDate": "2026-08-31",
-      "lastCommitSubject": "feat(chess-club): declare experience.notifications"
+      "lastCommit": "c6ec6116",
+      "lastCommitDate": "2026-09-05",
+      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc": {
-      "sha256": "1254b5d6a98d3fa9f126aebb73939f4db8cf44c0cbfeafdc9bf5b31688096b2b",
-      "bytes": 102531,
+      "sha256": "3963a8a1d2f2b6bf329de274498768b49f5317ec38265539c69aa0216cd2b73f",
+      "bytes": 102558,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "56dc7998",
-      "lastCommitDate": "2026-09-02",
-      "lastCommitSubject": "feat(communities): adopt regenerated ad-free, cedar, data-portability, garden-club packages"
+      "lastCommit": "c6ec6116",
+      "lastCommitDate": "2026-09-05",
+      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc": {
-      "sha256": "56a30308fb4443fd2782d9ecb5889bc04ff44fb938d791d87bc2ec9b1813e303",
-      "bytes": 106382,
+      "sha256": "4f8ee7ea4e02975b51d044c267cdcfbbe67f9200953ee0b34ce6f445955a87f2",
+      "bytes": 106409,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "56dc7998",
-      "lastCommitDate": "2026-09-02",
-      "lastCommitSubject": "feat(communities): adopt regenerated ad-free, cedar, data-portability, garden-club packages"
+      "lastCommit": "c6ec6116",
+      "lastCommitDate": "2026-09-05",
+      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc": {
-      "sha256": "a6b84350f4bd8f60d06e264e60127c1c14ca6486b4a56e5d455502e8bf2fc3bc",
-      "bytes": 92095,
+      "sha256": "dc26c0fea5e0e0ebc88a1b1088506b853202478f5eee5cc568c9d91addc30a27",
+      "bytes": 92122,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "f2b456d6",
-      "lastCommitDate": "2026-08-31",
-      "lastCommitSubject": "feat(masjid-nur): declare experience.notifications, and fix the asset mirror mapping"
+      "lastCommit": "c6ec6116",
+      "lastCommitDate": "2026-09-05",
+      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc": {
-      "sha256": "9db09c6d80794bca06e5b9480ddb92b42d601edbf3cde294e52a043cd2edaf51",
-      "bytes": 45231,
+      "sha256": "3b2081ccf7fd223e5254276f4d70f08411df3a49659b0c00ad417a277d1ea3d5",
+      "bytes": 45258,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "c617548c",
-      "lastCommitDate": "2026-08-31",
-      "lastCommitSubject": "feat(member-social-space): declare experience.notifications"
+      "lastCommit": "c6ec6116",
+      "lastCommitDate": "2026-09-05",
+      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc": {
-      "sha256": "69084659a144b6f753b6d363b156333bfd167145e60a47db33313d7134bda76e",
-      "bytes": 79854,
+      "sha256": "775eb67ca585eca1c2e4fe3b0ce778d5f27c775892404146c97f097f0cc6b01d",
+      "bytes": 79881,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "7ebfc3fc",
-      "lastCommitDate": "2026-09-03",
-      "lastCommitSubject": "feat(neighborhood-book-club): adopt regenerated package -- mute kept, demo 160/160"
+      "lastCommit": "c6ec6116",
+      "lastCommitDate": "2026-09-05",
+      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc": {
       "sha256": "e639a2f837e8e828231f7cc505e628c7b67246fdef5614b417cfaf870d5476b2",
@@ -98,12 +98,12 @@
       "lastCommitSubject": "feat(tabletop-club): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc": {
-      "sha256": "d275802897ef325dfebcbffe8c10c9a4c29307d1f81a629fa34b17ad9b29d665",
-      "bytes": 107452,
+      "sha256": "a36df7d62bea301e2e686db11d401027efce93c5e92210564b63569761777504",
+      "bytes": 107479,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "7ee9aa2c",
-      "lastCommitDate": "2026-08-31",
-      "lastCommitSubject": "feat(riverside-youth-soccer): declare experience.notifications"
+      "lastCommit": "c6ec6116",
+      "lastCommitDate": "2026-09-05",
+      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     }
   }
 }
