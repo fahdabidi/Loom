@@ -54,9 +54,11 @@ void main() {
     // one.
     expect(await sweeper.sweep(), 0);
     expect(sweeper.deliveredCount, 0);
+    expect(sweeper.deliveryFailureCount, 1);
 
     expect(await sweeper.sweep(), 1);
     expect(delivery.delivered, ['n1']);
+    expect(sweeper.deliveryFailureCount, 1);
   });
 
   test('an unreachable backend returns zero rather than throwing', () async {
@@ -68,7 +70,33 @@ void main() {
       notificationConfiguration: _pushEnabledNotifications,
     );
     expect(await sweeper.sweep(), 0);
+    expect(sweeper.deliveryFailureCount, 0);
   });
+
+  test(
+    'failure paths are observable without breaking sweep resilience',
+    () async {
+      final queryFailureSweeper = LoomReminderSweeper(
+        engine: _ThrowingEngine(),
+        delivery: _RecordingDelivery(),
+        notificationConfiguration: _pushEnabledNotifications,
+      );
+      expect(await queryFailureSweeper.sweep(), 0);
+      expect(queryFailureSweeper.deliveryFailureCount, 0);
+
+      final deliveryFailureSweeper = LoomReminderSweeper(
+        engine: _DueEngine([_notification('n1')]),
+        delivery: _RecordingDelivery(failFirst: true),
+        notificationConfiguration: _pushEnabledNotifications,
+      );
+      expect(await deliveryFailureSweeper.sweep(), 0);
+      expect(deliveryFailureSweeper.deliveryFailureCount, 1);
+      expect(deliveryFailureSweeper.deliveredCount, 0);
+
+      expect(await deliveryFailureSweeper.sweep(), 1);
+      expect(deliveryFailureSweeper.deliveryFailureCount, 1);
+    },
+  );
 
   test('asks the engine for the reminders due at the given clock', () async {
     final engine = _DueEngine([]);

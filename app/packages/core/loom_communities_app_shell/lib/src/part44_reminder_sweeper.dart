@@ -51,7 +51,8 @@ final class LoomReminderSweeper {
     final List<WorkflowInstance> due;
     try {
       due = await _engine.dueNotifications(asOf: _clock());
-    } catch (_) {
+    } catch (error) {
+      debugPrint('Reminder sweep could not query due notifications: $error');
       return 0;
     }
 
@@ -62,9 +63,13 @@ final class LoomReminderSweeper {
       try {
         await _delivery.deliver(notification);
         shown++;
-      } catch (_) {
+      } catch (error) {
         // Un-track it so the next sweep tries again. A delivery that failed is
         // not a delivery.
+        debugPrint(
+          'Reminder delivery failed for ${notification.instanceId}: $error',
+        );
+        _deliveryFailureCount++;
         _delivered.remove(notification.instanceId);
       }
     }
@@ -77,6 +82,11 @@ final class LoomReminderSweeper {
   /// not the reminders of the one arriving, and the id set is not scoped by fan.
   void reset() => _delivered.clear();
 
+  int _deliveryFailureCount = 0;
+
   @visibleForTesting
   int get deliveredCount => _delivered.length;
+
+  @visibleForTesting
+  int get deliveryFailureCount => _deliveryFailureCount;
 }
