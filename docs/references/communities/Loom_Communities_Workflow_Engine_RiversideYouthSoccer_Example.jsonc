@@ -1,5 +1,6 @@
 {
   "specVersion": 4,
+  "skillVersion": "3.3.0",
   "packageId": "init_riverside_youth_soccer_v2",
   "communityId": "community_riverside_youth_soccer",
   "communityHandle": "riverside-youth-soccer",

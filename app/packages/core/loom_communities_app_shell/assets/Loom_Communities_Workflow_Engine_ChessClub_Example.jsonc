@@ -1,5 +1,6 @@
 {
   "specVersion": 4,
+  "skillVersion": "3.3.0",
   "packageId": "init_chess_club_1",
   "communityId": "community_chess_club",
   "communityHandle": "chess-club",

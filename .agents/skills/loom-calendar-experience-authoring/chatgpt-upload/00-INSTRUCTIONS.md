@@ -44,7 +44,18 @@ asserts must never appear for that community.
 `docs/references/communities/Loom_Communities_Workflow_Engine_<Community>_Example.jsonc` in the same
 repo you are fetching everything else from. Read it in full.
 
-Read it as **evidence of intent, not as a template to copy**. It tells you what this community
+**Before anything else, check its `skillVersion` against this Skill's current version — even for the
+narrowest single-field fix.** Fetch `docs/references/reference/skill-versioning.md` and compare the
+package's stamped `skillVersion` (package root, beside `specVersion`; treat a missing field as `0.0.0`)
+against the "Current version" at the top of that document. If the package is behind, read every
+version-log entry between its stamp and current, in order, and apply each one's migration instructions
+to the package **before** doing whatever this dispatch actually asked for — regardless of how small or
+targeted that ask is. A version gap is never "unrelated" to a surgical fix: it means the file does not
+conform to the grammar you are about to author against. Stamp the package's `skillVersion` to the
+Skill's current version in your output, whether or not you found anything to migrate. Record in your
+final answer which (if any) migrations you applied and which version you stamped.
+
+Read the shipped package as **evidence of intent, not as a template to copy**. It tells you what this community
 actually does today: which workflows exist, which archetypes they use, how their surfaces are wired,
 what the seed data demonstrates. Your output must be **at least as capable**. Where the shipped
 package solves something well, keep that solution. Where it is thin against the product doc, improve

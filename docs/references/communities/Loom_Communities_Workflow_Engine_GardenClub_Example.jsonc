@@ -8,6 +8,7 @@
 
 {
   "specVersion": 4,
+  "skillVersion": "3.5.0",
   "packageId": "init_garden_club_2",
   "communityId": "community_garden_club",
   "communityHandle": "garden-club",

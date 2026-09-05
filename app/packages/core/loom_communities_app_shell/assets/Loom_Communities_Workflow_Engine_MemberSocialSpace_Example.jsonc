@@ -4,6 +4,7 @@
 // covers connections-entry + connection-invite. This avoids duplicate state machines.
 {
   "specVersion": 4,
+  "skillVersion": "3.3.0",
   "packageId": "init_member_social_space_1",
   "communityId": "community_member_social_space",
   "communityHandle": "member-social-space",

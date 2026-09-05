@@ -1,0 +1,4 @@
+{
+  "_comment": "Single source of truth for the Skill's current version, machine-readable. Kept in exact sync with the 'Current version' line at the top of docs/references/reference/skill-versioning.md -- update both in the same commit. Read by the community package validator to flag a stamped skillVersion that has fallen behind.",
+  "currentVersion": "3.6.0"
+}

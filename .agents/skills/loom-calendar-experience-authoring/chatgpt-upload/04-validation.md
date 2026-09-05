@@ -122,6 +122,7 @@ If an error genuinely cannot be fixed within the grammar, **stop and report the 
 |---|---|---|
 | `missing_schema_version` | The version stamp is absent or not an int | Add a single package-root `specVersion: 4`. **Not** the legacy triple — a package declaring `specVersion` must not also carry `schemaVersion` / `experienceSchemaVersion` / `workflowGrammarVersion`, and doing so is its own error. |
 | `unsupported_schema_version` | Version higher than the build supports | Author against the current spec ([`spec-version.json`](../spec-version.json)) |
+| `stale_skill_version` (added 2026-09-05) | The package's `skillVersion` is absent, or behind the value in [`generated/skill-version.json`](../generated/skill-version.json) | Fetch [`reference/skill-versioning.md`](../reference/skill-versioning.md), apply every migration between the package's stamped version (or `0.0.0` if the field is absent) and current, in order, then stamp `skillVersion` to the current value. A warning, not a hard error — flags real drift (a package authored or last touched before a ratified convention existed) without breaking a build over it while the migration backlog is being worked through. |
 
 ### States
 

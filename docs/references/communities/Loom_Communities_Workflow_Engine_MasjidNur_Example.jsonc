@@ -1,5 +1,6 @@
 {
   "specVersion": 4,
+  "skillVersion": "3.3.0",
   "packageId": "init_masjid_nur_engine_native_2",
   "communityId": "community_mosque",
   "communityHandle": "masjid-nur",
