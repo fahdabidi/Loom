@@ -567,17 +567,34 @@ void main() {
           find.textContaining('To use a different role, switch accounts.'),
           findsOneWidget,
         );
+        final currentMemberRole = find.byKey(
+          const ValueKey('actor-identity-option-tabletop-member'),
+        );
+        await tester.ensureVisible(currentMemberRole);
+        expect(currentMemberRole, findsOneWidget);
+        final currentMemberTile = tester.widget<ListTile>(currentMemberRole);
+        expect(currentMemberTile.selected, isTrue);
+        expect(currentMemberTile.onTap, isNotNull);
+        await tester.tap(currentMemberRole);
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('actor-identity-picker-dialog')),
+          findsNothing,
+        );
+        expect(authApi.currentSession?.account.roleId, 'tabletop-member');
+
+        await tester.tap(
+          find.byKey(const ValueKey('actor-identity-picker-button')),
+        );
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('actor-identity-picker-dialog')),
+        );
         final availableOrganizerRole = find.byKey(
-          const ValueKey('actor-identity-available-role-tabletop-organizer'),
+          const ValueKey('actor-identity-option-tabletop-organizer'),
         );
         await tester.ensureVisible(availableOrganizerRole);
         expect(availableOrganizerRole, findsOneWidget);
-        expect(
-          find.byKey(
-            const ValueKey('actor-identity-option-tabletop-organizer'),
-          ),
-          findsNothing,
-        );
         expect(tester.widget<ListTile>(availableOrganizerRole).onTap, isNull);
         await tester.tap(availableOrganizerRole);
         await tester.pump();

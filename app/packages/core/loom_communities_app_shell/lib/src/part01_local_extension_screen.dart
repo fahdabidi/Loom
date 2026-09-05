@@ -1072,6 +1072,35 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
+                    ListTile(
+                      key: ValueKey(
+                        'actor-identity-option-${activeAccountIdentity!.roleId}',
+                      ),
+                      selected: true,
+                      selectedTileColor: dialogAccent?.withValues(
+                        alpha: 0.08,
+                      ),
+                      leading: Icon(
+                        Icons.radio_button_checked,
+                        color: dialogAccent,
+                      ),
+                      title: Text(
+                        activeAccountIdentity.label,
+                        style: communityCard != null
+                            ? TextStyle(color: communityCard.resolvedHeading)
+                            : null,
+                      ),
+                      subtitle: Text(
+                        '${activeAccountIdentity.roleLabel} - ${activeAccountIdentity.description}',
+                        style: communityCard != null
+                            ? TextStyle(color: communityCard.resolvedBody)
+                            : null,
+                      ),
+                      onTap: () => Navigator.of(context).pop(
+                        activeAccountIdentity.roleId,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     if (actorIdentities.any(
                       (actorIdentity) =>
                           actorIdentity.roleId != activeAccount.roleId,
@@ -1092,7 +1121,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                         if (actorIdentity.roleId != activeAccount.roleId)
                           ListTile(
                             key: ValueKey(
-                              'actor-identity-available-role-${actorIdentity.roleId}',
+                              'actor-identity-option-${actorIdentity.roleId}',
                             ),
                             leading: Icon(
                               Icons.info_outline,
