@@ -1,5 +1,6 @@
 import 'package:postgres/postgres.dart' as pg;
 
+import 'idempotency.dart';
 import 'postgres_connection.dart';
 
 /// One member's durable place in an equipment-loan item queue.
@@ -139,39 +140,45 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
     required String instanceId,
     required String fanId,
     required DateTime joinedAt,
-  }) => _withCommunity(communityId, () async {
-    final inserted = await _session.execute(
-      pg.Sql.named('''
-        INSERT INTO workflow_item_queue_entries (
-          community_id, instance_id, fan_id, joined_at
-        ) VALUES (@communityId, @instanceId, @fanId, @joinedAt)
-        ON CONFLICT (community_id, instance_id, fan_id) DO NOTHING
-        RETURNING $_columns
-      '''),
-      parameters: <String, dynamic>{
-        'communityId': communityId,
-        'instanceId': instanceId,
-        'fanId': fanId,
-        'joinedAt': joinedAt.toUtc().millisecondsSinceEpoch,
-      },
-    );
-    if (inserted.isNotEmpty) {
-      return ItemQueueJoinResult(
-        entry: _fromRow(inserted.single.toColumnMap()),
-        created: true,
-      );
-    }
-
-    final existing = await _findByIdentity(
+  }) async {
+    final result = await runIdempotent<StoredItemQueueEntry>(
+      executor: _transactionExecutor,
       communityId: communityId,
-      instanceId: instanceId,
-      fanId: fanId,
+      lookup: () => _findByIdentity(
+        communityId: communityId,
+        instanceId: instanceId,
+        fanId: fanId,
+      ),
+      create: () async {
+        final rows = await _session.execute(
+          pg.Sql.named('''
+            INSERT INTO workflow_item_queue_entries (
+              community_id, instance_id, fan_id, joined_at
+            ) VALUES (@communityId, @instanceId, @fanId, @joinedAt)
+            ON CONFLICT (community_id, instance_id, fan_id) DO NOTHING
+            RETURNING $_columns
+          '''),
+          parameters: <String, dynamic>{
+            'communityId': communityId,
+            'instanceId': instanceId,
+            'fanId': fanId,
+            'joinedAt': joinedAt.toUtc().millisecondsSinceEpoch,
+          },
+        );
+        return rows.isEmpty ? null : _fromRow(rows.single.toColumnMap());
+      },
+      reload: () async =>
+          (await _findByIdentity(
+            communityId: communityId,
+            instanceId: instanceId,
+            fanId: fanId,
+          )) ??
+          (throw StateError(
+            'Queue entry disappeared after an identity conflict.',
+          )),
     );
-    if (existing == null) {
-      throw StateError('Queue entry disappeared after an identity conflict.');
-    }
-    return ItemQueueJoinResult(entry: existing, created: false);
-  });
+    return ItemQueueJoinResult(entry: result.record, created: result.created);
+  }
 
   @override
   Future<List<StoredItemQueueEntry>> listForItem({
@@ -285,17 +292,21 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
   }
 
   Future<T> _withCommunity<T>(String communityId, Future<T> Function() action) {
+    return runWithPostgresCommunity<T>(
+      executor: _transactionExecutor,
+      communityId: communityId,
+      action: action,
+    );
+  }
+
+  pg.SessionExecutor get _transactionExecutor {
     final executor = _connection as pg.SessionExecutor?;
     if (executor == null) {
       throw StateError(
         'PostgresItemQueueRepository requires a transaction-capable session.',
       );
     }
-    return runWithPostgresCommunity<T>(
-      executor: executor,
-      communityId: communityId,
-      action: action,
-    );
+    return executor;
   }
 
   static const _columns =
