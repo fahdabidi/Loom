@@ -1,5 +1,6 @@
 import 'package:loom_ux_judges/src/validator/community_package_validator.dart';
 import 'package:loom_ux_judges/src/validator/generated_capability_baseline.dart';
+import 'package:loom_ux_judges/src/validator/generated_skill_version.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
     show currentCommunitySpecVersion;
@@ -54,6 +55,7 @@ Map<String, dynamic> seed({
 Map<String, dynamic> pkg({Map<String, dynamic>? experience}) =>
     <String, dynamic>{
       'specVersion': currentCommunitySpecVersion,
+      'skillVersion': currentSkillVersion,
       'experience':
           experience ??
           <String, dynamic>{
@@ -124,6 +126,39 @@ List<ValidationFinding> missingCreatorFindings(Map<String, dynamic> package) =>
         .toList();
 
 void main() {
+  group('skill version validation', () {
+    test('a package stamped at the current version has no stale finding', () {
+      final report = CommunityPackageValidator().validate(pkg());
+
+      expect(
+        report.findings.where(
+          (finding) => finding.type == 'stale_skill_version',
+        ),
+        isEmpty,
+      );
+    });
+
+    test(
+      'an absent skillVersion warns without blocking an otherwise valid package',
+      () {
+        final package = pkg()..remove('skillVersion');
+        final report = CommunityPackageValidator().validate(package);
+        final staleFindings = report.findings
+            .where((finding) => finding.type == 'stale_skill_version')
+            .toList();
+
+        expect(staleFindings, hasLength(1));
+        expect(staleFindings.single.isWarning, isTrue);
+        expect(staleFindings.single.location, 'skillVersion');
+        expect(
+          staleFindings.single.message,
+          contains('docs/references/reference/skill-versioning.md'),
+        );
+        expect(report.passed, isTrue);
+      },
+    );
+  });
+
   group('requiresCapabilities', () {
     test('unimplemented capability produces one unsupported error', () {
       final package = capabilityPkg()

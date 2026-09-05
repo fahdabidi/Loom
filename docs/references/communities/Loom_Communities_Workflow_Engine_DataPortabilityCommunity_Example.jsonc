@@ -7,7 +7,7 @@
 
 {
   "specVersion": 4,
-  "skillVersion": "3.5.0",
+  "skillVersion": "3.6.0",
   "packageId": "init_data_portability_community_1",
   "communityId": "community_data_portability",
   "communityHandle": "data-portability-community",

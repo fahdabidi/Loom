@@ -18,7 +18,7 @@
   "algorithm": "sha-256",
   "packages": {
     "Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc": {
-      "sha256": "114b9b969c0fb904cb7d1d740667d699235a9edcab70744e4d558c9afbb4ea17",
+      "sha256": "dd455f4890eec4fb71d6dc9ef189f9ef2c60e225effb07f59cb72a9dbd16a44c",
       "bytes": 88007,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "c6ec6116",
@@ -34,7 +34,7 @@
       "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc": {
-      "sha256": "3cd4491705724519d17772c9dbef295a639b75deec66f97786489e132b7d1654",
+      "sha256": "47f9a2a831e64cf0ec450daf3676e09cd419c1ca2f08a0aa187f70d25b6a11d2",
       "bytes": 105562,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "c6ec6116",
@@ -50,7 +50,7 @@
       "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc": {
-      "sha256": "3963a8a1d2f2b6bf329de274498768b49f5317ec38265539c69aa0216cd2b73f",
+      "sha256": "f30994c9776871da2a4d48480f1ec83b2e7becaf16f860017dde5733ae0def43",
       "bytes": 102558,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "c6ec6116",
@@ -58,7 +58,7 @@
       "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc": {
-      "sha256": "4f8ee7ea4e02975b51d044c267cdcfbbe67f9200953ee0b34ce6f445955a87f2",
+      "sha256": "71659f0896f3d28d27f2d24b20da616b42834e66b6e313150e6c654e42b9ef3b",
       "bytes": 106409,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "c6ec6116",
@@ -82,7 +82,7 @@
       "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc": {
-      "sha256": "775eb67ca585eca1c2e4fe3b0ce778d5f27c775892404146c97f097f0cc6b01d",
+      "sha256": "71e1f0688b7dffd1b29cb90a1066998f003abdf920523cac8dcb535837726957",
       "bytes": 79881,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "c6ec6116",

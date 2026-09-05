@@ -1,5 +1,8 @@
 ---
+spec: 4
+doc_version: 1.0.0
 status: current
+last_verified: 2026-09-05
 audience: llm-agent
 ---
 
@@ -66,24 +69,28 @@ written by the Skill itself, at dispatch time, not inferred after the fact.
 
 | Community | File | Last content commit | Stamped `skillVersion` |
 |---|---|---|---|
-| Ad-Free Community | `...AdFreeCommunity_Example.jsonc` | `56dc7998` (2026-09-02) | `3.5.0` |
-| Neighborhood Book Club | `...BookClub_Example.jsonc` | `7ebfc3fc` (2026-09-03) | `3.5.0` |
+| Ad-Free Community | `...AdFreeCommunity_Example.jsonc` | `56dc7998` (2026-09-02) | `3.6.0` |
+| Neighborhood Book Club | `...BookClub_Example.jsonc` | `7ebfc3fc` (2026-09-03) | `3.6.0` |
 | Camera Club | `...CameraClub_Example.jsonc` | `31652ee7` (2026-08-31) | `3.3.0` |
-| Cedar Commons HOA | `...CedarCommonsHOA_Example.jsonc` | `56dc7998` (2026-09-02) | `3.5.0` |
+| Cedar Commons HOA | `...CedarCommonsHOA_Example.jsonc` | `56dc7998` (2026-09-02) | `3.6.0` |
 | Chess Club | `...ChessClub_Example.jsonc` | `cad5c1bc` (2026-08-31) | `3.3.0` |
-| Export and Migration | `...DataPortabilityCommunity_Example.jsonc` | `56dc7998` (2026-09-02) | `3.5.0` |
-| Garden Club | `...GardenClub_Example.jsonc` | `56dc7998` (2026-09-02) | `3.5.0` |
+| Export and Migration | `...DataPortabilityCommunity_Example.jsonc` | `56dc7998` (2026-09-02) | `3.6.0` |
+| Garden Club | `...GardenClub_Example.jsonc` | `56dc7998` (2026-09-02) | `3.6.0` |
 | Platform Social | `...MemberSocialSpace_Example.jsonc` | `c617548c` (2026-08-31) | `3.3.0` |
 | **Masjid Nur** | `...Mosque_Example.jsonc` | `f2b456d6` (2026-08-31) | `3.3.0` |
 | Riverside Youth Soccer | `...YouthSoccer_Example.jsonc` | `7ee9aa2c` (2026-08-31) | `3.3.0` |
 | Tabletop Club (reference fixture, not shipped to the demo app) | `...Phase1_TabletopClub_Example.jsonc` | unreviewed — check before use | `unstamped` |
 
-Ad-Free, Book Club, Cedar, Export/Migration, and Garden Club are already at `3.5.0` (the current
-minor line at the time of stamping) via their 09-02/09-03 regenerations. Camera Club, Chess Club,
-Platform Social, Masjid Nur, and Youth Soccer stamp at `3.3.0` — each owes the `3.4.0` and `3.5.0`
-migrations below. **Masjid Nur and Platform Social additionally never picked up the `3.0.0` owner-role
-migration** — Chess Club and Youth Soccer got it in their 08-24 regeneration batch (see the `3.0.0`
-entry), so `3.3.0` alone does not mean "owner role present"; check the package directly.
+Ad-Free, Book Club, Cedar, Export/Migration, and Garden Club were reconstructed to `3.5.0` (the
+minor line current at the time of their last content commit) and then advanced one step further to
+`3.6.0` at the same time this baseline was written, because `3.6.0`'s migration is "none required" —
+it is a documentation clarification, not a grammar change, so a package already conformant with
+`3.5.0` conforms to `3.6.0` with no edit needed. Their stamp is therefore genuinely current, not
+reconstructed-and-stale. Camera Club, Chess Club, Platform Social, Masjid Nur, and Youth Soccer stamp
+at `3.3.0` — each owes the `3.4.0` through `3.6.0` migrations below (the last a no-op, the rest not).
+**Masjid Nur and Platform Social additionally never picked up the `3.0.0` owner-role migration** —
+Chess Club and Youth Soccer got it in their 08-24 regeneration batch (see the `3.0.0` entry), so
+`3.3.0` alone does not mean "owner role present"; check the package directly.
 
 ## Version log
 

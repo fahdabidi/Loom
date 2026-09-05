@@ -102,6 +102,7 @@ const Set<String> communityPackageValidatorFindingCodes = <String>{
   'redundant_transition',
   'seed_instance_missing_creator',
   'sortable_column_without_backing_field',
+  'stale_skill_version',
   'stuck_state',
   'tab_action_cannot_be_button',
   'transition_has_no_observable_effect',

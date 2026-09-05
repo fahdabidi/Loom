@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:loom_ux_judges/src/validator/generated_capability_baseline.dart';
+import 'package:loom_ux_judges/src/validator/generated_skill_version.dart';
 import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
     show
@@ -11,6 +12,26 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart'
 import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 import 'package:loom_workflow_engine/src/evaluator/recurrence_evaluator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
+
+bool _isVersionBehind(String candidate, String current) {
+  final candidateParts = _parseVersion(candidate);
+  final currentParts = _parseVersion(current);
+  for (var index = 0; index < candidateParts.length; index++) {
+    if (candidateParts[index] < currentParts[index]) return true;
+    if (candidateParts[index] > currentParts[index]) return false;
+  }
+  return false;
+}
+
+List<int> _parseVersion(String version) {
+  final parts = version.split('.');
+  if (parts.length != 3) return const [0, 0, 0];
+  final parsed = parts.map(int.tryParse).toList();
+  if (parsed.any((part) => part == null || part < 0)) {
+    return const [0, 0, 0];
+  }
+  return parsed.cast<int>();
+}
 
 class CommunityPackageValidator {
   CommunityPackageValidator({Set<String>? capabilityBaseline})
@@ -27,6 +48,22 @@ class CommunityPackageValidator {
 
   ValidationReport validate(Map<String, dynamic> package) {
     final findings = <ValidationFinding>[];
+
+    final rawSkillVersion = package['skillVersion'];
+    final skillVersion = rawSkillVersion is String ? rawSkillVersion : '0.0.0';
+    if (_isVersionBehind(skillVersion, currentSkillVersion)) {
+      findings.add(
+        _finding(
+          'stale_skill_version',
+          'Package skillVersion "$skillVersion" is behind the current Skill '
+              'version "$currentSkillVersion". Fetch and apply the required '
+              'migrations in docs/references/reference/skill-versioning.md, '
+              'then stamp the package to the current version.',
+          'skillVersion',
+          warning: true,
+        ),
+      );
+    }
 
     final specVersion = package['specVersion'];
     const legacyVersionStamps = [

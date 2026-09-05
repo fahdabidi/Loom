@@ -2,7 +2,7 @@
 // Existing package-boundary identifiers, workflow ids, state labels, and seed ids are preserved.
 {
   "specVersion": 4,
-  "skillVersion": "3.5.0",
+  "skillVersion": "3.6.0",
   "packageId": "init_neighborhood_book_club_1",
   "communityId": "community_neighborhood_book_club",
   "communityHandle": "neighborhood-book-club",

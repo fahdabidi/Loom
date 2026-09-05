@@ -465,6 +465,13 @@
       "derivedFrom": []
     },
     {
+      "path": "reference/skill-versioning.md",
+      "title": "Skill versioning — skillVersion, and how to migrate a community forward",
+      "syncedTo": 4,
+      "status": "current",
+      "derivedFrom": []
+    },
+    {
       "path": "reference/theming.md",
       "title": "Theme cascade (community -> tab -> workflow)",
       "syncedTo": 4,

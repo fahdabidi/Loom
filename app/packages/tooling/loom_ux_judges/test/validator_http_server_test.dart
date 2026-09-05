@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:loom_ux_judges/src/validator/validator_http_server.dart';
+import 'package:loom_ux_judges/src/validator/generated_skill_version.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
     show currentCommunitySpecVersion;
 import 'package:test/test.dart';
@@ -487,6 +488,7 @@ void main() {
 
 const _hikeClubPackage = {
   'specVersion': currentCommunitySpecVersion,
+  'skillVersion': currentSkillVersion,
   'packageId': 'init_hiking_club_1',
   'communityId': 'community_hiking_club',
   'communityHandle': 'hiking-club',
@@ -623,6 +625,7 @@ const _hikeClubPackage = {
 
 const _noEditGuardOrCreatePackage = {
   'specVersion': currentCommunitySpecVersion,
+  'skillVersion': currentSkillVersion,
   'packageId': 'init_no_gaps_1',
   'communityId': 'community_no_gaps',
   'communityHandle': 'no-gaps',
