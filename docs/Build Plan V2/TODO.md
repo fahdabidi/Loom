@@ -111,7 +111,7 @@ Still open, as rows in that tracker's **§8**:
 
 - [ ] server-initiated push is a placeholder pinned `0.0.0-placeholder`; nothing implements it → ACWS §8
 - [ ] delivery failures are invisible — best-effort swallows every platform error → ACWS §8
-- [ ] the change feed is built but **not deployed**; ships with the next workflow-service image → ACWS §8
+- [x] change feed: **CLOSED, was stale — it IS deployed.** Proven by live request against `loom-workflow-service:1.0.3` (deployed == manifest, no drift): `GET /v1/communities/{id}/changes` returns **401 authentication_required** (route exists, wants auth) while a nonexistent collection under the identical valid `X-Loom-Correlation-Id` returns **404 route_not_found** — a working control, so the 401 means present, not missing. Note the first attempt used `/v1/changes` and 404d; the real shape is `/v1/communities/{id}/changes` (`_matchesCollection`, workflow_service.dart:255). Verified 2026-09-04. → ACWS §8
 - [ ] `app_group.external_resource_*` NULL for all 24 groups → ACWS §8 `needs-spec-decision`
 - [ ] never derive the community key from the group id — underscored vs hyphenated → ACWS §8
 - [x] fan → community: **CLOSED, was stale** — `GET /v1/fans/{fanId}/communities` (`listFanCommunities`) ships in the app-access spec and the app adopted it (part37/part39/part40). Verified 2026-09-04. → ACWS §8
