@@ -756,13 +756,6 @@
           {
             "states": ["open"],
             "audience": "any",
-            "tabId": "calendar",
-            "cardSurfaceFamily": "formEntry",
-            "bindingKind": "summary"
-          },
-          {
-            "states": ["open"],
-            "audience": "any",
             "tabId": "admin",
             "cardSurfaceFamily": "formEntry",
             "bindingKind": "primary",

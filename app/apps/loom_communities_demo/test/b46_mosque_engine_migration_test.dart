@@ -74,15 +74,15 @@ void main() {
       await _selectTab(tester, 'calendar');
       await _waitForFinder(
         tester,
-        find.byKey(const ValueKey('engine-native-list-root-calendar')),
+        find.byKey(const ValueKey('engine-native-calendar-root')),
       );
       expect(
-        find.byKey(const ValueKey('engine-native-list-root-calendar')),
+        find.byKey(const ValueKey('engine-native-calendar-root')),
         findsOneWidget,
-        reason: 'Calendar mixes event-rsvp and volunteer form bindings.',
+        reason: 'Calendar renders one tab-native archetype.',
       );
       expect(find.text('Friday service and community iftar'), findsWidgets);
-      expect(find.text('Community iftar setup team'), findsWidgets);
+      expect(find.text('Community iftar setup team'), findsNothing);
       await _tapEngineAction(
         tester,
         instanceId: 'masjid-event-friday-iftar',

@@ -66,12 +66,12 @@
       "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
     },
     "Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc": {
-      "sha256": "7710327ebff63134e8db75885da54e3d00373040944a7d147ce4118deb259a7b",
-      "bytes": 92973,
+      "sha256": "7a7b48223d14f7ae50237af3a7c290f646eb84ca2c1efa4c0f54ec9d6b6fe1ff",
+      "bytes": 92769,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "c6ec6116",
+      "lastCommit": "14d6e1a6",
       "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
+      "lastCommitSubject": "feat(masjid-nur): regenerate through the Skill -- adopt reserved owner role, stamp 3.6.0"
     },
     "Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc": {
       "sha256": "3b2081ccf7fd223e5254276f4d70f08411df3a49659b0c00ad417a277d1ea3d5",
