@@ -560,17 +560,45 @@ There are **five**, and the demo app is the one that gets forgotten — it was o
 migration too, and a Chess regeneration broke it for a full day in 2026-08 because I was running the
 other four and calling that "the suites".
 
-| Suite | Path | Baseline (2026-09-01, all five re-measured) |
+| Suite | Path | Baseline (2026-09-04, re-measured) |
 | --- | --- | ---: |
-| UX judges | `app/packages/tooling/loom_ux_judges` | **485** (0 skipped) — was 464; grew with the c16 absent-vs-failed tests, the platformSource narrowing and the bespoke-create work 
-| App shell | `app/packages/core/loom_communities_app_shell` | **371** (+2 skipped) — was 354; grew with the settings surface, replica sync policy and notification-preference client 
-| Workflow engine | `app/packages/core/loom_workflow_engine` | **316** (+1 skipped, with PG credentials; **312 (+5)** without — four PostgreSQL tests skip silently, same trap as the row below) 
-| Workflow service | `app/packages/core/loom_workflow_service` | 148 (+1 skipped, with PG credentials; 139 (+10) without) |
+| UX judges | `app/packages/tooling/loom_ux_judges` | **490** (0 skipped) — was 485 on 2026-09-01 
+| App shell | `app/packages/core/loom_communities_app_shell` | **375** (+2 skipped) — was 371; grew with the editGuard and role-picker regression tests 
+| Workflow engine | `app/packages/core/loom_workflow_engine` | **312** (+5 skipped) without PG credentials; four PostgreSQL tests skip silently, same trap as the row below 
+| Workflow service | `app/packages/core/loom_workflow_service` | **153 (+1 skipped)** with BOTH credential sets — see the warning below; 146 (+8) with only `LOOM_POSTGRES_PASSWORD`; 142 (+12) with none |
 | Demo app | `app/apps/loom_communities_demo` | 160 |
+
+**The workflow service needs TWO credential sets, and supplying only one produces a green run that
+proves nothing.** `LOOM_POSTGRES_PASSWORD` alone still skips `postgres_rls_integration_test.dart` —
+the only PostgreSQL-backed test that exercises `PostgresItemQueueRepository` and the RLS boundary —
+because that test *also* requires the restricted role from the two-role split. Measured 2026-09-04
+while verifying the item_queue idempotency refactor: admin-only gave `146 passed / 8 skipped` and
+looked like real PostgreSQL verification, while silently skipping the one test covering the changed
+code. Both sets gives `153 (+1)`, and the remaining skip is an unrelated live App Access check.
+
+    LOOM_POSTGRES_USERNAME=loom            LOOM_POSTGRES_PASSWORD="$PW"       # admin, runs migrations
+    LOOM_POSTGRES_APP_USERNAME=loom_workflow_app LOOM_POSTGRES_APP_PASSWORD="$APW"   # restricted runtime role
+
+`$APW` is in the `postgres-workflow-app-credentials` secret; `$PW` is in `postgres-credentials`.
+**Read which tests skipped, not just the count** — the count moving from 12 to 8 looked like progress
+and the test that mattered was still in the remainder.
 
 Run all five after installing a regenerated community package. The demo app renders the shipped
 packages, so it is precisely the suite a package change can break, and precisely the one that looks
 skippable because the change was "just JSON".
+
+**It is not only package changes — an app-shell widget change broke it too, and shipped.** On
+2026-09-04 a role-picker fix (`3ad79072`) renamed a widget key from `actor-identity-option-<roleId>`
+to `actor-identity-available-role-<roleId>`. The app shell, engine and judges suites were run and all
+passed, the change was called verified, committed and pushed — and it had broken **8 demo-app tests**,
+because `app/apps/loom_communities_demo/test/workflow_ui_test_harness.dart` looks that key up and
+hard-fails with *"Actor identity X was not available in the actor identity picker"*. Caught only
+later, by A/B: `HEAD` gave 152/8, reverting those two files alone gave 160/0. Fixed in `c47c6dc8` by
+restoring the key while keeping the rows non-interactive.
+
+Two rules from it. **A widget key is a cross-package contract** — grep the whole repo, including
+`app/apps/**`, before renaming one. And **"verified" means all five suites**; three of five is a
+partial result and saying otherwise overstates the evidence.
 
 **The skipped counts are the load-bearing part.** Both the workflow service and the engine carry
 PostgreSQL integration tests that **skip silently** without `LOOM_POSTGRES_PASSWORD` and a
