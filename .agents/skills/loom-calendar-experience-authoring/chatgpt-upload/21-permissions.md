@@ -150,7 +150,7 @@ author the action the transition actually performs and say so.
 | `join_waitlist` | `event_rsvp.join_waitlist` | `join-event-waitlist`, `respond-waitlist` |
 | `set_reminder` | `event_rsvp.set_reminder` | `add-reminder`, `add-event-reminder`, `set-reminder`, `enable-reservation-reminder`, `disable-reservation-reminder`, `request-calendar-sync` — a member asking to be reminded, about their own row. |
 | `send_reminder` | `event_rsvp.send_reminder` | `send-reminder`, `send-next-reminder` — **a human sending one now, on purpose.** An organiser or coach taps it; it is guarded by `allowedRoleIds` and **renders as a button**, like any other role-gated action. Distinct from `deliver_reminder` below: same outcome for the recipient, different actor. |
-| `deliver_reminder` | `event_rsvp.deliver_reminder` | `deliver-reminder` — **platform-applied, never user-tapped.** Driven by the workflow's declarative `reminder` block and applied by the Calendar sweep through `dueNotifications({asOf})`. **No role is granted it**, so it renders as no button anywhere, by the ordinary derivation in §1 rather than any special case. |
+| `deliver_reminder` | `event_rsvp.deliver_reminder` | **No transition — you do not write one.** Platform-applied, never user-tapped: driven by the workflow's declarative `reminder` block and swept by `LoomReminderSweeper` through `dueNotifications({asOf})`. **No role is granted it**, so it renders as no button anywhere, by the ordinary derivation in §1 rather than any special case. Measured 2026-09-04: **zero of the eleven shipped packages declare a `deliver-reminder` transition**, and none should — the reserved id exists so that a package which ever did declare one resolves to this action instead of `send_reminder`. |
 | `propose_change` | `event_rsvp.propose_change` | `suggest-new-time` |
 | `record_outcome` | `event_rsvp.record_outcome` | `record-result`, `flag-reservation-conflict` |
 
@@ -171,6 +171,46 @@ one is configured declaratively:
 and swept by `dueNotifications({asOf})`. The manual one is an ordinary role-gated transition. The
 recipient sees the same notification either way; what differs is who caused it, and that is exactly
 what the permission has to capture.
+
+#### Which one do I write? — the authoring rule
+
+Ask **who decides that this reminder goes out now.** If the answer is a clock, it is automatic. If the
+answer is a person, it is manual. A community may declare either, both, or neither, and the two never
+substitute for one another.
+
+**Automatic — the platform sends it on schedule.** Declare a `reminder` block on the workflow and
+**declare no transition at all**. There is nothing to guard, nothing to grant, and no button appears.
+
+```jsonc
+// on the workflow, beside "states" / "transitions"
+"reminder": { "anchorDateField": "eventDate", "anchorTimeField": "eventTime", "leadHours": 24 }
+```
+
+Optionally add `"enabledField": "reminderEnabled"` to let a member mute their own row — that toggle is
+a `set_reminder` action, not this one.
+
+**Manual — a named role sends it deliberately.** Declare an ordinary transition whose id is
+`send-reminder` (or `send-next-reminder`) and guard it with `allowedRoleIds` naming the role allowed to
+send. It renders as a button for exactly that role, like any other role-gated action.
+
+```jsonc
+{
+  "id": "send-reminder",
+  "label": "Send reminder",
+  "from": ["scheduled"], "to": "scheduled",
+  "guard": { "allowedRoleIds": ["chess-organizer"] }
+}
+```
+
+**Do not** reach for `deliver-reminder` as a transition id to mean "send it now" — that id is reserved
+for the platform path and grants nobody, so the button you wrote would render for no one. Equally, do
+not omit `allowedRoleIds` from a `send-reminder` transition in the hope the platform will fire it: the
+sweeper reads the `reminder` block and never a transition, so an unguarded `send-reminder` is simply a
+manual button offered to every role.
+
+Both paths in one workflow is a normal, supported combination: the `reminder` block covers the routine
+24-hours-before nudge, and a `send-reminder` transition lets the organiser send an extra one when the
+venue changes.
 
 **The ids are what separate them, and nothing else does.** `send-reminder` and `deliver-reminder`
 differ by one word and are opposite in every way that matters. Guard shape *correlates* — a manual
