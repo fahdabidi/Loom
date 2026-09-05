@@ -272,6 +272,25 @@ Future<void> _openFridayDetail(WidgetTester tester) async {
   await _settle(tester);
 }
 
+Future<void> _openCalendarTab(WidgetTester tester) async {
+  final calendarTab = find.byKey(const ValueKey('community-tab-calendar'));
+  await _pumpUntil(tester, calendarTab);
+  await tester.ensureVisible(calendarTab);
+  await tester.tap(calendarTab);
+  await _pumpUntil(
+    tester,
+    find.byKey(const ValueKey('engine-native-calendar-root')),
+  );
+}
+
+int _visibleCommunityTabCount(WidgetTester tester) => find
+    .descendant(
+      of: find.byKey(const ValueKey('community-bottom-tabs')),
+      matching: find.byType(InkWell),
+    )
+    .evaluate()
+    .length;
+
 InputChip _responseChip(WidgetTester tester, String transitionId) =>
     tester.widget<InputChip>(
       find.descendant(
@@ -495,6 +514,120 @@ void main() {
             of: find.byKey(const ValueKey('actor-identity-picker-dialog')),
             matching: find.text('Signed in as Priya N.'),
           ),
+          findsOneWidget,
+        );
+      } finally {
+        await tester.runAsync(fixture.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'authenticated role picker explains available roles and switches accounts',
+    (tester) async {
+      final fixture = (await tester.runAsync(
+        () => _installFrozenTabletop(
+          extensionIdSuffix: 'authenticated-role-picker-regression',
+        ),
+      ))!;
+      final authApi = await _authApiWithTabletopAccountsFor(
+        fixture.community.extensionId,
+      );
+      try {
+        await tester.pumpWidget(_app(fixture, authApi: authApi));
+
+        await _signInAs(tester, 'Priya N.');
+        expect(authApi.currentSession?.account.roleId, 'tabletop-member');
+        expect(
+          find.byKey(const ValueKey('active-actor-identity-tabletop-member')),
+          findsOneWidget,
+        );
+        expect(find.text('2 available community roles'), findsOneWidget);
+        expect(find.byKey(const ValueKey('community-tab-admin')), findsNothing);
+        expect(_visibleCommunityTabCount(tester), 5);
+
+        await _openCalendarTab(tester);
+        expect(
+          find.byKey(const ValueKey('creatable-fab-event-rsvp')),
+          findsNothing,
+        );
+
+        await tester.tap(
+          find.byKey(const ValueKey('actor-identity-picker-button')),
+        );
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('actor-identity-picker-dialog')),
+        );
+        expect(
+          find.byKey(const ValueKey('actor-identity-current-account-summary')),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('To use a different role, switch accounts.'),
+          findsOneWidget,
+        );
+        final availableOrganizerRole = find.byKey(
+          const ValueKey('actor-identity-available-role-tabletop-organizer'),
+        );
+        await tester.ensureVisible(availableOrganizerRole);
+        expect(availableOrganizerRole, findsOneWidget);
+        expect(
+          find.byKey(
+            const ValueKey('actor-identity-option-tabletop-organizer'),
+          ),
+          findsNothing,
+        );
+        expect(tester.widget<ListTile>(availableOrganizerRole).onTap, isNull);
+        await tester.tap(availableOrganizerRole);
+        await tester.pump();
+        expect(
+          find.byKey(const ValueKey('actor-identity-picker-dialog')),
+          findsOneWidget,
+        );
+        expect(authApi.currentSession?.account.roleId, 'tabletop-member');
+
+        final switchAccount = find.byKey(
+          const ValueKey('actor-identity-sign-in-specific-person'),
+        );
+        await tester.ensureVisible(switchAccount);
+        expect(find.text('Switch account'), findsOneWidget);
+        await tester.tap(switchAccount);
+        await tester.pumpAndSettle();
+        await _pumpUntil(tester, find.text('Alex T.'));
+        await tester.ensureVisible(find.text('Alex T.').first);
+        await tester.tap(find.text('Alex T.').first);
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('actor-identity-picker-button')),
+        );
+        await _settle(tester);
+
+        expect(authApi.currentSession?.account.accountId, 'tabletop-organizer');
+        expect(authApi.currentSession?.account.roleId, 'tabletop-organizer');
+        expect(
+          find.byKey(
+            const ValueKey('active-actor-identity-tabletop-organizer'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('active-actor-identity-tabletop-member')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('community-tab-admin')),
+          findsOneWidget,
+        );
+        expect(_visibleCommunityTabCount(tester), 6);
+
+        await _openCalendarTab(tester);
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('creatable-fab-event-rsvp')),
+        );
+        expect(
+          find.byKey(const ValueKey('creatable-fab-event-rsvp')),
           findsOneWidget,
         );
       } finally {

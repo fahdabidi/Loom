@@ -174,12 +174,12 @@ void main() {
         expect(ballotEventIds, contains(eventId));
 
         await tester.pumpWidget(_app(installed));
-        await tester.tap(
-          find.byKey(const ValueKey('actor-identity-picker-button')),
+        await selectTestTabletopActorIdentity(tester, 'tabletop-member');
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('active-actor-identity-tabletop-member')),
         );
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Member').last);
-        await tester.pumpAndSettle();
+        await _settle(tester);
         await _selectCalendar(tester);
         final memberAgenda = find.byKey(
           ValueKey('engine-native-calendar-agenda-$eventId-0'),

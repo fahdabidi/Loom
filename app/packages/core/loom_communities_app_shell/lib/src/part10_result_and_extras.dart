@@ -267,11 +267,16 @@ class _ActorIdentityStatusStrip extends StatelessWidget {
                   horizontal: 10,
                   vertical: 8,
                 ),
-                child: Text(
-                  '$actorIdentityCount roles',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: foreground,
-                    fontWeight: FontWeight.w700,
+                child: SizedBox(
+                  width: 140,
+                  child: Text(
+                    '$actorIdentityCount available community roles',
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),

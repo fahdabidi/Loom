@@ -108,12 +108,7 @@ Future<void> _settleBounded(WidgetTester tester) async {
 }
 
 Future<void> _selectActorIdentity(WidgetTester tester, String roleId) async {
-  await tester.tap(find.byKey(const ValueKey('actor-identity-picker-button')));
-  await _pumpUntil(
-    tester,
-    find.byKey(ValueKey('actor-identity-option-$roleId')),
-  );
-  await tester.tap(find.byKey(ValueKey('actor-identity-option-$roleId')));
+  await selectTestTabletopActorIdentity(tester, roleId);
   await _settleBounded(tester);
 }
 

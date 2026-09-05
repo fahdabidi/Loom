@@ -177,16 +177,19 @@ Future<void> _selectActorIdentity(WidgetTester tester, String fanId) async {
   await selectTestTabletopActorIdentity(tester, fanId);
 }
 
-Widget _app(_InstalledTabletop installed) => MaterialApp(
-  home: LocalExtensionScreen(
-    community: installed.community,
-    seedDataFiles: const [],
-    authApi: activeAuthForInstalledCommunity(
-      community: installed.community,
-      roleId: 'tabletop-organizer',
-    ),
-  ),
-);
+Widget _app(_InstalledTabletop installed, {LoomAuthApi? authApi}) =>
+    MaterialApp(
+      home: LocalExtensionScreen(
+        community: installed.community,
+        seedDataFiles: const [],
+        authApi:
+            authApi ??
+            activeAuthForInstalledCommunity(
+              community: installed.community,
+              roleId: 'tabletop-organizer',
+            ),
+      ),
+    );
 
 Future<void> _selectMarketplace(WidgetTester tester) async {
   final marketplace = find.byKey(const ValueKey('community-tab-marketplace'));
@@ -751,8 +754,12 @@ void main() {
       final installed = (await tester.runAsync(
         () => _install('phasec-marketplace-eligibility'),
       ))!;
+      final authApi = activeAuthForInstalledCommunity(
+        community: installed.community,
+        roleId: 'tabletop-organizer',
+      );
       try {
-        await tester.pumpWidget(_app(installed));
+        await tester.pumpWidget(_app(installed, authApi: authApi));
         await _selectActorIdentity(tester, 'tabletop-member');
         final borrowIsAvailable = await tester.runAsync(() async {
           await installed.engine.applyTransition(
@@ -803,23 +810,42 @@ void main() {
           findsOneWidget,
         );
 
-        await tester.tap(
-          find.byKey(const ValueKey('actor-identity-picker-button')),
-        );
-        await tester.pump();
+        await _selectActorIdentity(tester, 'tabletop-organizer');
+        expect(authApi.currentSession?.account.accountId, 'tabletop-organizer');
+        expect(authApi.currentSession?.account.roleId, 'tabletop-organizer');
         await _pumpUntil(
           tester,
           find.byKey(
-            const ValueKey('actor-identity-option-tabletop-organizer'),
+            const ValueKey('active-actor-identity-tabletop-organizer'),
           ),
         );
-        await tester.tap(
+        expect(
           find.byKey(
-            const ValueKey('actor-identity-option-tabletop-organizer'),
+            const ValueKey('active-actor-identity-tabletop-organizer'),
           ),
+          findsOneWidget,
         );
-        await tester.pump();
+
+        final organizerTransitionIds = (await tester.runAsync(() async {
+          final catan = await _readMarketplaceInstance(
+            installed.engine,
+            instanceId: 'listing-catan',
+            fanId: 'tabletop-organizer',
+          );
+          return _availableMarketplaceTransitionIds(
+            installed.engine,
+            catan,
+            'tabletop-organizer',
+          );
+        }))!;
+        expect(organizerTransitionIds, isNot(contains('borrow')));
+
         await _selectMarketplace(tester);
+        await _pumpUntil(tester, catanListing);
+        await _pumpUntilGone(
+          tester,
+          find.byKey(const ValueKey('equipment-loan-progress-listing-catan')),
+        );
         expect(
           find.byKey(
             const ValueKey('equipment-loan-action-borrow-listing-catan'),

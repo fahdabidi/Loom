@@ -133,18 +133,10 @@ void main() {
             ),
           ),
         );
-        final actorIdentityPicker = find.byKey(
-          const ValueKey('actor-identity-picker-button'),
-        );
-        await _pumpUntil(tester, actorIdentityPicker);
-        await tester.tap(actorIdentityPicker);
-        await tester.pump();
-        final member = find.byKey(
-          const ValueKey('actor-identity-option-tabletop-member'),
-        );
-        await _pumpUntil(tester, member);
-        await tester.tap(member);
-        await tester.pump();
+        // The injected session is already the member account. Keep this
+        // explicit account-selection step on the supported sign-in path so
+        // the test does not depend on the sessionless role harness.
+        await _selectActorIdentity(tester, 'tabletop-member');
         final givingTab = find.byKey(const ValueKey('community-tab-giving'));
         await _pumpUntil(tester, givingTab);
         await tester.ensureVisible(givingTab);

@@ -983,11 +983,22 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final accounts = await activeIdentity.authApi.listAccounts(
       communityExtensionId: experience.extensionId,
     );
-    final activeAccount = activeAccountId == null
+    final sessionAccount = activeIdentity.authApi.currentSession?.account;
+    final activeAccount = sessionAccount == null
         ? null
         : accounts
-              .where((account) => account.accountId == activeAccountId)
-              .firstOrNull;
+                  .where((account) => account.accountId == activeAccountId)
+                  .firstOrNull ??
+              sessionAccount;
+    final activeAccountIdentity = activeAccount == null
+        ? null
+        : actorIdentities
+                  .where(
+                    (actorIdentity) =>
+                        actorIdentity.roleId == activeAccount.roleId,
+                  )
+                  .firstOrNull ??
+              activeActorIdentity;
     final usesModernCardTheme = experience.themeOverride != null;
     final communityCard = usesModernCardTheme
         ? LoomCardTheme.merge(
@@ -1021,7 +1032,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Your memberships determine which community actions are available. Choose the role you want to use in this community.',
+                    activeAccount == null
+                        ? 'Your memberships determine which community actions are available. Choose the role you want to use in this community.'
+                        : 'Your signed-in account membership determines which community actions are available. To use a different role, switch accounts.',
                     style: communityCard != null
                         ? TextStyle(color: communityCard.resolvedBody)
                         : null,
@@ -1029,6 +1042,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                   if (activeAccount != null) ...[
                     const SizedBox(height: 12),
                     ListTile(
+                      key: const ValueKey(
+                        'actor-identity-current-account-summary',
+                      ),
                       leading: CircleAvatar(
                         backgroundColor: communityCard?.resolvedHeading
                             .withValues(alpha: 0.14),
@@ -1049,43 +1065,89 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                             : null,
                       ),
                       subtitle: Text(
-                        'ID: ${activeAccount.accountId}',
+                        '${activeAccountIdentity!.roleLabel} membership - ${activeAccountIdentity.description}\nID: ${activeAccount.accountId}',
                         style: communityCard != null
                             ? TextStyle(color: communityCard.resolvedBody)
                             : null,
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    if (actorIdentities.any(
+                      (actorIdentity) =>
+                          actorIdentity.roleId != activeAccount.roleId,
+                    )) ...[
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Other available community roles',
+                          style: communityCard != null
+                              ? TextStyle(
+                                  color: communityCard.resolvedHeading,
+                                  fontWeight: FontWeight.w700,
+                                )
+                              : const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      for (final actorIdentity in actorIdentities)
+                        if (actorIdentity.roleId != activeAccount.roleId)
+                          ListTile(
+                            key: ValueKey(
+                              'actor-identity-available-role-${actorIdentity.roleId}',
+                            ),
+                            leading: Icon(
+                              Icons.info_outline,
+                              color: dialogAccent,
+                            ),
+                            title: Text(
+                              actorIdentity.label,
+                              style: communityCard != null
+                                  ? TextStyle(
+                                      color: communityCard.resolvedHeading,
+                                    )
+                                  : null,
+                            ),
+                            subtitle: Text(
+                              'Available to accounts with ${actorIdentity.roleLabel} membership. ${actorIdentity.description}',
+                              style: communityCard != null
+                                  ? TextStyle(color: communityCard.resolvedBody)
+                                  : null,
+                            ),
+                          ),
+                    ],
+                  ] else ...[
+                    const SizedBox(height: 8),
+                    for (final actorIdentity in actorIdentities)
+                      ListTile(
+                        key: ValueKey(
+                          'actor-identity-option-${actorIdentity.roleId}',
+                        ),
+                        selected:
+                            actorIdentity.roleId == activeActorIdentity.roleId,
+                        selectedTileColor: dialogAccent?.withValues(
+                          alpha: 0.08,
+                        ),
+                        leading: Icon(
+                          actorIdentity.roleId == activeActorIdentity.roleId
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_unchecked,
+                          color: dialogAccent,
+                        ),
+                        title: Text(
+                          actorIdentity.label,
+                          style: communityCard != null
+                              ? TextStyle(color: communityCard.resolvedHeading)
+                              : null,
+                        ),
+                        subtitle: Text(
+                          '${actorIdentity.roleLabel} - ${actorIdentity.description}',
+                          style: communityCard != null
+                              ? TextStyle(color: communityCard.resolvedBody)
+                              : null,
+                        ),
+                        onTap: () =>
+                            Navigator.of(context).pop(actorIdentity.roleId),
+                      ),
                   ],
-                  const SizedBox(height: 8),
-                  for (final actorIdentity in actorIdentities)
-                    ListTile(
-                      key: ValueKey(
-                        'actor-identity-option-${actorIdentity.roleId}',
-                      ),
-                      selected:
-                          actorIdentity.roleId == activeActorIdentity.roleId,
-                      selectedTileColor: dialogAccent?.withValues(alpha: 0.08),
-                      leading: Icon(
-                        actorIdentity.roleId == activeActorIdentity.roleId
-                            ? Icons.radio_button_checked
-                            : Icons.radio_button_unchecked,
-                        color: dialogAccent,
-                      ),
-                      title: Text(
-                        actorIdentity.label,
-                        style: communityCard != null
-                            ? TextStyle(color: communityCard.resolvedHeading)
-                            : null,
-                      ),
-                      subtitle: Text(
-                        '${actorIdentity.roleLabel} - ${actorIdentity.description}',
-                        style: communityCard != null
-                            ? TextStyle(color: communityCard.resolvedBody)
-                            : null,
-                      ),
-                      onTap: () =>
-                          Navigator.of(context).pop(actorIdentity.roleId),
-                    ),
                   const Divider(),
                   if (productionAuthSession != null)
                     ListTile(
@@ -1112,13 +1174,17 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     ),
                     leading: Icon(Icons.login, color: dialogAccent),
                     title: Text(
-                      'Sign in as a specific person…',
+                      activeAccount == null
+                          ? 'Sign in as a specific person…'
+                          : 'Switch account',
                       style: communityCard != null
                           ? TextStyle(color: communityCard.resolvedHeading)
                           : null,
                     ),
                     subtitle: Text(
-                      'Use one of this community’s individual accounts.',
+                      activeAccount == null
+                          ? 'Use one of this community’s individual accounts.'
+                          : 'Sign in as a specific person… Use one of this community’s individual accounts.',
                       style: communityCard != null
                           ? TextStyle(color: communityCard.resolvedBody)
                           : null,
@@ -1508,7 +1574,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           ),
           IconButton(
             key: const ValueKey('actor-identity-picker-button'),
-            tooltip: 'Switch role',
+            tooltip: 'Account and permissions',
             onPressed: () => _showActorIdentityPicker(
               context,
               experience,
