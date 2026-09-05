@@ -282,6 +282,27 @@ InputChip _responseChip(WidgetTester tester, String transitionId) =>
       ),
     );
 
+void _expectPackageDetailsHeaderNotWhite(WidgetTester tester) {
+  final tile = tester.widget<ExpansionTile>(
+    find.byKey(const ValueKey('local-package-details-expansion-tile')),
+  );
+  expect(tile.collapsedTextColor, isNot(equals(Colors.white)));
+  expect(tile.collapsedIconColor, isNot(equals(Colors.white)));
+  expect(tile.textColor, isNot(equals(Colors.white)));
+  expect(tile.iconColor, isNot(equals(Colors.white)));
+
+  final headerTheme = tester.widget<ListTileTheme>(
+    find
+        .ancestor(
+          of: find.text('Local package details'),
+          matching: find.byType(ListTileTheme),
+        )
+        .first,
+  );
+  expect(headerTheme.data.textColor, isNot(equals(Colors.white)));
+  expect(headerTheme.data.iconColor, isNot(equals(Colors.white)));
+}
+
 void main() {
   testWidgets(
     'individual account sign-in resolves Friday RSVP rows through the app shell',
@@ -333,6 +354,38 @@ void main() {
         );
         expect(_responseChip(tester, 'respond-going').selected, isTrue);
         expect(_responseChip(tester, 'respond-maybe').selected, isFalse);
+      } finally {
+        await tester.runAsync(fixture.dispose);
+      }
+    },
+  );
+
+  testWidgets(
+    'local package details header uses legible colors while collapsed and expanded',
+    (tester) async {
+      final fixture = (await tester.runAsync(
+        () => _installFrozenTabletop(extensionIdSuffix: 'package-details-ui'),
+      ))!;
+      final authApi = await _authApiWithTabletopAccountsFor(
+        fixture.community.extensionId,
+      );
+      try {
+        await tester.pumpWidget(_app(fixture, authApi: authApi));
+        await _signInAs(tester, 'Priya N.');
+
+        final tile = find.byKey(
+          const ValueKey('local-package-details-expansion-tile'),
+        );
+        await _pumpUntil(tester, tile);
+        await tester.ensureVisible(tile);
+        _expectPackageDetailsHeaderNotWhite(tester);
+        expect(find.text('Package'), findsNothing);
+
+        await tester.tap(tile);
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(find.text('Package'), findsOneWidget);
+        _expectPackageDetailsHeaderNotWhite(tester);
       } finally {
         await tester.runAsync(fixture.dispose);
       }

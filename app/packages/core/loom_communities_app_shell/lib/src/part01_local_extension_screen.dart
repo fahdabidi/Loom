@@ -1824,12 +1824,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
             ),
             const SizedBox(height: 24),
             ExpansionTile(
+              key: const ValueKey('local-package-details-expansion-tile'),
               title: const Text('Local package details'),
               leading: const Icon(Icons.inventory_2_outlined),
-              collapsedTextColor: Colors.white,
-              collapsedIconColor: Colors.white,
-              textColor: Colors.white,
-              iconColor: Colors.white,
               children: [
                 _ExtensionInfoTile(
                   icon: Icons.extension_outlined,
