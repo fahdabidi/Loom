@@ -109,7 +109,7 @@ move rather than carried over on trust.
 
 Still open, as rows in that tracker's **§8**:
 
-- [ ] server-initiated push is a placeholder pinned `0.0.0-placeholder`; nothing implements it → ACWS §8
+- [x] server-initiated push: **DECIDED 2026-09-05 — stays a placeholder, not now.** Scoped: the spec already answers the design questions (provider-agnostic contract, must report per-device failure not swallow it, dead-token pruning distinct from transient failure); the one remaining call was which provider(s) to integrate (FCM alone vs. FCM+APNs), which needs real infrastructure (a Firebase project or Apple certs, credentials in the cluster). User declined to commit to that now — the three open-app delivery paths (in-app inbox, local device notification, reminder sweep) already work. Revisit by asking the same provider question when this is prioritized again. → ACWS §8
 - [ ] delivery failures are invisible — best-effort swallows every platform error → ACWS §8
 - [x] change feed: **CLOSED, was stale — it IS deployed.** Proven by live request against `loom-workflow-service:1.0.3` (deployed == manifest, no drift): `GET /v1/communities/{id}/changes` returns **401 authentication_required** (route exists, wants auth) while a nonexistent collection under the identical valid `X-Loom-Correlation-Id` returns **404 route_not_found** — a working control, so the 401 means present, not missing. Note the first attempt used `/v1/changes` and 404d; the real shape is `/v1/communities/{id}/changes` (`_matchesCollection`, workflow_service.dart:255). Verified 2026-09-04. → ACWS §8
 - [ ] `app_group.external_resource_*` NULL for all 24 groups → ACWS §8 `needs-spec-decision`
