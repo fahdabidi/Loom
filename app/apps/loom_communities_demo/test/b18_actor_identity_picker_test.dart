@@ -15,7 +15,7 @@ void main() {
     await openEvidenceTarget(tester, target);
 
     expect(
-      find.byKey(const ValueKey('active-actor-identity-masjid-admin')),
+      find.byKey(const ValueKey('active-actor-identity-owner')),
       findsOneWidget,
     );
     expect(

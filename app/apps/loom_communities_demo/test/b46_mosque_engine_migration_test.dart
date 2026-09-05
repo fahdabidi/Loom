@@ -268,7 +268,7 @@ void main() {
             'member\'s private care notification.',
       );
 
-      await _selectActorIdentity(tester, 'masjid-admin');
+      await _selectActorIdentity(tester, 'owner');
       expect(find.byKey(const ValueKey('community-tab-admin')), findsOneWidget);
       await _selectTab(tester, 'admin');
       await _waitForFinder(

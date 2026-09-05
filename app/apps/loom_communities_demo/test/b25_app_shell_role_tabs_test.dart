@@ -40,7 +40,7 @@ const _mosqueAppShellConfiguration = <String, Object?>{
       'label': 'Admin',
       'iconKey': 'admin',
       'description': 'Publishing, care review, and volunteer coordination.',
-      'visibleRoleIds': <Object?>['masjid-admin'],
+      'visibleRoleIds': <Object?>['owner'],
     },
   ],
 };
@@ -120,7 +120,7 @@ void main() {
 
       final adminTabs = appShellTabsFor(
         experience: experience,
-        roleId: 'masjid-admin',
+        roleId: 'owner',
         appShellConfiguration: _mosqueAppShellConfiguration,
       );
       final memberTabs = appShellTabsFor(
@@ -216,7 +216,7 @@ void main() {
     await installShippedEvidenceTarget(tester, target);
     await openEvidenceTarget(tester, target);
 
-    await selectActorIdentity(tester, 'masjid-admin');
+    await selectActorIdentity(tester, 'owner');
 
     expect(find.byKey(const ValueKey('community-bottom-tabs')), findsOneWidget);
     expect(find.byKey(const ValueKey('community-tab-home')), findsOneWidget);

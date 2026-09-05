@@ -21,9 +21,9 @@
       "sha256": "dd455f4890eec4fb71d6dc9ef189f9ef2c60e225effb07f59cb72a9dbd16a44c",
       "bytes": 88007,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "c6ec6116",
+      "lastCommit": "38f41976",
       "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
+      "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
     },
     "Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc": {
       "sha256": "199913fcc8d76fcb345d889d09631fce09efd6cd0bced6b9cf0d2b5c8fa254f9",
@@ -37,9 +37,9 @@
       "sha256": "47f9a2a831e64cf0ec450daf3676e09cd419c1ca2f08a0aa187f70d25b6a11d2",
       "bytes": 105562,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "c6ec6116",
+      "lastCommit": "38f41976",
       "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
+      "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
     },
     "Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc": {
       "sha256": "92547b0c0be7292771748ab9c11083ffc5b759d494c5da522290e921b392a609",
@@ -53,21 +53,21 @@
       "sha256": "f30994c9776871da2a4d48480f1ec83b2e7becaf16f860017dde5733ae0def43",
       "bytes": 102558,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "c6ec6116",
+      "lastCommit": "38f41976",
       "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
+      "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
     },
     "Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc": {
       "sha256": "71659f0896f3d28d27f2d24b20da616b42834e66b6e313150e6c654e42b9ef3b",
       "bytes": 106409,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "c6ec6116",
+      "lastCommit": "38f41976",
       "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
+      "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
     },
     "Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc": {
-      "sha256": "dc26c0fea5e0e0ebc88a1b1088506b853202478f5eee5cc568c9d91addc30a27",
-      "bytes": 92122,
+      "sha256": "7710327ebff63134e8db75885da54e3d00373040944a7d147ce4118deb259a7b",
+      "bytes": 92973,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "c6ec6116",
       "lastCommitDate": "2026-09-05",
@@ -85,9 +85,9 @@
       "sha256": "71e1f0688b7dffd1b29cb90a1066998f003abdf920523cac8dcb535837726957",
       "bytes": 79881,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "c6ec6116",
+      "lastCommit": "38f41976",
       "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
+      "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
     },
     "Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc": {
       "sha256": "e639a2f837e8e828231f7cc505e628c7b67246fdef5614b417cfaf870d5476b2",

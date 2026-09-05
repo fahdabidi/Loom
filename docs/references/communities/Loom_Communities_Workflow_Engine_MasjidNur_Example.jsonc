@@ -1,6 +1,6 @@
 {
   "specVersion": 4,
-  "skillVersion": "3.3.0",
+  "skillVersion": "3.6.0",
   "packageId": "init_masjid_nur_engine_native_2",
   "communityId": "community_mosque",
   "communityHandle": "masjid-nur",
@@ -34,7 +34,7 @@
 
     "roles": [
       {
-        "roleId": "masjid-admin",
+        "roleId": "owner",
         "label": "Masjid Admin",
         "roleLabel": "Admin",
         "description": "Publishes trusted updates, coordinates events and volunteers, records donations, and reviews protected care requests."
@@ -56,14 +56,14 @@
             "label": "Draft",
             "tone": "info",
             "editableFields": ["title", "body", "audience", "channel", "scheduledFor"],
-            "editGuard": { "allowedRoleIds": ["masjid-admin"] }
+            "editGuard": { "allowedRoleIds": ["owner"] }
           },
           "previewed": { "label": "Previewed", "tone": "info" },
           "scheduled": {
             "label": "Scheduled",
             "tone": "warning",
             "editableFields": ["title", "body", "audience", "channel", "scheduledFor"],
-            "editGuard": { "allowedRoleIds": ["masjid-admin"] }
+            "editGuard": { "allowedRoleIds": ["owner"] }
           },
           "sent": { "label": "Sent", "tone": "positive" },
           "archived": { "label": "Archived", "tone": "info", "isTerminal": true },
@@ -77,7 +77,7 @@
             "tone": "secondary",
             "from": ["draft"],
             "to": null,
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "append", "key": "revisionHistory", "value": { "action": "draft-saved", "by": "$actor", "at": "$timestamp" } }
             ]
@@ -89,7 +89,7 @@
             "tone": "secondary",
             "from": ["draft"],
             "to": "previewed",
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "append", "key": "revisionHistory", "value": { "action": "previewed", "by": "$actor", "at": "$timestamp" } }
             ]
@@ -101,7 +101,7 @@
             "tone": "secondary",
             "from": ["previewed", "scheduled"],
             "to": "draft",
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "append", "key": "revisionHistory", "value": { "action": "returned-to-draft", "by": "$actor", "at": "$timestamp" } }
             ]
@@ -113,7 +113,7 @@
             "tone": "primary",
             "from": ["draft", "previewed"],
             "to": "scheduled",
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "set", "key": "deliveryState", "value": "scheduled" },
               { "op": "append", "key": "deliveryHistory", "value": { "status": "scheduled", "by": "$actor", "at": "$timestamp" } }
@@ -126,7 +126,7 @@
             "tone": "primary",
             "from": ["draft", "previewed", "scheduled"],
             "to": "sent",
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "set", "key": "deliveryState", "value": "sent" },
               { "op": "set", "key": "sentAt", "value": "$timestamp" },
@@ -156,7 +156,7 @@
             "tone": "secondary",
             "from": ["sent"],
             "to": "archived",
-            "guard": { "allowedRoleIds": ["masjid-admin"] }
+            "guard": { "allowedRoleIds": ["owner"] }
           },
           {
             "id": "cancel-announcement",
@@ -165,7 +165,7 @@
             "tone": "destructive",
             "from": ["draft", "previewed", "scheduled"],
             "to": "cancelled",
-            "guard": { "allowedRoleIds": ["masjid-admin"] }
+            "guard": { "allowedRoleIds": ["owner"] }
           }
         ],
         "renderBindings": [
@@ -179,7 +179,7 @@
               {
                 "kind": "create",
                 "label": "New announcement",
-                "byRoleIds": ["masjid-admin"],
+                "byRoleIds": ["owner"],
                 "scope": "tab",
                 "presentation": "fab",
                 "prefill": {
@@ -243,13 +243,13 @@
             "label": "Draft event",
             "tone": "info",
             "editableFields": ["title", "eventDate", "eventTime", "location", "recurrence", "capacity"],
-            "editGuard": { "allowedRoleIds": ["masjid-admin"] }
+            "editGuard": { "allowedRoleIds": ["owner"] }
           },
           "open": {
             "label": "RSVP open",
             "tone": "positive",
             "editableFields": ["title", "eventDate", "eventTime", "location", "recurrence", "capacity"],
-            "editGuard": { "allowedRoleIds": ["masjid-admin"] }
+            "editGuard": { "allowedRoleIds": ["owner"] }
           },
           "cancelled": { "label": "Cancelled", "tone": "negative", "isTerminal": true }
         },
@@ -262,7 +262,10 @@
             "tone": "secondary",
             "from": ["draft"],
             "to": null,
-            "guard": { "allowedRoleIds": ["masjid-admin"] }
+            "guard": { "allowedRoleIds": ["owner"] },
+            "effects": [
+              { "op": "append", "key": "eventHistory", "value": { "status": "draft-saved", "by": "$actor", "at": "$timestamp" } }
+            ]
           },
           {
             "id": "publish-event",
@@ -272,7 +275,7 @@
             "tone": "primary",
             "from": ["draft"],
             "to": "open",
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "set", "key": "publishedAt", "value": "$timestamp" }
             ]
@@ -395,7 +398,7 @@
             "tone": "secondary",
             "from": ["open"],
             "to": null,
-            "guard": { "allowedRoleIds": ["community-member", "masjid-admin"] },
+            "guard": { "allowedRoleIds": ["community-member", "owner"] },
             "linkedWorkflowId": "mosque-volunteer-signup"
           },
           {
@@ -406,7 +409,7 @@
             "tone": "destructive",
             "from": ["draft", "open"],
             "to": "cancelled",
-            "guard": { "allowedRoleIds": ["masjid-admin"] }
+            "guard": { "allowedRoleIds": ["owner"] }
           }
         ],
         "renderBindings": [
@@ -427,7 +430,7 @@
               {
                 "kind": "create",
                 "label": "New event",
-                "byRoleIds": ["masjid-admin"],
+                "byRoleIds": ["owner"],
                 "scope": "tab",
                 "presentation": "fab",
                 "prefill": {
@@ -463,6 +466,7 @@
           "recurrence": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "repeat", "labelTemplate": "Repeats: {value}", "displayContexts": ["tile", "detail"] },
           "capacity": { "type": "number", "required": true, "writableBy": "formEntry", "displayIcon": "groups_outlined", "labelTemplate": "{value} seats", "displayContexts": ["tile", "detail"] },
           "publishedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "publish", "labelTemplate": "Published {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "eventHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history", "labelTemplate": "Event history: {value.length}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "goingFanIds": { "type": "fanId[]", "writableBy": "platform" },
           "maybeFanIds": { "type": "fanId[]", "writableBy": "platform" },
           "notGoingFanIds": { "type": "fanId[]", "writableBy": "platform" },
@@ -482,7 +486,7 @@
             "label": "Available",
             "tone": "positive",
             "editableFields": ["title", "source", "version", "publishedDate", "resourceUrl", "accessLabel", "allowedFanIds"],
-            "editGuard": { "allowedRoleIds": ["masjid-admin"] }
+            "editGuard": { "allowedRoleIds": ["owner"] }
           },
           "archived": { "label": "Archived", "tone": "info", "isTerminal": true }
         },
@@ -496,7 +500,7 @@
             "from": ["available"],
             "to": null,
             "guard": {
-              "allowedRoleIds": ["community-member", "masjid-admin"],
+              "allowedRoleIds": ["community-member", "owner"],
               "formula": "size(allowedFanIds) == 0 || contains(allowedFanIds, $actor)"
             },
             "effects": [
@@ -512,7 +516,7 @@
             "from": ["available"],
             "to": null,
             "guard": {
-              "allowedRoleIds": ["community-member", "masjid-admin"],
+              "allowedRoleIds": ["community-member", "owner"],
               "formula": "size(allowedFanIds) == 0 || contains(allowedFanIds, $actor)"
             },
             "effects": [
@@ -527,7 +531,7 @@
             "tone": "secondary",
             "from": ["available"],
             "to": null,
-            "guard": { "allowedRoleIds": ["community-member", "masjid-admin"] },
+            "guard": { "allowedRoleIds": ["community-member", "owner"] },
             "effects": [
               { "op": "append", "key": "auditHistory", "value": { "action": "marked-unread", "by": "$actor", "at": "$timestamp" } }
             ]
@@ -556,7 +560,7 @@
             "tone": "secondary",
             "from": ["available"],
             "to": null,
-            "guard": { "allowedRoleIds": ["community-member", "masjid-admin"] },
+            "guard": { "allowedRoleIds": ["community-member", "owner"] },
             "effects": [
               { "op": "append", "key": "auditHistory", "value": { "action": "saved", "by": "$actor", "at": "$timestamp" } }
             ]
@@ -587,7 +591,7 @@
             "from": ["available"],
             "to": null,
             "guard": {
-              "allowedRoleIds": ["community-member", "masjid-admin"],
+              "allowedRoleIds": ["community-member", "owner"],
               "formula": "size(allowedFanIds) == 0 || contains(allowedFanIds, $actor)"
             },
             "effects": [
@@ -602,7 +606,7 @@
             "tone": "destructive",
             "from": ["available"],
             "to": "archived",
-            "guard": { "allowedRoleIds": ["masjid-admin"] }
+            "guard": { "allowedRoleIds": ["owner"] }
           }
         ],
         "renderBindings": [
@@ -616,7 +620,7 @@
               {
                 "kind": "create",
                 "label": "Add resource",
-                "byRoleIds": ["masjid-admin"],
+                "byRoleIds": ["owner"],
                 "scope": "tab",
                 "presentation": "fab",
                 "prefill": {
@@ -656,7 +660,7 @@
             "label": "Volunteer signup open",
             "tone": "positive",
             "editableFields": ["title", "shiftRole", "shiftDate", "shiftTime", "location", "capacity", "contactSharingPolicy"],
-            "editGuard": { "allowedRoleIds": ["masjid-admin"] }
+            "editGuard": { "allowedRoleIds": ["owner"] }
           },
           "closed": { "label": "Signup closed", "tone": "info", "isTerminal": true }
         },
@@ -726,7 +730,7 @@
               "memberFanId": { "type": "text", "required": true },
               "followUpNote": { "type": "text", "required": true }
             },
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "append", "key": "coordinatorFollowUpHistory", "value": { "member": "{input.memberFanId}", "note": "{input.followUpNote}", "by": "$actor", "at": "$timestamp" } }
             ]
@@ -738,7 +742,7 @@
             "tone": "destructive",
             "from": ["open"],
             "to": "closed",
-            "guard": { "allowedRoleIds": ["masjid-admin"] }
+            "guard": { "allowedRoleIds": ["owner"] }
           }
         ],
         "renderBindings": [
@@ -766,7 +770,7 @@
               {
                 "kind": "create",
                 "label": "New volunteer shift",
-                "byRoleIds": ["masjid-admin"],
+                "byRoleIds": ["owner"],
                 "scope": "tab",
                 "presentation": "fab",
                 "prefill": {
@@ -883,7 +887,7 @@
         "visibility": {
           "default": "guarded",
           "readGuard": { "actorEqualsField": { "key": "payerFanId" } },
-          "fields": { "parties": ["payerFanId", { "role": "masjid-admin" }] }
+          "fields": { "parties": ["payerFanId", { "role": "owner" }] }
         },
         "states": {
           "draft": {
@@ -946,7 +950,7 @@
             "inputs": {
               "failureReason": { "type": "text", "required": true }
             },
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "set", "key": "paymentStatus", "value": "failed" },
               { "op": "set", "key": "failureReason", "value": "{input.failureReason}" },
@@ -977,7 +981,7 @@
             "inputs": {
               "receiptSummary": { "type": "text", "required": true }
             },
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "set", "key": "paymentStatus", "value": "paid-manual" },
               { "op": "set", "key": "paidAt", "value": "$timestamp" },
@@ -1044,7 +1048,7 @@
             "tone": "primary",
             "from": ["refundRequested"],
             "to": "refunded",
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "set", "key": "paymentStatus", "value": "refunded-manual" },
               { "op": "append", "key": "paymentHistory", "value": { "status": "refund-recorded", "by": "$actor", "at": "$timestamp" } }
@@ -1057,7 +1061,7 @@
             "tone": "secondary",
             "from": ["refundRequested"],
             "to": "paid",
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "append", "key": "paymentHistory", "value": { "status": "refund-declined", "by": "$actor", "at": "$timestamp" } }
             ]
@@ -1143,7 +1147,7 @@
         "visibility": {
           "default": "guarded",
           "readGuard": { "actorEqualsField": { "key": "requesterFanId" } },
-          "fields": { "parties": ["requesterFanId", { "role": "masjid-admin" }] }
+          "fields": { "parties": ["requesterFanId", { "role": "owner" }] }
         },
         "states": {
           "draft": {
@@ -1189,7 +1193,7 @@
             "inputs": {
               "changeNote": { "type": "text", "required": true }
             },
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "set", "key": "reviewNote", "value": "{input.changeNote}" },
               { "op": "append", "key": "statusHistory", "value": { "status": "changes-requested", "by": "$actor", "at": "$timestamp" } }
@@ -1214,7 +1218,7 @@
             "tone": "primary",
             "from": ["submitted"],
             "to": "assigned",
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "set", "key": "assignedReviewerFanId", "value": "$actor" },
               { "op": "set", "key": "assignedAt", "value": "$timestamp" },
@@ -1243,7 +1247,7 @@
             "inputs": {
               "reviewNote": { "type": "text", "required": true }
             },
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "set", "key": "reviewNote", "value": "{input.reviewNote}" },
               { "op": "append", "key": "statusHistory", "value": { "status": "rejected", "by": "$actor", "at": "$timestamp" } }
@@ -1347,7 +1351,7 @@
         "initialState": "unread",
         "visibility": {
           "default": "guarded",
-          "readGuard": { "allowedRoleIds": ["masjid-admin"] },
+          "readGuard": { "allowedRoleIds": ["owner"] },
           "fields": { "recipient": "recipientFanId" }
         },
         "states": {
@@ -1375,7 +1379,10 @@
             "tone": "secondary",
             "from": ["unread"],
             "to": null,
-            "guard": { "actorEqualsField": { "key": "recipientFanId" } }
+            "guard": { "actorEqualsField": { "key": "recipientFanId" } },
+            "effects": [
+              { "op": "set", "key": "keptUnreadAt", "value": "$timestamp" }
+            ]
           },
           {
             "id": "mark-notification-unread",
@@ -1442,6 +1449,7 @@
           "messageBody": { "type": "textarea", "required": true, "writableBy": "effect", "maxLength": 1000, "displayIcon": "article", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
           "createdAt": { "type": "date", "required": true, "writableBy": "effect", "sortable": true, "displayIcon": "schedule", "labelTemplate": "Received {value}", "displayContexts": ["tile", "detail"] },
           "readAt": { "type": "date?", "writableBy": "effect", "displayIcon": "done_all", "labelTemplate": "Read {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "keptUnreadAt": { "type": "date?", "writableBy": "effect", "displayIcon": "mark_email_unread", "labelTemplate": "Kept unread {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "followUpRequestedAt": { "type": "date?", "writableBy": "effect", "displayIcon": "question_answer", "labelTemplate": "Follow-up requested {value}", "hideWhenEmpty": true, "displayContexts": ["detail"] }
         }
       },
@@ -1454,7 +1462,7 @@
             "label": "Question asked",
             "tone": "warning",
             "editableFields": ["query"],
-            "editGuard": { "allowedRoleIds": ["community-member", "masjid-admin"] }
+            "editGuard": { "allowedRoleIds": ["community-member", "owner"] }
           },
           "answered": { "label": "Curated answer available", "tone": "positive" },
           "reported": { "label": "Citation reported stale", "tone": "warning" }
@@ -1473,7 +1481,7 @@
               "citationLabel": { "type": "text", "required": true },
               "citationUrl": { "type": "text", "required": true }
             },
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "set", "key": "curatedAnswerBody", "value": "{input.answerBody}" },
               { "op": "set", "key": "citations", "value": [{ "label": "{input.citationLabel}", "source": "{input.citationUrl}" }] },
@@ -1493,7 +1501,7 @@
             "inputs": {
               "query": { "type": "text", "required": true }
             },
-            "guard": { "allowedRoleIds": ["community-member", "masjid-admin"] },
+            "guard": { "allowedRoleIds": ["community-member", "owner"] },
             "effects": [
               { "op": "set", "key": "query", "value": "{input.query}" },
               { "op": "set", "key": "curatedAnswerBody", "value": null },
@@ -1511,7 +1519,7 @@
             "tone": "secondary",
             "from": ["answered"],
             "to": null,
-            "guard": { "allowedRoleIds": ["community-member", "masjid-admin"] },
+            "guard": { "allowedRoleIds": ["community-member", "owner"] },
             "effects": [
               { "op": "append", "key": "saveAnswerHistory", "value": { "by": "$actor", "at": "$timestamp" } }
             ]
@@ -1527,7 +1535,7 @@
             "inputs": {
               "citationUrl": { "type": "text", "required": true }
             },
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "appendUnique", "key": "hiddenCitationUrls", "value": "{input.citationUrl}" },
               { "op": "set", "key": "citationStatus", "value": "source-hidden-pending-renderer-redaction" }
@@ -1544,7 +1552,7 @@
             "inputs": {
               "reportReason": { "type": "text", "required": true }
             },
-            "guard": { "allowedRoleIds": ["community-member", "masjid-admin"] },
+            "guard": { "allowedRoleIds": ["community-member", "owner"] },
             "effects": [
               { "op": "set", "key": "reportReason", "value": "{input.reportReason}" },
               { "op": "set", "key": "citationStatus", "value": "reported-stale" }
@@ -1558,7 +1566,7 @@
             "tone": "secondary",
             "from": ["reported"],
             "to": "asked",
-            "guard": { "allowedRoleIds": ["masjid-admin"] },
+            "guard": { "allowedRoleIds": ["owner"] },
             "effects": [
               { "op": "set", "key": "citationStatus", "value": "awaiting-review" }
             ]
@@ -1575,7 +1583,7 @@
               {
                 "kind": "create",
                 "label": "Ask Masjid Nur",
-                "byRoleIds": ["community-member", "masjid-admin"],
+                "byRoleIds": ["community-member", "owner"],
                 "scope": "tab",
                 "presentation": "fab",
                 "prefill": {
@@ -1624,7 +1632,7 @@
             "label": "Open",
             "tone": "positive",
             "editableFields": ["threadTitle", "initialMessage"],
-            "editGuard": { "allowedRoleIds": ["community-member", "masjid-admin"] }
+            "editGuard": { "allowedRoleIds": ["community-member", "owner"] }
           },
           "replied": { "label": "Replied", "tone": "info" },
           "archived": { "label": "Archived", "tone": "info", "isTerminal": true }
@@ -1640,7 +1648,7 @@
             "inputs": {
               "messageBody": { "type": "text", "required": true }
             },
-            "guard": { "allowedRoleIds": ["community-member", "masjid-admin"] },
+            "guard": { "allowedRoleIds": ["community-member", "owner"] },
             "effects": [
               { "op": "append", "key": "messages", "value": { "senderFanId": "$actor", "body": "{input.messageBody}", "timestamp": "$timestamp" } },
               { "op": "set", "key": "latestMessage", "value": "{input.messageBody}" },
@@ -1657,7 +1665,7 @@
             "inputs": {
               "messageBody": { "type": "text", "required": true }
             },
-            "guard": { "allowedRoleIds": ["community-member", "masjid-admin"] },
+            "guard": { "allowedRoleIds": ["community-member", "owner"] },
             "effects": [
               { "op": "append", "key": "messages", "value": { "senderFanId": "$actor", "body": "{input.messageBody}", "timestamp": "$timestamp" } },
               { "op": "set", "key": "latestMessage", "value": "{input.messageBody}" },
@@ -1665,13 +1673,15 @@
             ]
           },
           {
+            // NEEDS IMPLEMENTATION (platform service): per-member thread mute state belongs to the
+            // messaging service; keep the promised mute/unmute affordances visible until it ships.
             "id": "mute-thread",
             "label": "Mute thread",
             "icon": "notifications_off",
             "tone": "secondary",
             "from": ["open", "replied"],
             "to": null,
-            "guard": { "allowedRoleIds": ["community-member", "masjid-admin"] }
+            "guard": { "allowedRoleIds": ["community-member", "owner"] }
           },
           {
             "id": "unmute-thread",
@@ -1680,7 +1690,7 @@
             "tone": "secondary",
             "from": ["open", "replied"],
             "to": null,
-            "guard": { "allowedRoleIds": ["community-member", "masjid-admin"] }
+            "guard": { "allowedRoleIds": ["community-member", "owner"] }
           },
           {
             "id": "archive-thread",
@@ -1689,7 +1699,7 @@
             "tone": "destructive",
             "from": ["open", "replied"],
             "to": "archived",
-            "guard": { "allowedRoleIds": ["masjid-admin"] }
+            "guard": { "allowedRoleIds": ["owner"] }
           }
         ],
         "renderBindings": [
@@ -1703,7 +1713,7 @@
               {
                 "kind": "create",
                 "label": "New discussion",
-                "byRoleIds": ["community-member", "masjid-admin"],
+                "byRoleIds": ["community-member", "owner"],
                 "scope": "tab",
                 "presentation": "fab",
                 "prefill": {
@@ -1933,26 +1943,30 @@
         "tabId": "calendar",
         "label": "Calendar",
         "iconKey": "calendar_today",
-        "description": "Prayer, classes, community events, RSVP capacity, reminders, and linked volunteer shifts."
+        "description": "Prayer, classes, community events, RSVP capacity, reminders, and linked volunteer shifts.",
+        "pinnedWorkflowIds": ["mosque-event-rsvp"]
       },
       {
         "tabId": "giving",
         "label": "Giving",
         "iconKey": "volunteer_activism",
-        "description": "Donation intents, manually recorded payment status, receipts, privacy, and donor preferences."
+        "description": "Donation intents, manually recorded payment status, receipts, privacy, and donor preferences.",
+        "pinnedWorkflowIds": ["mosque-donation-payment", "mosque-donor-visibility"]
       },
       {
         "tabId": "admin",
         "label": "Admin",
         "iconKey": "admin_panel_settings",
         "description": "Announcement composition, volunteer coordination, payment recording, and protected care review.",
-        "visibleRoleIds": ["masjid-admin"]
+        "visibleRoleIds": ["owner"],
+        "pinnedWorkflowIds": ["mosque-announcement", "mosque-volunteer-signup", "mosque-donation-payment", "mosque-care-request"]
       },
       {
         "tabId": "resources",
         "label": "Resources",
         "iconKey": "menu_book",
-        "description": "Khutbah notes, forms, policies, external resources, questions, curated answers, and citations."
+        "description": "Khutbah notes, forms, policies, external resources, questions, curated answers, and citations.",
+        "pinnedWorkflowIds": ["mosque-document-resource", "mosque-search-ai-citation"]
       }
     ]
   }

@@ -914,22 +914,22 @@
       "extensionId": "ext_mosque",
       "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
       "workflowId": "mosque-announcement",
-      "role": "owner",
-      "expectedDecision": "Admin decides whether a concrete announcement is ready for a named audience and delivery timing; members can later read the delivered update.",
+      "role": "masjid admin / community member",
+      "expectedDecision": "Admin decides whether an announcement is ready for a named audience and time; members decide when to mark it read.",
       "requiredPrimaryActions": [
-        "publish announcement",
-        "send announcement",
-        "post announcement",
-        "schedule announcement"
+        "New announcement",
+        "Publish announcement",
+        "Schedule announcement",
+        "Mark read"
       ],
       "requiredAlternateActions": [
-        "edit announcement",
-        "preview announcement",
-        "save draft",
-        "schedule later",
-        "change audience"
+        "Save draft",
+        "Preview announcement",
+        "Edit announcement",
+        "Archive announcement",
+        "Cancel announcement"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Sent status, sent time, delivery/read counts and histories appear on Home/Messages; terminal summaries remain on Admin."
     },
     {
       "communityId": "community_mosque",
@@ -937,24 +937,23 @@
       "extensionId": "ext_mosque",
       "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
       "workflowId": "mosque-event-rsvp",
-      "role": "member",
-      "expectedDecision": "Member decides attendance for a named dated event with time, location, capacity/status, and a later change path.",
+      "role": "community member / masjid admin",
+      "expectedDecision": "Member chooses attendance for a named event with date/time/location/capacity and can later change it; admin decides whether to publish or cancel.",
       "requiredPrimaryActions": [
-        "rsvp",
-        "attend",
-        "going",
-        "reserve spot",
-        "confirm attendance"
+        "Going",
+        "Maybe",
+        "Not attending",
+        "Join waitlist",
+        "Add reminder",
+        "Publish event"
       ],
       "requiredAlternateActions": [
-        "decline",
-        "not attending",
-        "maybe",
-        "change response",
-        "edit response",
-        "cancel rsvp"
+        "Cancel RSVP",
+        "Open volunteer shift",
+        "Save draft",
+        "Cancel event"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Attendance/waitlist counts change, reminder choice/history is durable, and cancelled events remain visible as summaries."
     },
     {
       "communityId": "community_mosque",
@@ -962,21 +961,23 @@
       "extensionId": "ext_mosque",
       "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
       "workflowId": "mosque-document-resource",
-      "role": "member",
-      "expectedDecision": "Member opens a concrete Masjid document/resource, reviews source/version/access, chooses embedded or external open, and acknowledges if required.",
+      "role": "community member / masjid admin",
+      "expectedDecision": "Member chooses embedded or external open and any needed acknowledgement/access follow-up; admin may retire the resource.",
       "requiredPrimaryActions": [
-        "open document",
-        "launch external",
-        "download",
-        "acknowledge"
+        "Open embedded",
+        "Open externally",
+        "Record as opened",
+        "Acknowledge",
+        "Record download"
       ],
       "requiredAlternateActions": [
-        "request access",
-        "save",
-        "mark unread",
-        "ask follow-up"
+        "Request access",
+        "Mark unread",
+        "Save resource",
+        "Ask follow-up",
+        "Archive resource"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show title/source/version, embedded/external open choices, access/acknowledgement state, and audit-safe receiver state."
+      "resultAndReceiverState": "Title/source/version/access controls remain visible and auditHistory records auditable member actions without claiming Loom stores the linked bytes."
     },
     {
       "communityId": "community_mosque",
@@ -984,21 +985,18 @@
       "extensionId": "ext_mosque",
       "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
       "workflowId": "mosque-volunteer-signup",
-      "role": "member",
-      "expectedDecision": "Member chooses whether to volunteer for a concrete iftar shift after reviewing role, time, location, capacity, protected contact sharing, and coordinator follow-up.",
+      "role": "community member / masjid admin",
+      "expectedDecision": "Member decides whether to take an iftar shift after reviewing role/time/location/capacity/contact policy; admin coordinates follow-up.",
       "requiredPrimaryActions": [
-        "sign up",
-        "submit signup",
-        "volunteer",
-        "confirm shift"
+        "Volunteer",
+        "Record coordinator follow-up"
       ],
       "requiredAlternateActions": [
-        "edit availability",
-        "cancel signup",
-        "change shift",
-        "withdraw"
+        "Edit availability",
+        "Cancel signup",
+        "Close signup"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show role, shift time/location, protected contact, signup confirmation, edit/cancel path, and coordinator receiver state for this persona."
+      "resultAndReceiverState": "Roster/count, open spots, contact-consent, availability and coordinator histories show member and receiver state."
     },
     {
       "communityId": "community_mosque",
@@ -1006,20 +1004,17 @@
       "extensionId": "ext_mosque",
       "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
       "workflowId": "mosque-donor-visibility",
-      "role": "donor",
-      "expectedDecision": "Donor decides whether their name is public, anonymous, or restricted after seeing donation amount, fund, receipt visibility, and change path.",
+      "role": "community member acting as donor",
+      "expectedDecision": "Donor chooses Public, Anonymous or Restricted after reviewing amount/fund and receipt treatment.",
       "requiredPrimaryActions": [
-        "save visibility",
-        "set anonymous",
-        "update donor preference"
+        "Reveal name",
+        "Keep anonymous",
+        "Restrict name"
       ],
       "requiredAlternateActions": [
-        "change visibility",
-        "edit preference",
-        "reveal name",
-        "keep anonymous"
+        "Change to either of the other two visibility choices"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show amount/fund context, visibility choice, receipt visibility, saved preference, and change path."
+      "resultAndReceiverState": "Preference state, receiptVisibility and visibilityHistory show the durable choice and change path."
     },
     {
       "communityId": "community_mosque",
@@ -1027,24 +1022,24 @@
       "extensionId": "ext_mosque",
       "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
       "workflowId": "mosque-donation-payment",
-      "role": "donor",
-      "expectedDecision": "Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.",
+      "role": "community member acting as payer / masjid admin",
+      "expectedDecision": "Payer decides amount/fund/privacy and whether to submit; admin may honestly record an offline payment while online processing is unavailable.",
       "requiredPrimaryActions": [
-        "pay",
-        "donate",
-        "give",
-        "checkout",
-        "subscribe"
+        "Donate",
+        "Submit donation",
+        "Record offline payment",
+        "View receipt"
       ],
       "requiredAlternateActions": [
-        "change amount",
-        "edit payment",
-        "manage",
-        "cancel subscription",
-        "refund",
-        "retry payment"
+        "Save changes",
+        "Retry payment",
+        "Manage recurring preference",
+        "Request refund",
+        "Decline refund",
+        "Record refund",
+        "Cancel donation"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Payment/receipt status and history show intent, manual settlement or terminal outcome; donor visibility row is created on confirmed offline payment."
     },
     {
       "communityId": "community_mosque",
@@ -1052,22 +1047,22 @@
       "extensionId": "ext_mosque",
       "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
       "workflowId": "mosque-care-request",
-      "role": "member",
-      "expectedDecision": "Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths.",
+      "role": "community member / masjid admin",
+      "expectedDecision": "Requester decides what protected care request to submit; reviewer decides assignment, changes, rejection, response and resolution.",
       "requiredPrimaryActions": [
-        "submit request",
-        "approve request",
-        "send request",
-        "review request"
+        "Request care",
+        "Submit request",
+        "Approve and assign",
+        "Send private response",
+        "Resolve request"
       ],
       "requiredAlternateActions": [
-        "reject",
-        "request changes",
-        "revise",
-        "withdraw",
-        "edit request"
+        "Request changes",
+        "Revise and resubmit",
+        "Reject request",
+        "Withdraw request"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Requester sees a protected status timeline and neutral notification; owner sees the review queue and full protected fields."
     },
     {
       "communityId": "community_mosque",
@@ -1075,19 +1070,19 @@
       "extensionId": "ext_mosque",
       "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
       "workflowId": "mosque-neutral-notification",
-      "role": "member",
-      "expectedDecision": "Member reviews a privacy-safe care notification with sender, message body, timestamp, read state, and no protected details leaked.",
+      "role": "community member recipient",
+      "expectedDecision": "Recipient decides whether to read, retain unread, request follow-up, return to unread, or archive a privacy-safe notice.",
       "requiredPrimaryActions": [
-        "receive notification",
-        "mark read",
-        "open inbox notice"
+        "Mark read",
+        "Open inbox notice"
       ],
       "requiredAlternateActions": [
-        "archive notice",
-        "request follow-up",
-        "keep unread"
+        "Keep unread",
+        "Mark unread",
+        "Request follow-up",
+        "Archive notice"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show sender, audience, timestamp, message body, read/received state, and protected-detail absence."
+      "resultAndReceiverState": "Sender/recipient/audience/body/time remain visible; readAt, keptUnreadAt and followUpRequestedAt provide durable state without protected care details."
     },
     {
       "communityId": "community_mosque",
@@ -1095,20 +1090,20 @@
       "extensionId": "ext_mosque",
       "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
       "workflowId": "mosque-search-ai-citation",
-      "role": "member",
-      "expectedDecision": "Member asks a question and verifies the answer against visible public citation/source context without seeing unauthorized protected data.",
+      "role": "community member / masjid admin",
+      "expectedDecision": "Member asks/refines and verifies an answer against citations; admin may provide an honest curated answer and moderate reported sources.",
       "requiredPrimaryActions": [
-        "search",
-        "ask question",
-        "open citation",
-        "save answer"
+        "Ask Masjid Nur",
+        "Provide curated answer",
+        "Refine query",
+        "Save answer"
       ],
       "requiredAlternateActions": [
-        "refine query",
-        "hide source",
-        "report stale citation"
+        "Report stale citation",
+        "Hide source",
+        "Reopen for new answer"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show query, answer, citation/source visibility, follow-up action, and permission guard."
+      "resultAndReceiverState": "Query, curated answer, answer source/time and citation status are durable; AI generation and item-level citation redaction remain explicit gaps."
     },
     {
       "communityId": "community_mosque",
@@ -1116,17 +1111,19 @@
       "extensionId": "ext_mosque",
       "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
       "workflowId": "mosque-discussion-thread",
-      "role": "member",
-      "expectedDecision": "Member evaluates a concrete discussion thread with sender/message context and reply/archive paths.",
+      "role": "community member / masjid admin",
+      "expectedDecision": "Member evaluates a thread and replies; admin may archive; members may request mute/unmute pending messaging support.",
       "requiredPrimaryActions": [
-        "reply",
-        "send message"
+        "New discussion",
+        "Reply",
+        "Continue discussion"
       ],
       "requiredAlternateActions": [
-        "archive",
-        "mute"
+        "Mute thread",
+        "Unmute thread",
+        "Archive thread"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Messages/latest-message/count update through replies; archived is durable; mute/unmute remain visible and explicitly not persisted until the messaging service exists."
     },
     {
       "communityId": "community_mosque",

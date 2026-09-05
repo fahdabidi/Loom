@@ -81,7 +81,7 @@ void main() {
       roleWorkflowStateFor(
         extensionId: 'ext_mosque',
         workflowId: 'mosque-announcement',
-        roleId: 'masjid-admin',
+        roleId: 'owner',
       ),
       LoomRoleWorkflowState.actor,
     );

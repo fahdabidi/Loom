@@ -852,7 +852,7 @@ const Map<String, List<LoomActorIdentity>> _actorIdentitiesByExtensionId = {
   'ext_mosque': [
     LoomActorIdentity(
       fanId: 'masjid-admin',
-      roleId: 'masjid-admin',
+      roleId: 'owner',
       label: 'Masjid Admin',
       roleLabel: 'Admin',
       description: 'Publishes announcements and sends neutral notifications.',
@@ -1112,7 +1112,7 @@ LoomWorkflowRolePolicy _mosquePolicy(String workflowId) {
   switch (workflowId) {
     case 'mosque-announcement':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['masjid-admin'],
+        actorRoleIds: ['owner'],
         receiverRoleIds: ['community-member'],
         receiverEntryText: 'A public announcement is ready to receive.',
         receiverActionText: 'Receive announcement',
@@ -1120,25 +1120,25 @@ LoomWorkflowRolePolicy _mosquePolicy(String workflowId) {
       );
     case 'mosque-event-rsvp':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['masjid-admin', 'community-member'],
+        actorRoleIds: ['owner', 'community-member'],
       );
     case 'mosque-volunteer-signup':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['masjid-admin', 'community-member'],
+        actorRoleIds: ['owner', 'community-member'],
       );
     case 'mosque-donor-visibility':
     case 'mosque-donation-payment':
     case 'mosque-care-request':
       return const LoomWorkflowRolePolicy(
         actorRoleIds: ['community-member'],
-        receiverRoleIds: ['masjid-admin'],
+        receiverRoleIds: ['owner'],
         receiverEntryText: 'A member submission is ready for admin action.',
         receiverActionText: 'Open',
         receiverResultText: 'Admin received the member submission.',
       );
     case 'mosque-neutral-notification':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['masjid-admin'],
+        actorRoleIds: ['owner'],
         receiverRoleIds: ['community-member'],
         prerequisiteWorkflowId: 'mosque-care-request',
         receiverEntryText: 'A neutral care notification is ready to receive.',
@@ -1147,15 +1147,15 @@ LoomWorkflowRolePolicy _mosquePolicy(String workflowId) {
       );
     case 'mosque-discussion-thread':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['masjid-admin', 'community-member'],
+        actorRoleIds: ['owner', 'community-member'],
       );
     case 'mosque-search-ai-citation':
       return const LoomWorkflowRolePolicy(
-        actorRoleIds: ['masjid-admin', 'community-member'],
+        actorRoleIds: ['owner', 'community-member'],
         prerequisiteWorkflowId: 'mosque-announcement',
       );
   }
-  return const LoomWorkflowRolePolicy(actorRoleIds: ['masjid-admin']);
+  return const LoomWorkflowRolePolicy(actorRoleIds: ['owner']);
 }
 
 LoomWorkflowRolePolicy _chessPolicy(String workflowId) {

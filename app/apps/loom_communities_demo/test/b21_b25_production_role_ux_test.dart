@@ -128,7 +128,7 @@ void main() {
     final workflow = experienceForExtensionId(target.extensionId).workflows
         .firstWhere((workflow) => workflow.workflowId == 'mosque-announcement');
 
-    await selectActorIdentity(tester, 'masjid-admin');
+    await selectActorIdentity(tester, 'owner');
     await completeWorkflow(tester, workflow);
     expect(find.text('Announcement posted'), findsOneWidget);
 

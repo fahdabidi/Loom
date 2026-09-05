@@ -36,7 +36,7 @@ const _actorIdentitiesByExtension = {
   'ext_book_club': ['book-organizer', 'book-member'],
   'ext_garden_club': ['garden-coordinator', 'garden-member'],
   'ext_chess_club': ['chess-organizer', 'chess-member'],
-  'ext_mosque': ['masjid-admin', 'community-member'],
+  'ext_mosque': ['owner', 'community-member'],
   'ext_youth_soccer': ['soccer-coach', 'soccer-guardian'],
 };
 
