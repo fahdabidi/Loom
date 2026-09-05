@@ -114,7 +114,7 @@ Still open, as rows in that tracker's **§8**:
 - [ ] the change feed is built but **not deployed**; ships with the next workflow-service image → ACWS §8
 - [ ] `app_group.external_resource_*` NULL for all 24 groups → ACWS §8 `needs-spec-decision`
 - [ ] never derive the community key from the group id — underscored vs hyphenated → ACWS §8
-- [ ] fan → community takes three hops; no single call answers it → ACWS §8
+- [x] fan → community: **CLOSED, was stale** — `GET /v1/fans/{fanId}/communities` (`listFanCommunities`) ships in the app-access spec and the app adopted it (part37/part39/part40). Verified 2026-09-04. → ACWS §8
 
 ### Cross-cutting — the record moved to its owning trackers, 2026-08-31
 
@@ -129,8 +129,8 @@ tracker that owns the work. Checkbox status was not carried over on trust. Where
 
 Open items from those entries are rows in the same trackers' **§8** queues, not here:
 
-- [ ] community isolation is a `WHERE community_id = ?` clause nothing enforces → ACWS §8
-- [ ] idempotency is reimplemented in three repositories that will diverge silently → ACWS §8
+- [x] community isolation: **CLOSED, was stale** — no longer a bare WHERE clause; `FORCE ROW LEVEL SECURITY` + the `community_isolation` policy ship in postgres_connection.dart and were proven enforcing live 2026-09-03. Verified 2026-09-04. → ACWS §8
+- [x] `1bc87122` idempotency unified — item_queue.join was the last hand-rolled copy; document/export_bundle already used runIdempotent. Verified against live PG with BOTH credential sets (153 +1 skipped); admin-only skipped the one test covering the changed class. → ACWS §8
 - [ ] ten of eleven communities still have no members → Build Tracker §8
 - [x] authenticated walkthrough — **sign-in PROVEN on device**, and the follow-on 401 fixed: `JWT_ISSUER` now matches the advertised host, app-access returns 200 with real membership → Build Tracker §8
 - [ ] the B25 denominator overstates: 12 rows — 3 renames, 9 not community workflows at all → Build Tracker §8
