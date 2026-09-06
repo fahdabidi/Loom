@@ -431,6 +431,47 @@ Each produced a confident report of missing work that already existed, and two r
 hit. If the control also returns nothing, the query is broken, not the codebase. Prefer reading the
 definition and its callers over one pattern coming back empty.
 
+### The demo app IS wired to the deployed backend by default — stop re-litigating this
+
+**Fact, re-confirmed 2026-09-06 by reading the actual call chain, not by grepping:**
+`app/apps/loom_communities_demo/lib/main.dart`'s `main()` calls
+`configureLoomRemoteServicesFromEnvironment()` at startup. `LOOM_ENV` defaults to `dev`, so this
+returns non-null on every real launch, and `main()` then calls
+`configureEngineNativeCommunityEngineFactoryForProduction(createRemoteEngineNativeCommunityEngineFactoryForConfiguration(...))`,
+overriding `_EngineNativeCommunityStore`'s engine factory to the remote, Postgres-backed
+`workflow-service` before any community store is installed. **The local, in-memory
+`WorkflowDatabase.memory()` path only runs under the explicit dev-only opt-out,
+`--dart-define=LOOM_ENV=local`.** In the real app, workflow instances — RSVPs, loans, donations,
+everything — persist server-side and are shared across devices, not per-device and not
+restart-fragile.
+
+`WorkflowDatabase.memory()`/`LocalWorkflowEngineApi` mentions elsewhere in this repo's docs are
+almost all **historical milestone records** from before this remote-engine wiring existed (dated
+2026-07 through early 2026-08, in the `Loom Communities Workflow Engine V2/V3` phase docs) — read
+them as "how it was built," not "how it works today." One narrow exception genuinely is still local
+today: `part02_tab_shell.dart`'s `_MessagesEngineStore` backs only the not-yet-implemented Messages
+tab and is out of scope by standing instruction, unrelated to the real community-data path above.
+
+**Why this needed saying twice.** A stale tracker row ("`WorkflowDatabase.memory()` is the app's
+only engine database... nothing survives a restart") got quoted to the user as the next actionable
+item on 2026-09-06 — read the day after the row above it (`nothing selects the remote engine
+factory`) was already logged. Two things should have caught it and neither did:
+
+1. **A different, already-closed row on the very same tracker document** already said the opposite
+   ("server-authoritative default CONFIRMED... already the production default", closed 2026-09-03) —
+   read earlier in the same session, never cross-referenced against the stale row before repeating
+   it.
+2. **The stale row's own tag pointed at richer context** (`TODO.md, migrated`) that would have
+   surfaced the original entry's own open question ("is this deliberately an ephemeral demo shell
+   whose replacement is the remote engine?") — never followed.
+
+Verification discipline had just been applied, correctly, to three *other* rows on this same
+document minutes earlier — each caught as stale. It was dropped the moment a row's status tag read
+`⬜ Open` instead of `✅ Closed`/`🟡 In progress`/`⛔ Blocked`, as if the tag itself were evidence of
+current accuracy rather than something to verify like every other row. **A tracker's status tag is
+never a substitute for reading the code it claims to describe — apply that check uniformly across
+every row you're about to repeat, not only the ones that already look suspicious.**
+
 **2026-08-31 produced five more in one session, and they are a different flavour worth naming: the
 query was broken, not narrow.** The earlier three asked the wrong question; these failed to ask at
 all, and every one printed a clean empty that read as data:

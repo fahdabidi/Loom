@@ -179,7 +179,7 @@ The live threads, one line each:
 - [ ] outstanding Skill dispatches: DataPortability, AdFree, Camera (rejected), Book Club (held), Garden (not installed) → CJM §8
 - [ ] six dead queue transitions → CJM §8
 - [ ] the `chmod 444` guard is not durable → CJM §8
-- [ ] `WorkflowDatabase.memory()` is the app's only engine database → ACWS §8
+- [x] `WorkflowDatabase.memory()` is the app's only engine database → **ANSWERED, not a gap: the real app defaults to the remote, Postgres-backed engine (`LOOM_ENV=dev` by default); in-memory only runs under the explicit `LOOM_ENV=local` dev opt-out. See CLAUDE.md "The demo app IS wired to the deployed backend by default" and ACWS §8.**
 
 ### Spec decisions that block other work
 
