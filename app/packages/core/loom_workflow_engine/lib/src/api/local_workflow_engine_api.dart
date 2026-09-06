@@ -144,7 +144,6 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   final WorkflowDatabase _db;
   final String _communityId;
   final DateTime Function() _clock;
-  final NotificationDeliveryService? _notificationDeliveryService;
   bool _failClosedOnMissingDefinition;
   ActiveMembershipLookup? _activeMembershipLookup;
   WorkflowSurfacePermissionLookup? _surfacePermissionLookup;
@@ -195,7 +194,6 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   }) : _db = db,
        _communityId = communityId,
        _clock = clock ?? DateTime.now,
-       _notificationDeliveryService = notificationDeliveryService,
        _failClosedOnMissingDefinition = failClosedOnMissingDefinition,
        _activeMembershipLookup = activeMembershipLookup,
        _surfacePermissionLookup = surfacePermissionLookup;
@@ -1519,39 +1517,6 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       instanceData: initialInstanceData,
       createdByFanId: fanId,
     );
-
-    // NOTE: this branch is dead against every shipped community. It fires only
-    // when `workflowType` is literally 'notification', and no package declares
-    // one by that name -- the five that have a notification workflow call it
-    // `book-notification`, `garden-notification`, `hoa-owner-notification`,
-    // `mosque-neutral-notification` or `soccer-reminder-notification`. It also
-    // delivers at creation, which is the wrong moment for a reminder carrying a
-    // future `dueAt`.
-    //
-    // Left in place rather than removed: it is covered by
-    // notification_delivery_service_test.dart, and deleting a mechanism to
-    // replace it is a separate change from adding the one that works. Real
-    // delivery is now LoomReminderSweeper in the app shell, sweeping
-    // `dueNotifications(asOf:)` -- which is what permissions.md has always
-    // described `deliver_reminder` as.
-    final deliveryService = _notificationDeliveryService;
-    if (workflowType == 'notification' && deliveryService != null) {
-      final notification = WorkflowInstance(
-        instanceId: instanceId,
-        workflowType: workflowType,
-        currentState: machine.initialState,
-        instanceData: Map<String, dynamic>.from(initialInstanceData),
-        createdByFanId: fanId,
-      );
-      unawaited(() async {
-        try {
-          await deliveryService.deliver(notification);
-        } catch (_) {
-          // Delivery is best-effort. A platform/backend failure must not
-          // affect the already-committed workflow instance creation.
-        }
-      }());
-    }
 
     return instanceId;
   }
