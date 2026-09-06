@@ -46,11 +46,36 @@ So Postgres was unreachable from at or before **2026-09-04 03:27:48 UTC** until 
 
 **3. `workflow-service` shows the identical restart signature at the identical moment** (`Last State:
 Terminated, Exit Code 255, Started: Fri 04 Sep 2026 21:54:24 -0700` = `2026-09-05 04:54:24 UTC`,
-5 seconds off from Postgres's own recovery-start log line) — consistent with a whole-node/VM event
-taking down the whole `loom` namespace together, not an isolated Postgres crash. This matches this
-repo's own documented behavior (`k3s` does not restart itself after a VM reboot, CLAUDE.md) — a VM
-restart around that time would leave every pod down until someone manually ran
-`systemctl start k3s`, which is consistent with the ~25-hour gap before recovery.
+5 seconds off from Postgres's own recovery-start log line).
+
+**CORRECTION (same investigation, later pass): this is NOT a whole-node/VM event — checked and
+ruled out, not assumed.** My first pass over this evidence guessed a VM reboot as the likely
+cause, reasoning from CLAUDE.md's documented "k3s does not restart itself after a VM reboot"
+behavior. That guess doesn't survive a check against the VM's own boot history:
+
+    journalctl --list-boots
+    -4 fff4484d... Mon 2026-08-24 08:54:35 PDT  Fri 2026-09-04 15:58:50 PDT
+    -3 f6b851d3... Fri 2026-09-04 16:01:53 PDT  Sat 2026-09-05 17:04:37 PDT
+
+Converted to UTC, boot **-4** runs continuously from 2026-08-24 15:54:35 UTC to **2026-09-04
+22:58:50 UTC** — a single, unbroken VM session that fully contains the entire confirmed outage
+window (2026-09-04 03:27:48 UTC to 2026-09-05 04:55:07 UTC). The VM did not reboot until roughly
+**one hour after** Postgres had already recovered. `journalctl -u k3s` across the whole outage
+window shows k3s's own process (same PID, `216548`) running continuously throughout, logging
+ordinary API-server request-timeout noise (`FinishRequest: post-timeout activity`,
+`context canceled`/`context deadline exceeded`) rather than any crash or restart — the k3s control
+plane itself was healthy the entire time.
+
+**So the real, narrower finding is: the `postgres-0` pod specifically was unreachable/unresponsive
+for ~25 hours while the VM, k3s's control plane, and (per its own steady journal activity)
+everything else around it stayed up.** That is arguably more concerning than a clean VM reboot,
+not less — it means kubelet's own liveness/readiness handling did not detect and restart a
+day-long-unresponsive pod on its own within that window, or detected it very late. The later VM
+reboot at 22:58:50 UTC (boot -4 → -3) is a separate, subsequent event; Postgres's own clean
+`shutting down ... administrator command` log line at `2026-09-06 00:04:24 UTC` lines up with the
+*end* of boot -3 (`2026-09-06 00:04:37 UTC`), suggesting that later shutdown was a deliberate
+action (plausibly this session's own VM-recovery work), unrelated to the original 25-hour gap this
+document is about.
 
 ## What this does and doesn't prove
 
@@ -60,12 +85,12 @@ running. And today, none of the three claimed instances exist in the database th
 serves.
 
 **Does not prove, and I'm not asserting:**
-- *That the writes never happened.* An alternative explanation is a device/emulator or workflow-service
-  clock skew at exactly the wrong moment (e.g., right around a reboot, before NTP resync), which would
-  make the *timestamp* wrong while the underlying write was genuine and simply lost some other way
-  (e.g., if the write landed in a since-reverted or since-migrated state). I have no direct evidence
-  either confirming or ruling out clock skew at that specific moment — VM `timedatectl` reports
-  synchronized now, on 2026-09-06, which says nothing about 2026-09-05's boot moment.
+- *That the writes never happened.* A clock-skew-at-reboot explanation (the timestamp being wrong
+  while the write was genuine) is weaker than I first considered, now that the VM's own boot history
+  rules out a reboot during the actual outage window — there's no boot-time clock-resync event
+  sitting inside it to have caused skew. I have no direct evidence either confirming or ruling out
+  some *other* clock-skew cause at that specific moment, but it's no longer the natural explanation
+  it looked like on a first pass.
 - *That this is the cause of the 3 surviving Aug-26 rows also going untouched.* Those rows predate the
   outage by over a week and were not examined for their own history beyond confirming they still exist.
 - *Any single root cause.* This is presented as a timeline conflict with strong, directly-observed
@@ -90,8 +115,14 @@ self-reported timestamp.
    is there a way to confirm the original writes landed that I haven't found?
 2. Should every other "closed via live write" B25 row be retroactively spot-checked against the
    database, given this session's own repeated finding this cycle that status tags are not evidence?
-3. Is there a known cause for the VM/cluster outage itself (a deliberate restart as part of other work
-   around that time, vs. an unexpected crash) that would change how concerning this is?
+3. **Narrowed, not answered:** the VM itself did not reboot during the outage (confirmed via
+   `journalctl --list-boots`), and k3s's own control-plane process ran continuously throughout
+   (same PID, no restart) — so this was specifically the `postgres-0` pod being unresponsive for
+   ~25 hours while everything around it stayed healthy, not a whole-node event. Is there a known
+   cause for a single pod going unresponsive that long without kubelet restarting it — a resource-
+   starvation episode (matching this repo's own documented "a heavy build can starve the shared
+   node" pattern), a storage/PVC stall, or something else? And separately: is this the same kind of
+   event as the ~25-hour gap, or a different one entirely?
 
 ## Scope note
 
