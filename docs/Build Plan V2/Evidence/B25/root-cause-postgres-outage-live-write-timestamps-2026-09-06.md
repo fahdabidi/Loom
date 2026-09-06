@@ -1,4 +1,10 @@
-# Root cause: three B25 "live-write" closures recorded server timestamps during a confirmed Postgres outage
+# Root cause: B25 "live-write" closures with no trace in the live database, spanning a confirmed Postgres outage
+
+**Headline, updated same day as first written:** what started as "3 rows have a suspicious
+timestamp" is now "all 16 live-verification dispatches from Sept 3 evening through Sept 5 morning
+correspond to zero rows in the live database" — see "Scope escalation" below. The 3-row framing in
+the rest of this document is the part I've most rigorously checked (timestamp vs. confirmed outage
+window); it is a lower bound, not the full extent.
 
 **Date found:** 2026-09-06, during a routine autonomous tracker sweep (unrelated task — the Cedar
 document-content upload ticket led here by accident, while minting a real fan JWT to test the
@@ -21,6 +27,24 @@ deployed cluster, each citing a server-recorded engine timestamp as part of that
 
 Each doc's own verification section describes pulling a screenshot and confirming the rendered UI
 state byte-identically. None of the three independently queried the backing database.
+
+## Scope escalation: this affects far more than 3 rows, verified not guessed
+
+The 3 rows above are the ones with a *directly confirmed timestamp-inside-outage* conflict. But
+`~/Loom/.codex-logs/live-verification/` shows **16** live-verification dispatches ran across this
+same stretch, Sept 3 evening through Sept 5 morning: `cedar-proof`, `bookclub`, `chessclub`,
+`masjidnur`, `youthsoccer`, `gardenclub` (attempted 4 times — r1 through r4), `cameraclub`,
+`adfree`, `exportmigration`, `platformsocial`, plus the 3 already named above. **Fact already
+established in this document, just not yet connected**: the live database's `workflow_instances`
+table holds exactly 3 rows total, all pre-existing Cedar `hoa-facility-reservation` rows from
+2026-08-26. That means **none of the 16 dispatches' target communities have any corresponding
+database row today** — not just the 3 whose timestamp I happened to check against the outage
+window. Whether each specific dispatch ran while Postgres was reachable or not is a separate
+question from whether its claimed write actually persists, and right now, none of them do.
+
+I have not individually re-examined all 16 evidence docs' own verification methodology (whether
+each checked the database or only the rendered UI) — that would be the natural next step if the
+user wants a full accounting, and is called out again in the open questions below.
 
 ## What's actually true right now (verified directly, 2026-09-06)
 
@@ -122,7 +146,17 @@ self-reported timestamp.
    cause for a single pod going unresponsive that long without kubelet restarting it — a resource-
    starvation episode (matching this repo's own documented "a heavy build can starve the shared
    node" pattern), a storage/PVC stall, or something else? And separately: is this the same kind of
-   event as the ~25-hour gap, or a different one entirely?
+   event as the ~25-hour gap, or a different one entirely? **One concrete lead**: 2 Docker image
+   builds (`loom-workflow-service:1.0.3`, `loom/app-access:0.3.9`) completed at 16:53 and 18:08 PDT
+   on 2026-09-03, roughly 2-3.5 hours before the outage's earliest bound, and the outage window
+   itself overlaps a stretch of 16 back-to-back live-verification dispatches (each driving a live
+   Android emulator plus hitting the backend) — a plausible, not confirmed, resource-starvation
+   correlation matching this repo's own documented "the build and the cluster share one machine"
+   pattern, except the recovery this time took ~25 hours rather than resolving once load passed.
+4. **New, broader than the original 3 rows**: given all 16 live-verification dispatches from this
+   stretch correspond to zero rows in the live database today (see "Scope escalation" above), should
+   *every one* of those 16 evidence docs be re-examined for whether its own verification actually
+   queried the database, rather than assuming the 3 already flagged are the full extent?
 
 ## Scope note
 
