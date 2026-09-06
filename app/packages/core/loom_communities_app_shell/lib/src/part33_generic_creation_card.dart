@@ -69,11 +69,17 @@ class _GenericWorkflowCreationCardState
   );
 
   String _label(String key, InstanceDataField schema) {
-    final template = (schema.labelTemplate ?? '')
-        .replaceAll('{value.length}', '')
-        .replaceAll('{value}', '')
-        .replaceAll(RegExp(r'[:\-–—]+\s*$'), '')
-        .trim();
+    final rawTemplate = schema.labelTemplate ?? '';
+    final valueToken = RegExp(r'\{value(?:\.length)?\}');
+    final trailingMatch = RegExp(
+      r'^(.*?)\s*\{value(?:\.length)?\}\s*$',
+    ).firstMatch(rawTemplate);
+    final template =
+        trailingMatch != null && !valueToken.hasMatch(trailingMatch.group(1)!)
+        ? trailingMatch.group(1)!.replaceAll(RegExp(r'[:\-–—]+\s*$'), '').trim()
+        : valueToken.hasMatch(rawTemplate)
+        ? ''
+        : rawTemplate.replaceAll(RegExp(r'[:\-–—]+\s*$'), '').trim();
     if (template.isNotEmpty) return template;
     return key
         .replaceAllMapped(

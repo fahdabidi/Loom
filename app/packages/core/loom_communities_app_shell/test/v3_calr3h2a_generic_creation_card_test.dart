@@ -53,6 +53,39 @@ LoomWorkflowStateMachine _conditionalMachine() =>
       },
     }, 'conditional-creation');
 
+LoomWorkflowStateMachine _labelRegressionMachine() =>
+    LoomWorkflowStateMachine.fromJson({
+      'initialState': 'draft',
+      'states': {
+        'draft': {
+          'label': 'Draft',
+          'editableFields': [
+            'reminderOffsetHours',
+            'durationMinutes',
+            'amount',
+            'status',
+            'wholeTokenField',
+            'plainPunctuated',
+          ],
+        },
+      },
+      'transitions': const <Map<String, dynamic>>[],
+      'instanceDataSchema': {
+        'reminderOffsetHours': {
+          'type': 'number',
+          'labelTemplate': 'Default reminder: {value} hours before',
+        },
+        'durationMinutes': {
+          'type': 'number',
+          'labelTemplate': '{value} minutes',
+        },
+        'amount': {'type': 'number', 'labelTemplate': 'Amount: {value}'},
+        'status': {'type': 'text', 'labelTemplate': 'Status: {value.length}'},
+        'wholeTokenField': {'type': 'text', 'labelTemplate': '{value.length}'},
+        'plainPunctuated': {'type': 'text', 'labelTemplate': 'Plain label:'},
+      },
+    }, 'label-regression');
+
 Future<LocalWorkflowEngineApi> _engine() async {
   final engine = LocalWorkflowEngineApi(
     db: WorkflowDatabase.memory(),
@@ -156,7 +189,36 @@ void main() {
     // The 'Capacity' labelTemplate has no trailing colon/dash, so the
     // label must appear exactly as-is — not stripped or range-mangled.
     expect(find.text('Capacity'), findsOneWidget);
+    expect(find.text('Title'), findsOneWidget);
   });
+
+  testWidgets(
+    'falls back to humanized keys for non-trailing value label tokens',
+    (tester) async {
+      final engine = await _engine();
+      final machine = _labelRegressionMachine();
+      await tester.pumpWidget(
+        _host(
+          GenericWorkflowCreationCard(
+            workflowType: 'label-regression',
+            machine: machine,
+            engine: engine,
+            fanId: 'member',
+            keyPrefix: 'label-regression',
+          ),
+        ),
+      );
+
+      expect(find.text('Reminder Offset Hours'), findsOneWidget);
+      expect(find.text('Duration Minutes'), findsOneWidget);
+      expect(find.text('Whole Token Field'), findsOneWidget);
+      expect(find.text('Amount'), findsOneWidget);
+      expect(find.text('Status'), findsOneWidget);
+      expect(find.text('Plain label'), findsOneWidget);
+      expect(find.text('Default reminder:  hours before'), findsNothing);
+      expect(find.text('minutes'), findsNothing);
+    },
+  );
 
   testWidgets('re-evaluates editing visibility from the creation values', (
     tester,
