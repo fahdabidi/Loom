@@ -16,6 +16,15 @@ owns per-community JSON correctness; this one owns the access-control architectu
 [`CJM.16 Identity Architecture Proposal.md`](CJM.16%20Identity%20Architecture%20Proposal.md) is the
 originating diagnosis.
 
+**This is a tactical tracker, not the destination.** It exists to make one workstream (access control
+and the workflow service) real; it is not itself the path to production. [`TODO.md`](TODO.md) is the
+main cross-effort tracker and rollup of every tactical tracker's `## 8` queue, and the actual
+production bar is the B25 addendum table — every product-doc workflow proven by a live walkthrough
+*and* a UX judge (see `TODO.md` and the `Evidence/B25/production-ux-blueprint.md` rubric). **Once
+this tracker's own §8 queue is empty (or everything left in it is a deliberate, recorded "not now"),
+return to `TODO.md` and resume driving toward production from there — do not treat closing this
+tracker as closing the project.**
+
 ## 1. Locked spec additions
 
 Approved and committed. Changing any of these needs explicit re-approval.
