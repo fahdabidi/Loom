@@ -583,6 +583,114 @@
         }
       },
 
+      "hoa-document-access-request": {
+        "initialState": "pending",
+        "visibility": {
+          "default": "guarded",
+          "readGuard": { "allowedRoleIds": ["hoa-board"] },
+          "fields": { "parties": ["requesterFanId", { "role": "hoa-board" }] }
+        },
+        "states": {
+          "pending": { "label": "Pending board decision", "tone": "warning" },
+          "granted": { "label": "Access granted", "tone": "positive", "isTerminal": true },
+          "denied": { "label": "Access denied", "tone": "negative", "isTerminal": true },
+          "withdrawn": { "label": "Request withdrawn", "tone": "info", "isTerminal": true }
+        },
+        "transitions": [
+          {
+            "id": "withdraw-request", "label": "Withdraw request", "icon": "undo",
+            "tone": "secondary", "from": ["pending"], "to": "withdrawn",
+            "guard": {
+              "allowedRoleIds": ["hoa-member"],
+              "actorEqualsField": { "key": "requesterFanId" }
+            },
+            "effects": [
+              { "op": "append", "key": "statusHistory", "value": {
+                "status": "withdrawn", "actorFanId": "$actor", "at": "$timestamp"
+              } }
+            ]
+          },
+          {
+            "id": "grant-access", "label": "Grant access", "icon": "lock_open",
+            "tone": "primary", "from": ["pending"], "to": "granted",
+            "guard": { "allowedRoleIds": ["hoa-board"] },
+            "inputs": { "boardComment": { "type": "text" } },
+            "effects": [
+              { "op": "set", "key": "decidedByFanId", "value": "$actor" },
+              { "op": "set", "key": "decidedAt", "value": "$timestamp" },
+              { "op": "set", "key": "boardComment", "value": "{input.boardComment}" },
+              { "op": "append", "key": "statusHistory", "value": {
+                "status": "granted", "actorFanId": "$actor", "at": "$timestamp"
+              } },
+              { "op": "appendUnique", "key": "explicitReaderFanIds", "value": "{requesterFanId}",
+                "relatedInstance": "requestedDocumentInstanceId" },
+              { "op": "createInstance", "workflowType": "hoa-owner-notification", "fields": {
+                "title": "Document access granted", "body": "Your document access request was granted.",
+                "senderFanId": "$actor", "recipientFanId": "{requesterFanId}", "sentAt": "$timestamp",
+                "deliveryState": "Sent", "relatedRequestInstanceId": "{id}", "readFanIds": []
+              } }
+            ]
+          },
+          {
+            "id": "deny-access", "label": "Deny access", "icon": "lock",
+            "tone": "destructive", "from": ["pending"], "to": "denied",
+            "guard": { "allowedRoleIds": ["hoa-board"] },
+            "inputs": { "boardComment": { "type": "text" } },
+            "effects": [
+              { "op": "set", "key": "decidedByFanId", "value": "$actor" },
+              { "op": "set", "key": "decidedAt", "value": "$timestamp" },
+              { "op": "set", "key": "boardComment", "value": "{input.boardComment}" },
+              { "op": "append", "key": "statusHistory", "value": {
+                "status": "denied", "actorFanId": "$actor", "at": "$timestamp"
+              } },
+              { "op": "createInstance", "workflowType": "hoa-owner-notification", "fields": {
+                "title": "Document access denied", "body": "Your document access request was denied.",
+                "senderFanId": "$actor", "recipientFanId": "{requesterFanId}", "sentAt": "$timestamp",
+                "deliveryState": "Sent", "relatedRequestInstanceId": "{id}", "readFanIds": []
+              } }
+            ]
+          }
+        ],
+        "renderBindings": [
+          {
+            "states": ["pending"], "audience": "any", "tabId": "admin",
+            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "primary"
+          },
+          {
+            "states": ["granted", "denied", "withdrawn"], "audience": "any", "tabId": "admin",
+            "cardSurfaceFamily": "approvalQueueItem", "bindingKind": "summary"
+          },
+          {
+            "states": ["pending", "granted", "denied", "withdrawn"],
+            "audience": "any", "tabId": "requests", "cardSurfaceFamily": "statusTimeline",
+            "bindingKind": "summary"
+          }
+        ],
+        "instanceDataSchema": {
+          "requesterFanId": { "type": "fanId", "required": true, "displayIcon": "person_outline",
+            "labelTemplate": "Requester: {value}", "displayContexts": ["tile", "detail"] },
+          "requestedDocumentInstanceId": { "type": "text", "required": true, "displayIcon": "link",
+            "labelTemplate": "Document instance: {value}", "displayContexts": ["detail"] },
+          "requestedDocumentTitle": { "type": "text", "required": true, "searchable": true,
+            "displayIcon": "description", "labelTemplate": "Document: {value}",
+            "displayContexts": ["tile", "detail"] },
+          "requestedAt": { "type": "date", "required": true, "sortable": true,
+            "displayIcon": "schedule", "labelTemplate": "Requested {value}",
+            "displayContexts": ["tile", "detail"] },
+          "decidedAt": { "type": "date?", "writableBy": "effect", "sortable": true,
+            "displayIcon": "event_available", "labelTemplate": "Decided {value}",
+            "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "decidedByFanId": { "type": "fanId?", "writableBy": "effect", "displayIcon": "gavel",
+            "labelTemplate": "Decided by: {value}", "hideWhenEmpty": true,
+            "displayContexts": ["tile", "detail"] },
+          "boardComment": { "type": "textarea", "writableBy": "effect", "maxLength": 2000,
+            "displayIcon": "comment", "labelTemplate": "Board comment: {value}",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "statusHistory": { "type": "list", "writableBy": "effect", "displayIcon": "history",
+            "labelTemplate": "History events: {value.length}", "displayContexts": ["detail"] }
+        }
+      },
+
       "hoa-dues-payment": {
         "initialState": "due",
         "visibility": {
@@ -1031,18 +1139,35 @@
             "id": "request-document-access", "action": "request_access", "label": "Request access",
             "icon": "lock_open", "tone": "secondary", "from": ["published"], "to": null,
             "guard": { "allowedRoleIds": ["hoa-member"] },
-            "effects": [{ "op": "append", "key": "engagementAudit", "value": {
-              "action": "access-requested", "actorFanId": "$actor", "at": "$timestamp"
-            } }]
+            "effects": [
+              { "op": "append", "key": "engagementAudit", "value": {
+                "action": "access-requested", "actorFanId": "$actor", "at": "$timestamp"
+              } },
+              { "op": "createInstance", "workflowType": "hoa-document-access-request", "fields": {
+                "requesterFanId": "$actor", "requestedDocumentInstanceId": "{id}",
+                "requestedDocumentTitle": "{title}", "requestedAt": "$timestamp",
+                "statusHistory": [{
+                  "status": "pending", "actorFanId": "$actor", "at": "$timestamp"
+                }]
+              } }
+            ]
           },
           {
             "id": "withdraw-access-request", "action": "withdraw_access_request",
             "label": "Withdraw access request", "icon": "undo", "tone": "secondary",
             "from": ["published"], "to": null,
             "guard": { "allowedRoleIds": ["hoa-member"] },
-            "effects": [{ "op": "append", "key": "engagementAudit", "value": {
-              "action": "access-request-withdrawn", "actorFanId": "$actor", "at": "$timestamp"
-            } }]
+            "effects": [
+              { "op": "append", "key": "engagementAudit", "value": {
+                "action": "access-request-withdrawn", "actorFanId": "$actor", "at": "$timestamp"
+              } },
+              { "op": "transitionRelated", "relatedQuery": {
+                  "workflowType": "hoa-document-access-request",
+                  "filter": {
+                    "requesterFanId": "$actor", "requestedDocumentInstanceId": "{id}", "$state": "pending"
+                  }, "limit": 1
+                }, "transitionId": "withdraw-request" }
+            ]
           },
           {
             "id": "share-document", "action": "share", "label": "Share document",
