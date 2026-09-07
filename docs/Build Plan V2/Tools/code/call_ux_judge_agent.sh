@@ -24,7 +24,7 @@ set -euo pipefail
 
 PROMPT_FILE="${1:?usage: call_ux_judge_agent.sh <prompt-file> [label]}"
 LABEL="${2:-uxjudge-$(date +%Y%m%d-%H%M%S)}"
-MODEL="${CLAUDE_UX_JUDGE_MODEL:-sonnet}"
+MODEL="${CLAUDE_UX_JUDGE_MODEL:-fable}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
