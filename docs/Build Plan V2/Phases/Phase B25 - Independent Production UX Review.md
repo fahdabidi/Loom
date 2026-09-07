@@ -589,11 +589,14 @@ Use the split defined in [../Tools/ux-gate-judge-tools.md](../Tools/ux-gate-judg
 | LLM Vision UX Judge Agent | Reviews only artifacts and screenshots with fresh context, inspects pixels/layout, answers direct UX questions, and emits screenshot-backed critiques/findings. |
 | LLM Review Importer Tool | Imports the LLM vision review into schema v4 evidence as `llmVisionReview` so the production judge can validate and ticket it. |
 | Workflow Interaction-Model Judge Tool | Scores every workflow/persona interaction model against expected decision, concrete object/context, decision information, semantically correct primary action, alternate/change/reject affordance, result state, and receiver/continuation state. |
+| UI/Usability Score Tool | Added 2026-09-07 (user-directed). Scores each community holistically 0.0-10.0, averaging five evidence-cited sub-scores (visual polish/native fidelity, information hierarchy, interaction affordance clarity, consistency, error/edge-state handling) — see `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md`'s "UI/Usability Score" section for the full rubric. |
 | Production UX Judge CLI | Deterministically validates the independent judge output and emits the scorecard/tickets. |
 | Remediation Planner | Converts judge failures into fix batches for the Worker Agent. |
 
 The Worker Agent may not mark B25 complete. Only a passing imported LLM vision review, Production UX
-Judge scorecard, and deterministic phase gates can allow closeout.
+Judge scorecard, and deterministic phase gates can allow closeout. **Since 2026-09-07, closeout also
+requires the community's UI/Usability Score to be 8.0 or higher** — workflow-coverage compliance alone
+is no longer sufficient; see the blueprint doc above.
 
 ## Prompt To Use
 
