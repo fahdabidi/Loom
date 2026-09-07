@@ -148,6 +148,16 @@ fail by temporarily perturbing the bundled copy in a scratch check, then restore
 
 ## Part C — deploy, publish, prove (me, directly — infra, not code)
 
+**Before-snapshot, captured live 2026-09-07 (the numbers C must reproduce or explain):**
+`permission` rows **127**; `role_permission` rows **425**; admin roles holding exactly 5
+`community.*` grants **11 of 11**; `app.permission_catalog_version = 2026-08-26.2`,
+`catalog_published_at = 2026-08-26 02:15:29+00`. Deployed image `loom/app-access:0.3.9` ==
+manifest `deploy/k8s/app-access.yaml:41` == backend HEAD at that moment (`2500208`); next tag
+`0.3.10`. After C: `permission` rows must be **137** (127 + the 10 missing; the 21 retired ids
+untouched), `role_permission` **still 425** (nothing added or removed by the reconcile), admins
+**still 11 of 11 at exactly 5**, and the version/timestamp freshly stamped once — a second restart
+must not move the timestamp.
+
 Build and import the app-access image, bump the manifest tag, `kubectl apply`, **commit the manifest
 bump** (the twice-repeated trap), then the audit: deployed image == manifest == HEAD;
 `check_spec_parity.sh` clean. Prove the reconcile ran: `select permission_catalog_version,
