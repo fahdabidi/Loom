@@ -2,12 +2,14 @@ part of '../loom_communities_app_shell.dart';
 
 LoomExperienceDefinition experienceForExtensionId(
   String extensionId, {
+  String? communityId,
   String? displayName,
   int? specVersion,
   Map<String, Object?> experienceConfiguration = const {},
 }) {
   final packageExperience = _experienceFromConfiguration(
     extensionId,
+    communityId: communityId,
     displayName: displayName,
     specVersion: specVersion,
     experienceConfiguration: experienceConfiguration,
@@ -58,6 +60,7 @@ String _legacyDemoCatalogExtensionId(String extensionId) =>
 /// so callers fall back to the hardcoded demo catalog.
 LoomExperienceDefinition? _experienceFromConfiguration(
   String extensionId, {
+  String? communityId,
   String? displayName,
   int? specVersion,
   required Map<String, Object?> experienceConfiguration,
@@ -73,6 +76,7 @@ LoomExperienceDefinition? _experienceFromConfiguration(
   }
   return _experienceFromEngineNativeConfiguration(
     extensionId,
+    communityId: communityId,
     displayName: displayName,
     experienceConfiguration: experienceConfiguration,
   );
@@ -136,6 +140,7 @@ List<CalendarDateRailEntry>? _parseCalendarDateRailEntries(Object? themeRaw) {
 
 LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
   String extensionId, {
+  String? communityId,
   String? displayName,
   required Map<String, Object?> experienceConfiguration,
 }) {
@@ -192,6 +197,7 @@ LoomExperienceDefinition? _experienceFromEngineNativeConfiguration(
   );
   return LoomExperienceDefinition(
     extensionId: extensionId,
+    communityId: communityId,
     displayName: _shellStringOr(
       experienceConfiguration['displayName'],
       displayName ?? 'Local Community',

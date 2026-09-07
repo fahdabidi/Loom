@@ -240,6 +240,7 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
                       final community = communities[index];
                       final experience = experienceForExtensionId(
                         community.extensionId,
+                        communityId: community.communityId,
                         displayName: community.displayName,
                         specVersion: community.specVersion,
                         experienceConfiguration:
@@ -311,6 +312,7 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
       if (community.extensionId == communityExtensionId) {
         return experienceForExtensionId(
           community.extensionId,
+          communityId: community.communityId,
           displayName: community.displayName,
           specVersion: community.specVersion,
           experienceConfiguration: community.experienceConfiguration,

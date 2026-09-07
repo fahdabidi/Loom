@@ -1435,6 +1435,7 @@ class LoomNotificationConfiguration {
 class LoomExperienceDefinition {
   const LoomExperienceDefinition({
     required this.extensionId,
+    this.communityId,
     required this.displayName,
     required this.tagline,
     required this.accentColor,
@@ -1465,6 +1466,12 @@ class LoomExperienceDefinition {
   });
 
   final String extensionId;
+
+  /// Canonical server-side identifier for the installed community.
+  ///
+  /// This is intentionally distinct from [extensionId], which identifies the
+  /// installed experience and remains the local engine namespace.
+  final String? communityId;
   final String displayName;
   final String tagline;
   final int accentColor;

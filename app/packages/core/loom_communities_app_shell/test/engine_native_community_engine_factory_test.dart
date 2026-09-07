@@ -17,6 +17,7 @@ void main() {
     overrideEngineNativeCommunityEngineFactoryForTesting(({
       required WorkflowDatabase database,
       required String extensionId,
+      required String? communityId,
     }) {
       factoryCalls += 1;
       expect(database, isA<WorkflowDatabase>());

@@ -244,6 +244,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   LoomExperienceDefinition _experienceForCommunity() {
     return experienceForExtensionId(
       community.extensionId,
+      communityId: community.communityId,
       displayName: community.displayName,
       specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
@@ -499,6 +500,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   }) async {
     final experience = experienceForExtensionId(
       community.extensionId,
+      communityId: community.communityId,
       displayName: community.displayName,
       specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
@@ -592,6 +594,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   Future<void> _syncEngineRoleIds() async {
     final experience = experienceForExtensionId(
       community.extensionId,
+      communityId: community.communityId,
       displayName: community.displayName,
       specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
@@ -769,6 +772,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   }) {
     final experience = experienceForExtensionId(
       community.extensionId,
+      communityId: community.communityId,
       displayName: community.displayName,
       specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
@@ -820,6 +824,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final usesModernCardTheme =
         experienceForExtensionId(
           community.extensionId,
+          communityId: community.communityId,
           displayName: community.displayName,
           specVersion: community.specVersion,
           experienceConfiguration: community.experienceConfiguration,
@@ -880,6 +885,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
     final usesModernCardTheme =
         experienceForExtensionId(
           community.extensionId,
+          communityId: community.communityId,
           displayName: community.displayName,
           specVersion: community.specVersion,
           experienceConfiguration: community.experienceConfiguration,
@@ -929,6 +935,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   }) {
     final experience = experienceForExtensionId(
       community.extensionId,
+      communityId: community.communityId,
       displayName: community.displayName,
       specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,
@@ -1392,6 +1399,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   Widget _buildScreen(BuildContext context) {
     final experience = experienceForExtensionId(
       community.extensionId,
+      communityId: community.communityId,
       displayName: community.displayName,
       specVersion: community.specVersion,
       experienceConfiguration: community.experienceConfiguration,

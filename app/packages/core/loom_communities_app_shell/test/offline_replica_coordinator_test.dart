@@ -371,11 +371,16 @@ void main() {
         addTearDown(unavailableRemote.close);
         final database = WorkflowDatabase.memory();
         addTearDown(database.close);
-        final engine = createRemoteEngineNativeCommunityEngineFactory(
-          session: _Session(),
-          workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
-          httpClient: unavailableRemote,
-        )(database: database, extensionId: 'garden');
+        final engine =
+            createRemoteEngineNativeCommunityEngineFactory(
+              session: _Session(),
+              workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
+              httpClient: unavailableRemote,
+            )(
+              database: database,
+              extensionId: 'garden',
+              communityId: 'community_garden',
+            );
 
         expect(engine, isA<RemoteWorkflowEngineApi>());
         await expectLater(

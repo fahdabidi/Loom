@@ -131,11 +131,13 @@ typedef EngineNativeCommunityEngineFactory =
     WorkflowEngineApi Function({
       required WorkflowDatabase database,
       required String extensionId,
+      required String? communityId,
     });
 
 WorkflowEngineApi _createLocalEngineNativeCommunityEngine({
   required WorkflowDatabase database,
   required String extensionId,
+  required String? communityId,
 }) => LocalWorkflowEngineApi(
   db: database,
   communityId: extensionId,
@@ -237,7 +239,11 @@ class _EngineNativeCommunityStore {
         _engineNativeCommunityEngineFactoriesByExtensionId[extensionId] ??
         _engineNativeCommunityEngineFactoryOverrideForTesting ??
         _productionEngineNativeCommunityEngineFactory;
-    final resolved = factory(database: _database, extensionId: extensionId);
+    final resolved = factory(
+      database: _database,
+      extensionId: extensionId,
+      communityId: experience.communityId,
+    );
     final remote = resolved is LoomReplicaFallbackWorkflowEngineApi
         ? resolved.remoteEngine
         : resolved;

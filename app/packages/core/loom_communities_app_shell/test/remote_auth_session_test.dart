@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:loom_auth_session/loom_auth_session.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
@@ -42,9 +43,13 @@ final class _FakeWorkflowEngineApi implements WorkflowEngineApi {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-void _installEngineNativeTestExperience(String extensionId) {
+void _installEngineNativeTestExperience(
+  String extensionId, {
+  String? communityId,
+}) {
   experienceForExtensionId(
     extensionId,
+    communityId: communityId,
     specVersion: currentCommunitySpecVersion,
     experienceConfiguration: const <String, Object?>{
       'workflowDefinitions': <String, Object?>{
@@ -89,13 +94,19 @@ void main() {
   });
 
   test(
-    'configured production factory returns the configured remote engine',
+    'configured production factory requests a canonical community id',
     () async {
       const expectedToken = 'known-remote-bearer-token';
       final session = _TokenLoomAuthSession(expectedToken);
-      final httpClient = MockClient(
-        (_) async => throw StateError('No HTTP request expected in this test.'),
-      );
+      late http.Request request;
+      final httpClient = MockClient((sent) async {
+        request = sent;
+        return http.Response(
+          '{"items":[],"pageInfo":{"hasMore":false}}',
+          200,
+          headers: const {'content-type': 'application/json'},
+        );
+      });
       addTearDown(httpClient.close);
 
       configureEngineNativeCommunityEngineFactoryForProduction(
@@ -110,15 +121,19 @@ void main() {
           httpClient: httpClient,
         ),
       );
-      const extensionId = 'remote-factory-test-community';
-      _installEngineNativeTestExperience(extensionId);
+      const extensionId = 'ext_neighborhood_book_club';
+      const communityId = 'community_neighborhood_book_club';
+      _installEngineNativeTestExperience(extensionId, communityId: communityId);
       final engine = await workflowEngineForExtensionId(extensionId);
 
       expect(engine, isA<RemoteWorkflowEngineApi>());
       final remoteEngine = engine as RemoteWorkflowEngineApi;
-      expect(remoteEngine.communityId, extensionId);
+      expect(remoteEngine.communityId, communityId);
       expect(remoteEngine.baseUri, Uri.parse('https://workflow.test/api/'));
       expect(await remoteEngine.bearerTokenProvider(), expectedToken);
+      await remoteEngine.queryInstances(tabId: 'home', fanId: 'book-member');
+      expect(request.url.path, '/api/v1/communities/$communityId/instances');
+      expect(request.url.path, isNot(contains(extensionId)));
     },
   );
 
@@ -192,6 +207,7 @@ void main() {
       overrideEngineNativeCommunityEngineFactoryForTesting(({
         required WorkflowDatabase database,
         required String extensionId,
+        required String? communityId,
       }) {
         expect(extensionId, overriddenExtensionId);
         return fake;
@@ -204,7 +220,10 @@ void main() {
       );
 
       resetEngineNativeCommunityEngineFactoryForTesting();
-      _installEngineNativeTestExperience(productionExtensionId);
+      _installEngineNativeTestExperience(
+        productionExtensionId,
+        communityId: 'community-production-seam-after-test-override',
+      );
       expect(
         await workflowEngineForExtensionId(productionExtensionId),
         isA<RemoteWorkflowEngineApi>(),
@@ -229,7 +248,10 @@ void main() {
         workflowServiceBaseUri: Uri.parse('https://workflow.test/api/'),
         httpClient: httpClient,
       );
-      _installEngineNativeTestExperience(remoteExtensionId);
+      _installEngineNativeTestExperience(
+        remoteExtensionId,
+        communityId: 'community-per-community-headline-remote',
+      );
       _installEngineNativeTestExperience(localExtensionId);
 
       final engines = await Future.wait(<Future<WorkflowEngineApi>>[
@@ -315,7 +337,10 @@ void main() {
         httpClient: httpClient,
       );
 
-      _installEngineNativeTestExperience(extensionId);
+      _installEngineNativeTestExperience(
+        extensionId,
+        communityId: 'community-real-remote-store-gating-test',
+      );
       configureEngineAuthorizationForExtensionId(
         extensionId: extensionId,
         appShellConfiguration: const <String, Object?>{},

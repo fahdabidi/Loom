@@ -401,26 +401,38 @@ createRemoteEngineNativeCommunityEngineFactory({
   required Uri workflowServiceBaseUri,
   required http.Client httpClient,
   LoomWorkflowReplicaCoordinator? offlineReplicaCoordinator,
-}) => ({required WorkflowDatabase database, required String extensionId}) {
-  final remote = RemoteWorkflowEngineApi(
-    baseUri: workflowServiceBaseUri,
-    communityId: extensionId,
-    bearerTokenProvider: session.currentAccessToken,
-    httpClient: httpClient,
-    onCallOutcome:
-        ({required bool success, int? statusCode, String? errorKind}) =>
-            _recordWorkflowCallOutcome(
-              extensionId,
-              success: success,
-              statusCode: statusCode,
-              errorKind: errorKind,
-            ),
-  );
-  final coordinator = offlineReplicaCoordinator;
-  return coordinator == null
-      ? remote
-      : coordinator.wrap(remote, communityId: extensionId);
-};
+}) =>
+    ({
+      required WorkflowDatabase database,
+      required String extensionId,
+      required String? communityId,
+    }) {
+      final canonicalCommunityId = communityId;
+      if (canonicalCommunityId == null || canonicalCommunityId.trim().isEmpty) {
+        throw StateError(
+          'Remote workflow engine requires a canonical community id for '
+          'extension "$extensionId".',
+        );
+      }
+      final remote = RemoteWorkflowEngineApi(
+        baseUri: workflowServiceBaseUri,
+        communityId: canonicalCommunityId,
+        bearerTokenProvider: session.currentAccessToken,
+        httpClient: httpClient,
+        onCallOutcome:
+            ({required bool success, int? statusCode, String? errorKind}) =>
+                _recordWorkflowCallOutcome(
+                  extensionId,
+                  success: success,
+                  statusCode: statusCode,
+                  errorKind: errorKind,
+                ),
+      );
+      final coordinator = offlineReplicaCoordinator;
+      return coordinator == null
+          ? remote
+          : coordinator.wrap(remote, communityId: extensionId);
+    };
 
 /// Builds the remote community-engine factory from the app's remote-service
 /// configuration.
