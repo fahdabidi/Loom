@@ -26,6 +26,36 @@ The app passes B25 only when a fresh reviewer can say all of the following from 
 - Each screen is judged against the matching community product experience doc.
 - The visible UI has no blocking or major overlap, clipping, crowding, default scaffold,
   repeated-card, checklist-modal, or thin-content findings.
+- The community's **UI/Usability Score is 8.0 or higher** (see below). Workflow/persona affordance
+  coverage proves the app is *complete*; this score proves it is *good* — a community can have every
+  row's primary and alternate affordance present and still read as unfinished or hard to use, and the
+  score exists to catch that.
+
+## UI/Usability Score
+
+A single number per community, 0.0–10.0 with one decimal place, distinct from the per-row/per-question
+0–100 confidence scores elsewhere in the judge's output (those gate individual criteria; this one is a
+holistic community-level grade). It is the average of five sub-scores, each independently scored
+0.0–10.0 by the judge from the same screenshot evidence used for the rest of the review, each with its
+own one-line justification citing specific screens:
+
+| Sub-score | What it measures | A 10 looks like | A 3 or below looks like |
+| --- | --- | --- | --- |
+| Visual polish & native fidelity | Real archetype-native widgets used throughout, not `GenericWorkflowInstanceCard` fallbacks; nothing reads as a debug/validation screen. | Every primary surface is a purpose-built, domain-native widget. | Workflow cards render as generic list tiles or raw field dumps. |
+| Information hierarchy | The thing the user needs most (status, next action, who's waiting on whom) is visually dominant; secondary metadata doesn't compete with it. | One glance tells you what state something is in and what to do next. | Every field looks equally important; the user has to read the whole card to find the status. |
+| Interaction affordance clarity | Primary and alternate actions are visibly present as real controls (buttons, menus), not hidden behind an undiscoverable gesture; acting on something gives visible feedback. | Buttons/menus for every required action are visible without hunting; state changes are confirmed on-screen. | An action exists only as a hidden long-press or swipe with no visible entry point. |
+| Consistency | Spacing, typography, iconography, and tone match across screens and personas within the community. | The community reads as one coherently designed product end to end. | Different screens look like they came from different apps. |
+| Error/edge-state handling | Empty, loading, and error states look designed, not blank or broken. | An empty list explains itself; an error state offers a next step. | A blank white screen with no explanation, or a raw exception string. |
+
+**Scoring is evidence-bound, same as every other judge finding**: a sub-score without a specific
+screenshot citation is not a valid score. Do not average toward a round number — if the evidence only
+supports a 6, report a 6, even if four of the five sub-scores are 9s. A community with a real, cited
+weakness (e.g., a generic-card fallback on one primary surface) should not clear 8.0 by dilution.
+
+**Gate:** production requires BOTH the existing 100% B25 row coverage (primary + alternate affordance
+per row, proven by live walkthrough and UX judge) AND a UI/Usability Score of 8.0 or higher. Either one
+failing means the community is not production-ready. Report both numbers together — coverage percentage
+and the UI/Usability Score — in every scorecard, never one without the other.
 
 ## Community Product Experience Docs
 
