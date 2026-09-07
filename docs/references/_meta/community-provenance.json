@@ -34,12 +34,12 @@
       "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc": {
-      "sha256": "47f9a2a831e64cf0ec450daf3676e09cd419c1ca2f08a0aa187f70d25b6a11d2",
-      "bytes": 105562,
+      "sha256": "38c70ed08eabe2ef07011658bdea2434008e385b271e4ae6b98a29007369fd7f",
+      "bytes": 112488,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "38f41976",
-      "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
+      "lastCommit": "7061b1e7",
+      "lastCommitDate": "2026-09-07",
+      "lastCommitSubject": "feat(cedar): hoa-document-access-request -- board grant/deny resolution"
     },
     "Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc": {
       "sha256": "92547b0c0be7292771748ab9c11083ffc5b759d494c5da522290e921b392a609",
@@ -69,9 +69,9 @@
       "sha256": "7a7b48223d14f7ae50237af3a7c290f646eb84ca2c1efa4c0f54ec9d6b6fe1ff",
       "bytes": 92769,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "14d6e1a6",
+      "lastCommit": "68e4fee8",
       "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "feat(masjid-nur): regenerate through the Skill -- adopt reserved owner role, stamp 3.6.0"
+      "lastCommitSubject": "fix(masjid-nur): stop mixing formEntry into the calendar tab -- restores the month grid"
     },
     "Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc": {
       "sha256": "3b2081ccf7fd223e5254276f4d70f08411df3a49659b0c00ad417a277d1ea3d5",
