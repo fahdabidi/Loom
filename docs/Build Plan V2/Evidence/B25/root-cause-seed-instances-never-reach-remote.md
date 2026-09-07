@@ -4,7 +4,7 @@
 Checking why Cedar's seeded `hoa-member-document` instances didn't exist in the live database led
 to this — a structural gap, not a per-community data problem.
 
-**Status: reported, not fixed. No code changed. This document is evidence only.**
+**Status: DECIDED 2026-09-07 — intentional, not a defect. No code changed. See the decision below.**
 
 ## The claim, and why it's airtight
 
@@ -74,21 +74,29 @@ answer that predates and is independent of the outage.
   communities still have no members" was already known; this is the reason no community has seed
   *content* either, once opened for real).
 
-## Open questions for the user, not decided here
+## Decided, 2026-09-07 (user)
 
-1. Is this a real gap that needs a fix — a server-side seed/install path invoked once when a
-   community is first opened against the remote engine — or is local-only seeding intentional
-   (seed data is a dev/demo convenience, and real communities are expected to start empty and be
-   populated by real member activity)?
-2. If it needs fixing: does seeding belong in the app (call `createInstance` once per seed on first
-   remote open, mirroring what the local path already does) or in workflow-service itself (a
-   community-install-time seed endpoint, closer to how `installCommunityPackage` already handles
-   role/permission derivation in App Access)?
-3. Given the scope — every community, not just Cedar — should this be prioritized above the smaller
-   document-upload ticket it was discovered under, since fixing seeding would make that ticket
-   (and probably several other "why is this empty" observations from this session) resolve
-   naturally?
+**Intentional — not a defect. Local-only seeding stays as-is.** Real communities against the remote
+backend are meant to start empty and be populated by real member activity, not by package-declared
+seed content. No server-side seed/install endpoint will be built. This closes the three open
+questions above: (1) intentional, (2) N/A, (3) does not outrank other work — nothing to prioritize.
+
+**Consequence for verification methodology, not for the product.** Every B25 walkthrough and UX
+judge run against the real deployed backend must stop assuming seeded content will be present. To
+exercise a workflow that depends on existing data (e.g. reviewing a pending request, reading a
+published document), the verification pass must first perform the real role-based actions that
+create that data — sign in as the relevant role and actually create/submit/publish it live — before
+checking the downstream state, the same way this session's Cedar `hoa-owner-notification` and
+`hoa-document-access-request` proofs were done by hand via the real authenticated API. A walkthrough
+that opens a community and finds it empty is not evidence of a bug; it is the expected starting
+state, and the walkthrough's own job is to populate it through the same actions a real user would
+take.
+
+This also finally and fully closes the "why did those 16 walkthroughs show populated seed content"
+question from the Postgres-outage finding: those walkthroughs were exercising the local demo engine
+(the only engine seeding ever reaches), not a defect and not a symptom of the outage — and per this
+decision, that's simply not the mode any future remote-backend verification should run in.
 
 ## Scope note
 
-No code was changed. No community `*.jsonc` was touched. No tracker row was closed or reopened.
+No code was changed. No community `*.jsonc` was touched.
