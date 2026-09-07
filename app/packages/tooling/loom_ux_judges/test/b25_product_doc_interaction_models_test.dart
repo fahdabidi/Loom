@@ -11,8 +11,8 @@ void main() {
     );
   });
 
-  test('loads all 79 B25 rows from the ten owning product docs', () {
-    expect(catalog.models, hasLength(79));
+  test('loads all 76 B25 rows from the ten owning product docs', () {
+    expect(catalog.models, hasLength(76));
     expect(
       {
         for (final model in catalog.models)
@@ -22,14 +22,14 @@ void main() {
       },
       equals(const <String, int>{
         'community_mosque': 15,
-        'community_chess_club': 10,
+        'community_chess_club': 8,
         'community_book_club': 9,
         'community_export_migration': 9,
         'community_youth_soccer': 8,
-        'community_platform_social': 8,
+        'community_platform_social': 6,
         'community_hoa': 7,
         'community_ad_off': 6,
-        'community_garden_club': 4,
+        'community_garden_club': 5,
         'community_camera_club': 3,
       }),
     );
