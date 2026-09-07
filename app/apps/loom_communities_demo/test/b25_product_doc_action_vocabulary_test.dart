@@ -22,7 +22,7 @@ void main() {
         rowsByCommunity.putIfAbsent(row.communityId, () => []).add(row);
       }
 
-      expect(catalog.models, hasLength(79));
+      expect(catalog.models, hasLength(77));
       expect(
         rowsByCommunity.keys,
         unorderedEquals(
