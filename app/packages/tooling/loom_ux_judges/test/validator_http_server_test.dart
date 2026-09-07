@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
-import 'package:loom_ux_judges/src/validator/validator_http_server.dart';
 import 'package:loom_ux_judges/src/validator/generated_skill_version.dart';
+import 'package:loom_ux_judges/src/validator/validator_http_server.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart'
     show currentCommunitySpecVersion;
 import 'package:test/test.dart';

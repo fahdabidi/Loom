@@ -24,6 +24,16 @@ const fullB25EvidencePhases = <String>[
 const fullB25MinimumScreenshotRows = 180;
 const fullB25MinimumWorkflowManifests = 9;
 
+const _uiUsabilityScoreDimensions = <String>[
+  'visualPolishAndNativeFidelity',
+  'informationHierarchy',
+  'interactionAffordanceClarity',
+  'consistency',
+  'errorAndEdgeStateHandling',
+];
+
+const _uiUsabilityScoreProductionThreshold = 8.0;
+
 class CriterionResult {
   CriterionResult({
     required this.id,
@@ -629,7 +639,7 @@ void runB25IterationScorecardCli(List<String> args) {
     ).writeAsStringSync(_b25IterationScorecardMarkdown(scorecard));
   }
   stdout.writeln(
-    'b25_iteration_scorecard: ${scorecard['status']} remainingBlockingMajor=${(scorecard['convergence'] as JsonMap)['remainingBlockingMajor']}',
+    'b25_iteration_scorecard: ${scorecard['status']} remainingBlockingMajor=${(scorecard['convergence'] as JsonMap)['remainingBlockingMajor']} ${_b25CoverageAndUsabilitySummary(scorecard)}',
   );
 }
 
@@ -784,7 +794,7 @@ void runB25IndependentUxJudgeCli(List<String> args) {
     File(matrixPath).writeAsStringSync(_b25ScreenMatrixMarkdown(judged));
   }
   stdout.writeln(
-    'b25_independent_ux_judge: ${judged['finalDecision']} findings=${_asMapList(judged['findings']).length} workflowRoleScorecards=${_asMapList(judged['workflowRoleScorecards']).length}',
+    'b25_independent_ux_judge: ${judged['finalDecision']} findings=${_asMapList(judged['findings']).length} workflowRoleScorecards=${_asMapList(judged['workflowRoleScorecards']).length} ${_b25CoverageAndUsabilitySummary(judged)}',
   );
   if (judged['finalDecision'] != 'pass') {
     exit(1);
@@ -824,7 +834,7 @@ void runB25LlmUxReviewImporterCli(List<String> args) {
   }
   final llmReview = imported['llmVisionReview'] as JsonMap;
   stdout.writeln(
-    'b25_llm_ux_review_importer: status=${llmReview['status']} findings=${_asMapList(llmReview['findings']).length} screenReviews=${_asMapList(llmReview['screenReviews']).length}',
+    'b25_llm_ux_review_importer: status=${llmReview['status']} findings=${_asMapList(llmReview['findings']).length} screenReviews=${_asMapList(llmReview['screenReviews']).length} ${_b25CoverageAndUsabilitySummary(imported)}',
   );
   if (llmReview['status'] != 'pass') {
     exit(1);
@@ -1394,13 +1404,16 @@ JsonMap buildB25IterationScorecard({
     judgeSummary['blockingCriterionFailures'],
   );
   final finalDecision = _asString(review['finalDecision']);
+  final normalizedUsabilityScore = _normalizeUiUsabilityScore(review);
+  final b25RowCoverage = _b25RowCoverageSummary(review);
   final b25CanPass =
       review['b25CanPass'] == true &&
       finalDecision == 'pass' &&
       _asInt(counts['unresolvedCriticalBlocker']) == 0 &&
       _asInt(counts['unresolvedMajor']) == 0 &&
       (judge == null || _asString(judge['status']) == 'pass') &&
-      blockingCriterionFailures == 0;
+      blockingCriterionFailures == 0 &&
+      normalizedUsabilityScore['meetsThreshold'] == true;
   final status = b25CanPass ? 'pass' : 'fail';
   final blockingFindings = findings
       .where((finding) => _isBlockingSeverity(finding) && !_isResolved(finding))
@@ -1424,6 +1437,8 @@ JsonMap buildB25IterationScorecard({
     'status': status,
     'finalDecision': finalDecision,
     'b25CanPass': b25CanPass,
+    'b25RowCoverage': b25RowCoverage,
+    'uiUsabilityScore': normalizedUsabilityScore,
     'findingCounts': counts,
     'convergence': <String, Object?>{
       'previousReviewRunId': _asString(previousScorecard?['reviewRunId']),
@@ -1829,6 +1844,12 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
     lifecycleScorecards,
     screenRows,
   );
+  final normalizedUsabilityScore = _normalizeUiUsabilityScore(withCoverage);
+  final usabilityScoreFinding = _uiUsabilityScoreIncompleteFinding(
+    normalizedUsabilityScore,
+    source: 'b25-independent-ux-judge',
+    generatedBy: 'b25-independent-ux-judge',
+  );
   final findings = _independentUxFindings(
     withCoverage,
     screenRows,
@@ -1836,6 +1857,9 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
     lifecycleScorecards,
     holisticAnswers,
   );
+  if (usabilityScoreFinding != null) {
+    findings.add(usabilityScoreFinding);
+  }
   final unresolvedBlockers = findings
       .where(
         (finding) =>
@@ -1858,7 +1882,8 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
       workflowScorecards.every(
         (scorecard) => scorecard['blocksPass'] != true,
       ) &&
-      lifecycleScorecards.every((scorecard) => scorecard['blocksPass'] != true);
+      lifecycleScorecards.every((scorecard) => scorecard['blocksPass'] != true) &&
+      normalizedUsabilityScore['meetsThreshold'] == true;
 
   return JsonMap.of(withCoverage)
     ..['status'] = canPass
@@ -1871,6 +1896,7 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
     ..['generatedAt'] = DateTime.now().toUtc().toIso8601String()
     ..['screenRows'] = screenRows
     ..['findings'] = findings
+    ..['uiUsabilityScore'] = normalizedUsabilityScore
     ..['holisticQuestionAnswers'] = holisticAnswers
     ..['workflowRoleScorecards'] = workflowScorecards
     ..['workflowLifecycleScorecards'] = lifecycleScorecards
@@ -2293,12 +2319,19 @@ JsonMap buildB25LlmUxReviewImport(
   final blockingLlmScreens = normalizedScreenReviews
       .where((screen) => screen['blocksPass'] == true)
       .toList();
+  final normalizedUsabilityScore = _normalizeUiUsabilityScore(llmReview);
+  final usabilityScoreFinding = _uiUsabilityScoreIncompleteFinding(
+    normalizedUsabilityScore,
+    source: 'llm-vision-ux-judge',
+    generatedBy: 'b25-llm-ux-review-importer',
+  );
   final llmCanPass =
       llmStatus == 'pass' &&
       freshnessProblems.isEmpty &&
       blockingLlmFindings.isEmpty &&
       blockingLlmAnswers.isEmpty &&
-      blockingLlmScreens.isEmpty;
+      blockingLlmScreens.isEmpty &&
+      normalizedUsabilityScore['meetsThreshold'] == true;
   final existingFindings = _asMapList(review['findings'])
       .where(
         (finding) =>
@@ -2325,6 +2358,7 @@ JsonMap buildB25LlmUxReviewImport(
   final combinedFindings = <JsonMap>[
     ...existingFindings,
     if (freshnessFinding != null) freshnessFinding,
+    if (usabilityScoreFinding != null) usabilityScoreFinding,
     ...normalizedFindings,
   ];
   final unresolvedBlockers = combinedFindings
@@ -2404,6 +2438,7 @@ JsonMap buildB25LlmUxReviewImport(
       'sourcePath': llmReviewPath,
       'importedAt': DateTime.now().toUtc().toIso8601String(),
       'summary': _asString(llmReview['summary']),
+      'uiUsabilityScore': normalizedUsabilityScore,
       'holisticQuestionAnswers': normalizedHolisticAnswers,
       'screenReviews': normalizedScreenReviews,
       'findings': normalizedFindings,
@@ -2419,6 +2454,7 @@ JsonMap buildB25LlmUxReviewImport(
           ..._asStringList(screen['affectedScreenRowIds']),
       ]),
     }
+    ..['uiUsabilityScore'] = normalizedUsabilityScore
     ..['deterministicScaffoldHolisticQuestionAnswers'] = existingHolistic
     ..['holisticQuestionAnswers'] = normalizedHolisticAnswers
     ..['deterministicScaffoldWorkflowRoleScorecards'] = priorWorkflowScorecards
@@ -6460,6 +6496,170 @@ String _findingId(JsonMap finding) {
   );
 }
 
+/// Normalizes the LLM review's required community-level UI/Usability Score.
+///
+/// The expected raw shape is:
+/// {
+///   'uiUsabilityScore': {
+///     'subScores': [
+///       {'dimension': <one required dimension>, 'score': 0.0..10.0,
+///        'evidence': <non-empty screen-specific citation>},
+///       ... exactly five entries ...
+///     ]
+///   }
+/// }
+///
+/// A supplied overallScore is deliberately ignored: only the five independently
+/// evidenced sub-scores may determine the normalized overall score.
+JsonMap _normalizeUiUsabilityScore(JsonMap review) {
+  final problems = <String>[];
+  final rawScore = review['uiUsabilityScore'];
+  if (rawScore is! JsonMap) {
+    problems.add('uiUsabilityScore must be a JSON object.');
+  }
+  final rawSubScores = rawScore is JsonMap ? rawScore['subScores'] : null;
+  if (rawSubScores is! List) {
+    problems.add('uiUsabilityScore.subScores must be a list.');
+  } else if (rawSubScores.length != _uiUsabilityScoreDimensions.length) {
+    problems.add(
+      'uiUsabilityScore.subScores must contain exactly ${_uiUsabilityScoreDimensions.length} entries, found ${rawSubScores.length}.',
+    );
+  }
+
+  final subScores = <JsonMap>[];
+  final dimensionsSeen = <String>{};
+  if (rawSubScores is List) {
+    for (var index = 0; index < rawSubScores.length; index += 1) {
+      final entry = rawSubScores[index];
+      if (entry is! JsonMap) {
+        problems.add('subScores[$index] must be a JSON object.');
+        continue;
+      }
+      final copiedEntry = JsonMap.of(entry);
+      subScores.add(copiedEntry);
+      final dimension = copiedEntry['dimension'];
+      if (dimension is! String || !_uiUsabilityScoreDimensions.contains(dimension)) {
+        problems.add(
+          'subScores[$index].dimension must be one of ${_uiUsabilityScoreDimensions.join(', ')}.',
+        );
+      } else if (!dimensionsSeen.add(dimension)) {
+        problems.add('subScores contains duplicate dimension `$dimension`.');
+      }
+
+      final score = copiedEntry['score'];
+      if (score is! num ||
+          !score.isFinite ||
+          score < 0.0 ||
+          score > 10.0) {
+        problems.add(
+          'subScores[$index].score must be a finite number from 0.0 through 10.0.',
+        );
+      }
+
+      final evidence = copiedEntry['evidence'];
+      if (evidence is! String || evidence.trim().isEmpty) {
+        problems.add(
+          'subScores[$index].evidence must be a non-empty screen-specific citation.',
+        );
+      }
+    }
+  }
+  for (final dimension in _uiUsabilityScoreDimensions) {
+    if (!dimensionsSeen.contains(dimension)) {
+      problems.add('Missing UI/Usability Score dimension `$dimension`.');
+    }
+  }
+
+  if (problems.isNotEmpty) {
+    return <String, Object?>{
+      'subScores': subScores,
+      'meetsThreshold': false,
+      'validationProblems': problems,
+    };
+  }
+
+  final total = subScores.fold<double>(
+    0.0,
+    (sum, entry) => sum + (entry['score'] as num).toDouble(),
+  );
+  final overallScore = (total / _uiUsabilityScoreDimensions.length * 10).round() /
+      10.0;
+  return <String, Object?>{
+    'subScores': subScores,
+    'overallScore': overallScore,
+    'meetsThreshold': overallScore >= _uiUsabilityScoreProductionThreshold,
+  };
+}
+
+JsonMap? _uiUsabilityScoreIncompleteFinding(
+  JsonMap normalizedUsabilityScore, {
+  required String source,
+  required String generatedBy,
+}) {
+  final problems = _asStringList(
+    normalizedUsabilityScore['validationProblems'],
+  );
+  if (problems.isEmpty) {
+    return null;
+  }
+  return <String, Object?>{
+    'findingId': 'B25-UI-USABILITY-SCORE-INCOMPLETE',
+    'source': source,
+    'severity': 'major',
+    'status': 'open',
+    'resolved': false,
+    'blocksPass': true,
+    'title': 'UI/Usability Score missing or incomplete',
+    'description':
+        'The LLM UX review must provide all five independently evidenced UI/Usability sub-scores before B25 can pass.',
+    'requiredFix':
+        'Provide visualPolishAndNativeFidelity, informationHierarchy, interactionAffordanceClarity, consistency, and errorAndEdgeStateHandling sub-scores from 0.0 through 10.0, each with a specific screen citation, then rerun the UX review.',
+    'uiUsabilityScoreProblems': problems,
+    'generatedBy': generatedBy,
+  };
+}
+
+JsonMap _b25RowCoverageSummary(JsonMap review) {
+  final existing = review['b25RowCoverage'];
+  if (existing is JsonMap) {
+    return JsonMap.of(existing);
+  }
+  final summary = review['workflowRoleCoverageSummary'];
+  final coverageSummary = summary is JsonMap ? summary : <String, Object?>{};
+  final rows = _asMapList(review['workflowRoleCoverage']);
+  final total = coverageSummary['coverageRowCount'] is num
+      ? _asInt(coverageSummary['coverageRowCount'])
+      : rows.length;
+  final failing = coverageSummary['failingCoverageRowCount'] is num
+      ? _asInt(coverageSummary['failingCoverageRowCount'])
+      : rows.where((row) => _asString(row['status']) != 'pass').length;
+  final passing = math.max(0, total - failing);
+  return <String, Object?>{
+    'passedRows': passing,
+    'totalRows': total,
+    'failingRows': failing,
+    'coveragePercent': total == 0 ? null : passing / total * 100,
+  };
+}
+
+String _b25CoverageAndUsabilitySummary(JsonMap review) {
+  final coverage = _b25RowCoverageSummary(review);
+  final passedRows = _asInt(coverage['passedRows']);
+  final totalRows = _asInt(coverage['totalRows']);
+  final coveragePercent = coverage['coveragePercent'];
+  final coverageText = coveragePercent is num
+      ? '$passedRows/$totalRows (${coveragePercent.toStringAsFixed(1)}%)'
+      : '$passedRows/$totalRows (n/a)';
+  final usabilityScore = review['uiUsabilityScore'];
+  final overallScore = usabilityScore is JsonMap &&
+          usabilityScore['overallScore'] is num
+      ? (usabilityScore['overallScore'] as num).toStringAsFixed(1)
+      : 'absent';
+  final meetsThreshold =
+      usabilityScore is JsonMap && usabilityScore['meetsThreshold'] == true;
+  return 'B25 row coverage=$coverageText; UI/Usability Score=$overallScore/10.0 (meets ${_uiUsabilityScoreProductionThreshold.toStringAsFixed(1)}: $meetsThreshold)';
+}
+
 JsonMap _findingSummary(JsonMap finding) {
   return <String, Object?>{
     'findingId': _findingId(finding),
@@ -6491,6 +6691,9 @@ String _b25IterationScorecardMarkdown(JsonMap scorecard) {
       '| Final decision | `${_escape(_asString(scorecard['finalDecision']))}` |',
     )
     ..writeln('| B25 can pass | `${scorecard['b25CanPass']}` |')
+    ..writeln(
+      '| B25 row coverage / UI/Usability Score | ${_b25CoverageAndUsabilitySummary(scorecard)} |',
+    )
     ..writeln(
       '| Remaining critical/blocker + major | ${convergence['remainingBlockingMajor']} |',
     )
@@ -6577,6 +6780,8 @@ String _b25ReviewMarkdown(JsonMap review) {
     ..writeln(
       'Final decision: `${_escape(_asString(review['finalDecision']))}`',
     )
+    ..writeln()
+    ..writeln(_b25CoverageAndUsabilitySummary(review))
     ..writeln()
     ..writeln('Screen rows collected: ${rows.length}')
     ..writeln()
