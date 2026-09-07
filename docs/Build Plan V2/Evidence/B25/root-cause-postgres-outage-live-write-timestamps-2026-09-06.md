@@ -10,8 +10,8 @@ window); it is a lower bound, not the full extent.
 document-content upload ticket led here by accident, while minting a real fan JWT to test the
 document-upload API and finding the target instance didn't exist in the live database).
 
-**Status: reported to the user, holding for direction. No tracker row closed, reopened, or edited as
-part of this finding — this document is evidence only.**
+**Status: DECIDED 2026-09-07 (user) — reopen and re-verify all 16, now.** See the decision section
+near the end of this doc for the full directive and execution plan.
 
 ## The claim
 
@@ -157,6 +157,49 @@ self-reported timestamp.
    stretch correspond to zero rows in the live database today (see "Scope escalation" above), should
    *every one* of those 16 evidence docs be re-examined for whether its own verification actually
    queried the database, rather than assuming the 3 already flagged are the full extent?
+
+## Decided, 2026-09-07 (user)
+
+**Reopen and re-verify all 16, now.** Not just the 3 timestamp-confirmed rows, not deferred —
+answers open questions 1, 2, and 4 above at once. Open question 3 (root cause of the ~25-hour
+`postgres-0` unresponsiveness itself) remains genuinely open and is a separate, lower-priority
+investigation from re-verifying the 16 claimed writes.
+
+**What "re-verify" means, per this session's separately-decided seed-data policy** (see
+`root-cause-seed-instances-never-reach-remote.md`): communities are expected to start empty against
+the remote backend, so a valid re-verification must perform the real role-based action live (sign
+in as the actual persona, actually create/submit/drive the workflow to its claimed terminal state
+through the app) — not just check whether a pre-existing row happens to be present. **The proof
+standard changes from "screenshot of the rendered UI" to "screenshot of the rendered UI AND a direct
+database query for that exact instance"**, run in the same session, so the two can't drift apart the
+way this incident's 3 original docs did.
+
+**The 16 target communities/dispatches** (from `~/Loom/.codex-logs/live-verification/`): `cedar-proof`
+(Cedar dues), `cameraclub` (critique), `chessclub` (dispute), `bookclub`, `masjidnur`,
+`youthsoccer`, `gardenclub`, `adfree`, `exportmigration`, `platformsocial` — 10 named dispatches;
+"16" counts `gardenclub`'s 4 attempts (r1–r4) separately, which are the same community and do not
+each need a separate re-verification target — 10 distinct communities need a fresh live write, not 16
+separate runs.
+
+**Execution plan**, to run across subsequent autonomous-loop ticks (this is too large for one dispatch
+and must respect "one dispatch at a time"):
+1. Start with the 3 most-suspicious first (Cedar dues, Camera Club critique, Chess Club dispute) —
+   already fully scoped with known target workflows/transitions from the table above.
+2. Then the remaining 7 (Book Club, Masjid Nur, Youth Soccer, Garden Club, Ad-Free, Export
+   Migration, Platform Social) — for each, identify a real workflow+transition to drive live from
+   that community's own product doc, matching how the original dispatch's claim was framed if its
+   evidence doc states one, or picking any real, board/admin-guarded transition if not.
+3. Each re-verification dispatch: sign in as the real role via `data/call_live_verification_agent.sh`
+   (Claude Opus, device-driven), drive the workflow to its terminal state, THEN independently query
+   `workflow_instances` directly (not through the app) for that exact instance, citing both the
+   screenshot and the query result in the same evidence doc.
+4. Only flip a B25 row back to closed once BOTH proofs exist for it. Until re-verified, treat the
+   row as **not** proven, regardless of what its current tracker status says — this document is the
+   authoritative override for those 10 communities' live-write rows until each is individually
+   re-closed with the new dual-proof standard.
+
+None of the 10 have been re-verified yet as of this decision being recorded. This is the first
+concrete next step for the autonomous loop's B25 work.
 
 ## Scope note
 
