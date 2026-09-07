@@ -45,7 +45,7 @@ actions.
 | Surface | Required visible content | Required states | Natural actions | Anti-patterns |
 | --- | --- | --- | --- | --- |
 | Dues | amount, due date, payer, receipt | due/paid/failed | pay, view receipt | generic payment chip |
-| Documents | title, version/date, access, uploaded file name and size, embedded/external open choices | draft/published/read/acknowledged/access-requested/archived | board: **upload**, edit, publish, delete, archive, restore · member: open embedded, open external, download, acknowledge, request access | metadata card only; drafts visible to members; **asking the Board to paste a link to a file they are holding** |
+| Documents | title, version/date, access, uploaded file name and size, embedded/external open choices | draft/published/read/acknowledged/access-requested/archived | board: **upload**, edit, publish, delete, archive, restore, **grant access, deny access** · member: open embedded, open external, download, acknowledge, request access | metadata card only; drafts visible to members; **asking the Board to paste a link to a file they are holding**; **a request that has no board-side resolution — a member who asks and hears nothing** |
 | Facility reservation | facility, date, time, status | open/reserved/conflict | reserve, cancel | checklist modal |
 | Workflow status / review queue | request, requester, current step, reviewer, payment/document checkpoints, comments, audit | submitted/under-review/changes-needed/approved/denied/reopened | approve, reject, request changes, attach document, reopen | single rigid approval card |
 
@@ -80,12 +80,22 @@ still exists and can be restored — the HOA keeps a record of what its rules us
 a draft that should never have existed. The Board should not have to keep a mistaken draft forever in
 order to keep its real history.
 
+**A document access request must reach a board decision, not just a mailbox.** A homeowner who requests
+access to a document is asking the Board to look at a specific request and act on it — grant it, or
+deny it — the same way an architectural change request reaches `hoa-committee-decision` rather than
+sitting as a note on the change itself. Each access request is its own case: the Board sees who asked,
+for which document, and can grant or deny that one request without affecting any other homeowner's
+access to the same document. A grant makes the document open to that homeowner going forward; a denial
+tells them so, rather than leaving them to wonder whether the Board ever saw the ask. The homeowner may
+withdraw a request that is still pending, exactly as before.
+
 ## 6. Workflow-To-Surface Mapping
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
 | hoa-dues-payment | member | Dues payment | amount and receipt | Wallet/receipts | B14/B25 |
 | hoa-member-document | member | Document center | document title, version, access state, uploaded file name/size, embedded/external open choices, acknowledgement/download state | Documents/external documents/audit | B14/B25 |
+| hoa-document-access-request | member/owner | Workflow status review queue | requester, requested document, decision actions, status history, decided-at state | Workflow status/cases/documents/audit | B14/B25 |
 | hoa-facility-reservation | member | Calendar reservation detail | facility/date/time, conflict status, reservation window, reminder state | Calendar/facilities/events | B14/B25 |
 | hoa-architectural-request | owner | Workflow status case | change details, current step, reviewer, requested-changes path, document/payment checkpoint, submitted state | Workflow status/cases/tasks/documents | B14/B25 |
 | hoa-committee-decision | owner | Workflow status review queue | requester, decision actions, status history, request-changes path, comments, owner receiver state | Workflow status/cases/tasks/audit | B14/B25 |
@@ -98,6 +108,7 @@ order to keep its real history.
 | --- | --- | --- | --- | --- | --- |
 | hoa-dues-payment | member pays quarterly dues | HOA ledger records paid/receipt state | receipt read-only after pay | pay disabled after paid; retry shown on failure | non-member hidden |
 | hoa-member-document | board uploads, drafts, publishes and retires; member opens published document | board/admin sees access audit | document metadata/read state visible | download disabled without permission; publish/delete hidden from members; drafts hidden entirely from members | non-member denied |
+| hoa-document-access-request | member requests access to a specific document | board sees requester and requested document, grants or denies | member sees the request's own status | grant/deny hidden for members; withdraw disabled once decided | non-member denied |
 | hoa-facility-reservation | member reserves facility | owner/board sees reservation status | confirmed reservation readable | reserve disabled on conflict | non-member denied |
 | hoa-architectural-request | owner submits exterior request | committee sees requester/details | owner sees status history | approve hidden for owner | non-owner denied |
 | hoa-committee-decision | owner/committee reviews request | homeowner receives approved/rejected/changes state | decision history readable | duplicate decision disabled | non-committee denied |
