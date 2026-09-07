@@ -67,11 +67,22 @@ with the WSL-era commands replaced: the pipeline moved to the VirtualBox VM (`ss
 | Agent | Tool | Used in this effort for |
 |---|---|---|
 | **Implementation Agent** | `data/call_implementation_agent.sh` (Codex CLI, backgrounded) | Phase A engine work, Phase B service, Phase C auth, Phase D deploy |
-| **Root Cause Agent** | `data/call_root_cause_agent.sh` | The 11 pre-existing app-shell failures; anything resisting normal investigation |
+| **Root Cause Agent** | `data/call_root_cause_agent.sh` | The 11 pre-existing app-shell failures; anything resisting normal investigation; **scoping any non-trivial change before it is dispatched** |
 | **Skill Authoring Agent** | `data/call_skill_authoring_agent.sh`, or a Claude Code `Agent` dispatch running the Skill | **Phase F only.** Community JSON is never hand-authored — see §5 |
 | **Regression Impact Judge** | [`Tools/regression-impact-judge-tool.md`](Tools/regression-impact-judge-tool.md) | **Mandatory** for Phase A: bookkeeping and visibility change shared engine behaviour for every archetype |
 | **LLM Vision UX Judge** | [`Tools/ux-gate-judge-tools.md`](Tools/ux-gate-judge-tools.md) | Phase E only, where rendered UI changes |
 | **Skill Output Judge** | CJM tracker §1c | Phase F, judging the regenerated JSON before it is merged |
+
+**Two jobs for the Root Cause Agent, not one.** It is not only for debugging something that already
+broke — dispatch it *before* writing an implementation ticket for anything non-trivial, to scope the
+change: what files it actually touches, what the real mechanism is, what it would break, whether a
+fix belongs client-side or server-side. A ticket written from an assumed mechanism costs a full wasted
+implementation round when the assumption is wrong (see the `authz-503` and `hoa-architectural-request`
+"orphan" rows below — both were caught only because something was actually traced first). And its
+long-standing job stands unchanged: **anything resisting normal investigation** — a stubborn defect,
+a stalled walkthrough, a suite failure whose cause isn't obvious from the diff — goes to it before more
+implementation rounds are spent guessing. Never write a ticket that asserts a mechanism you haven't
+actually traced when the Root Cause Agent could trace it for you first.
 
 ## 4. Status
 
