@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "source": "B25 Semantic Interaction Models product-doc tables",
-  "rowCount": 79,
+  "rowCount": 77,
   "communities": [
     {
       "communityId": "community_ad_off",
@@ -309,6 +309,24 @@
       "communityName": "Cedar Commons HOA",
       "extensionId": "ext_cedar_commons_hoa",
       "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
+      "workflowId": "hoa-document-access-request",
+      "role": "member",
+      "expectedDecision": "Member requests access to a specific document they cannot yet open, and the Board decides to grant or deny that one request.",
+      "requiredPrimaryActions": [
+        "request access",
+        "withdraw request"
+      ],
+      "requiredAlternateActions": [
+        "grant access",
+        "deny access"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show the requester and the requested document, the pending/granted/denied/withdrawn state, and the resulting reader-access state both the member and the Board see."
+    },
+    {
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "extensionId": "ext_cedar_commons_hoa",
+      "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
       "workflowId": "hoa-facility-reservation",
       "role": "member",
       "expectedDecision": "User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result.",
@@ -413,48 +431,6 @@
         "rollback",
         "retry",
         "redaction preview"
-      ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
-    },
-    {
-      "communityId": "community_chess_club",
-      "communityName": "Chess Club",
-      "extensionId": "ext_chess_club",
-      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
-      "workflowId": "chess-local-install-open",
-      "role": "member",
-      "expectedDecision": "Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths.",
-      "requiredPrimaryActions": [
-        "record match",
-        "submit score",
-        "save result"
-      ],
-      "requiredAlternateActions": [
-        "edit score",
-        "undo result",
-        "correct result",
-        "dispute result"
-      ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
-    },
-    {
-      "communityId": "community_chess_club",
-      "communityName": "Chess Club",
-      "extensionId": "ext_chess_club",
-      "productDocPath": "docs/references/communities/chess-club-product-experience.md",
-      "workflowId": "chess-route-home",
-      "role": "member",
-      "expectedDecision": "Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths.",
-      "requiredPrimaryActions": [
-        "record match",
-        "submit score",
-        "save result"
-      ],
-      "requiredAlternateActions": [
-        "edit score",
-        "undo result",
-        "correct result",
-        "dispute result"
       ],
       "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
     },
@@ -864,26 +840,47 @@
       "communityName": "Garden Club",
       "extensionId": "ext_garden_club",
       "productDocPath": "docs/references/communities/garden-club-product-experience.md",
-      "workflowId": "garden-tool-loan-giveaway",
+      "workflowId": "garden-tool-loan",
       "role": "member",
-      "expectedDecision": "Member browses available garden tools/items, chooses loan or giveaway, sees current holder/queue, reviews owner/pickup/return or transfer terms, and can list/edit/delist their own item.",
+      "expectedDecision": "Member browses available garden tools, requests to borrow one or joins the waitlist when unavailable, and the owner confirms pickup or declines; the borrower later returns the item or flags a condition issue.",
       "requiredPrimaryActions": [
         "browse items",
         "list item",
         "request loan",
         "join waitlist",
-        "claim giveaway",
-        "schedule pickup"
+        "confirm pickup"
       ],
       "requiredAlternateActions": [
         "leave queue",
         "cancel loan",
-        "edit listing",
-        "pause/delist listing",
-        "mark damaged/lost",
+        "decline request",
+        "pause/resume/delist listing",
+        "mark damaged",
+        "report lost",
         "return item"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show browse/list views, loan/giveaway mode, owner/current-holder privacy, queue position, custody/condition state, borrower/claim state, pickup/return or ownership-transfer result."
+      "resultAndReceiverState": "Fresh screenshots must show browse/list views, owner/current-holder privacy, queue position, borrower state, custody/condition state, and the pickup/return result both owner and borrower receive."
+    },
+    {
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "extensionId": "ext_garden_club",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md",
+      "workflowId": "garden-tool-giveaway",
+      "role": "member",
+      "expectedDecision": "Member browses items offered for giveaway and claims one to take ownership; the owner lists, pauses, resumes, or delists their own item.",
+      "requiredPrimaryActions": [
+        "browse items",
+        "list item",
+        "claim giveaway",
+        "schedule pickup"
+      ],
+      "requiredAlternateActions": [
+        "pause listing",
+        "resume listing",
+        "delist listing"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show browse/list views, owner privacy, claimant state, pickup coordination, and the ownership-transfer result the owner receives."
     },
     {
       "communityId": "community_garden_club",
@@ -1230,72 +1227,41 @@
       "communityName": "Member Social Space",
       "extensionId": "ext_member_social_space",
       "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
-      "workflowId": "platform-messages-entry",
+      "workflowId": "platform-message-thread",
       "role": "member",
-      "expectedDecision": "Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.",
+      "expectedDecision": "Member sends or reads a concrete message thread with a named participant and decides whether to reply, mute, or archive it.",
       "requiredPrimaryActions": [
         "send message",
         "reply",
-        "send invite",
-        "accept invite",
-        "connect"
+        "mark read"
       ],
       "requiredAlternateActions": [
-        "decline",
-        "block",
         "mute",
+        "unmute",
         "archive",
-        "cancel invite"
+        "unarchive"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Fresh screenshots must show sender/recipient, message history, read/unread state, and the mute/archive state the other participant receives."
     },
     {
       "communityId": "community_platform_social",
       "communityName": "Member Social Space",
       "extensionId": "ext_member_social_space",
       "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
-      "workflowId": "platform-connections-entry",
+      "workflowId": "platform-connection",
       "role": "member",
-      "expectedDecision": "Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.",
+      "expectedDecision": "Member sends a connection invite to another member; the invitee decides to accept or decline, the inviter may cancel first, and either party may later block or unblock the connection.",
       "requiredPrimaryActions": [
-        "send message",
-        "reply",
         "send invite",
-        "accept invite",
-        "connect"
+        "accept invite"
       ],
       "requiredAlternateActions": [
-        "decline",
+        "decline invite",
+        "cancel invite",
         "block",
-        "mute",
-        "archive",
-        "cancel invite"
+        "unblock"
       ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
-    },
-    {
-      "communityId": "community_platform_social",
-      "communityName": "Member Social Space",
-      "extensionId": "ext_member_social_space",
-      "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
-      "workflowId": "platform-connection-invite",
-      "role": "member",
-      "expectedDecision": "Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.",
-      "requiredPrimaryActions": [
-        "send message",
-        "reply",
-        "send invite",
-        "accept invite",
-        "connect"
-      ],
-      "requiredAlternateActions": [
-        "decline",
-        "block",
-        "mute",
-        "archive",
-        "cancel invite"
-      ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      "resultAndReceiverState": "Fresh screenshots must show inviter/invitee identity, the invited/connected/declined/blocked state, and the resulting connection status the other party receives."
     },
     {
       "communityId": "community_platform_social",
@@ -1317,30 +1283,6 @@
         "cancel invite"
       ],
       "resultAndReceiverState": "Fresh screenshots must show blocked target state, disabled invite/message action, safety audit, and protected receiver state."
-    },
-    {
-      "communityId": "community_platform_social",
-      "communityName": "Member Social Space",
-      "extensionId": "ext_member_social_space",
-      "productDocPath": "docs/references/communities/member-social-space-product-experience.md",
-      "workflowId": "platform-message-stream",
-      "role": "member",
-      "expectedDecision": "Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.",
-      "requiredPrimaryActions": [
-        "send message",
-        "reply",
-        "send invite",
-        "accept invite",
-        "connect"
-      ],
-      "requiredAlternateActions": [
-        "decline",
-        "block",
-        "mute",
-        "archive",
-        "cancel invite"
-      ],
-      "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
     },
     {
       "communityId": "community_platform_social",

@@ -21,7 +21,7 @@ void main() {
         B25ProductDocInteractionCatalog.fromAssetJson(
           asset.readAsStringSync(),
         ).models,
-        hasLength(79),
+        hasLength(77),
       );
     },
   );
