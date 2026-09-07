@@ -592,10 +592,22 @@ void configureLoomOfflineReplicaSupportForProduction({
       httpClient: httpClient,
     ),
   );
+  loomServiceBindingRegistry.recordBinding(
+    service: LoomServiceBindingNames.offlineReplica,
+    mode: LoomServiceBindingMode.local,
+    endpoint: null,
+    scope: LoomServiceBindingNames.processScope,
+  );
 }
 
 @visibleForTesting
 void resetLoomOfflineReplicaSupportForTesting() {
   _loomWorkflowReplicaCoordinator?.dispose();
   _loomWorkflowReplicaCoordinator = null;
+  loomServiceBindingRegistry.recordBinding(
+    service: LoomServiceBindingNames.offlineReplica,
+    mode: LoomServiceBindingMode.unconfigured,
+    endpoint: null,
+    scope: LoomServiceBindingNames.processScope,
+  );
 }

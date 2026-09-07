@@ -7,6 +7,7 @@ import 'dart:typed_data';
 
 import 'package:animations/animations.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -70,6 +71,7 @@ part 'src/part47_notification_preferences_client.dart';
 part 'src/part48_visible_change_replica.dart';
 part 'src/part49_offline_replica_coordinator.dart';
 part 'src/part50_replica_sync_policy.dart';
+part 'src/part52_service_binding_report.dart';
 part 'src/part38_production_login_screen.dart';
 part 'src/instance_scoped_action_context.dart';
 part 'src/repeater_surface.dart';

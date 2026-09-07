@@ -196,20 +196,27 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   ///
   /// An explicit [LocalExtensionScreen.authApi] remains the injection point
   /// for widget tests and standalone callers.
-  late final LoomAuthApi _authApi =
-      widget.authApi ??
-      resolveLoomAuthApiForCommunity(
-        communityId: community.communityId,
-        communityExtensionId: community.extensionId,
-        actorIdentityResolver: (communityExtensionId) {
-          final experience = _experienceForCommunity();
-          return actorIdentitiesForExtensionId(
-            communityExtensionId,
-            experience: experience,
-          );
-        },
-        experienceResolver: (communityExtensionId) => _experienceForCommunity(),
-      );
+  late final LoomAuthApi _authApi = _resolveAuthApi();
+
+  LoomAuthApi _resolveAuthApi() {
+    final injected = widget.authApi;
+    if (injected != null) {
+      _recordAuthBindingsForImplementation(injected, community.extensionId);
+      return injected;
+    }
+    return resolveLoomAuthApiForCommunity(
+      communityId: community.communityId,
+      communityExtensionId: community.extensionId,
+      actorIdentityResolver: (communityExtensionId) {
+        final experience = _experienceForCommunity();
+        return actorIdentitiesForExtensionId(
+          communityExtensionId,
+          experience: experience,
+        );
+      },
+      experienceResolver: (communityExtensionId) => _experienceForCommunity(),
+    );
+  }
 
   /// The individual account id when signed in, otherwise the selected
   /// actor identity's declared fan id.
@@ -1074,7 +1081,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     const SizedBox(height: 8),
                     ListTile(
                       key: ValueKey(
-                        'actor-identity-option-${activeAccountIdentity!.roleId}',
+                        'actor-identity-option-${activeAccountIdentity.roleId}',
                       ),
                       selected: true,
                       selectedTileColor: dialogAccent?.withValues(
@@ -1220,6 +1227,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     ),
                     onTap: () =>
                         Navigator.of(context).pop('_sign-in-specific-person'),
+                  ),
+                  LoomServiceBindingDiagnosticsPanel(
+                    communityScope: experience.extensionId,
                   ),
                 ],
               ),
@@ -1573,6 +1583,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         backgroundColor: accent,
         foregroundColor: Colors.white,
         actions: [
+          LoomServiceBindingWarningBadge(
+            communityScope: experience.extensionId,
+          ),
           if (_offlineReplicaEnabled)
             IconButton(
               key: const ValueKey('community-offline-refresh-button'),

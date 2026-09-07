@@ -46,6 +46,7 @@ final class FanPassportClient {
     required Uri baseUri,
     required LoomAuthSession session,
     http.Client? httpClient,
+    this.onCallOutcome,
   }) : _baseUri = _normaliseBaseUri(baseUri),
        _session = session,
        _httpClient = httpClient ?? http.Client();
@@ -53,6 +54,9 @@ final class FanPassportClient {
   final Uri _baseUri;
   final LoomAuthSession _session;
   final http.Client _httpClient;
+  final LoomServiceCallOutcomeRecorder? onCallOutcome;
+
+  Uri get baseUri => _baseUri;
 
   /// Reads a passport, or `null` when the fan has none yet.
   ///
@@ -127,11 +131,17 @@ final class FanPassportClient {
         await _httpClient.send(request),
       );
     } on Exception catch (error) {
+      _recordCallOutcome(success: false, errorKind: 'network_error');
       throw StateError('Fan Passport request $method $uri failed: $error');
     }
 
     final successful = response.statusCode >= 200 && response.statusCode < 300;
     if (!successful && !acceptedStatusCodes.contains(response.statusCode)) {
+      _recordCallOutcome(
+        success: false,
+        statusCode: response.statusCode,
+        errorKind: 'http_${response.statusCode}',
+      );
       // The body carries the service's own error code and message. Discarding
       // it turns every failure into "something went wrong", which is what made
       // an earlier 500 in this stack take a live probe to diagnose.
@@ -143,7 +153,22 @@ final class FanPassportClient {
         '${response.statusCode}.$detail',
       );
     }
+    _recordCallOutcome(success: true, statusCode: response.statusCode);
     return _FanPassportResponse(response.statusCode, response.body);
+  }
+
+  void _recordCallOutcome({
+    required bool success,
+    int? statusCode,
+    String? errorKind,
+  }) {
+    final recorder = onCallOutcome;
+    if (recorder == null) return;
+    try {
+      recorder(success: success, statusCode: statusCode, errorKind: errorKind);
+    } catch (_) {
+      // Diagnostics must never change the request's behavior.
+    }
   }
 
   FanPassportRecord? _parse(String body, String source) {
@@ -155,7 +180,9 @@ final class FanPassportClient {
       throw StateError('Fan Passport returned malformed JSON for $source.');
     }
     if (decoded is! Map<String, Object?>) {
-      throw StateError('Fan Passport returned an unexpected shape for $source.');
+      throw StateError(
+        'Fan Passport returned an unexpected shape for $source.',
+      );
     }
     final fanId = decoded['fanId'];
     final displayName = decoded['displayName'];

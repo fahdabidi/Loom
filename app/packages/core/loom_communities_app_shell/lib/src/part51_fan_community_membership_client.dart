@@ -10,6 +10,7 @@ final class FanCommunityMembershipClient {
     required Uri baseUri,
     required LoomAuthSession session,
     http.Client? httpClient,
+    this.onCallOutcome,
   }) : _baseUri = _normaliseBaseUri(baseUri),
        _session = session,
        _httpClient = httpClient ?? http.Client();
@@ -17,6 +18,7 @@ final class FanCommunityMembershipClient {
   final Uri _baseUri;
   final LoomAuthSession _session;
   final http.Client _httpClient;
+  final LoomServiceCallOutcomeRecorder? onCallOutcome;
 
   /// Calls `GET /v1/fans/{fanId}/communities` for the bearer-token fan.
   ///
@@ -83,9 +85,15 @@ final class FanCommunityMembershipClient {
         await _httpClient.send(request),
       );
     } on Exception catch (error) {
+      _recordCallOutcome(success: false, errorKind: 'network_error');
       throw StateError('App Access request $method $uri failed: $error');
     }
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      _recordCallOutcome(
+        success: false,
+        statusCode: response.statusCode,
+        errorKind: 'http_${response.statusCode}',
+      );
       final detail = response.body.trim().isEmpty
           ? ''
           : ' Body: ${response.body.trim()}';
@@ -94,7 +102,22 @@ final class FanCommunityMembershipClient {
         '${response.statusCode}.$detail',
       );
     }
+    _recordCallOutcome(success: true, statusCode: response.statusCode);
     return response;
+  }
+
+  void _recordCallOutcome({
+    required bool success,
+    int? statusCode,
+    String? errorKind,
+  }) {
+    final recorder = onCallOutcome;
+    if (recorder == null) return;
+    try {
+      recorder(success: success, statusCode: statusCode, errorKind: errorKind);
+    } catch (_) {
+      // Diagnostics must never change the request's behavior.
+    }
   }
 
   FanCommunityMembership _parseMembership(

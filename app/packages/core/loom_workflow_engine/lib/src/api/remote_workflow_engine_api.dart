@@ -61,6 +61,14 @@ class RemoteWorkflowServiceError extends RemoteWorkflowEngineException {
   });
 }
 
+/// Receives the outcome of one HTTP request made by a remote workflow engine.
+///
+/// The callback is optional so this package remains independent from any UI
+/// or host diagnostics registry. Implementations invoke it synchronously and
+/// swallow callback failures before returning the real request result.
+typedef RemoteWorkflowCallOutcomeRecorder =
+    void Function({required bool success, int? statusCode, String? errorKind});
+
 /// HTTP-backed [WorkflowEngineApi] for the deployed workflow service.
 ///
 /// Identity is intentionally not accepted from method arguments. The service
@@ -73,6 +81,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     required String communityId,
     required this.bearerTokenProvider,
     required http.Client httpClient,
+    this.onCallOutcome,
   }) : _baseUri = _normalizeBaseUri(baseUri),
        _communityId = _requireNonEmpty(communityId, 'communityId'),
        _httpClient = httpClient;
@@ -81,6 +90,7 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
   final String _communityId;
   final http.Client _httpClient;
   final Future<String> Function() bearerTokenProvider;
+  final RemoteWorkflowCallOutcomeRecorder? onCallOutcome;
 
   /// Normalized service URI used for remote workflow requests.
   Uri get baseUri => _baseUri;
@@ -354,47 +364,77 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     bool includeIdempotencyKey = false,
     required Set<int> expectedStatusCodes,
   }) async {
-    final token = await bearerTokenProvider();
-    if (token.trim().isEmpty) {
-      throw const RemoteWorkflowAuthenticationError(
-        code: 'authentication_required',
-        message: 'bearerTokenProvider returned an empty bearer token.',
-      );
-    }
-
-    final relative = Uri(
-      pathSegments: pathSegments,
-      queryParameters: queryParameters,
-    );
-    final uri = _baseUri.resolveUri(relative);
-    final request = http.Request(method, uri)
-      ..headers['Authorization'] = 'Bearer $token'
-      ..headers['X-Loom-Correlation-Id'] = _newUuid();
-    if (includeIdempotencyKey) {
-      request.headers['Idempotency-Key'] = _newUuid();
-    }
-    if (body != null) {
-      request.headers['Content-Type'] = 'application/json; charset=utf-8';
-      request.body = jsonEncode(body);
-    }
-
     late final http.Response response;
     try {
+      final token = await bearerTokenProvider();
+      if (token.trim().isEmpty) {
+        throw const RemoteWorkflowAuthenticationError(
+          code: 'authentication_required',
+          message: 'bearerTokenProvider returned an empty bearer token.',
+        );
+      }
+
+      final relative = Uri(
+        pathSegments: pathSegments,
+        queryParameters: queryParameters,
+      );
+      final uri = _baseUri.resolveUri(relative);
+      final request = http.Request(method, uri)
+        ..headers['Authorization'] = 'Bearer $token'
+        ..headers['X-Loom-Correlation-Id'] = _newUuid();
+      if (includeIdempotencyKey) {
+        request.headers['Idempotency-Key'] = _newUuid();
+      }
+      if (body != null) {
+        request.headers['Content-Type'] = 'application/json; charset=utf-8';
+        request.body = jsonEncode(body);
+      }
+
       response = await http.Response.fromStream(
         await _httpClient.send(request),
       );
-    } on RemoteWorkflowEngineException {
-      rethrow;
     } catch (error) {
+      if (error is RemoteWorkflowEngineException) {
+        _recordCallOutcome(
+          success: false,
+          statusCode: error.statusCode,
+          errorKind: error.code,
+        );
+        rethrow;
+      }
+      _recordCallOutcome(
+        success: false,
+        errorKind: error.runtimeType.toString(),
+      );
       throw RemoteWorkflowServiceError(
         code: 'network_error',
         message: 'The workflow service request failed: $error',
       );
     }
     if (!expectedStatusCodes.contains(response.statusCode)) {
+      _recordCallOutcome(
+        success: false,
+        statusCode: response.statusCode,
+        errorKind: 'http_${response.statusCode}',
+      );
       _throwMappedError(response);
     }
+    _recordCallOutcome(success: true, statusCode: response.statusCode);
     return response;
+  }
+
+  void _recordCallOutcome({
+    required bool success,
+    int? statusCode,
+    String? errorKind,
+  }) {
+    final recorder = onCallOutcome;
+    if (recorder == null) return;
+    try {
+      recorder(success: success, statusCode: statusCode, errorKind: errorKind);
+    } catch (_) {
+      // Diagnostics must never change the request's behavior.
+    }
   }
 
   Never _throwMappedError(http.Response response) {

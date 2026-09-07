@@ -18,6 +18,22 @@ final class LoomRemoteServiceConfiguration {
     required Map<String, String> communityGroupIds,
     this.appId = 'loom_communities',
   }) : communityGroupIds = Map.unmodifiable(communityGroupIds) {
+    session.setRequestOutcomeRecorder(_recordAuthTokenCallOutcome);
+    loomServiceBindingRegistry.recordBinding(
+      service: LoomServiceBindingNames.authTokenEndpoint,
+      mode: LoomServiceBindingMode.remote,
+      endpoint: session.tokenEndpoint,
+      scope: LoomServiceBindingNames.processScope,
+    );
+    // The replica is an optional local coordinator. Its absence is a real
+    // state and remains visible in the diagnostics panel until the host opts
+    // into it with configureLoomOfflineReplicaSupportForProduction.
+    loomServiceBindingRegistry.recordBinding(
+      service: LoomServiceBindingNames.offlineReplica,
+      mode: LoomServiceBindingMode.unconfigured,
+      endpoint: null,
+      scope: LoomServiceBindingNames.processScope,
+    );
     session.addLogoutListener(_clearFanCommunityDirectories);
   }
 
@@ -49,25 +65,41 @@ final class LoomRemoteServiceConfiguration {
   Future<_FanCommunityDirectory> fanCommunityDirectoryFor({
     required String fanId,
     required http.Client httpClient,
+    String? serviceScope,
   }) {
     if (fanId.trim().isEmpty) {
       throw ArgumentError.value(fanId, 'fanId', 'must not be empty');
     }
     return _fanCommunityDirectories.putIfAbsent(
       fanId,
-      () => _loadFanCommunityDirectory(fanId: fanId, httpClient: httpClient),
+      () => _loadFanCommunityDirectory(
+        fanId: fanId,
+        httpClient: httpClient,
+        serviceScope: serviceScope,
+      ),
     );
   }
 
   Future<_FanCommunityDirectory> _loadFanCommunityDirectory({
     required String fanId,
     required http.Client httpClient,
+    String? serviceScope,
   }) async {
     try {
       final memberships = await FanCommunityMembershipClient(
         baseUri: appAccessBaseUri,
         session: session,
         httpClient: httpClient,
+        onCallOutcome: serviceScope == null
+            ? null
+            : ({required bool success, int? statusCode, String? errorKind}) =>
+                  _recordRemoteServiceCallOutcome(
+                    service: LoomServiceBindingNames.appAccess,
+                    scope: serviceScope,
+                    success: success,
+                    statusCode: statusCode,
+                    errorKind: errorKind,
+                  ),
       ).listFanCommunities(fanId: fanId, appId: appId);
       final byCommunityId = <String, FanCommunityMembership>{};
       for (final membership in memberships) {
@@ -197,7 +229,10 @@ LoomRemoteServiceConfiguration? configureLoomRemoteServicesFromEnvironment({
   // failure this whole migration exists to prevent.
   final environment = resolveLoomServiceEnvironment();
   if (defineValues.values.every((value) => value.isEmpty)) {
-    if (environment == null) return null;
+    if (environment == null) {
+      _recordUnconfiguredProcessBindings();
+      return null;
+    }
     return _configurationFromEnvironment(
       environment,
       authHttpClient: authHttpClient,
@@ -372,6 +407,14 @@ createRemoteEngineNativeCommunityEngineFactory({
     communityId: extensionId,
     bearerTokenProvider: session.currentAccessToken,
     httpClient: httpClient,
+    onCallOutcome:
+        ({required bool success, int? statusCode, String? errorKind}) =>
+            _recordWorkflowCallOutcome(
+              extensionId,
+              success: success,
+              statusCode: statusCode,
+              errorKind: errorKind,
+            ),
   );
   final coordinator = offlineReplicaCoordinator;
   return coordinator == null
@@ -440,6 +483,22 @@ void resetLoomAuthSessionForTesting() {
   _stopObservingReplicaSyncSession();
   _loomAuthSession = null;
   _loomRemoteServiceConfiguration = null;
+  _recordUnconfiguredProcessBindings();
+}
+
+void _recordUnconfiguredProcessBindings() {
+  loomServiceBindingRegistry.recordBinding(
+    service: LoomServiceBindingNames.authTokenEndpoint,
+    mode: LoomServiceBindingMode.unconfigured,
+    endpoint: null,
+    scope: LoomServiceBindingNames.processScope,
+  );
+  loomServiceBindingRegistry.recordBinding(
+    service: LoomServiceBindingNames.offlineReplica,
+    mode: LoomServiceBindingMode.unconfigured,
+    endpoint: null,
+    scope: LoomServiceBindingNames.processScope,
+  );
 }
 
 /// Test-only replacement for the remote production selection.

@@ -7,6 +7,13 @@ import 'interactive_authorization.dart';
 import 'interactive_login_platform.dart';
 import 'secure_storage_backend.dart';
 
+/// Receives the outcome of one token-endpoint HTTP request.
+///
+/// This callback is optional so the session package does not depend on an app
+/// shell's diagnostics implementation. It is synchronous and best effort.
+typedef LoomAuthRequestOutcomeRecorder =
+    void Function({required bool success, int? statusCode, String? errorKind});
+
 /// Persists and renews the bearer-token session used by Loom API clients.
 ///
 /// Flutter Web and Android clients can use [loginInteractively] and
@@ -20,6 +27,7 @@ class LoomAuthSession {
     required String clientId,
     required LoomAuthSecureStorageBackend secureStorage,
     http.Client? httpClient,
+    LoomAuthRequestOutcomeRecorder? onRequestOutcome,
     DateTime Function()? clock,
     this.refreshSkew = defaultRefreshSkew,
     this.storageKey = defaultStorageKey,
@@ -28,7 +36,8 @@ class LoomAuthSession {
        _secureStorage = secureStorage,
        _httpClient = httpClient ?? http.Client(),
        _ownsHttpClient = httpClient == null,
-       _clock = clock ?? DateTime.now {
+       _clock = clock ?? DateTime.now,
+       _onRequestOutcome = onRequestOutcome {
     if (refreshSkew.isNegative) {
       throw ArgumentError.value(
         refreshSkew,
@@ -48,9 +57,21 @@ class LoomAuthSession {
   final http.Client _httpClient;
   final bool _ownsHttpClient;
   final DateTime Function() _clock;
+  LoomAuthRequestOutcomeRecorder? _onRequestOutcome;
 
   final Duration refreshSkew;
   final String storageKey;
+
+  /// The resolved Keycloak token endpoint used by this session.
+  Uri get tokenEndpoint => _tokenEndpoint;
+
+  /// Installs the host-owned diagnostic callback for this session.
+  ///
+  /// A [LoomRemoteServiceConfiguration] calls this at the point where its
+  /// production session becomes the app's selected identity-provider seam.
+  void setRequestOutcomeRecorder(LoomAuthRequestOutcomeRecorder recorder) {
+    _onRequestOutcome = recorder;
+  }
 
   _StoredSession? _session;
   bool _storageWasRead = false;
@@ -285,17 +306,40 @@ class LoomAuthSession {
 
   Future<http.Response> _postToken(Map<String, String> body) async {
     try {
-      return await _httpClient.post(
+      final response = await _httpClient.post(
         _tokenEndpoint,
         headers: const {
           'content-type': 'application/x-www-form-urlencoded; charset=utf-8',
         },
         body: body,
       );
+      _recordRequestOutcome(
+        success: response.statusCode >= 200 && response.statusCode < 300,
+        statusCode: response.statusCode,
+        errorKind: response.statusCode >= 200 && response.statusCode < 300
+            ? null
+            : 'http_${response.statusCode}',
+      );
+      return response;
     } on Exception catch (error) {
+      _recordRequestOutcome(success: false, errorKind: 'network_error');
       throw LoomAuthNetworkException(
         'Failed to reach the Keycloak token endpoint: $error',
       );
+    }
+  }
+
+  void _recordRequestOutcome({
+    required bool success,
+    int? statusCode,
+    String? errorKind,
+  }) {
+    final recorder = _onRequestOutcome;
+    if (recorder == null) return;
+    try {
+      recorder(success: success, statusCode: statusCode, errorKind: errorKind);
+    } catch (_) {
+      // Diagnostics must never change login or refresh behavior.
     }
   }
 

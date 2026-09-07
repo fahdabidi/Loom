@@ -17,16 +17,40 @@ LoomAuthApi resolveLoomAuthApiForCommunity({
 }) {
   final configuration = _loomRemoteServiceConfiguration;
   if (configuration == null) {
-    return LocalAuthApi(
+    final local = LocalAuthApi(
       actorIdentityResolver: actorIdentityResolver,
       experienceResolver: experienceResolver,
     );
+    _recordAuthBindingsForImplementation(local, communityExtensionId);
+    return local;
   }
   return createRemoteLoomAuthApiForConfiguration(
     configuration: configuration,
     communityId: communityId,
     communityExtensionId: communityExtensionId,
     actorIdentityResolver: actorIdentityResolver,
+  );
+}
+
+void _recordAuthBindingsForImplementation(
+  LoomAuthApi authApi,
+  String communityExtensionId,
+) {
+  if (authApi is RemoteLoomAuthApi) return;
+  final mode = authApi is LocalAuthApi
+      ? LoomServiceBindingMode.local
+      : LoomServiceBindingMode.unconfigured;
+  loomServiceBindingRegistry.recordBinding(
+    service: LoomServiceBindingNames.appAccess,
+    mode: mode,
+    endpoint: null,
+    scope: communityExtensionId,
+  );
+  loomServiceBindingRegistry.recordBinding(
+    service: LoomServiceBindingNames.fanPassport,
+    mode: mode,
+    endpoint: null,
+    scope: communityExtensionId,
   );
 }
 
@@ -95,6 +119,27 @@ class RemoteLoomAuthApi implements LoomAuthApi {
       baseUri: fanPassportBaseUri,
       session: _session,
       httpClient: _httpClient,
+      onCallOutcome:
+          ({required bool success, int? statusCode, String? errorKind}) =>
+              _recordRemoteServiceCallOutcome(
+                service: LoomServiceBindingNames.fanPassport,
+                scope: _communityExtensionId,
+                success: success,
+                statusCode: statusCode,
+                errorKind: errorKind,
+              ),
+    );
+    loomServiceBindingRegistry.recordBinding(
+      service: LoomServiceBindingNames.appAccess,
+      mode: LoomServiceBindingMode.remote,
+      endpoint: _appAccessBaseUri,
+      scope: _communityExtensionId,
+    );
+    loomServiceBindingRegistry.recordBinding(
+      service: LoomServiceBindingNames.fanPassport,
+      mode: LoomServiceBindingMode.remote,
+      endpoint: _fanPassportClient.baseUri,
+      scope: _communityExtensionId,
     );
   }
 
@@ -399,7 +444,11 @@ class RemoteLoomAuthApi implements LoomAuthApi {
     String fanId,
   ) async {
     final directory = await _remoteServiceConfiguration
-        .fanCommunityDirectoryFor(fanId: fanId, httpClient: _httpClient);
+        .fanCommunityDirectoryFor(
+          fanId: fanId,
+          httpClient: _httpClient,
+          serviceScope: _communityExtensionId,
+        );
     final membership = directory.memberships[_communityId];
     if (membership != null) {
       return _ResolvedCommunityMembership(
@@ -680,17 +729,36 @@ class RemoteLoomAuthApi implements LoomAuthApi {
         await _httpClient.send(request),
       );
     } on Exception catch (error) {
+      _recordRemoteServiceCallOutcome(
+        service: LoomServiceBindingNames.appAccess,
+        scope: _communityExtensionId,
+        success: false,
+        errorKind: 'network_error',
+      );
       throw StateError('Remote auth request $method $uri failed: $error');
     }
     final successful =
         expectedStatusCodes?.contains(response.statusCode) ??
         (response.statusCode >= 200 && response.statusCode < 300);
     if (!successful && !acceptedStatusCodes.contains(response.statusCode)) {
+      _recordRemoteServiceCallOutcome(
+        service: LoomServiceBindingNames.appAccess,
+        scope: _communityExtensionId,
+        success: false,
+        statusCode: response.statusCode,
+        errorKind: 'http_${response.statusCode}',
+      );
       throw StateError(
         'Remote auth request $method $uri returned HTTP '
         '${response.statusCode}.',
       );
     }
+    _recordRemoteServiceCallOutcome(
+      service: LoomServiceBindingNames.appAccess,
+      scope: _communityExtensionId,
+      success: true,
+      statusCode: response.statusCode,
+    );
     if (response.body.trim().isEmpty) {
       return _RemoteHttpResponse(response.statusCode, null);
     }

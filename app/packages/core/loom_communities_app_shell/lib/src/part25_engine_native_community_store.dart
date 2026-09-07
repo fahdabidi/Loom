@@ -225,18 +225,48 @@ class _EngineNativeCommunityStore {
   static final _stores = <String, _EngineNativeCommunityStore>{};
 
   late final WorkflowDatabase _database = WorkflowDatabase.memory();
-  late final WorkflowEngineApi engine =
-      (_engineNativeCommunityEngineFactoriesByExtensionId[extensionId] ??
-      _engineNativeCommunityEngineFactoryOverrideForTesting ??
-      _productionEngineNativeCommunityEngineFactory)(
-        database: _database,
-        extensionId: extensionId,
-      );
+  late final WorkflowEngineApi engine = _resolveEngine();
   final LoomExperienceDefinition experience;
   final String extensionId;
   Future<void>? _ready;
 
   _EngineNativeCommunityStore._(this.extensionId, this.experience);
+
+  WorkflowEngineApi _resolveEngine() {
+    final factory =
+        _engineNativeCommunityEngineFactoriesByExtensionId[extensionId] ??
+        _engineNativeCommunityEngineFactoryOverrideForTesting ??
+        _productionEngineNativeCommunityEngineFactory;
+    final resolved = factory(database: _database, extensionId: extensionId);
+    final remote = resolved is LoomReplicaFallbackWorkflowEngineApi
+        ? resolved.remoteEngine
+        : resolved;
+    if (remote is RemoteWorkflowEngineApi) {
+      loomServiceBindingRegistry.recordBinding(
+        service: LoomServiceBindingNames.workflowEngine,
+        mode: LoomServiceBindingMode.remote,
+        endpoint: remote.baseUri,
+        scope: extensionId,
+      );
+    } else if (resolved is LocalWorkflowEngineApi) {
+      loomServiceBindingRegistry.recordBinding(
+        service: LoomServiceBindingNames.workflowEngine,
+        mode: LoomServiceBindingMode.local,
+        endpoint: null,
+        scope: extensionId,
+      );
+    } else {
+      // A non-standard factory result is not evidence of either a local or
+      // remote implementation, so retain an explicit unknown state.
+      loomServiceBindingRegistry.recordBinding(
+        service: LoomServiceBindingNames.workflowEngine,
+        mode: LoomServiceBindingMode.unconfigured,
+        endpoint: null,
+        scope: extensionId,
+      );
+    }
+    return resolved;
+  }
 
   static _EngineNativeCommunityStore install(
     String extensionId,
