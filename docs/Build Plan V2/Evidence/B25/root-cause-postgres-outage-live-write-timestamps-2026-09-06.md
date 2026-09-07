@@ -201,6 +201,18 @@ and must respect "one dispatch at a time"):
 None of the 10 have been re-verified yet as of this decision being recorded. This is the first
 concrete next step for the autonomous loop's B25 work.
 
+**BLOCKED, 2026-09-07: the first re-verification dispatch (Cedar dues) failed immediately with
+"You've hit your monthly spend limit."** `data/call_live_verification_agent.sh` invokes the Claude
+Code CLI directly (`claude -p`, model `opus`), which is gated by the same account-level usage limit
+as this very session. No partial work was done — the dispatch failed on invocation, before touching
+the emulator or writing anything, so nothing needs cleanup. `data/call_ux_judge_agent.sh` uses the
+same CLI and is equally blocked. Codex/Muse-based dispatches (`call_implementation_agent.sh`,
+`call_skill_authoring_agent.sh`, `call_root_cause_agent.sh`) are unaffected — different tooling,
+different limit. **All 10 re-verifications are on hold until the user raises the limit
+(claude.ai/settings/usage) or it resets.** The ssh reverse tunnel to the emulator
+(`127.0.0.1:5037`, opened 2026-09-07 ~02:05, held for 7200s) may need re-establishing by then if it
+has expired — see `b25_walkthrough_pipeline_unblocked` for the exact recipe.
+
 ## Scope note
 
 No file other than this one was created. No community `*.jsonc`, no tracker row, no code was
