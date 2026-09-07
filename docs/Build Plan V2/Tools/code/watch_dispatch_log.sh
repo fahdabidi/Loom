@@ -25,7 +25,9 @@
 #
 # WHAT IT EMITS (each line is a Monitor event; all three end the watch except
 # DISPATCH-SIGNAL, which is informational and keeps watching):
-#   codex exec exited with status <n>   -- the real completion line
+#   codex exec exited with status <n>   -- the real completion line (Codex-based dispatches)
+#   muse exec exited with status <n>    -- the real completion line (Muse-based dispatches,
+#                                          e.g. the root cause agent since 2026-09-07)
 #   DISPATCH-DIED: ...                  -- the dispatch process vanished with no
 #                                          completion line (killed, OOM, crash)
 #   DISPATCH-SIGNAL: <line>             -- a failure signature seen mid-run
@@ -110,7 +112,7 @@ death_deadline=""
 while true; do
   if IFS= read -r -t 5 line <&3; then
     case "$line" in
-      "codex exec exited with status"*)
+      "codex exec exited with status"*|"muse exec exited with status"*)
         echo "$line"
         sleep "$POST_SLEEP"
         exit 0
