@@ -13,6 +13,14 @@ independent-verification step, you review that proposal, write the confirmed ite
 banner at completion so this step is never silently skipped — see `docs/Build Plan V2/Tools/README.md`'s core
 pipeline step 5.5.
 
+**Use the Root Cause Agent (`data/call_root_cause_agent.sh`) for two jobs, across every tracker this
+file rolls up, not only the one it's traditionally been used for.** (1) To scope a non-trivial change
+*before* writing an implementation ticket — what it actually touches, the real mechanism, what it would
+break — rather than writing a ticket from an assumed mechanism and finding out it was wrong a full
+implementation round later. (2) Its standing job: anything resisting normal investigation — a stubborn
+defect, a stalled walkthrough, an unclear suite failure — goes to it before spending more implementation
+rounds guessing. Never write a ticket that asserts a mechanism nobody has actually traced.
+
 **Verification sweep 2026-08-24.** Every checkable claim below was re-measured against the working tree
 rather than carried forward, and nine items closed on measurement alone — they had been fixed by later work
 and never struck. Suite baselines quoted inside older tracker entries are stale by construction; the current

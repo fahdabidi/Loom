@@ -16,6 +16,15 @@ owns per-community JSON correctness; this one owns the access-control architectu
 [`CJM.16 Identity Architecture Proposal.md`](CJM.16%20Identity%20Architecture%20Proposal.md) is the
 originating diagnosis.
 
+**This is a tactical tracker, not the destination.** It exists to make one workstream (access control
+and the workflow service) real; it is not itself the path to production. [`TODO.md`](TODO.md) is the
+main cross-effort tracker and rollup of every tactical tracker's `## 8` queue, and the actual
+production bar is the B25 addendum table — every product-doc workflow proven by a live walkthrough
+*and* a UX judge (see `TODO.md` and the `Evidence/B25/production-ux-blueprint.md` rubric). **Once
+this tracker's own §8 queue is empty (or everything left in it is a deliberate, recorded "not now"),
+return to `TODO.md` and resume driving toward production from there — do not treat closing this
+tracker as closing the project.**
+
 ## 1. Locked spec additions
 
 Approved and committed. Changing any of these needs explicit re-approval.
@@ -58,11 +67,22 @@ with the WSL-era commands replaced: the pipeline moved to the VirtualBox VM (`ss
 | Agent | Tool | Used in this effort for |
 |---|---|---|
 | **Implementation Agent** | `data/call_implementation_agent.sh` (Codex CLI, backgrounded) | Phase A engine work, Phase B service, Phase C auth, Phase D deploy |
-| **Root Cause Agent** | `data/call_root_cause_agent.sh` | The 11 pre-existing app-shell failures; anything resisting normal investigation |
+| **Root Cause Agent** | `data/call_root_cause_agent.sh` | The 11 pre-existing app-shell failures; anything resisting normal investigation; **scoping any non-trivial change before it is dispatched** |
 | **Skill Authoring Agent** | `data/call_skill_authoring_agent.sh`, or a Claude Code `Agent` dispatch running the Skill | **Phase F only.** Community JSON is never hand-authored — see §5 |
 | **Regression Impact Judge** | [`Tools/regression-impact-judge-tool.md`](Tools/regression-impact-judge-tool.md) | **Mandatory** for Phase A: bookkeeping and visibility change shared engine behaviour for every archetype |
 | **LLM Vision UX Judge** | [`Tools/ux-gate-judge-tools.md`](Tools/ux-gate-judge-tools.md) | Phase E only, where rendered UI changes |
 | **Skill Output Judge** | CJM tracker §1c | Phase F, judging the regenerated JSON before it is merged |
+
+**Two jobs for the Root Cause Agent, not one.** It is not only for debugging something that already
+broke — dispatch it *before* writing an implementation ticket for anything non-trivial, to scope the
+change: what files it actually touches, what the real mechanism is, what it would break, whether a
+fix belongs client-side or server-side. A ticket written from an assumed mechanism costs a full wasted
+implementation round when the assumption is wrong (see the `authz-503` and `hoa-architectural-request`
+"orphan" rows below — both were caught only because something was actually traced first). And its
+long-standing job stands unchanged: **anything resisting normal investigation** — a stubborn defect,
+a stalled walkthrough, a suite failure whose cause isn't obvious from the diff — goes to it before more
+implementation rounds are spent guessing. Never write a ticket that asserts a mechanism you haven't
+actually traced when the Root Cause Agent could trace it for you first.
 
 ## 4. Status
 
