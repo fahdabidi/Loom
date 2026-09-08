@@ -333,7 +333,15 @@ fi
 # "<<<END_KEYPATTERNS_ENTRY>>>" line, and the append step correctly saw that
 # as empty and skipped -- no corruption, but nothing was captured either.
 FINAL_REPLY="$(jq -rs '[.[] | select(.type=="item.completed" and .item.type=="agent_message") | .item.text] | last // ""' "$CODEX_OUTPUT_CAPTURE" 2>/dev/null)"
-KEYPATTERNS_ENTRY="$(printf '%s\n' "$FINAL_REPLY" | sed -n '/<<<KEYPATTERNS_ENTRY>>>/,/<<<END_KEYPATTERNS_ENTRY>>>/p' | sed '1d;$d')"
+# `sed '/marker/d'` (not `1d;$d`) strips ONLY the marker lines wherever they
+# occur, so this correctly handles a reply proposing MULTIPLE entries (each
+# in its own <<<KEYPATTERNS_ENTRY>>>...<<<END_...>>> pair) -- `1d;$d` would
+# only strip the very first and very last line of the WHOLE concatenated
+# range, corrupting every entry but the first and last. The `awk` pass then
+# reinserts a blank line before each entry's own `### ` heading, since the
+# blank line originally between separate blocks in the reply sits OUTSIDE
+# the extracted ranges and would otherwise be lost, running entries together.
+KEYPATTERNS_ENTRY="$(printf '%s\n' "$FINAL_REPLY" | sed -n '/<<<KEYPATTERNS_ENTRY>>>/,/<<<END_KEYPATTERNS_ENTRY>>>/p' | sed '/<<<KEYPATTERNS_ENTRY>>>/d; /<<<END_KEYPATTERNS_ENTRY>>>/d' | awk '/^### / && NR>1 {print ""} {print}')"
 if [ -n "$(echo "$KEYPATTERNS_ENTRY" | tr -d '[:space:]')" ]; then
   {
     echo ""
