@@ -781,6 +781,20 @@ anything non-trivial, to trace the real mechanism first rather than write a tick
 one. Reset (abandoning the accumulated session) is deliberately not a script flag — delete
 `.codex-logs/.root_cause_agent_session_id` by hand if that's ever truly needed.
 
+**The persistent session is cheap to keep, and the seeding pass is where the cost lives.** Measured
+2026-09-08 across the session's first three invocations: **7,240,905 total tokens, of which
+6,760,320 input tokens were cache hits — 93.7%.** Uncached input was 451,468 and output 29,117. The
+seeding pass alone was 4.6M (it read the trackers, architecture docs and git history); the two
+scoping dispatches after it cost ~1.5M and ~1.1M each, nearly all cached. So the marginal cost of
+asking this agent one more question is small, and **the instinct to "save tokens" by starting a
+fresh session has it backwards** — a fresh session pays the uncached price again and knows less.
+
+**Reading that number has a trap.** `total_token_usage` in the session rollout
+(`~/.codex/sessions/YYYY/MM/DD/rollout-*-<session-id>.jsonl`) is cumulative *within one invocation*
+and **resets on each resume**. Taking the last record reports only the most recent invocation — it
+understated the 24-hour total by 6× on the first attempt. Sum the peak value of each invocation
+instead (detect a reset as a drop in `total_tokens`).
+
 **It runs `--sandbox read-only`, genuinely zero write and zero network access — enforced, not just
 asked for** (tightened same day, after the earlier `workspace-write`/prompt-only design). Confirmed
 live: a write attempt gets `Read-only file system` even to an `--add-dir`-named path (that flag only
