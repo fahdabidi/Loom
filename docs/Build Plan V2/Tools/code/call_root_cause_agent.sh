@@ -90,6 +90,20 @@
 # what it actually touches, the real mechanism, what it would break -- not
 # only debugging something that already broke.
 #
+# MASTER SUPERVISOR / keypatterns.md, user-directed 2026-09-07: the whole
+# point of the persistent session above is that this agent becomes the
+# project's standing expert, not just a stateless investigator run fresh
+# each time. To make that memory legible to humans (not just implicit in an
+# opaque Codex thread), the agent has a SECOND writable path -- `keypatterns.md`
+# at the repo root, append-only -- where it records recurring issues, durable
+# patterns, and key architectural decisions/pivots it notices across
+# dispatches. This is staging memory, not the project's real instructions:
+# after any dispatch that adds to keypatterns.md, the orchestrating session
+# (you) reviews what's new and folds anything genuinely durable into
+# CLAUDE.md itself, the file every session actually loads. keypatterns.md is
+# not committed by the agent (it never commits anything); review and commit
+# it the same way you'd review its designated report file.
+#
 # Usage:
 #   bash data/call_root_cause_agent.sh <path-to-brief-file>
 #
@@ -134,14 +148,18 @@ You are the Root Cause Agent for this repository -- either scoping a non-trivial
 implementation ticket is written, or investigating a bug that has resisted the verification agent'"'"'s own
 hypothesis-and-test budget. You are NOT an implementation agent. This is a long-lived, persistent session:
 you carry context across every dispatch made to you, so treat earlier turns in this conversation as real
-prior investigation, not as something to re-derive.
+prior investigation, not as something to re-derive. Across those dispatches you are meant to become this
+project'"'"'s standing expert -- the one place that accumulates recurring issues, durable patterns, and key
+architectural decisions/pivots, acting as its master supervisor rather than a one-off investigator with no
+memory of the last one.
 
 **You must NEVER:**
 - Edit, create, or delete any implementation file (`.dart`, `.jsonc`, `.md` reference docs, anything under
   `app/` or `docs/references/`) -- not even a "small diagnostic tweak." Not even something you are highly
   confident is the fix. That decision belongs to the user, after you report, via a separate implementation
   ticket.
-- Modify anything other than the ONE report file path given to you below.
+- Modify anything other than the ONE report file path given to you below, and `keypatterns.md` at the repo
+  root (see below) -- nothing else.
 - Run `git add`/`git commit`, or any command that mutates repository state.
 - Add print statements, comment out code, or otherwise "just check" something by editing a real file. If you
   want to know what a value would be at runtime, reason about it from the code, or explicitly request that
@@ -167,6 +185,19 @@ the brief:
 
 Do not hedge between the two. If you are not confident enough for outcome 1, you must produce outcome 2, not
 a weaker version of outcome 1.
+
+**In addition to your report, keep `keypatterns.md` (repo root) up to date -- this is what makes you the
+project'"'"'s memory rather than a stateless investigator.** After delivering your report, decide whether this
+dispatch surfaced any of: a RECURRING issue (a bug class you have now seen more than once, even in a
+different guise), a durable PATTERN (a requirement shape with a plausible-wrong version and the
+verified-correct version, the way this project'"'"'s own `solved-patterns.md` is written), or a KEY
+ARCHITECTURAL DECISION OR PIVOT (a load-bearing choice, or a reversal of one, that a future dispatch -- your
+own future self, or an implementation agent -- must not blindly re-litigate). If so, APPEND an entry to
+`keypatterns.md` following its own documented entry shape -- never delete, rewrite, or reorder an existing
+entry; a correction is a new entry marked `[SUPERSEDED -- see <entry>]` pointing at the old one, not an edit
+to it. Do not force an entry when nothing of this kind was found -- an unnecessary entry dilutes a memory
+meant to be selective. Write each entry for a human reading it cold, at the level of an experienced engineer
+briefing a new team member on this project'"'"'s real institutional memory, not as raw investigation notes.
 
 ---
 
@@ -281,11 +312,18 @@ if [ "$POST_TRACKED_COUNT" -lt "$PRE_TRACKED_COUNT" ]; then
 fi
 
 DIRTY="$(git status --short)"
+UNEXPECTED_DIRTY="$(echo "$DIRTY" | grep -v ' keypatterns\.md$' || true)"
 if [ -n "$DIRTY" ]; then
-  echo "WARNING: working tree is not clean after this run -- review every line below. Only the"
-  echo "designated report file should appear here; anything else is a role violation to investigate,"
-  echo "not to silently commit or discard:"
-  echo "$DIRTY" | sed 's/^/  /'
+  if [ -n "$UNEXPECTED_DIRTY" ]; then
+    echo "WARNING: working tree is not clean after this run -- review every line below. Only"
+    echo "keypatterns.md (expected -- see below) should appear here; anything else is a role"
+    echo "violation to investigate, not to silently commit or discard:"
+    echo "$DIRTY" | sed 's/^/  /'
+  else
+    echo "keypatterns.md was updated this dispatch (expected, this is its designated second writable"
+    echo "path). Review the diff and commit it yourself -- the Root Cause Agent never commits:"
+    echo "$DIRTY" | sed 's/^/  /'
+  fi
 fi
 
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) DISPATCH_FINISHED status=$STATUS" >> "$TODO_LOG"

@@ -547,7 +547,28 @@ reminder case and `reminder` gained a declarative block.
 | Application/Dart/backend code | `data/call_implementation_agent.sh` — **never** hand-edit |
 | Community `*.jsonc` | the Skill only, via `data/call_skill_authoring_agent.sh`; copy its output byte-identically. Files are `chmod 444`; lift, copy, restore |
 | Product docs, reference docs, Skill instructions | me, directly |
-| Root-causing a stubborn defect | `data/call_root_cause_agent.sh` |
+| Root-causing a stubborn defect, or scoping a non-trivial change before writing its ticket | `data/call_root_cause_agent.sh` |
+
+**The Root Cause Agent is one persistent session, on purpose, and it is not only for debugging.**
+Unlike every other dispatch in this table, it never takes a `--fresh`/resume choice: every
+invocation resumes the SAME Codex thread id (captured once, held at
+`.codex-logs/.root_cause_agent_session_id`), so it accumulates real familiarity with this codebase
+across every dispatch instead of starting cold each time (user-directed 2026-09-07). Model
+`gpt-6-astra` at reasoning effort `high` — this required upgrading the VM's Codex CLI itself
+(0.147.0 rejected that model outright; `npm install -g @openai/codex@0.153.4` fixed it). Dispatch
+it not only when something is already broken, but *before* writing an implementation ticket for
+anything non-trivial, to trace the real mechanism first rather than write a ticket from an assumed
+one. Reset (abandoning the accumulated session) is deliberately not a script flag — delete
+`.codex-logs/.root_cause_agent_session_id` by hand if that's ever truly needed.
+
+**`keypatterns.md`** (repo root) **is that agent's legible memory, and folding it in here is your
+job, not the agent's.** Every dispatch may append (never rewrite) an entry there — a recurring
+issue, a durable pattern, or a key architectural decision/pivot — in addition to its designated
+report. That file is staging memory the agent writes to; it is not loaded automatically the way
+this file is. **After any Root Cause Agent dispatch that touches `keypatterns.md`, read what's new
+and fold anything genuinely durable and generally-applicable into this file yourself**, in this
+file's own voice and level of generality — a `keypatterns.md` entry that never makes this trip is a
+lesson the next session won't have.
 
 **Pass `--fresh` unless you mean to continue the same work.** `call_implementation_agent.sh`
 defaults to `resume --last` — it hardcodes that, and nothing checks whether resuming is appropriate:
