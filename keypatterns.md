@@ -241,3 +241,17 @@ follow below as the agent finds them, starting with that dispatch's own findings
 **Why it matters:** Missing credential context can strand a walkthrough at Keycloak despite existing usable test infrastructure. Conversely, selecting roles locally or running a direct engine test can produce misleading claims of persona coverage or UI completion. Bind each walkthrough to its authenticated fan, server-resolved role, actual UI action, and persisted instance.
 
 **Evidence:** Access Control and Workflow Service Tracker.md:1783; loom_auth_session.dart:145; part39_remote_auth_api.dart:201; on_device_remote_backend_proof_test.dart:103 and :135. This dispatch established these code paths; current credential validity and the September 7 notification row’s origin remain unverified.
+
+### 2026-09-08 -- Authentication recovery must not depend on account-loading failure
+
+**Kind:** pattern
+**What:** Account discovery, OAuth authentication, community account selection, and membership admission are separate states. Expose secure login independently of whether the account list loaded successfully. Failed admission checks must return to a recoverable gate rather than leave a cached active account on an unresolved spinner.
+**Why it matters:** The remote login button was added only to the account-list error branch. A later sign-in failure merely showed a snackbar, leaving no login route until membership refresh recreated the screen. Reusing the screen for account switching extends the same defect beyond first entry.
+**Evidence:** `part31_auth_screens.dart:42`, `:61`, and `:143`; `part01_local_extension_screen.dart:306` and `:1388`; introducing commit `8b61a3ee`; September 8 on-device reproduction supplied in this dispatch.
+
+### 2026-09-08 -- Service call failure is not evidence of backend unreachability
+
+**Kind:** pattern
+**What:** Preserve authentication, authorization, HTTP failure, and transport failure as distinct outcomes. The current binding badge labels every failure “BACKEND UNREACHABLE,” including a missing session before any request was sent. Its state is the latest outcome per service/scope; an uncalled remote binding does not trigger the label.
+**Why it matters:** Users are directed toward infrastructure recovery when they need to sign in, and a later successful call makes the warning disappear without explaining the original condition. Absence of the badge also does not prove a service has answered.
+**Evidence:** `remote_workflow_engine_api.dart:369` and `:396`; `part52_service_binding_report.dart:185`, `:239`, and `:287`; September 8 missing-session banner and post-create clearing observations.
