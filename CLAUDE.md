@@ -516,6 +516,37 @@ Three habits, in the order they would have saved the most time:
   callers, any symbol from the same feature. Four of the five above were real, working code sitting
   under a name I had assumed rather than checked.
 
+### A workflow can be perfectly valid and still have an outcome nobody can reach
+
+The 2026-09-08 B25 campaign drove all ten communities live. **Four of them had an intended outcome no
+existing account could reach**, and not one was visible in a validator run — because each is a
+property of the *system as deployed*, not of any declaration:
+
+| Shape | The community that had it | What was actually wrong |
+|---|---|---|
+| **Role never provisioned** | Masjid Nur | the package declares `owner`; `app_role` has no such row, so four owner-guarded transitions are dead and a donation can never be `paid` |
+| **Guarded role cannot see the instance** | Youth Soccer | only `paid` transition is coach-guarded, but the only tab rendering the payment is `visibleRoleIds: ["soccer-guardian"]` |
+| **Precondition unsatisfiable from the real state** | Garden Club | owner exits require `availabilityState == "available"` while every transition clearing `onLoan` is borrower-guarded — a silent borrower strands the owner's own property |
+| **Effect target not published** | Ad-Free, Data Portability | a `createInstance` naming a workflow type absent from `workflow_definitions` **returns success and does nothing** |
+
+A fifth variant is really the first one again, and worth naming separately because it looks fine in
+every table: **a role with only one holder where the interaction needs two.** Member Social Space
+provisions exactly one `member`, and `send-invite`/`accept-invite`/`decline-invite` are all
+`allowedRoleIds: ["member"]` — so no pair exists in which both parties qualify, and an invitee sees
+zero buttons.
+
+**Every individual guard in all five was well-formed.** The defect lives in the graph — who holds a
+role, who can see a surface, what state the instance is realistically in, whether the target exists —
+so no per-declaration check can find it. When verifying a workflow, ask of each terminal state: *who
+may fire the transition into it, does a surface visible to that role render the instance, can the
+precondition be satisfied from the state the instance will actually be in, and does every effect
+target exist in the deployed catalog?*
+
+And prove reachability by **firing** the guarded transition, not by reading the JSON. Two of the four
+were first suspected from the package and then overturned or sharpened by what the device did — one
+draft finding was withdrawn entirely when a control showed the affordance rendered on a different
+surface.
+
 ## Evidence rules
 
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A
