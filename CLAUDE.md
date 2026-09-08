@@ -199,6 +199,35 @@ hoping output appears.
 Rule out resources before assuming a bad ticket: check `free -h` and `dmesg` for OOM kills. A
 15 GB VM with 12 GB available and no OOM lines did not fail for lack of memory.
 
+### A wrapper's own success message can hide the agent's total failure
+
+On 2026-09-08 the new Patterns Agent's first real run **read nothing at all** — it decided the
+prompt's "you cannot write any file" meant it could not run commands either — and the wrapper script
+printed:
+
+    No entries proposed. That is a legitimate outcome, not a failure.
+
+Which is a sentence *I wrote*, to be reassuring about a genuinely empty sweep. It made a complete
+failure indistinguishable from a clean result, and it would have done so on every future run.
+
+**The bug is not the agent's confusion; it is that "found nothing" and "did nothing" produced
+identical output.** Any wrapper that reports an empty result as fine must first prove the work
+happened. The fix that generalizes: require the agent to emit a marker naming what it actually
+consumed (`<<<SWEEP_READ: file, file, ...>>>`), and treat a missing marker as a **failed** run, not
+an empty one — then print the agent's own reply so the reader can see why.
+
+Two habits from it:
+
+- **When you write a reassuring message into a script, ask what else could produce that same
+  output.** If the answer includes "the thing never ran", the message is a liability.
+- **Read the agent's actual reply, not your wrapper's summary of it.** This was caught only because
+  the summary said "legitimate outcome" and the reply underneath said "I have therefore read none of
+  the requested documents". The wrapper was not lying — it was reporting faithfully on a question it
+  had never asked.
+
+Same family as the grep-gated commit that passes because grep matched the words "Some tests failed":
+a check whose success condition is satisfied by the failure it is meant to catch.
+
 ### The validator on :8787 answers happily while running last week's grammar
 
 `call_skill_authoring_agent.sh` checks that *something* responds on :8787 and reuses it. It never
