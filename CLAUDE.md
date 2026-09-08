@@ -842,9 +842,37 @@ I had already made*, rather than it knowing something unfindable.
 
 **Where it was NOT worth it.** The state-machine trace it produced was good and I re-verified every
 load-bearing claim myself in about five minutes — the tracing was replaceable, only the framing
-correction was not. And the 4.6M-token seeding pass is **63% of all spend on this agent and I cannot
-point to one decision it changed**; its entries largely restate CLAUDE.md and the trackers. Treat a
-proposal to re-seed with suspicion.
+correction was not.
+
+**On the 4.6M-token seeding pass: genuinely unsettled, and my first write-up overstated the case
+against it.** The measured facts: it is 63% of all spend on this agent, and cached input is not free
+(~10% of uncached), so the seeded prefix is a **recurring tax on every resume, not a one-time
+investment** — at invocation 2 the cached prefix cost roughly 144k uncached-equivalent against only
+82k of genuinely new input. That argues for seeding thin.
+
+**But "I cannot point to a decision it changed" is an absence-of-evidence claim, and there is no
+control run.** The single most valuable thing this agent produced — spotting the
+`signIn`/`fanId` anti-impersonation guard unprompted — plausibly came *from* the auth-code
+familiarity that seeding bought. Unprovable either way, and this file elsewhere warns against exactly
+the reasoning I used to dismiss it.
+
+Two distinctions that matter before anyone acts on this:
+
+- **Abandoning the persistent session is a different (and worse) change than seeding it thinly.** A
+  fresh session pays uncached for everything it reads, every time. Keep the session.
+- **The cache rewards a *stable* prefix, not a *large* one.** So the real alternative to a broad
+  seeding pass is not "no context" — it is letting context accumulate from real dispatches, where
+  every token in the prefix is something a real question needed.
+
+**The experiment that would settle it**, if a fresh session is ever needed anyway: run one dispatch
+cold against a question whose answer is already known (the 2026-09-08 entry-gate scoping is fully
+logged), and compare answer quality and uncached cost against the seeded run. That replaces two
+intuitions with a number. Until then, treat a *re-seed* proposal as unproven rather than as wrong.
+
+One measurement I could not explain and did not model around: invocation 3's cached input (1.01M) is
+*lower* than invocation 2's (1.44M), where pure accumulation would predict growth — compaction,
+eviction, or simply reading fewer files. Understand that before reasoning confidently about prefix
+economics here.
 
 **So use it before acting, not after being stuck** — both saves were pre-action framing checks, and
 the stuck-debugging case was the weaker one. **State your premise explicitly in the brief and ask it
