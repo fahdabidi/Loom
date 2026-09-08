@@ -535,6 +535,10 @@ Three habits, in the order they would have saved the most time:
   it is.** Hit Keycloak's logout endpoint before switching identity, confirm the real form appears,
   and confirm `created_by_fan_id` on the resulting row is the fan you meant. This is the likeliest
   way to bank evidence attributed to the wrong person, and it fails green in every direction.
+  **Clearing the app does not clear the identity — the browser holds it.** On the same day, hitting
+  Keycloak's logout endpoint was not sufficient, and neither was `pm clear` on the Loom app; the
+  OAuth flow still completed with no form and re-issued the previous fan's token. Only
+  `pm clear com.android.chrome` surfaced the real login form.
 - **`adb shell input text` silently truncates, and a truncated identifier still looks valid.** On
   2026-09-08 a walkthrough typed `fan-hoa-member-1` into a `payerFanId` field and the device received
   `fan-hoa-memb`. Nothing errors: the workflow is created, the row persists, and the instance is
