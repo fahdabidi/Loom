@@ -35,7 +35,7 @@ When a requirement needs one of these:
 |---|---|---|---|
 | **Scheduled notifications** — `dueNotifications({asOf})` | Needs a clock/scheduler | Any deadline/reminder | ✅ **REAL** — the engine implements a genuine `dueAt <= asOf` query |
 | **Cross-instance eligibility** | Needs another instance's state | Ballot eligibility | ✅ **REAL** — expressible in JSON as the `relatedListMembership` guard |
-| **Payment processing** | Calls a payment gateway | `paymentCheckout` | ❌ Not implemented — demo would stub canned success |
+| **Payment processing** | Calls a payment gateway | `paymentCheckout` | 🚧 **Simulated only, 2026-09-08.** Contract: [`local-payment-service-api.openapi.yaml`](../../API/OpenAPI/monetization/local-payment-service-api.openapi.yaml) — an **in-process** stub, no backend deployed. A result always carries `executionMode: local-stub` and `settlementStatus: not-settled`, and a `SIMULATED-` prefixed `confirmationId`; **reaching `paid` is therefore NOT evidence money moved.** A caller cannot choose the outcome. **Not yet callable from a package:** the grammar has no service-backed transition binding, so nothing declares *when* it runs — see TODO.md |
 | **ID generation** | An opaque unique id is not a field value | Receipts, export ids | 🚧 Grammar defined 2026-08-29 (`platformSource: "opaqueId"`); export/transfer ids being built, payment receipts deferred with payment |
 | **External search / AI answer** | Calls an index or an LLM | `searchAiAnswer` | ❌ Not implemented — demo would return a canned answer for seeded queries |
 | **Checksum / integrity hash** | A hash, not arithmetic | `exportWizard` | ✅ **REAL** since 2026-08-27 — a real SHA-256 over the bytes the export bundle service serves |
