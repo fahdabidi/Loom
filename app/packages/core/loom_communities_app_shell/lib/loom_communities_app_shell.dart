@@ -7,7 +7,8 @@ import 'dart:typed_data';
 
 import 'package:animations/animations.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
+import 'package:flutter/foundation.dart'
+    show ValueListenable, ValueNotifier, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -82,3 +83,4 @@ part 'src/notification_dedicated_tab.dart';
 part 'src/notification_fixed_card.dart';
 part 'src/notification_delivery_service.dart';
 part 'src/calendar_month_grid.dart';
+part 'src/local_payment_service.dart';
