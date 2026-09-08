@@ -1,0 +1,208 @@
+openapi: 3.1.0
+info:
+  title: Loom Local Payment Service (SIMULATION)
+  version: 0.1.0
+  summary: >-
+    In-process simulation of the payment-processing platform service. Produces an
+    explicitly-marked simulated result so the paid lifecycle can be exercised while no
+    payment backend exists. NO MONEY MOVES.
+  description: |
+    **This is not a deployed backend and must never be presented as one.** It is the contract
+    for `LocalPaymentService`, which runs inside the app. There is deliberately no `servers`
+    block: nothing here is reachable over a network.
+
+    ## Why it exists
+
+    `docs/references/reference/platform-services.md` defines a closed set of six platform
+    services. **Payment processing is one of them**, recorded as
+    *"Calls a payment gateway | `paymentCheckout` | Not implemented — demo would stub canned
+    success"*. This contract is that stub, written down. It does not add a seventh service,
+    and a requirement that seems to need one is very likely expressible already.
+
+    ## The one rule this contract exists to enforce
+
+    A simulated payment must never be mistakable for a settled one. Two response fields are
+    **constants, not caller inputs**: `executionMode` is always `local-stub` and
+    `settlementStatus` is always `not-settled`. `confirmationId` carries the `SIMULATED-`
+    prefix. A consumer deciding whether money actually arrived must require affirmative
+    evidence of real settlement — testing that a workflow reached `paid` is NOT sufficient,
+    because this service can produce that state.
+
+    That rule is the whole point. This project previously shipped a field claiming a writer
+    it never had (the export-checksum gap) and it stayed invisible for weeks precisely
+    because the value looked real.
+
+    ## What this contract deliberately does NOT cover
+
+    - **It does not specify how a workflow transition invokes it.** The grammar has no
+      service-backed transition binding today: `LoomWorkflowTransition` carries no service
+      reference, `effects.md` defines a closed effect vocabulary with no payment invocation,
+      and the validator rejects an invented `platformSource`. Wiring this to
+      `soccer-registration-payment` is blocked on that spec work, tracked in TODO.md.
+    - **It does not read money out of display prose.** The caller supplies a structured
+      `Money`. A label such as `registrationFeeLabel` is not an amount.
+    - **It accepts no card, bank or credential data**, and no caller-chosen outcome. A caller
+      cannot ask this service to report success.
+x-loom-api-owner: monetization/local-payment-service
+x-loom-execution: in-process-simulation
+x-loom-replaces-eventually:
+  - ./settlement-engine-api.openapi.yaml
+  - ./receipt-ledger-api.openapi.yaml
+x-loom-architecture-docs:
+  - ../../../references/reference/platform-services.md
+paths:
+  /local/payments/confirmations:
+    post:
+      operationId: confirmPayment
+      summary: Simulate processing an authorized payment attempt.
+      description: |
+        Accepts a typed payment attempt and returns a simulated result. The caller is
+        responsible for having authorized the initiating fan BEFORE calling; this service
+        performs no authorization and its success is not evidence that anyone was entitled
+        to pay.
+
+        **Idempotent on `attemptId`.** Replaying the same `attemptId` with an identical
+        request returns the original result unchanged. Replaying it with a DIFFERENT request
+        body is a conflict, not a new attempt — a silently-replaced attempt would make a
+        retry indistinguishable from a second payment.
+
+        A failure — invalid request, conflict, or an internal simulation fault — must NOT be
+        reported as success. There is no code path that turns a transport or persistence
+        failure into a canned success.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmPaymentRequest'
+      responses:
+        '200':
+          description: >-
+            A simulated result. Success here means the simulation ran, NOT that money moved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulatedPaymentResult'
+        '400':
+          description: Invalid request — missing obligation, non-positive amount, unknown currency.
+        '409':
+          description: >-
+            The same attemptId was replayed with a different request body. The original
+            attempt is unchanged; resolve deliberately rather than retrying.
+        '500':
+          description: >-
+            The simulation itself failed. The workflow MUST NOT advance; no partial effects.
+  /local/payments/confirmations/{attemptId}:
+    get:
+      operationId: getSimulatedPayment
+      summary: Read back a previously simulated attempt.
+      description: >-
+        Exists so a stored `confirmationId` resolves to an actual recorded simulation rather
+        than to nothing. A reference that resolves to nothing is indistinguishable from a
+        fabricated one.
+      parameters:
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The recorded simulated result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulatedPaymentResult'
+        '404':
+          description: No simulated attempt with that id.
+components:
+  schemas:
+    ConfirmPaymentRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - attemptId
+        - communityId
+        - workflowInstanceId
+        - initiatingFanId
+        - obligationRef
+        - amount
+      properties:
+        attemptId:
+          type: string
+          description: >-
+            Idempotency key for this attempt, minted by the caller. A retry of the same
+            logical payment reuses it; a deliberate second payment uses a new one.
+        communityId:
+          type: string
+          description: Canonical community id, e.g. `community_riverside_youth_soccer`.
+        workflowInstanceId:
+          type: string
+          description: The payment workflow instance this attempt settles.
+        initiatingFanId:
+          type: string
+          description: >-
+            The authenticated fan who initiated. Supplied from execution context, never
+            chosen by a client form. This service does not verify it — the caller must have
+            authorized the actor already.
+        payerRef:
+          type: [string, 'null']
+          description: Who the money is notionally from, when that differs from the initiator.
+        obligationRef:
+          type: string
+          description: >-
+            What is being paid — the registration, dues charge or invoice. Required so a
+            result can never be a payment for nothing in particular.
+        amount:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+          description: >-
+            Structured minor units and currency. A display label is NOT an acceptable source;
+            the caller must supply real structured money or not call.
+    SimulatedPaymentResult:
+      type: object
+      additionalProperties: false
+      required:
+        - attemptId
+        - outcome
+        - executionMode
+        - settlementStatus
+        - confirmationId
+        - completedAt
+        - amount
+      properties:
+        attemptId:
+          type: string
+        outcome:
+          type: string
+          enum: [succeeded, failed]
+          description: Whether the SIMULATION succeeded. Not a statement about money.
+        executionMode:
+          type: string
+          const: local-stub
+          description: >-
+            Always `local-stub`. A constant, never a caller input. Its presence is the
+            durable signal that this result is simulated, and it must be propagated onto the
+            instance, any receipt, downstream checkpoints, history and exports. A consumer
+            that drops it converts a demo into an apparent payment.
+        settlementStatus:
+          type: string
+          const: not-settled
+          description: >-
+            Always `not-settled`. No money moved. Absence of this field must be treated as
+            unknown provenance, never as settled.
+        confirmationId:
+          type: string
+          pattern: '^SIMULATED-'
+          description: >-
+            Simulation reference, always `SIMULATED-` prefixed so it cannot be mistaken for a
+            gateway settlement reference, and resolvable via `getSimulatedPayment`.
+        completedAt:
+          type: string
+          format: date-time
+        amount:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+        failureReason:
+          type: [string, 'null']
+          description: Present when `outcome` is `failed`. The workflow must not advance.
