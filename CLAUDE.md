@@ -228,6 +228,24 @@ Two habits from it:
 Same family as the grep-gated commit that passes because grep matched the words "Some tests failed":
 a check whose success condition is satisfied by the failure it is meant to catch.
 
+**The general form, and it bit three times on 2026-09-08 alone: a guard whose output never changes
+is not a guard.** It fails in both directions and both are easy to live with for months.
+
+| Instance | Direction | Effect |
+|---|---|---|
+| Patterns wrapper printing "no entries — a legitimate outcome" | always quiet | a run that read nothing looked identical to a clean sweep |
+| Patterns sandbox audit comparing against a clean tree | always noisy | a pre-existing dirty `.last_dispatch.pid` raised a VIOLATION banner every run |
+| `handoff_gate.sh`'s clean-tree check, with `.last_dispatch.pid` tracked | always noisy | the check CLAUDE.md calls "the check that mattered most" could never pass after any dispatch |
+
+An always-quiet guard hides the failure it exists to catch. An always-noisy one gets scrolled past,
+which hides the failure just as well and feels responsible while doing it. **The test is the same for
+both: what would this check print if the thing it watches were broken — and is that different from
+what it prints now?** If not, it is decoration.
+
+All three were found by taking a boring line of output seriously rather than reading past it. Two of
+them I had written myself, hours earlier, in the course of being careful.
+
+
 ### The validator on :8787 answers happily while running last week's grammar
 
 `call_skill_authoring_agent.sh` checks that *something* responds on :8787 and reuses it. It never
