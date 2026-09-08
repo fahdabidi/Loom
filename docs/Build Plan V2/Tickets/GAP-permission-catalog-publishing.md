@@ -183,3 +183,79 @@ re-install trims it to 5. Nothing in this ticket changes that behaviour; it need
 - Part A must not break the Java parser or `docs_sync_checker.dart`: additive keys only.
 - No deletion of catalog rows or grants anywhere in A or B. Retirement of the 21 legacy ids is a
   separate, explicit decision.
+
+---
+
+## Part C — DEPLOYED AND PROVEN, 2026-09-08
+
+Deployed `loom/app-access:0.3.10` (manifest bump committed **before** `kubectl apply`, as
+`047e0be`, and pushed). Rollout clean; new pod ready with 0 restarts.
+
+### The reconciler's own report (not the proof — the thing being checked)
+
+```
+Permission catalog for app 'loom_communities' retains retired permission ids [21 ids];
+retiredCatalogPermissionCount=21, retiredRolePermissionCount=0, retiredRolePermissionGrantCounts={}.
+No permission or role_permission rows were deleted.
+Reconciled permission catalog for app 'loom_communities': inserted=10, updated=106,
+catalogVersion='4-d15e5ea24e19457a20a7ffff9e296caef264ead2582529e18f2849bec9f066a5'
+```
+
+### Proven independently in the live database
+
+| Quantity | Before (committed) | Predicted | Measured after | |
+|---|---:|---:|---:|---|
+| `permission` rows | 127 | 137 | **137** | ✅ |
+| `role_permission` rows | 425 | 425 (unchanged) | **425** | ✅ |
+| admin roles with exactly 5 `community.*` | 11 | 11 | **11** | ✅ |
+| `permission_catalog_version` | `2026-08-26.2` | fresh generated hash | **`4-d15e5ea2…`** | ✅ |
+
+- All **9 `calendar.*`** ids present, each with a real display name (`Create calendar item`,
+  `Deliver reminder`, …) — no placeholders, and `blank_display_names = 0`.
+- `event_rsvp.send_reminder` present — the tenth insert.
+- `community.*` still **5** — the hand-granted governance permissions were *not* dropped, which was
+  the specific fear this whole ticket was written around.
+- The 21 retired ids are still present (sampled 4/4), consistent with report-never-delete.
+
+### The second boot is a true no-op — proven by state, not by the log line
+
+Restarted the pod again. The log says "already matches … no writes were made", but the load-bearing
+evidence is that **`catalog_published_at` is byte-identical across the restart**
+(`2026-09-08 06:49:06.134546+00` before and after), with counts still 137/425. A version re-stamp
+would have moved that timestamp.
+
+### The calendar blocker is structurally closed
+
+`ensurePermissionsExist` 400s `unknown_permission_id` exactly when a *derived* permission is absent
+from the catalog, and `CommunityPermissionDeriver` can only derive ids its bundled vocabulary names.
+So the decisive check is vocabulary ⊆ catalog. Measured, with a control:
+
+- vocabulary ids: **116**; present in the live catalog: **116** (the control — a broken query would
+  have shown 0 here, and did on the first attempt, which is how a wrong grep was caught)
+- vocabulary ids **missing** from the catalog: **0**
+- catalog ids not in the vocabulary: **21** — exactly the retired set, nothing unexplained
+- `calendar.*` in both: 9
+
+The derived set is a subset of the vocabulary by construction, so no install can now fail on
+`unknown_permission_id`.
+
+### What Part C deliberately did NOT do
+
+The plan's last line was "re-install one calendar community end-to-end". **That step was not run, on
+purpose.** `installCommunityPackage` replaces every declared role's permissions and deletes every
+group-scoped role the package does not declare — it would destroy the 11 community admin roles,
+unrecoverably, since their `community.*` grants are not archetype-derived. That is the open
+**role deletion** decision (A declare admin in packages / B reserved naming / C provenance tracking),
+not something this ticket resolves. Running it to "prove" the catalog fix would have traded a
+verified blocker for an unrecoverable one.
+
+The catalog precondition it was meant to prove is proven above by a check that does not require the
+destructive path. A live install remains the right final proof **after** the role-deletion decision
+lands.
+
+### Post-deploy audit (the three-source comparison)
+
+Deployed `loom/app-access:0.3.10` == manifest `deploy/k8s/app-access.yaml:41` == committed HEAD
+`047e0be`, `git status` clean, spec parity 8/8 + generated artifact 1/1. All six pods ready with no
+new restart counts, and app-access answers a real request (401 with auth enforced, i.e. serving) —
+checked because a heavy image build on this node has previously left services Running but broken.

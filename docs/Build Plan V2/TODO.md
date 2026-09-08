@@ -69,44 +69,40 @@ was written, not current state.
 | Resilience | Postgres-restart recovery proven by deleting `postgres-0` — same pod, 24s |
 | Suites | all five re-measured 2026-09-01: judges **485**, app shell **371** (+2), engine **316** (+1 credentialed), workflow service **148** (+1 credentialed), demo **160** |
 
-#### The one thing blocking the critical path
+#### The critical-path blocker — CLOSED 2026-09-08
 
-**RESOLVED IN DESIGN 2026-09-07; two of three parts landed and verified; Part C in flight — do not
-re-read the paragraphs below as an open user decision.** The governance-model choice this section was
-waiting on has been made by the user, and it is the first of the two options that were offered:
-`community.*` gets its own generated source that the catalog build includes, and the backend
-reconciles the live catalog from that generated artifact at startup, so **deploying the image IS
-publishing the catalog**. Ticket: [GAP-permission-catalog-publishing](Tickets/GAP-permission-catalog-publishing.md);
-row detail in [Access Control and Workflow Service Tracker.md](Access%20Control%20and%20Workflow%20Service%20Tracker.md).
+**Permission catalog publishing is hardened, deployed, and proven. This section is kept, rather than
+deleted, because it was quoted as an open blocker for over a week after parts of it stopped being
+true.** Ticket with the full evidence: [GAP-permission-catalog-publishing](Tickets/GAP-permission-catalog-publishing.md).
 
-- **Part A landed** (`ea18fb23`) — `ArchetypeResolver` now carries typed `ArchetypeAction` records
-  including a `governanceActions` set, so `community.*` is generated rather than hand-added; the
-  generator emits a per-family `catalog[]` and a deterministic `catalogVersion`.
-- **Part B landed and verified** (`80bc61f`, backend) — a startup reconciler that **upserts only and
-  never deletes** (retired ids are reported, not removed), returns before any write when nothing
-  changed, and a `build.sh` parity gate that refuses Maven on a drifted vocabulary twin. 72 tests,
-  0 failures/errors/**skips** against the real port-forwarded test database.
-- **Part C in flight** — build/import `0.3.10`, commit the manifest bump, deploy, run the drift audit,
-  and prove the reconcile in the live DB.
+Deploying the image **is** publishing the catalog now: `app-access` reconciles the live `permission`
+table from its bundled, generated `permissions-vocabulary.json` on startup — upsert-only, never
+deleting, and a true no-op when nothing changed.
 
-**What made the old fear obsolete, checked rather than assumed:** `role_permission` has foreign keys
-only to `app_role` (`role_permission_role_fk`) and **none to `permission`**, re-confirmed against the
-live schema on 2026-09-07. A catalog reconcile therefore cannot strip or block a grant even in
-principle — the hand-granted `community.*` rows are not at risk from publishing the catalog. The
-destructive behaviour that *is* still real belongs to `installCommunityPackage`, which replaces each
-declared role's permissions and deletes undeclared group-scoped roles; that is a separate hazard and
-is unchanged by this work.
+- **Part A** (`ea18fb23`) — `ArchetypeResolver` carries typed `ArchetypeAction` records including a
+  `governanceActions` set, so `community.*` is *generated* rather than hand-added.
+- **Part B** (`80bc61f`) — the startup reconciler plus a `build.sh` parity gate that refuses Maven on
+  a drifted vocabulary twin. 72 tests, 0 failures/errors/**skips** against the real test database.
+- **Part C** (`047e0be`, `loom/app-access:0.3.10`) — deployed and proven in the live DB.
 
-The Part C before-snapshot, re-confirmed live and matching the one committed in the ticket:
-`permission` **127**, `role_permission` **425**, admins holding exactly five `community.*` **11**
-(of 12 admin roles — the 12th is the known `masjid-nur-admin` outlier), `permission_catalog_version`
-**`2026-08-26.2`**, deployed `0.3.9` == manifest == HEAD. Expected after C: **137** permissions,
-**425** grants unchanged, 11 admins still at 5, a fresh version stamp, and a second restart that
-writes nothing.
+**Measured after the deploy, against the before-snapshot committed in the ticket:** `permission`
+127 → **137** (predicted 137), `role_permission` **425 → 425, unchanged**, admin roles holding exactly
+five `community.*` **11 → 11**, `permission_catalog_version` `2026-08-26.2` → the generated hash. All
+nine `calendar.*` ids are present with real display names; `community.*` is still 5, so the
+hand-granted governance rows were never at risk. A second restart wrote nothing —
+`catalog_published_at` is byte-identical across it.
 
-Everything downstream still waits on Part C landing: `calendar.create` cannot reach a role until it is
-in the live catalog, so instance creation stays refused (`403`), which blocks the reminder-chain
-proof, the capture campaign, and the production bar.
+**The calendar blocker is closed structurally, not just observed once.** `ensurePermissionsExist`
+rejects an install only when a *derived* permission is absent from the catalog, and the deriver can
+only emit ids its bundled vocabulary names — so vocabulary ⊆ catalog settles it: 116 vocabulary ids,
+**116 present, 0 missing**, with the 137−116 = 21 remainder being exactly the retired set.
+
+**What is still genuinely open, and is a different problem:** `installCommunityPackage` replaces each
+declared role's permissions and deletes every group-scoped role the package does not declare. It
+would destroy all 11 community admin roles unrecoverably, because their `community.*` grants are not
+archetype-derived and a re-install cannot restore them. That is the **role deletion** decision listed
+below, and it is what still gates a live end-to-end community install. The catalog work deliberately
+did not run that path.
 
 #### Decisions waiting on the user
 
