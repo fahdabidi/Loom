@@ -12,3 +12,9 @@
 # not build the demo app at all -- Gradle failed with
 # "resource mipmap/ic_launcher not found".
 !app/apps/loom_communities_demo/android/app/src/main/res/mipmap-*/*.png
+
+# Runtime dispatch artifact: rewritten by every agent dispatch, so tracking it
+# left the tree permanently dirty and made handoff_gate.sh (whose clean-tree
+# check CLAUDE.md calls "the check that mattered most") impossible to pass
+# after any dispatch. Untracked 2026-09-08.
+.last_dispatch.pid
