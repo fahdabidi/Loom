@@ -378,6 +378,8 @@ for two weeks. Nothing failed. The app simply did not know those endpoints exist
 
     bash "docs/Build Plan V2/Tools/code/check_spec_parity.sh"     # exits 1 on drift
 
+**A third member of this family now has a gate too.** `check_published_definitions.sh` compares every package's declared `workflowType`s against the deployed `workflow_definitions` rows, because that copy drifts the same way and had no check until 2026-09-08 — three types were unpublished, and a `createInstance` naming an unpublished type **returns success and does nothing**. Run it in the same audit.
+
 **Run it whenever a spec changes, and as part of the post-deploy audit** — spec drift and an
 uncommitted manifest bump surface at the same moment, so check them together.
 
