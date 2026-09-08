@@ -521,6 +521,65 @@ as evidence**; example output inside an agent's report is prose, not telemetry.
   Claude Opus (`data/call_live_verification_agent.sh`) — the DeepSeek gateway is text-only and
   refuses images, which a UX judge fundamentally needs.
 
+## Architecture facts worth carrying, not just looking up
+
+Folded in from `keypatterns.md` (the Root Cause Agent's own institutional memory — read that file
+for the full, cited version of each) after its first seeding pass, 2026-09-07. These are the
+entries that generalize beyond the one investigation that found them; the rest stay in
+`keypatterns.md` itself as more specific reference material.
+
+- **Identifier spaces are distinct contracts.** `extensionId`, canonical `communityId`,
+  `communityHandle`, App Access group id, role id, fan id — each has a different job, and a
+  valid-looking string in the wrong space passes ordinary type/schema checks silently. Map between
+  them explicitly at every service or artifact boundary; don't assume one can stand in for another
+  because both are strings that look like ids (this is exactly what produced the `authz-503`
+  extensionId-vs-communityId bug).
+- **Community administration is generated governance, not a package-authored role.** Install
+  generates `<communityHandle>-admin` and grants it exactly the five `community.*` permissions; a
+  package declares its own domain roles (organizer, coach, board member) separately, and one person
+  may hold both. A workflow named "join" or "approve registration" does not itself create
+  membership or grant a role — App Access owns memberships/roles/grants, Fan Passport owns personal
+  identity, workflow instances own domain participation, and those three never collapse into one.
+- **The workflow service runs the same engine as the local path, but not the same context.**
+  Reusing `LocalWorkflowEngineApi` server-side avoids reimplementing guards/formulas/effects, but
+  "local" in the class name doesn't mean device-only authority — and a shared engine still needs
+  the request's own community, caller roles, and membership lookup installed correctly at every
+  entry point. A server omitting that lookup once made every `membersOnly` record silently
+  creator-only, because the shared rule correctly returned false for a check nobody had populated.
+- **An archetype, a card, and a tab renderer are three separate mechanisms.** Naming a tab
+  `calendar` does not make it render a calendar — the bound archetype decides that, and `calendar`
+  the archetype has no attendance semantics of its own and can be bound into a tab with any name.
+  Archetype-to-renderer is not one-to-one either. Treat "the docs say this archetype exists" and
+  "this archetype actually renders" as two separate claims to verify.
+- **Remote communities start empty on purpose — that's the 2026-09-07 decision, not a bug to chase
+  again.** Package `workflowInstances` seed only the local engine; installing/publishing a package
+  is not a request to copy demo instances into Postgres. Every member-created workflow needs a real
+  create path, and the first live check of anything must exercise creation itself, not assume seed
+  content will be there.
+- **`writableBy` and `platformSource` answer different questions.** `writableBy` says who writes a
+  field; `platformSource` names a supported generated-value mechanism for fields that have one.
+  Neither substitutes for the other, and reclassifying an unwritten field doesn't make it populate —
+  a `relatedInstance` effect targeting a *different* workflow type can be a field's real writer, and
+  a validator that only checks same-workflow/`createInstance` writes will false-positive on it
+  (exactly what happened investigating Cedar's "orphan" fields — the fix was to trust the actual
+  effect graph, not silence the warning by reclassifying the field).
+- **Reminder ownership, initiation, and delivery are three independent choices, not one setting.**
+  `set_reminder` is a member's own preference on their own row; `send_reminder` is a deliberate,
+  role-guarded human action; `deliver_reminder` is unauthored, formula-driven platform delivery with
+  no transition or role grant at all. Migrations have repeatedly deleted a legitimate manual button
+  or a member's own preference by treating these as one mechanism.
+- **A destructive transition's guard must come from the specific obligation it ends, not a
+  neighboring guard copied over.** A listing can stay `published` while its own availability data
+  says reserved/on-loan — "owner-only delist" has independently reappeared in more than one
+  community and can strand an active borrower; the opposite mistake (gating cancellation on a
+  success-only precondition) can trap a failed operation with no exit either. Trace the actual
+  obligation before deciding a destructive action is safe.
+- **`specVersion`, `skillVersion`, and a provenance hash prove three different things, and none
+  substitutes for the others.** Grammar compatibility, last-applied authoring convention, and exact
+  byte identity are independent facts — a package can match its recorded `skillVersion` and still
+  have never received an earlier convention that version implies, and a provenance hash proves a
+  file matches its own manifest, not that a Skill dispatch (rather than a hand-edit) produced it.
+
 ## Autonomous mode — how to run the tracker without being asked
 
 Armed 2026-08-27. These are the patterns that actually held up over the preceding week; each one is
