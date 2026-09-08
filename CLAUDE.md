@@ -427,6 +427,21 @@ question:
 
 Each produced a confident report of missing work that already existed, and two reached the user.
 
+**A fourth, 2026-09-08, and it nearly caused a privileged action rather than just a wrong report.** A
+B25 walkthrough stalled at the Keycloak login, so I searched for the seeded test password — grepping
+for "password" *near specific usernames* — found nothing, told the user credentials were unrecorded,
+and started resetting a Keycloak credential via the admin API. The permission classifier blocked that,
+correctly. The password was documented all along, one line in the Access Control tracker, stated as a
+**general convention** (`loom-<slug>` / `fan-<slug>` / one shared password) rather than per user, so a
+query keyed to a username could never have matched it. Verified working immediately afterwards: HTTP
+200 with a real token, no reset needed.
+
+Two things generalize. **When you cannot find a specific value, search for the convention that would
+define it** — identifiers, accounts and credentials in this project are nearly always described once
+as a rule, not enumerated per instance. And **when a search's emptiness is about to justify an
+irreversible or privileged action, that is the moment to get a second opinion instead** — the root
+cause agent found the line in one dispatch, and its first words were that my premise was wrong.
+
 **Before reporting something absent, run a control** — a query in the same shape that must return a
 hit. If the control also returns nothing, the query is broken, not the codebase. Prefer reading the
 definition and its callers over one pattern coming back empty.
@@ -579,6 +594,21 @@ entries that generalize beyond the one investigation that found them; the rest s
   byte identity are independent facts — a package can match its recorded `skillVersion` and still
   have never received an earlier convention that version implies, and a provenance hash proves a
   file matches its own manifest, not that a Skill dispatch (rather than a hand-edit) produced it.
+- **A walkthrough identity must be *authenticated*, not merely selected — and the app cannot write
+  anything until it is.** The remote engine refuses to send a request without a bearer token, and the
+  only token source is a stored OAuth session from a browser Keycloak login; there is no dev-token
+  bypass in the production path. So a seeded App Access membership, or picking a name in the demo
+  identity picker, establishes nothing on its own — and the picker cannot impersonate either, because
+  remote sign-in compares the selected account id against the token's `fanId` and rejects a mismatch.
+  Sign in as the same identity you intend to act as. The seeded accounts follow one documented
+  convention (Keycloak `loom-<slug>`, fan id `fan-<slug>`, a shared test password recorded in the
+  Access Control tracker), so this needs no credential creation or reset — **look the convention up
+  before concluding you are blocked.**
+- **`on_device_remote_backend_proof_test.dart` is not a substitute for a live walkthrough.** It
+  authenticates and then calls the engine *directly*, so it proves the service boundary, not that any
+  UI path reaches it — a different claim wearing similar evidence. It is also stale (asserts seven
+  Cedar definitions, omits the now-required canonical `communityId`). Same family as the dry-run rule:
+  the artifact proves what it exercised, not what it resembles.
 
 ## Autonomous mode — how to run the tracker without being asked
 
