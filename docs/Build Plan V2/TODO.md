@@ -71,24 +71,42 @@ was written, not current state.
 
 #### The one thing blocking the critical path
 
-**The deployed authorization state was hand-assembled and diverges from the generated tooling in two
-dimensions**, so no vocabulary-driven provisioning operation is safe to run:
+**RESOLVED IN DESIGN 2026-09-07; two of three parts landed and verified; Part C in flight — do not
+re-read the paragraphs below as an open user decision.** The governance-model choice this section was
+waiting on has been made by the user, and it is the first of the two options that were offered:
+`community.*` gets its own generated source that the catalog build includes, and the backend
+reconciles the live catalog from that generated artifact at startup, so **deploying the image IS
+publishing the catalog**. Ticket: [GAP-permission-catalog-publishing](Tickets/GAP-permission-catalog-publishing.md);
+row detail in [Access Control and Workflow Service Tracker.md](Access%20Control%20and%20Workflow%20Service%20Tracker.md).
 
-- *Grants*: the 11 community admin roles hold five `community.*` governance permissions each, by the
-  2026-08-30 hand-grant. The deriver has no path to reproduce them.
-- *Catalog*: the live `permission` table has 127 ids (21 hand-added stopgaps incl. `community.*`), and
-  no `calendar.*` — even after `0.3.6` bundles the 111-id vocabulary, because deploying the image does
-  not write the catalog.
+- **Part A landed** (`ea18fb23`) — `ArchetypeResolver` now carries typed `ArchetypeAction` records
+  including a `governanceActions` set, so `community.*` is generated rather than hand-added; the
+  generator emits a per-family `catalog[]` and a deterministic `catalogVersion`.
+- **Part B landed and verified** (`80bc61f`, backend) — a startup reconciler that **upserts only and
+  never deletes** (retired ids are reported, not removed), returns before any write when nothing
+  changed, and a `build.sh` parity gate that refuses Maven on a drifted vocabulary twin. 72 tests,
+  0 failures/errors/**skips** against the real port-forwarded test database.
+- **Part C in flight** — build/import `0.3.10`, commit the manifest bump, deploy, run the drift audit,
+  and prove the reconcile in the live DB.
 
-`install` and `replacePermissionCatalog` are both vocabulary-driven, so running either to add
-`calendar.*` would drop the hand-added `community.*` and delete undeclared roles. The decision is a
-governance-model choice, detailed in `Access Control` §8: either `community.*` gets its own generated
-source the catalog build includes, or the provisioning ops become merge-safe against permissions they
-do not own.
+**What made the old fear obsolete, checked rather than assumed:** `role_permission` has foreign keys
+only to `app_role` (`role_permission_role_fk`) and **none to `permission`**, re-confirmed against the
+live schema on 2026-09-07. A catalog reconcile therefore cannot strip or block a grant even in
+principle — the hand-granted `community.*` rows are not at risk from publishing the catalog. The
+destructive behaviour that *is* still real belongs to `installCommunityPackage`, which replaces each
+declared role's permissions and deletes undeclared group-scoped roles; that is a separate hazard and
+is unchanged by this work.
 
-Everything downstream waits on it: `calendar.create` cannot reach a role until it is in the catalog,
-so instance creation stays refused (`403`), which blocks the reminder-chain proof, the capture
-campaign, and the production bar.
+The Part C before-snapshot, re-confirmed live and matching the one committed in the ticket:
+`permission` **127**, `role_permission` **425**, admins holding exactly five `community.*` **11**
+(of 12 admin roles — the 12th is the known `masjid-nur-admin` outlier), `permission_catalog_version`
+**`2026-08-26.2`**, deployed `0.3.9` == manifest == HEAD. Expected after C: **137** permissions,
+**425** grants unchanged, 11 admins still at 5, a fresh version stamp, and a second restart that
+writes nothing.
+
+Everything downstream still waits on Part C landing: `calendar.create` cannot reach a role until it is
+in the live catalog, so instance creation stays refused (`403`), which blocks the reminder-chain
+proof, the capture campaign, and the production bar.
 
 #### Decisions waiting on the user
 
