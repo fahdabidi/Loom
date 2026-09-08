@@ -37,6 +37,17 @@ Two device traps that already cost time:
 - Chrome's **first-run onboarding** intercepts the OAuth redirect the first time. Dismiss it.
 - The identity picker **cannot impersonate**: the app compares the selected account id against the
   token's \`fanId\` and rejects a mismatch. Sign in as the identity you intend to act as.
+- **A stale Keycloak SSO cookie will silently sign you back in as the PREVIOUS user.** If a prior
+  session exists, "Sign in securely with Loom…" can show **no login form at all** and return a green
+  "You're signed in" — having re-issued a token for the OLD fan. That success screen proves a token
+  exists, not whose it is. **Hit Keycloak's logout endpoint first**, confirm the real login form
+  actually appears, and afterwards confirm \`created_by_fan_id\` on your row is the fan you intended.
+  This cost a previous dispatch ~15 minutes and is the likeliest way to bank evidence attributed to
+  the wrong identity.
+- **\`uiautomator dump\` returns stale trees here.** When it disagrees with a screenshot, the screenshot
+  wins; never report an affordance missing on the strength of a dump alone.
+- If the VM-local adb server dies mid-run, the Windows-hosted emulator is still reachable with
+  \`adb -H 192.168.56.1 -P 5037\`.
 
 ## The proof standard (both halves required, in this one session)
 

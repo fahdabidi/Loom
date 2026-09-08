@@ -47,6 +47,13 @@ VM is now a pure dispatch/build host. Do not recreate an emulator there: it wedg
 twice in one day, and costs ~70% CPU even idle, which roughly quadruples Flutter suite times.
 Captures run on Windows.
 
+**A VM-hosted session can still drive that emulator — this section has been misread as saying it
+cannot.** The emulator process must live on Windows; *talking* to it need not. A dispatch running on
+the VM reaches it through the Windows adb server, and when the VM-local adb server dies mid-run the
+recovery is `adb -H 192.168.56.1 -P 5037 …` rather than abandoning the run. Proven 2026-09-08 across
+three B25 walkthroughs, one of which recovered exactly this way. Same shape as the APK-build lesson
+below: check whether a limitation is intrinsic to the task or incidental to where it is running.
+
 After a VM reboot `/tmp` is cleared and the **validator service on :8787 does not restart
 itself**. Bring it back with
 `cd ~/Loom/app && dart run packages/tooling/loom_ux_judges/bin/validator_server.dart`.
@@ -519,6 +526,15 @@ Three habits, in the order they would have saved the most time:
 - Process checks lie in both directions: `pgrep -c qemu-system-x86_64` returns 0 when it IS
   running (15-char `comm` truncation), and `pgrep -fc` returns 1 when nothing is (it matches its
   own command line). Use `adb devices` plus a bracketed `pgrep -fc '[q]emu...'`.
+- **A stale Keycloak SSO cookie silently re-authenticates the PREVIOUS user, and the app says
+  "signed in".** On 2026-09-08 a walkthrough holding a `fan-hoa-board-1` session tried to sign in as
+  `fan-camera-member-1`; "Sign in securely with Loom…" showed **no login form at all** and returned a
+  green *"You're signed in"* — Keycloak had re-issued a token for the old fan. The app's
+  anti-impersonation guard caught it (it compares the selected account id against the token's
+  `fanId`), which is the only reason it surfaced. **A success screen proves a token exists, not whose
+  it is.** Hit Keycloak's logout endpoint before switching identity, confirm the real form appears,
+  and confirm `created_by_fan_id` on the resulting row is the fan you meant. This is the likeliest
+  way to bank evidence attributed to the wrong person, and it fails green in every direction.
 - **`adb shell input text` silently truncates, and a truncated identifier still looks valid.** On
   2026-09-08 a walkthrough typed `fan-hoa-member-1` into a `payerFanId` field and the device received
   `fan-hoa-memb`. Nothing errors: the workflow is created, the row persists, and the instance is
