@@ -231,3 +231,13 @@ follow below as the agent finds them, starting with that dispatch's own findings
 **Why it matters:** Repeated dispatches invented an export-reviewer role or an invite/connect subsystem from template prose. A later cleanup nearly regenerated already-correct archetypes back to obsolete generic fallbacks. The approved recovery was a targeted Skill edit against the shipped package, with an independently checked diff; that did not exempt the package from required migrations.
 
 **Evidence:** `docs/references/reference/solved-patterns.md`, patterns 12, 13, and 17; `docs/Build Plan V2/TabId-Archetype Gap Closure.md`, Milestone 2 “Resumed and closed” account; authoring `00-INSTRUCTIONS.md`, “match or beat what ships today.”
+
+### 2026-09-08 -- A walkthrough identity must be authenticated, not merely selected
+
+**Kind:** pattern
+
+**What:** Seeded App Access memberships and demo picker entries do not establish an OAuth session. Remote sign-in requires the selected account to equal the token’s fanId. Existing seeded credentials are documented in the Access Control tracker, and LoomAuthSession also supports a test-only password grant. An emulator test that authenticates and calls the engine directly proves a different boundary from a UI-driven workflow.
+
+**Why it matters:** Missing credential context can strand a walkthrough at Keycloak despite existing usable test infrastructure. Conversely, selecting roles locally or running a direct engine test can produce misleading claims of persona coverage or UI completion. Bind each walkthrough to its authenticated fan, server-resolved role, actual UI action, and persisted instance.
+
+**Evidence:** Access Control and Workflow Service Tracker.md:1783; loom_auth_session.dart:145; part39_remote_auth_api.dart:201; on_device_remote_backend_proof_test.dart:103 and :135. This dispatch established these code paths; current credential validity and the September 7 notification row’s origin remain unverified.
