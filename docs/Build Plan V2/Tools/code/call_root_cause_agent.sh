@@ -325,7 +325,14 @@ fi
 # keypatterns.md entry delimited by the markers the role preamble specifies.
 # This script -- outside the sandbox -- is the only thing that ever writes
 # keypatterns.md; the agent only ever proposes an entry as text.
-FINAL_REPLY="$(jq -r 'select(.type=="item.completed" and .item.type=="agent_message") | .item.text' "$CODEX_OUTPUT_CAPTURE" 2>/dev/null | tail -1)"
+# NOTE: must be a single jq call using slurp mode (`-s`) to pick the LAST
+# matching object, not `jq -r ... | tail -1` -- `-r` decodes embedded `\n`
+# into real newlines, so a `tail -1` afterward grabs only the last LINE of
+# the last reply, not the last reply itself. Found live during smoke-testing
+# 2026-09-07: a multi-line reply silently extracted as just its closing
+# "<<<END_KEYPATTERNS_ENTRY>>>" line, and the append step correctly saw that
+# as empty and skipped -- no corruption, but nothing was captured either.
+FINAL_REPLY="$(jq -rs '[.[] | select(.type=="item.completed" and .item.type=="agent_message") | .item.text] | last // ""' "$CODEX_OUTPUT_CAPTURE" 2>/dev/null)"
 KEYPATTERNS_ENTRY="$(printf '%s\n' "$FINAL_REPLY" | sed -n '/<<<KEYPATTERNS_ENTRY>>>/,/<<<END_KEYPATTERNS_ENTRY>>>/p' | sed '1d;$d')"
 if [ -n "$(echo "$KEYPATTERNS_ENTRY" | tr -d '[:space:]')" ]; then
   {
