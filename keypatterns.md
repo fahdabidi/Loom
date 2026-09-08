@@ -304,3 +304,10 @@ meanings, and substituting the admin for a missing domain role is never the fix.
 `group_membership_role` holder counts; `app_role` for `loom_communities_masjid-nur` holding only
 `community-member` and `masjid-nur-admin`; Garden's `join-queue` guard requiring a `garden-member`
 who is not the item owner.
+
+### 2026-09-08 -- Simulated payment completion needs durable provenance and an explicit service binding
+
+**Kind:** architectural decision/pivot
+**What:** Payment ownership, initiation and confirmation are separate responsibilities. An authorized person may initiate checkout, but service success must gate workflow completion and its related effects. A local simulation may exercise the paid lifecycle only while preserving explicit simulation provenance on the payment, each attempt, receipts and downstream status projections. A field’s platformSource identifies a value-producing mechanism; it does not establish a service-backed transition or platform-only authority.
+**Why it matters:** Removing a role guard opens an ordinary transition rather than reserving it for the platform. Copying only a paid checkpoint strips simulation provenance and lets downstream consumers mistake a demo result for money received. Payment invocation needs a declared execution contract before package authors can use it; guessing from field, transition or state names repeats the hidden-service-gap failure.
+**Evidence:** September 8 payment scoping dispatch. local_workflow_engine_api.dart:1282 commits state and effects without a payment-service gate; workflow_models.dart:449 has no transition service binding; permissions.md:153 specifies no authored transition for automatic reminder delivery; guard_evaluator.dart:29 treats absent or empty allowedRoleIds as unrestricted; RiversideYouthSoccer_Example.jsonc:568 propagates only paymentCheckpoint = paid.
