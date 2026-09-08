@@ -483,6 +483,24 @@ cause agent found the line in one dispatch, and its first words were that my pre
 hit. If the control also returns nothing, the query is broken, not the codebase. Prefer reading the
 definition and its callers over one pattern coming back empty.
 
+**A control proves your query works. It does not prove your question is worth asking.** On
+2026-09-08 I checked a tracker row claiming "zero packages declare `deliver_reminder`", ran a proper
+control (six packages declare `set_reminder`, so the grep worked), and confirmed the row — correctly,
+and uselessly. `deliver_reminder` is **derived from the archetype and never declared by a package**;
+`calendar.md` §5 says so outright, and `ArchetypeResolver` defines it for both families. Zero
+declarations was the designed state, not a gap, and I had just published a confident synthesis built
+on it being a defect.
+
+The control cannot catch this, because the query was fine. **Before reporting an absence as a
+finding, read the definition of the thing that is absent and confirm it is supposed to be present.**
+A count is evidence about the corpus; only the contract says what the count ought to be.
+
+The same session produced the cheaper cousin twice: a grep for an `"archetype"` key that does not
+exist (it is `cardSurfaceFamily`) returned 0 and looked like confirmation, and a control field chosen
+from the *wrong community* returned 0 and briefly implicated a healthy field. **When a query returns
+the answer you expected, that is the moment to check the key name and the scope** — an empty result
+that agrees with you gets less scrutiny than one that does not, which is exactly backwards.
+
 ### The demo app IS wired to the deployed backend by default — stop re-litigating this
 
 **Fact, re-confirmed 2026-09-06 by reading the actual call chain, not by grepping:**
