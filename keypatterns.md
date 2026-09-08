@@ -1,10 +1,14 @@
 # Key Patterns — Loom's institutional memory
 
-**What this file is.** Maintained by the Root Cause Agent (`data/call_root_cause_agent.sh`), a
-single persistent Codex session that carries context across every dispatch made to it and is
-meant to act as this project's standing expert — the one place that accumulates recurring issues,
-durable patterns, and key architectural decisions/pivots across every investigation, rather than
-each dispatch rediscovering them independently.
+**What this file is.** Fed by the Root Cause Agent (`data/call_root_cause_agent.sh`), a single
+persistent Codex session that carries context across every dispatch made to it and is meant to act
+as this project's standing expert — the one place that accumulates recurring issues, durable
+patterns, and key architectural decisions/pivots across every investigation, rather than each
+dispatch rediscovering them independently. **The agent itself never writes this file** — it runs
+`--sandbox read-only` with zero write access, enforced, not just asked for. It only *proposes* an
+entry, as text in its reply, delimited by `<<<KEYPATTERNS_ENTRY>>>`/`<<<END_KEYPATTERNS_ENTRY>>>`;
+`call_root_cause_agent.sh` itself extracts and appends that block after the dispatch completes —
+that script is this file's only writer.
 
 **Append-only.** Never delete or rewrite an existing entry from this file — that includes the
 agent that maintains it. A superseded entry is corrected by adding a new entry that says so and

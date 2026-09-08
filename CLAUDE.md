@@ -561,14 +561,25 @@ anything non-trivial, to trace the real mechanism first rather than write a tick
 one. Reset (abandoning the accumulated session) is deliberately not a script flag — delete
 `.codex-logs/.root_cause_agent_session_id` by hand if that's ever truly needed.
 
-**`keypatterns.md`** (repo root) **is that agent's legible memory, and folding it in here is your
-job, not the agent's.** Every dispatch may append (never rewrite) an entry there — a recurring
-issue, a durable pattern, or a key architectural decision/pivot — in addition to its designated
-report. That file is staging memory the agent writes to; it is not loaded automatically the way
-this file is. **After any Root Cause Agent dispatch that touches `keypatterns.md`, read what's new
-and fold anything genuinely durable and generally-applicable into this file yourself**, in this
-file's own voice and level of generality — a `keypatterns.md` entry that never makes this trip is a
-lesson the next session won't have.
+**It runs `--sandbox read-only`, genuinely zero write and zero network access — enforced, not just
+asked for** (tightened same day, after the earlier `workspace-write`/prompt-only design). Confirmed
+live: a write attempt gets `Read-only file system` even to an `--add-dir`-named path (that flag only
+does anything under `workspace-write`), and a `curl` to a live local service fails outright with no
+override available. **This means it cannot fetch its own live evidence** — a DB query, a `kubectl`,
+a log tail — the dispatching session must gather that beforehand and paste it into the brief. It
+reads code and reasons; it proposes a diagnosis, a fix, or test code as *text* in its reply for
+someone else to apply — never a file it writes or a command it runs. There is no report file either
+(nothing to write one with): its reply in the dispatch log is the whole deliverable.
+
+**`keypatterns.md`** (repo root) **is that agent's legible memory — and since it cannot write
+anything, this script is the one that writes it, not the agent.** The agent PROPOSES an entry
+(a recurring issue, a durable pattern, or a key architectural decision/pivot) as text in its reply,
+delimited by `<<<KEYPATTERNS_ENTRY>>>`/`<<<END_KEYPATTERNS_ENTRY>>>`; `call_root_cause_agent.sh`
+itself extracts and appends it after the dispatch completes. That file is staging memory, not
+loaded automatically the way this one is. **After any Root Cause Agent dispatch that appends an
+entry, read what's new and fold anything genuinely durable and generally-applicable into this file
+yourself**, in this file's own voice and level of generality — a `keypatterns.md` entry that never
+makes this trip is a lesson the next session won't have.
 
 **Pass `--fresh` unless you mean to continue the same work.** `call_implementation_agent.sh`
 defaults to `resume --last` — it hardcodes that, and nothing checks whether resuming is appropriate:

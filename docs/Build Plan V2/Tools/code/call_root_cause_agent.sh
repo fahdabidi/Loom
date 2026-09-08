@@ -28,7 +28,7 @@
 # it accumulates codebase familiarity across every investigation rather than
 # starting cold each time. Mechanism: the session's Codex thread id is
 # captured once (from the `thread.started` event in `--json` output, which
-# every dispatch now uses) and persisted at
+# every dispatch uses) and persisted at
 # `.codex-logs/.root_cause_agent_session_id`. Every later dispatch reads that
 # id and resumes it. There is deliberately NO flag to force a fresh session --
 # that was the previous script's footgun (a caller could omit `--fresh` by
@@ -38,41 +38,51 @@
 # (corrupted, too large, or a deliberate reset), delete that file by hand --
 # an out-of-band, deliberate action, not a script flag.
 #
+# READ-ONLY, user-tightened 2026-09-07 -- real sandbox enforcement, not just a
+# prompt rule. This agent has ZERO write access and ZERO network access,
+# confirmed live, not assumed: `--sandbox read-only` rejects a write with
+# `Read-only file system` even to a directory named in `--add-dir` (`--add-dir`
+# only has meaning under `workspace-write` -- "additional directories that
+# should be WRITABLE alongside the primary workspace" -- and does nothing
+# under `read-only`), and a `curl` to a live local service under
+# `read-only` fails outright (`exit 7`, no route -- there is no config key
+# to re-enable network under this sandbox mode the way
+# `sandbox_workspace_write.network_access` does under `workspace-write`).
+# **Consequence for briefs**: this agent cannot fetch its own live evidence
+# (DB queries, curl checks, `kubectl`) the way earlier dispatches sometimes
+# did -- any such evidence must be gathered by the dispatching session BEFORE
+# writing the brief and pasted into it. The agent reads code and reasons; it
+# does not act. It may propose code edits, tests, or additional
+# instrumentation, but only as TEXT in its reply, for a human or the
+# implementation agent to actually apply -- never as a file it writes itself.
+# `--sandbox` is not accepted by `resume` (confirmed live, see below) so this
+# is set once at the seed dispatch and holds for the session's entire life.
+#
 # Discovered the hard way (confirmed live, not guessed) while wiring this up:
 # `codex exec resume <SESSION_ID> [OPTIONS] [PROMPT]` does NOT accept
 # `-p/--profile`, `--sandbox`, or `--add-dir` -- only `-c/--config` and
 # `-m/--model` (its own `--help` lists the full set; anything else is a hard
 # parse error, e.g. "unexpected argument '--sandbox' found"). So the sandbox
-# mode and every `--add-dir` grant are fixed FOREVER at the seed (first-ever)
-# invocation and cannot be changed by any later resume -- get them right once.
-# The model/profile settings, by contrast, must be RE-SPECIFIED via `-c` on
-# every resume (there is no profile layering on `resume`), which is why the
-# resume branch below spells out every `gpt6_astra_high.config.toml` value as
-# its own `-c key=value` rather than `-p gpt6_astra_high`. Confirmed live that
-# the thread id is stable across a resume (resuming
-# `01a07e37-e580-7e83-a65e-a2a6bec42e89` and asking the agent to quote what it
-# was told in the previous turn got the previous turn's exact text back, and
-# the emitted `thread_id` in the `--json` stream was byte-identical to the id
-# passed in) -- this is a real continued conversation, not a fresh session
-# that happens to share a label.
+# mode is fixed FOREVER at the seed (first-ever) invocation and cannot be
+# changed by any later resume -- get it right once. The model/profile
+# settings, by contrast, must be RE-SPECIFIED via `-c` on every resume (there
+# is no profile layering on `resume`), which is why the resume branch below
+# spells out every `gpt6_astra_high.config.toml` value as its own
+# `-c key=value` rather than `-p gpt6_astra_high`. Confirmed live that the
+# thread id is stable across a resume (resuming a real session and asking the
+# agent to quote what it was told in the previous turn got the previous
+# turn's exact text back verbatim, with a real cache hit on the resumed
+# call's `cached_input_tokens`) -- this is a real continued conversation, not
+# a fresh session that happens to share a label.
 #
-# ROLE, not a variant of the implementation agent: this agent NEVER writes or
-# modifies implementation code, never applies a patch against source files,
-# never commits, never touches the frozen fixture. It runs with
-# `--sandbox workspace-write` plus network access and `--add-dir` grants for
-# the repo's `.git` and `/tmp` (past reports have been written to `/tmp`) --
-# there is no filesystem-level restriction to one output file. Enforcement is:
-# (a) the prompt preamble below, repeated and explicit on every turn
-# (deliberately not trimmed away on resume -- a long-lived session is exactly
-# where a rule stated once, hundreds of turns ago, is most likely to drift),
-# and (b) the verification agent (you) MUST `git status`/`git diff` after
-# every run and treat ANY change outside the one designated report file as a
-# violation to investigate, not to silently accept or commit. Codex's own
-# workspace-write sandbox never restricted writes to a single file; real
-# enforcement was always the prompt + the post-hoc audit below, not the
-# sandbox boundary.
+# NO FILE-BASED REPORT ANY MORE, same tightening: this agent has nothing to
+# write a report file WITH (no write access at all), so its entire
+# deliverable is its conversational reply -- diagnosis, proposed fix,
+# proposed test code, or an instrumentation/logging request -- captured in
+# this dispatch's own `--json` output log. Read that log directly; there is
+# no separate report path to go find.
 #
-# Two, and only two, valid outcomes for a Root Cause Agent report:
+# Two, and only two, valid outcomes for a Root Cause Agent reply:
 #   1. A confident root-cause diagnosis + a specific, concrete recommended
 #      fix described in prose (file/function/mechanism-level, not a diff) --
 #      handed back to the verification agent to turn into a real
@@ -93,16 +103,21 @@
 # MASTER SUPERVISOR / keypatterns.md, user-directed 2026-09-07: the whole
 # point of the persistent session above is that this agent becomes the
 # project's standing expert, not just a stateless investigator run fresh
-# each time. To make that memory legible to humans (not just implicit in an
-# opaque Codex thread), the agent has a SECOND writable path -- `keypatterns.md`
-# at the repo root, append-only -- where it records recurring issues, durable
-# patterns, and key architectural decisions/pivots it notices across
-# dispatches. This is staging memory, not the project's real instructions:
-# after any dispatch that adds to keypatterns.md, the orchestrating session
-# (you) reviews what's new and folds anything genuinely durable into
-# CLAUDE.md itself, the file every session actually loads. keypatterns.md is
-# not committed by the agent (it never commits anything); review and commit
-# it the same way you'd review its designated report file.
+# each time. Since it has zero write access, it cannot maintain
+# `keypatterns.md` (repo root, append-only -- recurring issues, durable
+# patterns, key architectural decisions/pivots) directly the way an earlier
+# version of this design intended. Instead: the agent PROPOSES an entry, as
+# plain text in its reply, delimited exactly by a `<<<KEYPATTERNS_ENTRY>>>`
+# / `<<<END_KEYPATTERNS_ENTRY>>>` pair (the role preamble tells it this
+# verbatim). THIS SCRIPT -- running outside the sandbox, as the orchestrator,
+# never the sandboxed model -- extracts that block after the dispatch
+# finishes and appends it to `keypatterns.md` itself. That is the file's
+# only writer; the agent never touches it, matching "zero write access"
+# literally rather than as an exception. keypatterns.md is staging memory,
+# not the project's real instructions: after any dispatch that adds an
+# entry, the orchestrating session (you) reviews it and folds anything
+# genuinely durable into CLAUDE.md itself, the file every session actually
+# loads.
 #
 # Usage:
 #   bash data/call_root_cause_agent.sh <path-to-brief-file>
@@ -120,8 +135,9 @@
 # The brief file you pass in should include: the current diff/commit(s) under
 # investigation (or, for a scoping dispatch, what change is being considered
 # and why), the full ruled-in/ruled-out matrix so far (do not make the agent
-# re-derive work already done), any trace/log output already captured, and
-# the exact report file path to write to.
+# re-derive work already done), and any trace/log/live-query output already
+# captured -- gathered by you beforehand; the agent cannot fetch its own
+# (see READ-ONLY above).
 
 set -euo pipefail
 
@@ -153,51 +169,62 @@ project'"'"'s standing expert -- the one place that accumulates recurring issues
 architectural decisions/pivots, acting as its master supervisor rather than a one-off investigator with no
 memory of the last one.
 
+**You have NO write access and NO network access -- this is enforced by your sandbox, not just a rule.**
+Every shell command you run that attempts to write anywhere, or reach the network, will fail outright. This
+is deliberate: you read code and reason, you do not act.
+
 **You must NEVER:**
-- Edit, create, or delete any implementation file (`.dart`, `.jsonc`, `.md` reference docs, anything under
-  `app/` or `docs/references/`) -- not even a "small diagnostic tweak." Not even something you are highly
-  confident is the fix. That decision belongs to the user, after you report, via a separate implementation
-  ticket.
-- Modify anything other than the ONE report file path given to you below, and `keypatterns.md` at the repo
-  root (see below) -- nothing else.
+- Attempt to edit, create, or delete any file. You cannot -- do not waste a turn discovering this the hard
+  way when reasoning about the code already tells you the same thing.
+- Attempt to fetch live evidence (DB queries, `curl`, `kubectl`, anything network-dependent). You have no
+  network access. If you need live evidence that was not included in the brief below, say so explicitly and
+  name exactly what you need (see outcome 2) -- do not guess in its place.
 - Run `git add`/`git commit`, or any command that mutates repository state.
-- Add print statements, comment out code, or otherwise "just check" something by editing a real file. If you
-  want to know what a value would be at runtime, reason about it from the code, or explicitly request that
-  exact instrumentation be added by a future round -- do not add it yourself.
 
 **Your job**, given the brief below (code, diffs, an existing ruled-in/ruled-out matrix, and any captured
-trace/log output): produce EXACTLY ONE of two outcomes, written to the exact report file path specified in
-the brief:
+trace/log/live-query output already gathered for you): produce EXACTLY ONE of two outcomes, as your reply in
+this conversation -- there is no file to write it to, your reply IS the deliverable:
 
 1. **A confident root-cause diagnosis + a concrete recommended fix** (or, for a scoping dispatch, a
    confident account of the real mechanism and what a change would actually touch/break). State the mechanism
    precisely (which function, which line, which interaction, why it produces the observed symptom) and
-   describe the fix at the level of "change X to do Y because Z" -- prose/pseudocode is fine, a literal diff
-   is not required (that is the implementation agent'"'"'s job once you hand this off). Only report this
-   outcome if you are genuinely confident, not merely suspicious -- a wrong confident diagnosis costs a full
-   wasted implementation round.
+   describe the fix at the level of "change X to do Y because Z" -- prose/pseudocode is fine. If it would help,
+   show the actual test code you would want run to confirm it, or propose the literal edit as a diff-shaped
+   quote in your reply -- but show it as text for someone else to apply, never attempt to write or run it
+   yourself. Only report this outcome if you are genuinely confident, not merely suspicious -- a wrong
+   confident diagnosis costs a full wasted implementation round.
 2. **A precise instrumentation/tracing request.** If you cannot reach outcome 1 from what you were given,
    specify EXACTLY what would let you: exact file:line locations to add temporary logging, exactly what
-   values to print at each, exactly what test/scenario to run to trigger them, and what you expect each
-   candidate mechanism would look like in that output (so whoever reads the resulting log can tell which
-   hypothesis it confirms). Vague requests ("add more logging around the mutation") are not acceptable --
-   name the specific function, the specific variable, the specific comparison.
+   values to print at each, exactly what test/scenario to run to trigger them, exactly what live data (a DB
+   query, a log tail, a curl response) you would need fetched for you, and what you expect each candidate
+   mechanism would look like in that output. Vague requests ("add more logging around the mutation") are not
+   acceptable -- name the specific function, the specific variable, the specific comparison, the specific
+   query.
 
 Do not hedge between the two. If you are not confident enough for outcome 1, you must produce outcome 2, not
 a weaker version of outcome 1.
 
-**In addition to your report, keep `keypatterns.md` (repo root) up to date -- this is what makes you the
-project'"'"'s memory rather than a stateless investigator.** After delivering your report, decide whether this
-dispatch surfaced any of: a RECURRING issue (a bug class you have now seen more than once, even in a
-different guise), a durable PATTERN (a requirement shape with a plausible-wrong version and the
-verified-correct version, the way this project'"'"'s own `solved-patterns.md` is written), or a KEY
-ARCHITECTURAL DECISION OR PIVOT (a load-bearing choice, or a reversal of one, that a future dispatch -- your
-own future self, or an implementation agent -- must not blindly re-litigate). If so, APPEND an entry to
-`keypatterns.md` following its own documented entry shape -- never delete, rewrite, or reorder an existing
-entry; a correction is a new entry marked `[SUPERSEDED -- see <entry>]` pointing at the old one, not an edit
-to it. Do not force an entry when nothing of this kind was found -- an unnecessary entry dilutes a memory
-meant to be selective. Write each entry for a human reading it cold, at the level of an experienced engineer
-briefing a new team member on this project'"'"'s real institutional memory, not as raw investigation notes.
+**Propose (never write) an entry for `keypatterns.md` when this dispatch earns one.** You cannot write that
+file -- the session dispatching you will, based on what you propose here. Decide whether this dispatch
+surfaced any of: a RECURRING issue (a bug class you have now seen more than once, even in a different guise),
+a durable PATTERN (a requirement shape with a plausible-wrong version and the verified-correct version, the
+way this project'"'"'s own `solved-patterns.md` is written), or a KEY ARCHITECTURAL DECISION OR PIVOT (a
+load-bearing choice, or a reversal of one, that a future dispatch -- your own future self, or an
+implementation agent -- must not blindly re-litigate). If so, include in your reply, verbatim, a block
+delimited EXACTLY like this (nothing before the opening marker or after the closing one on those lines):
+
+<<<KEYPATTERNS_ENTRY>>>
+### YYYY-MM-DD -- <short title>
+
+**Kind:** recurring issue | pattern | architectural decision/pivot
+**What:** <the thing itself, plainly>
+**Why it matters:** <what it costs to not know this>
+**Evidence:** <this dispatch, or a file:line/commit if there is one>
+<<<END_KEYPATTERNS_ENTRY>>>
+
+Do not force this when nothing of this kind was found -- an unnecessary entry dilutes a memory meant to be
+selective. Write it for a human reading it cold, at the level of an experienced engineer briefing a new team
+member on this project'"'"'s real institutional memory, not as raw investigation notes.
 
 ---
 
@@ -227,6 +254,7 @@ else
 fi
 echo "Model: $MODEL"
 echo "Reasoning effort: $REASONING_EFFORT"
+echo "Sandbox: read-only, no network (confirmed live -- see script header)"
 echo "===================================================="
 
 # --- TODO-tracking hooks (optional; see docs/Build Plan V2/Tools/reference-tracker-
@@ -254,26 +282,22 @@ CODEX_OUTPUT_CAPTURE="$(mktemp)"
 set +e
 
 if [ -z "$SESSION_ID" ]; then
-  # Seed run: this is the ONLY invocation where sandbox/add-dir/profile can be
-  # set, since `resume` accepts none of them -- get every grant right here.
+  # Seed run: this is the ONLY invocation where sandbox/profile can be set,
+  # since `resume` accepts neither -- get it right here, it holds forever.
   codex exec \
     -p "$PROFILE" \
-    --sandbox workspace-write \
-    --add-dir "$REPO_ROOT/.git" \
-    --add-dir /tmp \
-    -c sandbox_workspace_write.network_access=true \
+    --sandbox read-only \
     --json \
     "$PROMPT" 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
 else
-  # Resume: no -p/--sandbox/--add-dir accepted here (confirmed live -- see
-  # header). Every profile value re-specified as its own -c override.
+  # Resume: no -p/--sandbox accepted here (confirmed live -- see header).
+  # Every profile value re-specified as its own -c override.
   codex exec resume "$SESSION_ID" \
     -c model="$MODEL" \
     -c model_reasoning_effort="$REASONING_EFFORT" \
     -c model_verbosity="medium" \
     -c model_context_window=272000 \
     -c service_tier="fast" \
-    -c sandbox_workspace_write.network_access=true \
     --json \
     "$PROMPT" 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
 fi
@@ -296,6 +320,23 @@ if [ -z "$SESSION_ID" ]; then
   fi
 fi
 
+# Extract the agent's final conversational reply (there is no report file --
+# see the NO FILE-BASED REPORT header note) and, if present, the proposed
+# keypatterns.md entry delimited by the markers the role preamble specifies.
+# This script -- outside the sandbox -- is the only thing that ever writes
+# keypatterns.md; the agent only ever proposes an entry as text.
+FINAL_REPLY="$(jq -r 'select(.type=="item.completed" and .item.type=="agent_message") | .item.text' "$CODEX_OUTPUT_CAPTURE" 2>/dev/null | tail -1)"
+KEYPATTERNS_ENTRY="$(printf '%s\n' "$FINAL_REPLY" | sed -n '/<<<KEYPATTERNS_ENTRY>>>/,/<<<END_KEYPATTERNS_ENTRY>>>/p' | sed '1d;$d')"
+if [ -n "$(echo "$KEYPATTERNS_ENTRY" | tr -d '[:space:]')" ]; then
+  {
+    echo ""
+    echo "$KEYPATTERNS_ENTRY"
+  } >> "$REPO_ROOT/keypatterns.md"
+  echo "Appended a new keypatterns.md entry (proposed by the agent, written by this script -- the"
+  echo "agent itself has no write access). Review it and commit keypatterns.md yourself:"
+  echo "$KEYPATTERNS_ENTRY" | sed 's/^/  /'
+fi
+
 rm -f "$CODEX_OUTPUT_CAPTURE"
 
 POST_TRACKED_COUNT="$(git ls-files | wc -l)"
@@ -313,17 +354,12 @@ fi
 
 DIRTY="$(git status --short)"
 UNEXPECTED_DIRTY="$(echo "$DIRTY" | grep -v ' keypatterns\.md$' || true)"
-if [ -n "$DIRTY" ]; then
-  if [ -n "$UNEXPECTED_DIRTY" ]; then
-    echo "WARNING: working tree is not clean after this run -- review every line below. Only"
-    echo "keypatterns.md (expected -- see below) should appear here; anything else is a role"
-    echo "violation to investigate, not to silently commit or discard:"
-    echo "$DIRTY" | sed 's/^/  /'
-  else
-    echo "keypatterns.md was updated this dispatch (expected, this is its designated second writable"
-    echo "path). Review the diff and commit it yourself -- the Root Cause Agent never commits:"
-    echo "$DIRTY" | sed 's/^/  /'
-  fi
+if [ -n "$UNEXPECTED_DIRTY" ]; then
+  echo "##################################################################"
+  echo "# VIOLATION: the working tree changed somewhere the sandbox should have made impossible. #"
+  echo "# Investigate before trusting anything -- the read-only sandbox may not have held:        #"
+  echo "##################################################################"
+  echo "$DIRTY" | sed 's/^/  /'
 fi
 
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) DISPATCH_FINISHED status=$STATUS" >> "$TODO_LOG"
@@ -331,7 +367,7 @@ echo "##################################################################"
 echo "# NEXT STEP: fold this dispatch's outcome into the TODO record. #"
 echo "##################################################################"
 if [ -n "${DISPATCH_TRACKER_FILE:-}" ]; then
-  echo "Review this agent's diagnosis/report against your own read, then update"
+  echo "Review this agent's diagnosis/reply against your own read, then update"
   echo "'$DISPATCH_TRACKER_FILE''s §8 Live TODO / Next Steps Queue and docs/Build Plan V2/TODO.md's rollup"
   echo "accordingly (typically: resolve the needs-debug-agent row, add a new-ticket row for the fix)."
 else
