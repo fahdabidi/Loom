@@ -543,8 +543,12 @@ Three habits, in the order they would have saved the most time:
   2026-09-08 a walkthrough typed `fan-hoa-member-1` into a `payerFanId` field and the device received
   `fan-hoa-memb`. Nothing errors: the workflow is created, the row persists, and the instance is
   addressed to a fan that does not exist — evidence that is wrong in the one field nobody re-reads.
-  **Read every typed value back off the device before acting on it**, especially identifiers, and
-  prefer selecting an existing value to typing one.
+  **Verify load-bearing values against the stored row, not the screen.** Reading the value back off
+  the device is *not* sufficient — corrected 2026-09-08 after that weaker rule failed: a field that
+  scrolls horizontally shows a plausible prefix while the stored value is short, which is exactly how
+  Garden Club's `toolDescription` passed an on-screen check and was still truncated in
+  `instance_data`. It truncated input four times in a single campaign. Prefer selecting an existing
+  value over typing one, and settle anything load-bearing against the database.
 - **`uiautomator dump` disagrees with the screen, in both directions.** Same session: it returned
   stale trees twice and omitted a create FAB that screenshots showed plainly — nearly producing a
   report of a missing affordance that was actually on screen. When the dump and a screenshot
