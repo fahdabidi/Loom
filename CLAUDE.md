@@ -823,6 +823,34 @@ and **resets on each resume**. Taking the last record reports only the most rece
 understated the 24-hour total by 6× on the first attempt. Sum the peak value of each invocation
 instead (detect a reset as a drop in `total_tokens`).
 
+
+**What it is actually good for, assessed honestly after three dispatches (2026-09-08).** Its value
+has been **independence, not knowledge** — every high-value moment was it *not sharing an assumption
+I had already made*, rather than it knowing something unfindable.
+
+- **The one irreplaceable find**: unprompted, it noted that `RemoteLoomAuthApi.signIn()` compares the
+  selected account id against the token's `fanId` and rejects a mismatch. Nothing would have sent me
+  looking for that, and it is why nine communities' B25 evidence is attributed to the right fan —
+  without it, a stale SSO session would have banked a Camera Club row under `fan-hoa-board-1`.
+- **Two premise corrections, both while I was confident and wrong**: that the seeded credentials *are*
+  recorded (one line in a tracker I had already grepped, keyed to usernames when the convention is
+  stated generically), and that `listAccounts` cannot start from an empty session, so the entry-gate
+  trigger is a failed account *tap* rather than a successful load. I would have written an
+  implementation ticket from the wrong mechanism.
+- **It declined to answer once**, refusing to attribute a database row to a mechanism because the
+  table has no caller-channel column. That is worth more than a plausible guess.
+
+**Where it was NOT worth it.** The state-machine trace it produced was good and I re-verified every
+load-bearing claim myself in about five minutes — the tracing was replaceable, only the framing
+correction was not. And the 4.6M-token seeding pass is **63% of all spend on this agent and I cannot
+point to one decision it changed**; its entries largely restate CLAUDE.md and the trackers. Treat a
+proposal to re-seed with suspicion.
+
+**So use it before acting, not after being stuck** — both saves were pre-action framing checks, and
+the stuck-debugging case was the weaker one. **State your premise explicitly in the brief and ask it
+to attack that first**; "I would rather learn my framing is wrong than get a fix for the wrong
+problem" produced both corrections. And credit the right guard: on the credential reset it was the
+**permission classifier** that stopped the action, and the agent that explained why afterwards.
 **It runs `--sandbox read-only`, genuinely zero write and zero network access — enforced, not just
 asked for** (tightened same day, after the earlier `workspace-write`/prompt-only design). Confirmed
 live: a write attempt gets `Read-only file system` even to an `--add-dir`-named path (that flag only
