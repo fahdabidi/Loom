@@ -319,61 +319,77 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       });
     }
 
-    await _ensureEngineAuthorizationSync();
-    if (!mounted) return;
-
-    final session = _authApi.currentSession;
-    final accounts = await _authApi.listAccounts(
-      communityExtensionId: community.extensionId,
-    );
-    final signedInAccountId = session?.account.accountId;
-    final hasActiveAccount =
-        signedInAccountId != null &&
-        accounts.any(
-          (account) =>
-              account.accountId == signedInAccountId &&
-              account.status == MembershipStatus.active,
-        );
-    final hasPendingApproval = accounts.any(
-      (account) => account.status == MembershipStatus.pendingApproval,
-    );
-    if (!mounted) return;
-    // This is the community-open lifecycle point for the remote replica. It
-    // runs before the engine-native surfaces receive their first read. Local
-    // engines and hosts without an injected offline directory are no-ops.
-    // An unavailable sync keeps an already stored replica available; a real
-    // response failure such as 403 continues to surface from this call.
-    var offlineReplicaEnabled = false;
-    if (hasActiveAccount) {
-      offlineReplicaEnabled = await openOfflineReplicaForExtensionId(
-        extensionId: community.extensionId,
-        fanId: signedInAccountId,
-      );
-      // [open] establishes the fan/community handle. The follow-up refresh
-      // is the explicit entry sync: it is never driven by a read or timer.
-      // An unavailable open has already retained the saved snapshot, so do
-      // not replace it with the explicit refresh error before the surface can
-      // make its availability-only fallback read.
-      if (offlineReplicaEnabled &&
-          loomWorkflowReplicaCoordinator?.lastOpenSyncFailure == null) {
-        await refreshOfflineReplicaForExtensionId(
-          extensionId: community.extensionId,
-        );
-      }
-      if (offlineReplicaEnabled &&
-          _authApi.currentSession?.account.accountId == signedInAccountId) {
-        await loomReplicaSyncPolicyController.activateCommunity(
-          memberId: signedInAccountId,
-          extensionId: community.extensionId,
-        );
-      }
+    try {
+      await _ensureEngineAuthorizationSync();
       if (!mounted) return;
+
+      final session = _authApi.currentSession;
+      final accounts = await _authApi.listAccounts(
+        communityExtensionId: community.extensionId,
+      );
+      final signedInAccountId = session?.account.accountId;
+      final hasActiveAccount =
+          signedInAccountId != null &&
+          accounts.any(
+            (account) =>
+                account.accountId == signedInAccountId &&
+                account.status == MembershipStatus.active,
+          );
+      final hasPendingApproval = accounts.any(
+        (account) => account.status == MembershipStatus.pendingApproval,
+      );
+      if (!mounted) return;
+      // This is the community-open lifecycle point for the remote replica. It
+      // runs before the engine-native surfaces receive their first read. Local
+      // engines and hosts without an injected offline directory are no-ops.
+      // An unavailable sync keeps an already stored replica available; a real
+      // response failure such as 403 continues to surface from this call.
+      var offlineReplicaEnabled = false;
+      if (hasActiveAccount) {
+        offlineReplicaEnabled = await openOfflineReplicaForExtensionId(
+          extensionId: community.extensionId,
+          fanId: signedInAccountId,
+        );
+        // [open] establishes the fan/community handle. The follow-up refresh
+        // is the explicit entry sync: it is never driven by a read or timer.
+        // An unavailable open has already retained the saved snapshot, so do
+        // not replace it with the explicit refresh error before the surface can
+        // make its availability-only fallback read.
+        if (offlineReplicaEnabled &&
+            loomWorkflowReplicaCoordinator?.lastOpenSyncFailure == null) {
+          await refreshOfflineReplicaForExtensionId(
+            extensionId: community.extensionId,
+          );
+        }
+        if (offlineReplicaEnabled &&
+            _authApi.currentSession?.account.accountId == signedInAccountId) {
+          await loomReplicaSyncPolicyController.activateCommunity(
+            memberId: signedInAccountId,
+            extensionId: community.extensionId,
+          );
+        }
+        if (!mounted) return;
+      }
+      setState(() {
+        _communityEntryAllowed = hasActiveAccount;
+        _entryGateHasPendingApproval = hasPendingApproval;
+        _offlineReplicaEnabled = offlineReplicaEnabled;
+      });
+    } on Object catch (error) {
+      // A cached community selection is not a usable OAuth session. Never
+      // strand the screen in the checking state when its authorization or
+      // account refresh fails; fail closed and return to the recoverable gate.
+      debugPrint(
+        'Loom community entry check failed for ${community.extensionId}: '
+        '$error',
+      );
+      if (!mounted) return;
+      setState(() {
+        _communityEntryAllowed = false;
+        _entryGateHasPendingApproval = false;
+        _offlineReplicaEnabled = false;
+      });
     }
-    setState(() {
-      _communityEntryAllowed = hasActiveAccount;
-      _entryGateHasPendingApproval = hasPendingApproval;
-      _offlineReplicaEnabled = offlineReplicaEnabled;
-    });
   }
 
   Future<void> _refreshOfflineReplica() async {

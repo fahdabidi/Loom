@@ -364,16 +364,34 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
     bool includeIdempotencyKey = false,
     required Set<int> expectedStatusCodes,
   }) async {
+    // Credential acquisition happens before an HTTP request exists. Treat a
+    // missing or expired bearer session as an authentication outcome rather
+    // than disguising it as a workflow-service transport failure. This API
+    // intentionally does not depend on the auth-session package: every
+    // provider failure at this seam means the request cannot be authenticated.
+    late final String token;
+    try {
+      token = await bearerTokenProvider();
+    } catch (error) {
+      const authenticationError = RemoteWorkflowAuthenticationError(
+        code: 'authentication_required',
+        message:
+            'A bearer session is required before calling the workflow service.',
+      );
+      _recordCallOutcome(success: false, errorKind: authenticationError.code);
+      throw authenticationError;
+    }
+    if (token.trim().isEmpty) {
+      const authenticationError = RemoteWorkflowAuthenticationError(
+        code: 'authentication_required',
+        message: 'bearerTokenProvider returned an empty bearer token.',
+      );
+      _recordCallOutcome(success: false, errorKind: authenticationError.code);
+      throw authenticationError;
+    }
+
     late final http.Response response;
     try {
-      final token = await bearerTokenProvider();
-      if (token.trim().isEmpty) {
-        throw const RemoteWorkflowAuthenticationError(
-          code: 'authentication_required',
-          message: 'bearerTokenProvider returned an empty bearer token.',
-        );
-      }
-
       final relative = Uri(
         pathSegments: pathSegments,
         queryParameters: queryParameters,

@@ -248,9 +248,8 @@ final class LoomServiceBindingRegistry {
       final labels = <String>[];
       for (final binding in rows) {
         if (binding.lastCallOutcome.isFailure) {
-          if (!labels.contains('BACKEND UNREACHABLE')) {
-            labels.add('BACKEND UNREACHABLE');
-          }
+          final label = _failureWarningLabel(binding.lastCallOutcome);
+          if (!labels.contains(label)) labels.add(label);
           continue;
         }
         if (binding.isRemoteBound) continue;
@@ -282,6 +281,38 @@ final class LoomServiceBindingRegistry {
       LoomServiceBindingNames.authTokenEndpoint => 'LOCAL AUTH TOKEN',
       _ => 'SERVICE UNCONFIGURED',
     };
+  }
+
+  /// Classifies only evidence recorded for the failed call. In particular, an
+  /// HTTP response proves that a service was reachable, and a missing bearer
+  /// session proves that no request was sent; neither may be presented as a
+  /// backend outage.
+  String _failureWarningLabel(LoomServiceCallOutcome outcome) {
+    final statusCode = outcome.statusCode;
+    final errorKind = outcome.errorKind?.toLowerCase() ?? '';
+    if (statusCode == 401 ||
+        errorKind.contains('authentication_required') ||
+        errorKind.contains('notloggedin') ||
+        errorKind.contains('login_required') ||
+        errorKind.contains('refreshtokenexpired')) {
+      return 'SIGN-IN REQUIRED';
+    }
+    if (statusCode == 403 ||
+        errorKind.contains('authorization') ||
+        errorKind.contains('forbidden') ||
+        errorKind.contains('access_denied') ||
+        errorKind.contains('refused')) {
+      return 'ACCESS REFUSED';
+    }
+    if (statusCode == null &&
+        (errorKind == 'network_error' ||
+            errorKind == 'transport_error' ||
+            errorKind.contains('socketexception') ||
+            errorKind.contains('clientexception') ||
+            errorKind.contains('handshakeexception'))) {
+      return 'BACKEND UNREACHABLE';
+    }
+    return 'SERVICE REQUEST FAILED';
   }
 
   void _recordCall({
@@ -443,8 +474,10 @@ class LoomServiceBindingWarningBadge extends StatelessWidget {
         communityScope,
       );
       if (labels.isEmpty) return const SizedBox.shrink();
-      final hasFailure = labels.contains('BACKEND UNREACHABLE');
-      final badgeLabel = hasFailure ? 'BACKEND UNREACHABLE' : labels.first;
+      final hasTransportFailure = labels.contains('BACKEND UNREACHABLE');
+      final badgeLabel = hasTransportFailure
+          ? 'BACKEND UNREACHABLE'
+          : labels.first;
       final scheme = Theme.of(context).colorScheme;
       return Semantics(
         container: true,
@@ -453,18 +486,18 @@ class LoomServiceBindingWarningBadge extends StatelessWidget {
         child: Chip(
           key: const ValueKey('service-binding-warning-badge'),
           avatar: Icon(
-            hasFailure ? Icons.cloud_off : Icons.warning_amber_rounded,
+            hasTransportFailure ? Icons.cloud_off : Icons.warning_amber_rounded,
             size: 18,
-            color: hasFailure
+            color: hasTransportFailure
                 ? scheme.onErrorContainer
                 : scheme.onTertiaryContainer,
           ),
-          backgroundColor: hasFailure
+          backgroundColor: hasTransportFailure
               ? scheme.errorContainer
               : scheme.tertiaryContainer,
           label: Text(badgeLabel, overflow: TextOverflow.ellipsis),
           labelStyle: TextStyle(
-            color: hasFailure
+            color: hasTransportFailure
                 ? scheme.onErrorContainer
                 : scheme.onTertiaryContainer,
             fontWeight: FontWeight.w800,

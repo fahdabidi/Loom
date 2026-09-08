@@ -465,6 +465,50 @@ void main() {
     expect(httpCalls, 0);
   });
 
+  test(
+    'a missing bearer session sends no HTTP request and records authentication required',
+    () async {
+      var httpCalls = 0;
+      final outcomes = <({bool success, int? statusCode, String? errorKind})>[];
+      final api = RemoteWorkflowEngineApi(
+        baseUri: Uri.parse(_baseUri),
+        communityId: _communityId,
+        bearerTokenProvider: () async => throw StateError('login required'),
+        httpClient: MockClient((_) async {
+          httpCalls += 1;
+          return _jsonResponse(const {});
+        }),
+        onCallOutcome:
+            ({required bool success, int? statusCode, String? errorKind}) =>
+                outcomes.add((
+                  success: success,
+                  statusCode: statusCode,
+                  errorKind: errorKind,
+                )),
+      );
+
+      await expectLater(
+        api.queryInstances(tabId: 'tab', fanId: 'fan'),
+        throwsA(
+          isA<RemoteWorkflowAuthenticationError>().having(
+            (error) => error.code,
+            'code',
+            'authentication_required',
+          ),
+        ),
+      );
+
+      expect(httpCalls, 0);
+      expect(outcomes, [
+        (
+          success: false,
+          statusCode: null,
+          errorKind: 'authentication_required',
+        ),
+      ]);
+    },
+  );
+
   test("dueNotifications asks the service for the reminders of the caller", () async {
     late http.Request captured;
     final api = _api(

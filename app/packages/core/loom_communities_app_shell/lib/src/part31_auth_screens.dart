@@ -159,15 +159,6 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
                         },
                         child: const Text('Retry'),
                       ),
-                      if (widget.authApi is RemoteLoomAuthApi) ...[
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          key: const ValueKey('remote-auth-login-button'),
-                          onPressed: _startRemoteLogin,
-                          icon: const Icon(Icons.lock_outline),
-                          label: const Text('Continue to secure sign-in'),
-                        ),
-                      ],
                     ],
                   )
                 else ...[
@@ -193,6 +184,20 @@ class _LoomAuthScreenState extends State<LoomAuthScreen> {
                     experience: widget.experience,
                     onSignedUp: widget.onSignIn,
                     onAccountsChanged: _loadAccounts,
+                  ),
+                ],
+                // A remote account directory is not proof that this device
+                // still has an OAuth session. Keep the primary secure-login
+                // route reachable while the directory loads, when it fails,
+                // and after a picker sign-in fails because the token expired.
+                // Local auth deliberately has no corresponding action.
+                if (widget.authApi is RemoteLoomAuthApi) ...[
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    key: const ValueKey('remote-auth-login-button'),
+                    onPressed: _startRemoteLogin,
+                    icon: const Icon(Icons.lock_outline),
+                    label: const Text('Continue to secure sign-in'),
                   ),
                 ],
               ],

@@ -215,6 +215,7 @@ void main() {
         service: LoomServiceBindingNames.workflowEngine,
         scope: _extensionId,
         statusCode: 503,
+        errorKind: 'http_503',
       );
       await tester.pump();
 
@@ -222,7 +223,123 @@ void main() {
         find.byKey(const ValueKey('service-binding-warning-badge')),
         findsOneWidget,
       );
-      expect(find.textContaining('BACKEND UNREACHABLE'), findsOneWidget);
+      expect(find.textContaining('SERVICE REQUEST FAILED'), findsOneWidget);
+      expect(find.textContaining('BACKEND UNREACHABLE'), findsNothing);
+    },
+  );
+
+  test(
+    'failure labels distinguish authentication, authorization, service, and transport evidence',
+    () {
+      for (final service in LoomServiceBindingNames.healthChecked) {
+        final scope = service == LoomServiceBindingNames.authTokenEndpoint
+            ? LoomServiceBindingNames.processScope
+            : _extensionId;
+        loomServiceBindingRegistry.recordBinding(
+          service: service,
+          mode: LoomServiceBindingMode.remote,
+          endpoint: Uri.parse('https://$service.test/'),
+          scope: scope,
+        );
+      }
+
+      expect(
+        loomServiceBindingRegistry.warningLabelsForCommunity(_extensionId),
+        isEmpty,
+        reason: 'never-called bindings are not failure evidence',
+      );
+
+      loomServiceBindingRegistry.recordCallFailure(
+        service: LoomServiceBindingNames.workflowEngine,
+        scope: _extensionId,
+        errorKind: 'authentication_required',
+      );
+      loomServiceBindingRegistry.recordCallFailure(
+        service: LoomServiceBindingNames.appAccess,
+        scope: _extensionId,
+        statusCode: 403,
+        errorKind: 'http_403',
+      );
+      loomServiceBindingRegistry.recordCallFailure(
+        service: LoomServiceBindingNames.fanPassport,
+        scope: _extensionId,
+        statusCode: 503,
+        errorKind: 'http_503',
+      );
+      loomServiceBindingRegistry.recordCallFailure(
+        service: LoomServiceBindingNames.authTokenEndpoint,
+        scope: LoomServiceBindingNames.processScope,
+        errorKind: 'network_error',
+      );
+
+      expect(
+        loomServiceBindingRegistry.warningLabelsForCommunity(_extensionId),
+        containsAll(const [
+          'SIGN-IN REQUIRED',
+          'ACCESS REFUSED',
+          'SERVICE REQUEST FAILED',
+          'BACKEND UNREACHABLE',
+        ]),
+      );
+    },
+  );
+
+  test(
+    'a later success replaces only its matching service and scope failure',
+    () {
+      for (final service in <String>[
+        LoomServiceBindingNames.workflowEngine,
+        LoomServiceBindingNames.appAccess,
+      ]) {
+        loomServiceBindingRegistry.recordBinding(
+          service: service,
+          mode: LoomServiceBindingMode.remote,
+          endpoint: Uri.parse('https://$service.test/'),
+          scope: _extensionId,
+        );
+      }
+
+      loomServiceBindingRegistry.recordCallFailure(
+        service: LoomServiceBindingNames.workflowEngine,
+        scope: _extensionId,
+        errorKind: 'authentication_required',
+      );
+      loomServiceBindingRegistry.recordCallFailure(
+        service: LoomServiceBindingNames.appAccess,
+        scope: _extensionId,
+        errorKind: 'network_error',
+      );
+      loomServiceBindingRegistry.recordCallSuccess(
+        service: LoomServiceBindingNames.workflowEngine,
+        scope: _extensionId,
+        statusCode: 200,
+      );
+
+      expect(
+        loomServiceBindingRegistry
+            .find(
+              service: LoomServiceBindingNames.workflowEngine,
+              scope: _extensionId,
+            )!
+            .lastCallOutcome
+            .kind,
+        LoomServiceCallOutcomeKind.success,
+      );
+      expect(
+        loomServiceBindingRegistry
+            .find(
+              service: LoomServiceBindingNames.appAccess,
+              scope: _extensionId,
+            )!
+            .lastCallOutcome
+            .kind,
+        LoomServiceCallOutcomeKind.failure,
+      );
+      final labels = loomServiceBindingRegistry.warningLabelsForCommunity(
+        _extensionId,
+      );
+      expect(labels, contains('BACKEND UNREACHABLE'));
+      expect(labels, isNot(contains('SIGN-IN REQUIRED')));
     },
   );
 }
