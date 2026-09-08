@@ -1,7 +1,7 @@
 {
   "_comment": [
     "GENERATED — do not edit by hand.",
-    "Source: ArchetypeResolver plus the governance declaration in app/packages/tooling/loom_ux_judges/bin/generate_permissions_vocabulary.dart",
+    "Source: ArchetypeResolver.",
     "Regenerate: dart run bin/generate_permissions_vocabulary.dart",
     "",
     "Consumed by the community-package validator (Dart) and the App Access",
@@ -9,6 +9,7 @@
     "docs/references/reference/permissions.md exist in exactly one place."
   ],
   "specVersion": 4,
+  "catalogVersion": "4-d15e5ea24e19457a20a7ffff9e296caef264ead2582529e18f2849bec9f066a5",
   "archetypeContracts": {
     "_comment": "What each archetype guarantees. `bookkeeping` is per-person state the archetype maintains itself -- a community declares none of these fields and writes no idempotence guard against them. `enforcement: client_engine` means the rule is evaluated on the device by LocalWorkflowEngineApi and is advisory, not a security boundary: there is no workflow service yet.",
     "approvalQueueItem": {
@@ -177,6 +178,62 @@
         "calendar.reopen",
         "calendar.set_reminder",
         "calendar.view"
+      ],
+      "catalog": [
+        {
+          "permissionId": "calendar.cancel",
+          "displayName": "Cancel calendar item",
+          "description": "Cancel a scheduled calendar item.",
+          "category": "calendar"
+        },
+        {
+          "permissionId": "calendar.create",
+          "displayName": "Create calendar item",
+          "description": "Add a dated item to the community calendar.",
+          "category": "calendar"
+        },
+        {
+          "permissionId": "calendar.deliver_reminder",
+          "displayName": "Deliver reminder",
+          "description": "Send a scheduled calendar reminder.",
+          "category": "calendar"
+        },
+        {
+          "permissionId": "calendar.edit",
+          "displayName": "Edit calendar item",
+          "description": "Update the details of a scheduled calendar item.",
+          "category": "calendar"
+        },
+        {
+          "permissionId": "calendar.propose_change",
+          "displayName": "Propose change",
+          "description": "Suggest an update to a calendar item.",
+          "category": "calendar"
+        },
+        {
+          "permissionId": "calendar.record_outcome",
+          "displayName": "Record outcome",
+          "description": "Record the result of a calendar item.",
+          "category": "calendar"
+        },
+        {
+          "permissionId": "calendar.reopen",
+          "displayName": "Reopen calendar item",
+          "description": "Restore a cancelled calendar item.",
+          "category": "calendar"
+        },
+        {
+          "permissionId": "calendar.set_reminder",
+          "displayName": "Set reminder",
+          "description": "Schedule a reminder for a calendar item.",
+          "category": "calendar"
+        },
+        {
+          "permissionId": "calendar.view",
+          "displayName": "View calendar",
+          "description": "Browse scheduled community items.",
+          "category": "calendar"
+        }
       ]
     },
     "documentLibrary": {
@@ -224,6 +281,128 @@
         "document_library.upload",
         "document_library.view",
         "document_library.withdraw_access_request"
+      ],
+      "catalog": [
+        {
+          "permissionId": "document_library.acknowledge",
+          "displayName": "Acknowledge document",
+          "description": "Confirm that a document has been reviewed.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.archive",
+          "displayName": "Archive document",
+          "description": "Move a document out of the active library.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.create",
+          "displayName": "Create document",
+          "description": "Create a document in the library.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.delete",
+          "displayName": "Delete document",
+          "description": "Permanently remove a document from the library.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.download",
+          "displayName": "Download document",
+          "description": "Download a copy of a document.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.edit",
+          "displayName": "Edit document",
+          "description": "Update a document’s content or details.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.grant_access",
+          "displayName": "Grant access",
+          "description": "Give another member access to a document.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.mark_read",
+          "displayName": "Mark as read",
+          "description": "Mark a document as read.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.mark_unread",
+          "displayName": "Mark as unread",
+          "description": "Mark a document as unread.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.open",
+          "displayName": "Open document",
+          "description": "Open a document for reading.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.publish",
+          "displayName": "Publish document",
+          "description": "Make a document available to its audience.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.request_access",
+          "displayName": "Request access",
+          "description": "Request permission to access a document.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.request_follow_up",
+          "displayName": "Request follow-up",
+          "description": "Ask for follow-up on a document.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.restore",
+          "displayName": "Restore document",
+          "description": "Return an archived document to the library.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.save",
+          "displayName": "Save document",
+          "description": "Save a document for later reference.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.share",
+          "displayName": "Share document",
+          "description": "Share a document with other members.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.unsave",
+          "displayName": "Remove saved document",
+          "description": "Remove a document from saved items.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.upload",
+          "displayName": "Upload document",
+          "description": "Add a document to the library.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.view",
+          "displayName": "View documents",
+          "description": "Browse documents in the library.",
+          "category": "documentLibrary"
+        },
+        {
+          "permissionId": "document_library.withdraw_access_request",
+          "displayName": "Withdraw access request",
+          "description": "Cancel a request to access a document.",
+          "category": "documentLibrary"
+        }
       ]
     },
     "equipment-loan": {
@@ -261,6 +440,98 @@
         "equipment_loan.take_custody",
         "equipment_loan.view",
         "equipment_loan.withdraw_request"
+      ],
+      "catalog": [
+        {
+          "permissionId": "equipment_loan.claim",
+          "displayName": "Claim item",
+          "description": "Claim an available equipment item.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.create",
+          "displayName": "Create listing",
+          "description": "Create a new equipment listing.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.decide_request",
+          "displayName": "Decide request",
+          "description": "Approve or decline an equipment request.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.delist",
+          "displayName": "Delist item",
+          "description": "Remove an equipment item from listings.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.join_queue",
+          "displayName": "Join queue",
+          "description": "Join the waiting queue for an equipment item.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.leave_queue",
+          "displayName": "Leave queue",
+          "description": "Leave the waiting queue for an equipment item.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.list_item",
+          "displayName": "List item",
+          "description": "Make an equipment item available to the community.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.pause_listing",
+          "displayName": "Pause listing",
+          "description": "Temporarily make an equipment listing unavailable.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.renew",
+          "displayName": "Renew loan",
+          "description": "Extend the loan period for an equipment item.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.report_issue",
+          "displayName": "Report issue",
+          "description": "Report a problem with an equipment item or loan.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.request",
+          "displayName": "Request item",
+          "description": "Request to borrow an equipment item.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.return",
+          "displayName": "Return item",
+          "description": "Record the return of an equipment item.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.take_custody",
+          "displayName": "Take custody",
+          "description": "Record that an equipment item has been collected.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.view",
+          "displayName": "View listings",
+          "description": "Browse equipment listings and loan details.",
+          "category": "equipment-loan"
+        },
+        {
+          "permissionId": "equipment_loan.withdraw_request",
+          "displayName": "Withdraw request",
+          "description": "Cancel an equipment request.",
+          "category": "equipment-loan"
+        }
       ]
     },
     "event-rsvp": {
@@ -294,6 +565,86 @@
         "event_rsvp.set_reminder",
         "event_rsvp.view",
         "event_rsvp.withdraw_response"
+      ],
+      "catalog": [
+        {
+          "permissionId": "event_rsvp.cancel",
+          "displayName": "Cancel event",
+          "description": "Cancel a scheduled event.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.create",
+          "displayName": "Create event",
+          "description": "Add an event for community members.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.deliver_reminder",
+          "displayName": "Deliver reminder",
+          "description": "Deliver a scheduled event reminder.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.edit",
+          "displayName": "Edit event",
+          "description": "Update an event’s details.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.join_waitlist",
+          "displayName": "Join waitlist",
+          "description": "Add an attendance response to an event waitlist.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.propose_change",
+          "displayName": "Propose change",
+          "description": "Suggest an update to an event.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.record_outcome",
+          "displayName": "Record outcome",
+          "description": "Record the result of an event.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.reopen",
+          "displayName": "Reopen event",
+          "description": "Restore a cancelled event.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.respond",
+          "displayName": "Respond to event",
+          "description": "Record an attendance response for an event.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.send_reminder",
+          "displayName": "Send reminder",
+          "description": "Send an event reminder to attendees.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.set_reminder",
+          "displayName": "Set reminder",
+          "description": "Schedule a reminder for an event.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.view",
+          "displayName": "View event",
+          "description": "Open an event and see its details.",
+          "category": "event-rsvp"
+        },
+        {
+          "permissionId": "event_rsvp.withdraw_response",
+          "displayName": "Withdraw response",
+          "description": "Remove an attendance response from an event.",
+          "category": "event-rsvp"
+        }
       ]
     },
     "exportWizard": {
@@ -325,6 +676,80 @@
         "export_wizard.rollback",
         "export_wizard.run",
         "export_wizard.view"
+      ],
+      "catalog": [
+        {
+          "permissionId": "export_wizard.approve_redaction",
+          "displayName": "Approve redaction",
+          "description": "Approve redactions before an export runs.",
+          "category": "exportWizard"
+        },
+        {
+          "permissionId": "export_wizard.cancel",
+          "displayName": "Cancel export",
+          "description": "Stop an export before it completes.",
+          "category": "exportWizard"
+        },
+        {
+          "permissionId": "export_wizard.configure_scope",
+          "displayName": "Configure export scope",
+          "description": "Choose the data included in an export.",
+          "category": "exportWizard"
+        },
+        {
+          "permissionId": "export_wizard.create",
+          "displayName": "Create export",
+          "description": "Start a new data export.",
+          "category": "exportWizard"
+        },
+        {
+          "permissionId": "export_wizard.decide_transfer",
+          "displayName": "Decide transfer",
+          "description": "Approve or decline an export transfer.",
+          "category": "exportWizard"
+        },
+        {
+          "permissionId": "export_wizard.download",
+          "displayName": "Download export",
+          "description": "Download a completed export.",
+          "category": "exportWizard"
+        },
+        {
+          "permissionId": "export_wizard.preview",
+          "displayName": "Preview export",
+          "description": "Review an export before it runs.",
+          "category": "exportWizard"
+        },
+        {
+          "permissionId": "export_wizard.record_outcome",
+          "displayName": "Record outcome",
+          "description": "Record the result of an export.",
+          "category": "exportWizard"
+        },
+        {
+          "permissionId": "export_wizard.retry",
+          "displayName": "Retry export",
+          "description": "Run an export again after a failure.",
+          "category": "exportWizard"
+        },
+        {
+          "permissionId": "export_wizard.rollback",
+          "displayName": "Roll back export",
+          "description": "Reverse a completed export operation.",
+          "category": "exportWizard"
+        },
+        {
+          "permissionId": "export_wizard.run",
+          "displayName": "Run export",
+          "description": "Generate an export from the selected data.",
+          "category": "exportWizard"
+        },
+        {
+          "permissionId": "export_wizard.view",
+          "displayName": "View export",
+          "description": "Open an export and see its status.",
+          "category": "exportWizard"
+        }
       ]
     },
     "searchAiAnswer": {
@@ -348,6 +773,56 @@
         "search_ai_answer.report",
         "search_ai_answer.view",
         "search_ai_answer.withdraw_query"
+      ],
+      "catalog": [
+        {
+          "permissionId": "search_ai_answer.add_citation",
+          "displayName": "Add citation",
+          "description": "Add a source citation to an answer.",
+          "category": "searchAiAnswer"
+        },
+        {
+          "permissionId": "search_ai_answer.ask",
+          "displayName": "Ask question",
+          "description": "Ask a question and request an answer.",
+          "category": "searchAiAnswer"
+        },
+        {
+          "permissionId": "search_ai_answer.create",
+          "displayName": "Create answer",
+          "description": "Create a saved answer for a community question.",
+          "category": "searchAiAnswer"
+        },
+        {
+          "permissionId": "search_ai_answer.curate",
+          "displayName": "Curate answer",
+          "description": "Review and improve a saved answer.",
+          "category": "searchAiAnswer"
+        },
+        {
+          "permissionId": "search_ai_answer.moderate",
+          "displayName": "Moderate answer",
+          "description": "Review a reported answer and take action.",
+          "category": "searchAiAnswer"
+        },
+        {
+          "permissionId": "search_ai_answer.report",
+          "displayName": "Report answer",
+          "description": "Report an answer for review.",
+          "category": "searchAiAnswer"
+        },
+        {
+          "permissionId": "search_ai_answer.view",
+          "displayName": "View answers",
+          "description": "Browse answers to community questions.",
+          "category": "searchAiAnswer"
+        },
+        {
+          "permissionId": "search_ai_answer.withdraw_query",
+          "displayName": "Withdraw question",
+          "description": "Withdraw a question before it is answered.",
+          "category": "searchAiAnswer"
+        }
       ]
     },
     "votePoll": {
@@ -367,6 +842,44 @@
         "vote_poll.publish_result",
         "vote_poll.view",
         "vote_poll.vote"
+      ],
+      "catalog": [
+        {
+          "permissionId": "vote_poll.change_vote",
+          "displayName": "Change vote",
+          "description": "Change a vote before the poll closes.",
+          "category": "votePoll"
+        },
+        {
+          "permissionId": "vote_poll.close",
+          "displayName": "Close poll",
+          "description": "Close a poll to further voting.",
+          "category": "votePoll"
+        },
+        {
+          "permissionId": "vote_poll.create",
+          "displayName": "Create poll",
+          "description": "Create a poll for community members.",
+          "category": "votePoll"
+        },
+        {
+          "permissionId": "vote_poll.publish_result",
+          "displayName": "Publish results",
+          "description": "Share a poll’s results with its audience.",
+          "category": "votePoll"
+        },
+        {
+          "permissionId": "vote_poll.view",
+          "displayName": "View poll",
+          "description": "Open a poll and see its details.",
+          "category": "votePoll"
+        },
+        {
+          "permissionId": "vote_poll.vote",
+          "displayName": "Vote in poll",
+          "description": "Cast a vote in a poll.",
+          "category": "votePoll"
+        }
       ]
     }
   },
@@ -384,6 +897,32 @@
         "approval_queue_item.create",
         "approval_queue_item.terminate",
         "approval_queue_item.view"
+      ],
+      "catalog": [
+        {
+          "permissionId": "approval_queue_item.advance",
+          "displayName": "Advance item",
+          "description": "Move a community item to its next state.",
+          "category": "approvalQueueItem"
+        },
+        {
+          "permissionId": "approval_queue_item.create",
+          "displayName": "Create item",
+          "description": "Create a new community item.",
+          "category": "approvalQueueItem"
+        },
+        {
+          "permissionId": "approval_queue_item.terminate",
+          "displayName": "Terminate item",
+          "description": "End a community item before its normal completion.",
+          "category": "approvalQueueItem"
+        },
+        {
+          "permissionId": "approval_queue_item.view",
+          "displayName": "View item",
+          "description": "Open a community item and see its details.",
+          "category": "approvalQueueItem"
+        }
       ]
     },
     "discussionThread": {
@@ -399,6 +938,32 @@
         "discussion_thread.create",
         "discussion_thread.terminate",
         "discussion_thread.view"
+      ],
+      "catalog": [
+        {
+          "permissionId": "discussion_thread.advance",
+          "displayName": "Advance item",
+          "description": "Move a community item to its next state.",
+          "category": "discussionThread"
+        },
+        {
+          "permissionId": "discussion_thread.create",
+          "displayName": "Create item",
+          "description": "Create a new community item.",
+          "category": "discussionThread"
+        },
+        {
+          "permissionId": "discussion_thread.terminate",
+          "displayName": "Terminate item",
+          "description": "End a community item before its normal completion.",
+          "category": "discussionThread"
+        },
+        {
+          "permissionId": "discussion_thread.view",
+          "displayName": "View item",
+          "description": "Open a community item and see its details.",
+          "category": "discussionThread"
+        }
       ]
     },
     "formEntry": {
@@ -414,6 +979,32 @@
         "form_entry.create",
         "form_entry.terminate",
         "form_entry.view"
+      ],
+      "catalog": [
+        {
+          "permissionId": "form_entry.advance",
+          "displayName": "Advance item",
+          "description": "Move a community item to its next state.",
+          "category": "formEntry"
+        },
+        {
+          "permissionId": "form_entry.create",
+          "displayName": "Create item",
+          "description": "Create a new community item.",
+          "category": "formEntry"
+        },
+        {
+          "permissionId": "form_entry.terminate",
+          "displayName": "Terminate item",
+          "description": "End a community item before its normal completion.",
+          "category": "formEntry"
+        },
+        {
+          "permissionId": "form_entry.view",
+          "displayName": "View item",
+          "description": "Open a community item and see its details.",
+          "category": "formEntry"
+        }
       ]
     },
     "notificationInbox": {
@@ -429,6 +1020,32 @@
         "notification_inbox.create",
         "notification_inbox.terminate",
         "notification_inbox.view"
+      ],
+      "catalog": [
+        {
+          "permissionId": "notification_inbox.advance",
+          "displayName": "Advance item",
+          "description": "Move a community item to its next state.",
+          "category": "notificationInbox"
+        },
+        {
+          "permissionId": "notification_inbox.create",
+          "displayName": "Create item",
+          "description": "Create a new community item.",
+          "category": "notificationInbox"
+        },
+        {
+          "permissionId": "notification_inbox.terminate",
+          "displayName": "Terminate item",
+          "description": "End a community item before its normal completion.",
+          "category": "notificationInbox"
+        },
+        {
+          "permissionId": "notification_inbox.view",
+          "displayName": "View item",
+          "description": "Open a community item and see its details.",
+          "category": "notificationInbox"
+        }
       ]
     },
     "paymentCheckout": {
@@ -444,6 +1061,32 @@
         "payment_checkout.create",
         "payment_checkout.terminate",
         "payment_checkout.view"
+      ],
+      "catalog": [
+        {
+          "permissionId": "payment_checkout.advance",
+          "displayName": "Advance item",
+          "description": "Move a community item to its next state.",
+          "category": "paymentCheckout"
+        },
+        {
+          "permissionId": "payment_checkout.create",
+          "displayName": "Create item",
+          "description": "Create a new community item.",
+          "category": "paymentCheckout"
+        },
+        {
+          "permissionId": "payment_checkout.terminate",
+          "displayName": "Terminate item",
+          "description": "End a community item before its normal completion.",
+          "category": "paymentCheckout"
+        },
+        {
+          "permissionId": "payment_checkout.view",
+          "displayName": "View item",
+          "description": "Open a community item and see its details.",
+          "category": "paymentCheckout"
+        }
       ]
     },
     "statusTimeline": {
@@ -459,6 +1102,32 @@
         "status_timeline.create",
         "status_timeline.terminate",
         "status_timeline.view"
+      ],
+      "catalog": [
+        {
+          "permissionId": "status_timeline.advance",
+          "displayName": "Advance item",
+          "description": "Move a community item to its next state.",
+          "category": "statusTimeline"
+        },
+        {
+          "permissionId": "status_timeline.create",
+          "displayName": "Create item",
+          "description": "Create a new community item.",
+          "category": "statusTimeline"
+        },
+        {
+          "permissionId": "status_timeline.terminate",
+          "displayName": "Terminate item",
+          "description": "End a community item before its normal completion.",
+          "category": "statusTimeline"
+        },
+        {
+          "permissionId": "status_timeline.view",
+          "displayName": "View item",
+          "description": "Open a community item and see its details.",
+          "category": "statusTimeline"
+        }
       ]
     },
     "table": {
@@ -474,6 +1143,32 @@
         "table.create",
         "table.terminate",
         "table.view"
+      ],
+      "catalog": [
+        {
+          "permissionId": "table.advance",
+          "displayName": "Advance item",
+          "description": "Move a community item to its next state.",
+          "category": "table"
+        },
+        {
+          "permissionId": "table.create",
+          "displayName": "Create item",
+          "description": "Create a new community item.",
+          "category": "table"
+        },
+        {
+          "permissionId": "table.terminate",
+          "displayName": "Terminate item",
+          "description": "End a community item before its normal completion.",
+          "category": "table"
+        },
+        {
+          "permissionId": "table.view",
+          "displayName": "View item",
+          "description": "Open a community item and see its details.",
+          "category": "table"
+        }
       ]
     }
   },
@@ -492,6 +1187,38 @@
       "community.manage_members",
       "community.manage_roles",
       "community.manage_settings"
+    ],
+    "catalog": [
+      {
+        "permissionId": "community.view",
+        "displayName": "View community",
+        "description": "Open the community and see its public surfaces.",
+        "category": "governance"
+      },
+      {
+        "permissionId": "community.invite",
+        "displayName": "Invite members",
+        "description": "Issue invitations to join this community.",
+        "category": "governance"
+      },
+      {
+        "permissionId": "community.manage_members",
+        "displayName": "Manage members",
+        "description": "Add, suspend, or remove members of this community.",
+        "category": "governance"
+      },
+      {
+        "permissionId": "community.manage_roles",
+        "displayName": "Manage roles",
+        "description": "Assign or revoke roles held by members of this community.",
+        "category": "governance"
+      },
+      {
+        "permissionId": "community.manage_settings",
+        "displayName": "Manage community settings",
+        "description": "Edit community profile, branding, and tab configuration.",
+        "category": "governance"
+      }
     ],
     "adminRole": {
       "isSystemDefault": true,

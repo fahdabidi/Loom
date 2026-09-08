@@ -24,53 +24,77 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:loom_workflow_engine/src/archetypes/archetype_resolver.dart';
 import 'package:loom_workflow_engine/src/spec_version.dart';
 
 /// Repo-relative output path.
 const outputPath = 'docs/references/generated/permissions-vocabulary.json';
 
-Map<String, Object?> buildVocabulary() {
-  const governanceActions = [
-    'view',
-    'invite',
-    'manage_members',
-    'manage_roles',
-    'manage_settings',
-  ];
-  const governancePermissionPrefix = 'community';
+Map<String, Object?> buildVocabulary({
+  Map<String, Set<ArchetypeAction>>? bespokeActionRecords,
+  Set<ArchetypeAction>? genericActionRecords,
+  Set<ArchetypeAction>? governanceActionRecords,
+}) {
+  final bespokeRecords =
+      bespokeActionRecords ?? ArchetypeResolver.bespokeActionRecords;
+  final genericRecords =
+      genericActionRecords ?? ArchetypeResolver.genericActionRecords;
+  final governanceRecords =
+      governanceActionRecords ?? ArchetypeResolver.governanceActions;
+  const governancePermissionPrefix =
+      ArchetypeResolver.governancePermissionPrefix;
+  final governanceActions = governanceRecords.toList();
   final governancePermissions = [
     for (final action in governanceActions)
-      '$governancePermissionPrefix.$action',
+      '$governancePermissionPrefix.${action.id}',
   ];
+  final allCatalogEntries = <Map<String, String>>[];
 
   final bespoke = <String, Object?>{};
-  for (final family
-      in (ArchetypeResolver.bespokeVocabularies.keys.toList()..sort())) {
-    final actions = ArchetypeResolver.bespokeVocabularies[family]!.toList()
-      ..sort();
+  for (final family in (bespokeRecords.keys.toList()..sort())) {
+    final actions = _sortedActions(bespokeRecords[family]!);
+    final prefix = ArchetypeResolver.permissionPrefixes[family]!;
+    final catalog = _catalogEntries(
+      permissionPrefix: prefix,
+      category: family,
+      actions: actions,
+    );
+    allCatalogEntries.addAll(catalog);
     bespoke[family] = {
-      'permissionPrefix': ArchetypeResolver.permissionPrefixes[family],
-      'actions': actions,
-      'permissions': [
-        for (final action in actions)
-          '${ArchetypeResolver.permissionPrefixes[family]}.$action',
-      ],
+      'permissionPrefix': prefix,
+      'actions': [for (final action in actions) action.id],
+      'permissions': [for (final action in actions) '$prefix.${action.id}'],
+      'catalog': catalog,
     };
   }
 
   final generic = <String, Object?>{};
-  final genericActions = ArchetypeResolver.genericActions.toList()..sort();
+  final genericActions = _sortedActions(genericRecords);
   for (final family in (ArchetypeResolver.genericFamilies.toList()..sort())) {
+    final prefix = ArchetypeResolver.permissionPrefixes[family]!;
+    final catalog = _catalogEntries(
+      permissionPrefix: prefix,
+      category: family,
+      actions: genericActions,
+    );
+    allCatalogEntries.addAll(catalog);
     generic[family] = {
-      'permissionPrefix': ArchetypeResolver.permissionPrefixes[family],
-      'actions': genericActions,
+      'permissionPrefix': prefix,
+      'actions': [for (final action in genericActions) action.id],
       'permissions': [
-        for (final action in genericActions)
-          '${ArchetypeResolver.permissionPrefixes[family]}.$action',
+        for (final action in genericActions) '$prefix.${action.id}',
       ],
+      'catalog': catalog,
     };
   }
+
+  final governanceCatalog = _catalogEntries(
+    permissionPrefix: governancePermissionPrefix,
+    category: 'governance',
+    actions: governanceActions,
+  );
+  allCatalogEntries.addAll(governanceCatalog);
 
   // The full per-archetype contract: what the archetype guarantees, as opposed
   // to what a community declares. The validator reads it today; the workflow
@@ -107,8 +131,7 @@ Map<String, Object?> buildVocabulary() {
   return {
     '_comment': [
       'GENERATED — do not edit by hand.',
-      'Source: ArchetypeResolver plus the governance declaration in '
-          'app/packages/tooling/loom_ux_judges/bin/generate_permissions_vocabulary.dart',
+      'Source: ArchetypeResolver.',
       'Regenerate: dart run bin/generate_permissions_vocabulary.dart',
       '',
       'Consumed by the community-package validator (Dart) and the App Access',
@@ -116,6 +139,7 @@ Map<String, Object?> buildVocabulary() {
       'docs/references/reference/permissions.md exist in exactly one place.',
     ],
     'specVersion': currentCommunitySpecVersion,
+    'catalogVersion': _catalogVersion(allCatalogEntries),
     'archetypeContracts': {
       '_comment':
           'What each archetype guarantees. `bookkeeping` is per-person state the '
@@ -130,8 +154,9 @@ Map<String, Object?> buildVocabulary() {
     'genericArchetypes': generic,
     'governance': {
       'permissionPrefix': governancePermissionPrefix,
-      'actions': governanceActions,
+      'actions': [for (final action in governanceActions) action.id],
       'permissions': governancePermissions,
+      'catalog': governanceCatalog,
       'adminRole': {
         'isSystemDefault': true,
         'idTemplate': '<communityHandle>-admin',
@@ -153,6 +178,37 @@ Map<String, Object?> buildVocabulary() {
       ],
     },
   };
+}
+
+List<ArchetypeAction> _sortedActions(Iterable<ArchetypeAction> actions) =>
+    actions.toList()..sort((left, right) => left.id.compareTo(right.id));
+
+List<Map<String, String>> _catalogEntries({
+  required String permissionPrefix,
+  required String category,
+  required Iterable<ArchetypeAction> actions,
+}) => [
+  for (final action in actions)
+    {
+      'permissionId': '$permissionPrefix.${action.id}',
+      'displayName': action.displayName,
+      'description': action.description,
+      'category': category,
+    },
+];
+
+String _catalogVersion(Iterable<Map<String, String>> catalogEntries) {
+  final canonicalEntries = [
+    for (final entry in catalogEntries)
+      [
+        entry['permissionId']!,
+        entry['displayName']!,
+        entry['description']!,
+        entry['category']!,
+      ].join('\u0000'),
+  ]..sort();
+  final digest = sha256.convert(utf8.encode(canonicalEntries.join('\n')));
+  return '$currentCommunitySpecVersion-$digest';
 }
 
 int main(List<String> args) {

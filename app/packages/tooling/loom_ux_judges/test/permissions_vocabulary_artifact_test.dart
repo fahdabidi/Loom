@@ -1,5 +1,5 @@
 /// Keeps the generated permissions vocabulary in step with `ArchetypeResolver`
-/// and its non-archetype governance declaration.
+/// and its typed non-archetype governance vocabulary.
 ///
 /// The artifact is what the App Access installer reads, so a stale copy means
 /// the service derives permissions from one vocabulary while the validator
@@ -143,6 +143,127 @@ void main() {
       expect(adminRole['isSystemDefault'], isTrue);
       expect(adminRole['idTemplate'], '<communityHandle>-admin');
       expect(adminRole['grantedPermissions'], equals(expectedPermissions));
+    });
+
+    test(
+      'catalog entries label every permission exactly once in their family',
+      () {
+        void expectFamilyCatalog(
+          String familyName,
+          Map<String, Object?> family,
+        ) {
+          final permissions = (family['permissions'] as List).cast<String>();
+          final catalog = (family['catalog'] as List)
+              .cast<Map<String, Object?>>();
+          final entriesByPermissionId = <String, List<Map<String, Object?>>>{};
+          for (final entry in catalog) {
+            final permissionId = entry['permissionId'] as String;
+            (entriesByPermissionId[permissionId] ??= []).add(entry);
+          }
+
+          expect(
+            entriesByPermissionId.keys.toSet(),
+            equals(permissions.toSet()),
+          );
+          for (final permissionId in permissions) {
+            final entries = entriesByPermissionId[permissionId];
+            expect(
+              entries,
+              isNotNull,
+              reason: '$familyName lacks catalog entry for $permissionId.',
+            );
+            expect(
+              entries,
+              hasLength(1),
+              reason:
+                  '$familyName must declare $permissionId exactly once in its '
+                  'catalog.',
+            );
+            final entry = entries!.single;
+            expect((entry['displayName'] as String).trim(), isNotEmpty);
+            expect((entry['description'] as String).trim(), isNotEmpty);
+            expect(entry['category'], familyName);
+          }
+        }
+
+        for (final section in ['bespokeArchetypes', 'genericArchetypes']) {
+          final families = artifact[section] as Map<String, Object?>;
+          for (final entry in families.entries) {
+            expectFamilyCatalog(entry.key, entry.value as Map<String, Object?>);
+          }
+        }
+        expectFamilyCatalog(
+          'governance',
+          artifact['governance'] as Map<String, Object?>,
+        );
+      },
+    );
+
+    test('catalog preserves the five community permission labels', () {
+      final governance = artifact['governance'] as Map<String, Object?>;
+      final catalog = (governance['catalog'] as List)
+          .cast<Map<String, Object?>>();
+      final byPermissionId = {
+        for (final entry in catalog) entry['permissionId'] as String: entry,
+      };
+      const expected = {
+        'community.view': [
+          'View community',
+          'Open the community and see its public surfaces.',
+        ],
+        'community.invite': [
+          'Invite members',
+          'Issue invitations to join this community.',
+        ],
+        'community.manage_members': [
+          'Manage members',
+          'Add, suspend, or remove members of this community.',
+        ],
+        'community.manage_roles': [
+          'Manage roles',
+          'Assign or revoke roles held by members of this community.',
+        ],
+        'community.manage_settings': [
+          'Manage community settings',
+          'Edit community profile, branding, and tab configuration.',
+        ],
+      };
+
+      for (final entry in expected.entries) {
+        final catalogEntry = byPermissionId[entry.key];
+        expect(catalogEntry, isNotNull);
+        expect(catalogEntry!['displayName'], entry.value[0]);
+        expect(catalogEntry['description'], entry.value[1]);
+      }
+    });
+
+    test('catalog version is stable and changes when an action is added', () {
+      final first = generator.buildVocabulary();
+      final second = generator.buildVocabulary();
+      expect(first['catalogVersion'], equals(second['catalogVersion']));
+
+      final withAddedAction = generator.buildVocabulary(
+        genericActionRecords: {
+          ...ArchetypeResolver.genericActionRecords,
+          const ArchetypeAction(
+            id: 'publish',
+            displayName: 'Publish item',
+            description: 'Make a community item available to its audience.',
+          ),
+        },
+      );
+      final paymentCheckout =
+          (withAddedAction['genericArchetypes']
+                  as Map<String, Object?>)['paymentCheckout']
+              as Map<String, Object?>;
+      expect(
+        (paymentCheckout['permissions'] as List).cast<String>(),
+        contains('payment_checkout.publish'),
+      );
+      expect(
+        withAddedAction['catalogVersion'],
+        isNot(equals(first['catalogVersion'])),
+      );
     });
 
     test(

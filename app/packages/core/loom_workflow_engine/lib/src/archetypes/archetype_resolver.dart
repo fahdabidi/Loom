@@ -142,6 +142,29 @@ class ArchetypeContract {
   bool get allowsCustomActions => true;
 }
 
+/// One permission-bearing action in an archetype or governance vocabulary.
+///
+/// Keeping the user-facing catalog text with the action identifier makes the
+/// resolver the single source of truth for both permission derivation and
+/// permission presentation. The required fields deliberately make an action
+/// without a display name or description a compile-time error.
+class ArchetypeAction {
+  const ArchetypeAction({
+    required this.id,
+    required this.displayName,
+    required this.description,
+  });
+
+  /// The action portion of a permission id, for example `respond`.
+  final String id;
+
+  /// A concise, user-facing verb phrase for permission catalogs.
+  final String displayName;
+
+  /// A one-line explanation of what granting this action permits.
+  final String description;
+}
+
 /// Resolves archetypes and maps actions to permission ids.
 class ArchetypeResolver {
   const ArchetypeResolver();
@@ -307,121 +330,527 @@ class ArchetypeResolver {
     'table',
   };
 
-  /// Closed action vocabularies, permissions.md §4.
-  static const Map<String, Set<String>> bespokeVocabularies = {
+  /// Typed closed action vocabularies, permissions.md §4.
+  static const Map<String, Set<ArchetypeAction>> bespokeActionRecords = {
     // `event-rsvp` minus `respond`, `withdraw_response` and `join_waitlist`.
     // The absence of those three is the entire difference: a prayer time or a
     // bin collection is a dated item nobody attends.
     'calendar': {
-      'view',
-      'create',
-      'edit',
-      'cancel',
-      'reopen',
-      'set_reminder',
-      'deliver_reminder',
-      'propose_change',
-      'record_outcome',
+      ArchetypeAction(
+        id: 'view',
+        displayName: 'View calendar',
+        description: 'Browse scheduled community items.',
+      ),
+      ArchetypeAction(
+        id: 'create',
+        displayName: 'Create calendar item',
+        description: 'Add a dated item to the community calendar.',
+      ),
+      ArchetypeAction(
+        id: 'edit',
+        displayName: 'Edit calendar item',
+        description: 'Update the details of a scheduled calendar item.',
+      ),
+      ArchetypeAction(
+        id: 'cancel',
+        displayName: 'Cancel calendar item',
+        description: 'Cancel a scheduled calendar item.',
+      ),
+      ArchetypeAction(
+        id: 'reopen',
+        displayName: 'Reopen calendar item',
+        description: 'Restore a cancelled calendar item.',
+      ),
+      ArchetypeAction(
+        id: 'set_reminder',
+        displayName: 'Set reminder',
+        description: 'Schedule a reminder for a calendar item.',
+      ),
+      ArchetypeAction(
+        id: 'deliver_reminder',
+        displayName: 'Deliver reminder',
+        description: 'Send a scheduled calendar reminder.',
+      ),
+      ArchetypeAction(
+        id: 'propose_change',
+        displayName: 'Propose change',
+        description: 'Suggest an update to a calendar item.',
+      ),
+      ArchetypeAction(
+        id: 'record_outcome',
+        displayName: 'Record outcome',
+        description: 'Record the result of a calendar item.',
+      ),
     },
     'event-rsvp': {
-      'view',
-      'create',
-      'edit',
-      'cancel',
-      'reopen',
-      'respond',
-      'withdraw_response',
-      'join_waitlist',
-      'set_reminder',
-      'send_reminder',
-      'deliver_reminder',
-      'propose_change',
-      'record_outcome',
+      ArchetypeAction(
+        id: 'view',
+        displayName: 'View event',
+        description: 'Open an event and see its details.',
+      ),
+      ArchetypeAction(
+        id: 'create',
+        displayName: 'Create event',
+        description: 'Add an event for community members.',
+      ),
+      ArchetypeAction(
+        id: 'edit',
+        displayName: 'Edit event',
+        description: 'Update an event’s details.',
+      ),
+      ArchetypeAction(
+        id: 'cancel',
+        displayName: 'Cancel event',
+        description: 'Cancel a scheduled event.',
+      ),
+      ArchetypeAction(
+        id: 'reopen',
+        displayName: 'Reopen event',
+        description: 'Restore a cancelled event.',
+      ),
+      ArchetypeAction(
+        id: 'respond',
+        displayName: 'Respond to event',
+        description: 'Record an attendance response for an event.',
+      ),
+      ArchetypeAction(
+        id: 'withdraw_response',
+        displayName: 'Withdraw response',
+        description: 'Remove an attendance response from an event.',
+      ),
+      ArchetypeAction(
+        id: 'join_waitlist',
+        displayName: 'Join waitlist',
+        description: 'Add an attendance response to an event waitlist.',
+      ),
+      ArchetypeAction(
+        id: 'set_reminder',
+        displayName: 'Set reminder',
+        description: 'Schedule a reminder for an event.',
+      ),
+      ArchetypeAction(
+        id: 'send_reminder',
+        displayName: 'Send reminder',
+        description: 'Send an event reminder to attendees.',
+      ),
+      ArchetypeAction(
+        id: 'deliver_reminder',
+        displayName: 'Deliver reminder',
+        description: 'Deliver a scheduled event reminder.',
+      ),
+      ArchetypeAction(
+        id: 'propose_change',
+        displayName: 'Propose change',
+        description: 'Suggest an update to an event.',
+      ),
+      ArchetypeAction(
+        id: 'record_outcome',
+        displayName: 'Record outcome',
+        description: 'Record the result of an event.',
+      ),
     },
     'equipment-loan': {
-      'view',
-      'create',
-      'list_item',
-      'pause_listing',
-      'delist',
-      'request',
-      'decide_request',
-      'withdraw_request',
-      'claim',
-      'join_queue',
-      'leave_queue',
-      'take_custody',
-      'return',
-      'renew',
-      'report_issue',
+      ArchetypeAction(
+        id: 'view',
+        displayName: 'View listings',
+        description: 'Browse equipment listings and loan details.',
+      ),
+      ArchetypeAction(
+        id: 'create',
+        displayName: 'Create listing',
+        description: 'Create a new equipment listing.',
+      ),
+      ArchetypeAction(
+        id: 'list_item',
+        displayName: 'List item',
+        description: 'Make an equipment item available to the community.',
+      ),
+      ArchetypeAction(
+        id: 'pause_listing',
+        displayName: 'Pause listing',
+        description: 'Temporarily make an equipment listing unavailable.',
+      ),
+      ArchetypeAction(
+        id: 'delist',
+        displayName: 'Delist item',
+        description: 'Remove an equipment item from listings.',
+      ),
+      ArchetypeAction(
+        id: 'request',
+        displayName: 'Request item',
+        description: 'Request to borrow an equipment item.',
+      ),
+      ArchetypeAction(
+        id: 'decide_request',
+        displayName: 'Decide request',
+        description: 'Approve or decline an equipment request.',
+      ),
+      ArchetypeAction(
+        id: 'withdraw_request',
+        displayName: 'Withdraw request',
+        description: 'Cancel an equipment request.',
+      ),
+      ArchetypeAction(
+        id: 'claim',
+        displayName: 'Claim item',
+        description: 'Claim an available equipment item.',
+      ),
+      ArchetypeAction(
+        id: 'join_queue',
+        displayName: 'Join queue',
+        description: 'Join the waiting queue for an equipment item.',
+      ),
+      ArchetypeAction(
+        id: 'leave_queue',
+        displayName: 'Leave queue',
+        description: 'Leave the waiting queue for an equipment item.',
+      ),
+      ArchetypeAction(
+        id: 'take_custody',
+        displayName: 'Take custody',
+        description: 'Record that an equipment item has been collected.',
+      ),
+      ArchetypeAction(
+        id: 'return',
+        displayName: 'Return item',
+        description: 'Record the return of an equipment item.',
+      ),
+      ArchetypeAction(
+        id: 'renew',
+        displayName: 'Renew loan',
+        description: 'Extend the loan period for an equipment item.',
+      ),
+      ArchetypeAction(
+        id: 'report_issue',
+        displayName: 'Report issue',
+        description: 'Report a problem with an equipment item or loan.',
+      ),
     },
     'documentLibrary': {
-      'view',
-      'create',
-      'upload',
+      ArchetypeAction(
+        id: 'view',
+        displayName: 'View documents',
+        description: 'Browse documents in the library.',
+      ),
+      ArchetypeAction(
+        id: 'create',
+        displayName: 'Create document',
+        description: 'Create a document in the library.',
+      ),
+      ArchetypeAction(
+        id: 'upload',
+        displayName: 'Upload document',
+        description: 'Add a document to the library.',
+      ),
       // A document has a life before it is published. Without these three, an
       // ordinary policy -- "only the Board may edit, publish or delete;
       // unpublished documents are Board-only" -- cannot be expressed at all,
       // because a document has no unpublished state and no way to leave one.
-      'edit',
-      'publish',
-      'delete',
-      'archive',
-      'restore',
-      'acknowledge',
-      'open',
-      'download',
-      'mark_read',
-      'mark_unread',
-      'save',
-      'unsave',
-      'request_access',
-      'withdraw_access_request',
-      'grant_access',
-      'share',
-      'request_follow_up',
+      ArchetypeAction(
+        id: 'edit',
+        displayName: 'Edit document',
+        description: 'Update a document’s content or details.',
+      ),
+      ArchetypeAction(
+        id: 'publish',
+        displayName: 'Publish document',
+        description: 'Make a document available to its audience.',
+      ),
+      ArchetypeAction(
+        id: 'delete',
+        displayName: 'Delete document',
+        description: 'Permanently remove a document from the library.',
+      ),
+      ArchetypeAction(
+        id: 'archive',
+        displayName: 'Archive document',
+        description: 'Move a document out of the active library.',
+      ),
+      ArchetypeAction(
+        id: 'restore',
+        displayName: 'Restore document',
+        description: 'Return an archived document to the library.',
+      ),
+      ArchetypeAction(
+        id: 'acknowledge',
+        displayName: 'Acknowledge document',
+        description: 'Confirm that a document has been reviewed.',
+      ),
+      ArchetypeAction(
+        id: 'open',
+        displayName: 'Open document',
+        description: 'Open a document for reading.',
+      ),
+      ArchetypeAction(
+        id: 'download',
+        displayName: 'Download document',
+        description: 'Download a copy of a document.',
+      ),
+      ArchetypeAction(
+        id: 'mark_read',
+        displayName: 'Mark as read',
+        description: 'Mark a document as read.',
+      ),
+      ArchetypeAction(
+        id: 'mark_unread',
+        displayName: 'Mark as unread',
+        description: 'Mark a document as unread.',
+      ),
+      ArchetypeAction(
+        id: 'save',
+        displayName: 'Save document',
+        description: 'Save a document for later reference.',
+      ),
+      ArchetypeAction(
+        id: 'unsave',
+        displayName: 'Remove saved document',
+        description: 'Remove a document from saved items.',
+      ),
+      ArchetypeAction(
+        id: 'request_access',
+        displayName: 'Request access',
+        description: 'Request permission to access a document.',
+      ),
+      ArchetypeAction(
+        id: 'withdraw_access_request',
+        displayName: 'Withdraw access request',
+        description: 'Cancel a request to access a document.',
+      ),
+      ArchetypeAction(
+        id: 'grant_access',
+        displayName: 'Grant access',
+        description: 'Give another member access to a document.',
+      ),
+      ArchetypeAction(
+        id: 'share',
+        displayName: 'Share document',
+        description: 'Share a document with other members.',
+      ),
+      ArchetypeAction(
+        id: 'request_follow_up',
+        displayName: 'Request follow-up',
+        description: 'Ask for follow-up on a document.',
+      ),
     },
     'exportWizard': {
-      'view',
-      'create',
-      'configure_scope',
-      'preview',
-      'approve_redaction',
-      'run',
-      'download',
-      'rollback',
-      'retry',
-      'cancel',
-      'record_outcome',
-      'decide_transfer',
+      ArchetypeAction(
+        id: 'view',
+        displayName: 'View export',
+        description: 'Open an export and see its status.',
+      ),
+      ArchetypeAction(
+        id: 'create',
+        displayName: 'Create export',
+        description: 'Start a new data export.',
+      ),
+      ArchetypeAction(
+        id: 'configure_scope',
+        displayName: 'Configure export scope',
+        description: 'Choose the data included in an export.',
+      ),
+      ArchetypeAction(
+        id: 'preview',
+        displayName: 'Preview export',
+        description: 'Review an export before it runs.',
+      ),
+      ArchetypeAction(
+        id: 'approve_redaction',
+        displayName: 'Approve redaction',
+        description: 'Approve redactions before an export runs.',
+      ),
+      ArchetypeAction(
+        id: 'run',
+        displayName: 'Run export',
+        description: 'Generate an export from the selected data.',
+      ),
+      ArchetypeAction(
+        id: 'download',
+        displayName: 'Download export',
+        description: 'Download a completed export.',
+      ),
+      ArchetypeAction(
+        id: 'rollback',
+        displayName: 'Roll back export',
+        description: 'Reverse a completed export operation.',
+      ),
+      ArchetypeAction(
+        id: 'retry',
+        displayName: 'Retry export',
+        description: 'Run an export again after a failure.',
+      ),
+      ArchetypeAction(
+        id: 'cancel',
+        displayName: 'Cancel export',
+        description: 'Stop an export before it completes.',
+      ),
+      ArchetypeAction(
+        id: 'record_outcome',
+        displayName: 'Record outcome',
+        description: 'Record the result of an export.',
+      ),
+      ArchetypeAction(
+        id: 'decide_transfer',
+        displayName: 'Decide transfer',
+        description: 'Approve or decline an export transfer.',
+      ),
     },
     'votePoll': {
-      'view',
-      'create',
-      'vote',
-      'change_vote',
-      'close',
-      'publish_result',
+      ArchetypeAction(
+        id: 'view',
+        displayName: 'View poll',
+        description: 'Open a poll and see its details.',
+      ),
+      ArchetypeAction(
+        id: 'create',
+        displayName: 'Create poll',
+        description: 'Create a poll for community members.',
+      ),
+      ArchetypeAction(
+        id: 'vote',
+        displayName: 'Vote in poll',
+        description: 'Cast a vote in a poll.',
+      ),
+      ArchetypeAction(
+        id: 'change_vote',
+        displayName: 'Change vote',
+        description: 'Change a vote before the poll closes.',
+      ),
+      ArchetypeAction(
+        id: 'close',
+        displayName: 'Close poll',
+        description: 'Close a poll to further voting.',
+      ),
+      ArchetypeAction(
+        id: 'publish_result',
+        displayName: 'Publish results',
+        description: 'Share a poll’s results with its audience.',
+      ),
     },
     'searchAiAnswer': {
-      'view',
-      'create',
-      'ask',
-      'withdraw_query',
-      'curate',
-      'add_citation',
-      'report',
-      'moderate',
+      ArchetypeAction(
+        id: 'view',
+        displayName: 'View answers',
+        description: 'Browse answers to community questions.',
+      ),
+      ArchetypeAction(
+        id: 'create',
+        displayName: 'Create answer',
+        description: 'Create a saved answer for a community question.',
+      ),
+      ArchetypeAction(
+        id: 'ask',
+        displayName: 'Ask question',
+        description: 'Ask a question and request an answer.',
+      ),
+      ArchetypeAction(
+        id: 'withdraw_query',
+        displayName: 'Withdraw question',
+        description: 'Withdraw a question before it is answered.',
+      ),
+      ArchetypeAction(
+        id: 'curate',
+        displayName: 'Curate answer',
+        description: 'Review and improve a saved answer.',
+      ),
+      ArchetypeAction(
+        id: 'add_citation',
+        displayName: 'Add citation',
+        description: 'Add a source citation to an answer.',
+      ),
+      ArchetypeAction(
+        id: 'report',
+        displayName: 'Report answer',
+        description: 'Report an answer for review.',
+      ),
+      ArchetypeAction(
+        id: 'moderate',
+        displayName: 'Moderate answer',
+        description: 'Review a reported answer and take action.',
+      ),
     },
   };
 
-  /// The four structurally-derived actions available to generic families, §5.
-  static const Set<String> genericActions = {
-    'create',
-    'advance',
-    'terminate',
-    'view',
+  /// Typed structurally-derived actions available to generic families, §5.
+  static const Set<ArchetypeAction> genericActionRecords = {
+    ArchetypeAction(
+      id: 'create',
+      displayName: 'Create item',
+      description: 'Create a new community item.',
+    ),
+    ArchetypeAction(
+      id: 'advance',
+      displayName: 'Advance item',
+      description: 'Move a community item to its next state.',
+    ),
+    ArchetypeAction(
+      id: 'terminate',
+      displayName: 'Terminate item',
+      description: 'End a community item before its normal completion.',
+    ),
+    ArchetypeAction(
+      id: 'view',
+      displayName: 'View item',
+      description: 'Open a community item and see its details.',
+    ),
   };
+
+  /// Typed permission-bearing actions for the community governance family.
+  static const Set<ArchetypeAction> governanceActions = {
+    ArchetypeAction(
+      id: 'view',
+      displayName: 'View community',
+      description: 'Open the community and see its public surfaces.',
+    ),
+    ArchetypeAction(
+      id: 'invite',
+      displayName: 'Invite members',
+      description: 'Issue invitations to join this community.',
+    ),
+    ArchetypeAction(
+      id: 'manage_members',
+      displayName: 'Manage members',
+      description: 'Add, suspend, or remove members of this community.',
+    ),
+    ArchetypeAction(
+      id: 'manage_roles',
+      displayName: 'Manage roles',
+      description: 'Assign or revoke roles held by members of this community.',
+    ),
+    ArchetypeAction(
+      id: 'manage_settings',
+      displayName: 'Manage community settings',
+      description: 'Edit community profile, branding, and tab configuration.',
+    ),
+  };
+
+  /// Permission-id prefix for the community governance family.
+  static const String governancePermissionPrefix = 'community';
+
+  /// Closed action vocabularies, permissions.md §4.
+  ///
+  /// This compatibility accessor preserves the existing string-shaped API for
+  /// callers that derive or validate action ids. New code that needs catalog
+  /// metadata should use [bespokeActionRecords].
+  static final Map<String, Set<String>> bespokeVocabularies = Map.unmodifiable({
+    for (final entry in bespokeActionRecords.entries)
+      entry.key: Set.unmodifiable({
+        for (final action in entry.value) action.id,
+      }),
+  });
+
+  /// The four structurally-derived action ids available to generic families.
+  ///
+  /// This preserves the existing string-shaped API; catalog consumers should
+  /// use [genericActionRecords].
+  static final Set<String> genericActions = Set.unmodifiable({
+    for (final action in genericActionRecords) action.id,
+  });
+
+  /// The community governance action ids, retained as a derived convenience
+  /// view for callers that only need ids.
+  static final Set<String> governanceActionIds = Set.unmodifiable({
+    for (final action in governanceActions) action.id,
+  });
 
   /// `cardSurfaceFamily` -> permission-id prefix. Permission ids are
   /// `<archetype_snake_case>.<action>`.
