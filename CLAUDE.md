@@ -741,6 +741,24 @@ as evidence**; example output inside an agent's report is prose, not telemetry.
 - UX judging runs on Claude Sonnet (`data/call_ux_judge_agent.sh`) and live walkthroughs on
   Claude Opus (`data/call_live_verification_agent.sh`) — the DeepSeek gateway is text-only and
   refuses images, which a UX judge fundamentally needs.
+- **Test users are seeded in the BACKEND, several per role, and community JSON carries no user ids.**
+  Locked by the user and re-stated 2026-09-08: *"I have asked you repeatedly for seeding roles, and I
+  keep saying to seed them in the back end, remove the userids from JSON."* Roles are declared in the
+  package; the people holding them are Keycloak + App Access data. **Three things follow, and each
+  has already caused a wrong diagnosis:**
+  - *"Only one holder of role X" is a seeding gap, never a package defect.* 36 of 37 role assignments
+    had exactly one holder on 2026-09-08, which silently killed every two-party same-role interaction
+    — Social Space's `connected`, and six `join-queue`/`leave-queue` transitions a 2026-08-31 row had
+    filed as "dead" with no cause. **Seed more users; never edit the package to route around it**
+    (that is converging by removal against test data, which hard rule 14 forbids).
+  - *A declared role with no holder is a provisioning gap, not a missing feature.* Masjid Nur declares
+    `owner`, App Access never provisioned it, four donation transitions are unreachable. Seed it.
+  - *A broken credential for one seeded user is not a decision point* — seed another user holding that
+    role. This is what turned `loom-book-member-1`'s replaced password from a blocker into a non-issue.
+  **Never substitute `<community>-admin` for a missing domain role.** The admin role is generated
+  platform governance holding the five `community.*` permissions; a package's declared role (Masjid's
+  `owner`, Chess's `chess-owner`) is a domain role. Different things, and conflating them produces a
+  fix that quietly changes who governs a community.
 
 ## Architecture facts worth carrying, not just looking up
 

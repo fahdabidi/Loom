@@ -267,3 +267,40 @@ follow below as the agent finds them, starting with that dispatch's own findings
 **Evidence:** Observed in the supplied history: `305ee24a` introduced service-binding observability; `528d0241` recorded the classification defect; `7558a3c5` records its fix and independent five-suite verification. Observed directly in source: `app/packages/core/loom_communities_app_shell/lib/src/part52_service_binding_report.dart:290` implements classification using `statusCode` and `errorKind`. `app/packages/core/loom_communities_app_shell/test/service_binding_report_test.dart:214` checks that HTTP 503 produces `SERVICE REQUEST FAILED` and excludes `BACKEND UNREACHABLE`; `:231` covers all four failure classes and never-called bindings; `:287` covers replacement of only the matching service/scope failure by a later success. These are source and recorded-history observations, not fresh runtime verification.
 
 **Not already covered because:** This explicitly corrects “Service call failure is not evidence of backend unreachability”; it does not propose a second version of that pattern. I also checked “Authentication recovery must not depend on account-loading failure,” “A walkthrough identity must be authenticated, not merely selected,” and CLAUDE.md’s failure-classification evidence rule. Those preserve the relevant principles but do not correct keypatterns.md’s now-false present-tense description.
+
+### 2026-09-08 -- LOCKED DECISION: seed test users per role in the backend, never in JSON
+
+**Kind:** architectural decision (locked by the user; do not re-open)
+
+**What:** Every community role gets **several seeded test users, provisioned in the backend**
+(Keycloak + App Access `group_membership_role`). Community `*.jsonc` packages carry **no user ids** —
+no `fanId` values, no `createdByFanId`, no participant lists naming people. Roles are declared in the
+package; the humans who hold them are backend data.
+
+Two consequences that follow directly, and both have already bitten:
+
+- **"Only one holder of role X" is never a package problem and never a reason to edit a package.**
+  Measured 2026-09-08: 36 of 37 role assignments had exactly one holder (only `cedar-commons-hoa:hoa-board`
+  had two), which silently killed every two-party same-role interaction — Member Social Space's
+  `connected`, and the six `join-queue`/`leave-queue` transitions in Book Club, Camera and Garden that
+  a 2026-08-31 row had recorded as "dead" with no cause. Seed more users; do not touch the JSON.
+- **A declared role with no holder is a provisioning gap, not a missing feature.** Masjid Nur's
+  package declares `owner` and App Access never provisioned it, so four donation transitions are
+  unreachable and a donation can never be `paid`. The fix is seeding, not re-guarding the transitions.
+
+**Why it matters:** this decision has been asked for and re-answered repeatedly — the user's words:
+"I have asked you repeatedly for seeding roles, and I keep saying to seed them in the back end,
+remove the userids from JSON." Every time it is re-asked, work stalls behind a question that was
+already settled. It is recorded here so it stops being a question. **A credential that stops working
+for one seeded user is also not a decision point** — seed another user holding that role
+(this is what made `loom-book-member-1`'s replaced password a non-issue rather than a blocker).
+
+**Distinguish carefully, because conflating them is what produces wrong "fixes":** a package's
+declared role (e.g. Masjid's `owner`) is a DOMAIN role; `<community>-admin` is GENERATED platform
+governance holding the five `community.*` permissions. They are different roles with different
+meanings, and substituting the admin for a missing domain role is never the fix.
+
+**Evidence:** user instruction 2026-09-08, restating a standing decision. Live data:
+`group_membership_role` holder counts; `app_role` for `loom_communities_masjid-nur` holding only
+`community-member` and `masjid-nur-admin`; Garden's `join-queue` guard requiring a `garden-member`
+who is not the item owner.
