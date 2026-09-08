@@ -332,7 +332,17 @@ fi
 # 2026-09-07: a multi-line reply silently extracted as just its closing
 # "<<<END_KEYPATTERNS_ENTRY>>>" line, and the append step correctly saw that
 # as empty and skipped -- no corruption, but nothing was captured either.
-FINAL_REPLY="$(jq -rs '[.[] | select(.type=="item.completed" and .item.type=="agent_message") | .item.text] | last // ""' "$CODEX_OUTPUT_CAPTURE" 2>/dev/null)"
+#
+# SECOND bug, found live on the actual seeding dispatch the same day: `-s`
+# (slurp) requires the ENTIRE input to parse as a JSON value sequence, and
+# codex prints a plain-text "Reading additional input from stdin..." line
+# before its own JSON stream even under `--json` -- that one non-JSON line
+# makes the WHOLE slurp parse fail, so `jq -rs` silently produced nothing
+# (suppressed by `2>/dev/null`) on a real, large reply that genuinely
+# proposed 19 keypatterns.md entries. `grep '^{'` first, keeping only lines
+# that look like a JSON object, fixes it -- confirmed live by re-extracting
+# from that same dispatch's raw output after the fact.
+FINAL_REPLY="$(grep '^{' "$CODEX_OUTPUT_CAPTURE" 2>/dev/null | jq -rs '[.[] | select(.type=="item.completed" and .item.type=="agent_message") | .item.text] | last // ""' 2>/dev/null)"
 # `sed '/marker/d'` (not `1d;$d`) strips ONLY the marker lines wherever they
 # occur, so this correctly handles a reply proposing MULTIPLE entries (each
 # in its own <<<KEYPATTERNS_ENTRY>>>...<<<END_...>>> pair) -- `1d;$d` would
