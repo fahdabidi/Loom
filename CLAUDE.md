@@ -40,6 +40,34 @@ Two things make this worth knowing in advance:
 Before starting a build or dispatch, check `cut -d' ' -f1-3 /proc/loadavg`. After one finishes,
 re-run a real request against the stack rather than trusting pod status.
 
+**A dispatch that runs the five suites does this too, and harder than a build.** On 2026-09-08 an
+implementation dispatch asked to run all five suites drove the box to **load 68 on 8 cores**, made
+**sshd unable to complete a handshake for roughly forty minutes**, and got `postgres-0`
+**force-killed three times** (`exit=137`, restart count 6 → 8). The earlier build incident produced
+one *graceful* restart; this was harder, and Keycloak went `0/1` as collateral. Everything recovered
+on its own — all six pods returned `1/1`, and every row survived: 19 workflow instances, 85
+definitions, 137 permissions, 425 grants.
+
+**Two judgments from it worth reusing.**
+
+*Do not power-cycle a VM that is merely loaded.* The documented recovery is for a **wedged** VM, and
+the two look identical over ssh. What distinguishes them is cheap and host-side:
+`loom-vm.ps1 status` reporting `running` (not `paused`, which means the host disk filled), Guest
+Additions still answering, the TCP port still accepting, and free space on D:. All four said "loaded,
+not wedged" — and rebooting would have destroyed a dispatch with eight modified files and no record
+of what it had finished. It finished fine.
+
+*Stop polling.* Each `ssh` probe adds load to the box whose load you are measuring, and under
+saturation the probes time out anyway — so they cost something and return nothing. Arm one waiter
+with `ServerAliveInterval` and go quiet.
+
+**And distrust that run's test results specifically.** Postgres died three times *during* the suites,
+so any PostgreSQL-backed test in that window failed environmentally. That is the exact condition in
+which an agent "fixes" what was never broken. This one behaved correctly — it reported
+"incomplete verifications, not green suite results" and refused to fabricate totals — but the
+default assumption should be that suite numbers from a saturated box are worthless, and re-running
+them yourself on a quiet box is the only real check.
+
 ## The Android emulator belongs on Windows, not in the VM
 
 **The VM has no AVD any more.** `loom_demo` was deleted 2026-08-24 (1.7 GB reclaimed) and the
