@@ -582,6 +582,23 @@ surface.
   Garden Club's `toolDescription` passed an on-screen check and was still truncated in
   `instance_data`. It truncated input four times in a single campaign. Prefer selecting an existing
   value over typing one, and settle anything load-bearing against the database.
+- **Authentication recovery must never be gated on an error.** Account discovery, OAuth
+  authentication, community account selection, and membership admission are four separate states, and
+  a failure in one is not evidence about another. The app shell got this wrong in a way worth
+  remembering: the "Continue to secure sign-in" button lived only in the account-list *error* branch,
+  while a failed account tap showed a SnackBar and left `_error` null — so a user whose accounts
+  loaded fine had **no way to sign in at all**, and the only escape was pressing a *membership*
+  button to force the list to fail. The happy path produced the dead end. A cached community
+  `currentSession` is a *selection*, not a token, and can outlive OAuth validity — never read it as
+  proof of authentication.
+- **A failed call is not evidence that a service is unreachable.** Keep authentication-required,
+  authorization-refused, HTTP/service error and transport failure as distinct outcomes. The binding
+  badge labelled every failure `BACKEND UNREACHABLE` without examining `statusCode` or `errorKind` —
+  including a missing session that throws *before any request is sent* — which points an investigator
+  at `kubectl` when the real answer is "sign in". Two corollaries worth carrying: the badge tracks the
+  **latest** outcome per service and scope, so a later success clears the warning without explaining
+  it; and its **absence does not prove a service ever answered**, because an uncalled binding raises
+  no label either.
 - **`uiautomator dump` disagrees with the screen, in both directions.** Same session: it returned
   stale trees twice and omitted a create FAB that screenshots showed plainly — nearly producing a
   report of a missing affordance that was actually on screen. When the dump and a screenshot
