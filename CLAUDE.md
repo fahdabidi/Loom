@@ -519,6 +519,17 @@ Three habits, in the order they would have saved the most time:
 - Process checks lie in both directions: `pgrep -c qemu-system-x86_64` returns 0 when it IS
   running (15-char `comm` truncation), and `pgrep -fc` returns 1 when nothing is (it matches its
   own command line). Use `adb devices` plus a bracketed `pgrep -fc '[q]emu...'`.
+- **`adb shell input text` silently truncates, and a truncated identifier still looks valid.** On
+  2026-09-08 a walkthrough typed `fan-hoa-member-1` into a `payerFanId` field and the device received
+  `fan-hoa-memb`. Nothing errors: the workflow is created, the row persists, and the instance is
+  addressed to a fan that does not exist — evidence that is wrong in the one field nobody re-reads.
+  **Read every typed value back off the device before acting on it**, especially identifiers, and
+  prefer selecting an existing value to typing one.
+- **`uiautomator dump` disagrees with the screen, in both directions.** Same session: it returned
+  stale trees twice and omitted a create FAB that screenshots showed plainly — nearly producing a
+  report of a missing affordance that was actually on screen. When the dump and a screenshot
+  disagree, **the screenshot wins**; run a control on a surface known to have the affordance before
+  reporting one absent.
 
 ## Instrument the silence before theorising about it
 
