@@ -593,6 +593,34 @@ target exist in the deployed catalog?*
 And prove reachability by **firing** the guarded transition, not by reading the JSON. Two of the four
 were first suspected from the package and then overturned or sharpened by what the device did — one
 draft finding was withdrawn entirely when a control showed the affordance rendered on a different
+
+### A capability has to be true at every layer, and each layer has its own tracker row
+
+The same thing must exist in the package, in the generated vocabulary, in the live catalog, in App
+Access provisioning, and in the published definitions. **Fixing one layer does not fix the others,
+and each layer's tracker row reads as locally complete** — which is how a capability stays broken
+while every row about it looks either closed or like somebody else's problem. Four instances on
+2026-09-08 alone:
+
+| Capability | True at | Missing at | Symptom |
+|---|---|---|---|
+| Masjid Nur's `owner` role | the package (added since August) | App Access provisioning | four transitions dead, donation never `paid` |
+| `calendar.*` permissions | the generated vocabulary | the live catalog | every calendar workflow uncreatable |
+| 3 workflow types | their packages | the published definitions | `createInstance` returns success and does nothing |
+| Social Space `member` | role declared *and* provisioned | a **second holder** | `connected` unreachable by any pair |
+
+Masjid Nur is the clearest: in August the *package* lacked `owner` and a tracker row said so; the
+package was fixed, and the row about provisioning never existed, so the capability stayed dead while
+the recorded problem was solved. **The gap moved layers rather than closing.**
+
+Two habits. When you fix a declaration, **ask what else has to be true for it to take effect** —
+generated, copied, published, provisioned, held by enough people. And when a row says a thing is
+missing, **check which layer it means**, because a row written about one layer goes stale the moment
+a different layer changes, in either direction.
+
+This is also why the parity gates exist and why there are now three of them
+(`check_spec_parity.sh`, the vocabulary twin inside it, `check_published_definitions.sh`): each one
+compares the same capability across two layers, which is the only check that can see this class.
 surface.
 
 ## Evidence rules
