@@ -23,20 +23,38 @@
 # model_reasoning_effort = "high", model_verbosity = "medium",
 # model_context_window = 272000, service_tier = "fast").
 #
-# PERSISTENT SESSION, user-directed 2026-09-07: this agent must never start a
-# fresh session by default -- every dispatch resumes the SAME session id, so
-# it accumulates codebase familiarity across every investigation rather than
-# starting cold each time. Mechanism: the session's Codex thread id is
-# captured once (from the `thread.started` event in `--json` output, which
-# every dispatch uses) and persisted at
-# `.codex-logs/.root_cause_agent_session_id`. Every later dispatch reads that
-# id and resumes it. There is deliberately NO flag to force a fresh session --
-# that was the previous script's footgun (a caller could omit `--fresh` by
-# habit or by intent and silently get an unrelated resumed session, or worse,
-# rely on `resume --last` picking up whatever ANY other Codex dispatch on this
-# box last touched). If the accumulated session ever needs to be abandoned
-# (corrupted, too large, or a deliberate reset), delete that file by hand --
-# an out-of-band, deliberate action, not a script flag.
+# SESSION SCOPING, user-directed 2026-09-08 (supersedes the 2026-09-07
+# "one permanent session" design). A session is scoped to ONE task or ONE
+# tracker phase/milestone, not to the whole project:
+#
+#   * No session key  -> a FRESH session, every time. This is the default,
+#     because most dispatches are one-off questions and a stale unrelated
+#     context is worse than no context.
+#   * Session key given -> resume that key's session if one exists, else seed
+#     it and record it under that key. Use the SAME key for a follow-up on
+#     something this agent already helped with, and for every dispatch inside
+#     one tracker phase/milestone. A NEW phase means a NEW key.
+#
+# Why this replaced the permanent session: measured 2026-09-08 across the
+# first three dispatches, cached input is not free (~10% of uncached), so a
+# large accumulated prefix is a RECURRING tax on every resume -- at one
+# dispatch the cached prefix cost ~144k uncached-equivalent against only ~82k
+# of genuinely new input. A key-scoped session keeps the benefit that matters
+# (a follow-up remembers the work it is following up on) without every
+# unrelated question paying for the whole project's history. The cache rewards
+# a STABLE prefix, not a LARGE one.
+#
+# Mechanism: the Codex thread id is captured from the `thread.started` event
+# in `--json` output and persisted per key at
+# `.codex-logs/root_cause_sessions/<key>.id`. There is still no flag to force
+# a resume of an arbitrary session -- you either name a key or you get a fresh
+# session, so a caller can never silently inherit an unrelated context. To
+# abandon a key's accumulated session, delete that key's file by hand.
+#
+# The pre-2026-09-08 global file `.codex-logs/.root_cause_agent_session_id` is
+# NO LONGER read automatically. It is left in place as history; pass
+# `--session-key legacy-expert` if you deliberately want that old accumulated
+# session back.
 #
 # READ-ONLY, user-tightened 2026-09-07 -- real sandbox enforcement, not just a
 # prompt rule. This agent has ZERO write access and ZERO network access,
@@ -120,10 +138,13 @@
 # loads.
 #
 # Usage:
-#   bash data/call_root_cause_agent.sh <path-to-brief-file>
+#   bash data/call_root_cause_agent.sh <path-to-brief-file> [--session-key <key>]
 #
-# No mode argument. Every dispatch resumes the one persistent session; see
-# the PERSISTENT SESSION note above for how to deliberately reset it.
+# Omit --session-key for a one-off question (fresh session). Pass the SAME key
+# to continue a task you already consulted this agent about, or to share one
+# session across a tracker phase; see SESSION SCOPING above. Keys are
+# free-form; use something durable like `gap-permission-catalog` or
+# `phase-e-access-authority`.
 #
 # Same dispatch-and-watch recipe as data/call_implementation_agent.sh
 # (dispatch over ssh loom-vm, watch via watch_dispatch_log.sh) -- reuse that
@@ -141,7 +162,36 @@
 
 set -euo pipefail
 
-PROMPT_FILE="${1:?usage: call_root_cause_agent.sh <brief-file>}"
+PROMPT_FILE="${1:?usage: call_root_cause_agent.sh <brief-file> [--session-key <key>]}"
+shift || true
+
+SESSION_KEY=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --session-key)
+      SESSION_KEY="${2:?--session-key needs a value}"
+      shift 2
+      ;;
+    --session-key=*)
+      SESSION_KEY="${1#--session-key=}"
+      shift
+      ;;
+    *)
+      echo "ERROR: unknown argument '$1'" >&2
+      echo "usage: call_root_cause_agent.sh <brief-file> [--session-key <key>]" >&2
+      exit 2
+      ;;
+  esac
+done
+
+# Keys become filenames: keep them boring and collision-free.
+if [ -n "$SESSION_KEY" ]; then
+  SESSION_KEY_SAFE="$(printf '%s' "$SESSION_KEY" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9._-' '-' | sed 's/^-*//; s/-*$//')"
+  if [ -z "$SESSION_KEY_SAFE" ]; then
+    echo "ERROR: --session-key '$SESSION_KEY' has no usable characters" >&2
+    exit 2
+  fi
+fi
 MODEL="${CODEX_ROOT_CAUSE_MODEL:-gpt-6-astra}"
 REASONING_EFFORT="${CODEX_ROOT_CAUSE_REASONING_EFFORT:-high}"
 PROFILE="${CODEX_ROOT_CAUSE_PROFILE:-gpt6_astra_high}"
@@ -238,19 +288,26 @@ PRE_HEAD="$(git rev-parse HEAD)"
 cd "$REPO_ROOT"
 
 mkdir -p "$REPO_ROOT/.codex-logs"
-SESSION_ID_FILE="$REPO_ROOT/.codex-logs/.root_cause_agent_session_id"
+SESSION_DIR="$REPO_ROOT/.codex-logs/root_cause_sessions"
 SESSION_ID=""
-if [ -f "$SESSION_ID_FILE" ]; then
-  SESSION_ID="$(tr -d '[:space:]' < "$SESSION_ID_FILE")"
+SESSION_ID_FILE=""
+if [ -n "$SESSION_KEY" ]; then
+  mkdir -p "$SESSION_DIR"
+  SESSION_ID_FILE="$SESSION_DIR/$SESSION_KEY_SAFE.id"
+  if [ -f "$SESSION_ID_FILE" ]; then
+    SESSION_ID="$(tr -d '[:space:]' < "$SESSION_ID_FILE")"
+  fi
 fi
 
 echo "=== Invoking Root Cause Agent (codex exec) ==="
 echo "Repo: $REPO_ROOT"
 echo "Brief file: $PROMPT_FILE ($(wc -l < "$PROMPT_FILE") lines)"
-if [ -n "$SESSION_ID" ]; then
-  echo "Mode: resuming persistent session $SESSION_ID"
+if [ -z "$SESSION_KEY" ]; then
+  echo "Mode: FRESH session (no --session-key given; nothing will be persisted)"
+elif [ -n "$SESSION_ID" ]; then
+  echo "Mode: resuming session for key '$SESSION_KEY_SAFE' ($SESSION_ID)"
 else
-  echo "Mode: seeding the persistent session (none recorded yet at $SESSION_ID_FILE)"
+  echo "Mode: seeding a new session for key '$SESSION_KEY_SAFE' (none recorded yet at $SESSION_ID_FILE)"
 fi
 echo "Model: $MODEL"
 echo "Reasoning effort: $REASONING_EFFORT"
@@ -309,9 +366,16 @@ echo "codex exec exited with status $STATUS"
 
 if [ -z "$SESSION_ID" ]; then
   NEW_SESSION_ID="$(grep -o '"thread_id":"[^"]*"' "$CODEX_OUTPUT_CAPTURE" | head -1 | sed 's/.*:"//; s/"$//')"
-  if [ -n "$NEW_SESSION_ID" ]; then
+  if [ -z "$SESSION_KEY" ]; then
+    # Fresh mode: nothing to persist, by design. Print the id anyway so a
+    # one-off that turns out to matter can be adopted into a key by hand.
+    echo "Mode was FRESH: session id ${NEW_SESSION_ID:-<none captured>} deliberately NOT persisted."
+    echo "  To adopt it as an ongoing thread:"
+    echo "    mkdir -p .codex-logs/root_cause_sessions"
+    echo "    echo ${NEW_SESSION_ID:-<id>} > .codex-logs/root_cause_sessions/<key>.id"
+  elif [ -n "$NEW_SESSION_ID" ]; then
     printf '%s\n' "$NEW_SESSION_ID" > "$SESSION_ID_FILE"
-    echo "Persisted new session id for all future dispatches: $NEW_SESSION_ID ($SESSION_ID_FILE)"
+    echo "Persisted session id for key '$SESSION_KEY_SAFE': $NEW_SESSION_ID ($SESSION_ID_FILE)"
   else
     echo "##################################################################"
     echo "# WARNING: no thread_id found in this seed run's output -- the session was NOT persisted. #"

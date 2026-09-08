@@ -796,18 +796,41 @@ reminder case and `reminder` gained a declarative block.
 | Community `*.jsonc` | the Skill only, via `data/call_skill_authoring_agent.sh`; copy its output byte-identically. Files are `chmod 444`; lift, copy, restore |
 | Product docs, reference docs, Skill instructions | me, directly |
 | Root-causing a stubborn defect, or scoping a non-trivial change before writing its ticket | `data/call_root_cause_agent.sh` |
+| Mining the project's own history for durable patterns (run manually, occasionally) | `data/call_patterns_agent.sh` |
 
-**The Root Cause Agent is one persistent session, on purpose, and it is not only for debugging.**
-Unlike every other dispatch in this table, it never takes a `--fresh`/resume choice: every
-invocation resumes the SAME Codex thread id (captured once, held at
-`.codex-logs/.root_cause_agent_session_id`), so it accumulates real familiarity with this codebase
-across every dispatch instead of starting cold each time (user-directed 2026-09-07). Model
-`gpt-6-astra` at reasoning effort `high` — this required upgrading the VM's Codex CLI itself
+**The Root Cause Agent's session is scoped to ONE task or ONE tracker phase — not to the project**
+(user-directed 2026-09-08, superseding the 2026-09-07 "one permanent session" design). It is also
+not only for debugging.
+
+    bash data/call_root_cause_agent.sh <brief>                       # fresh session
+    bash data/call_root_cause_agent.sh <brief> --session-key <key>   # scoped session
+
+- **No key → a fresh session, every time.** This is the default and the right choice for a one-off
+  question, because a stale unrelated context is worse than no context.
+- **A key → resume that key's session if it exists, else seed it.** Use the SAME key for a follow-up
+  on something this agent already helped with, and for every dispatch inside one tracker
+  phase/milestone. **A new phase means a new key.** Keys are free-form and sanitised into filenames
+  at `.codex-logs/root_cause_sessions/<key>.id`; use something durable like
+  `gap-permission-catalog` or `phase-e-access-authority`.
+
+There is still no flag to resume an arbitrary session: you either name a key or you get a fresh one,
+so a caller can never silently inherit an unrelated context. To abandon a key's session, delete that
+key's file. The pre-2026-09-08 global `.codex-logs/.root_cause_agent_session_id` is **no longer read
+automatically** — pass `--session-key legacy-expert` if you deliberately want that old accumulated
+thread back.
+
+**Why the change, measured rather than assumed.** Verified live 2026-09-08 on the new script: a
+keyed resume reused its thread id with a **90.8% cache hit on 18,471 input tokens**. The old
+project-wide session was carrying **1.1–1.5M input tokens per dispatch**. Same continuity benefit
+where it matters (a follow-up remembers the work it follows up on), at roughly 1.5% of the prefix
+cost — because cached input is not free (~10% of uncached), so a large accumulated prefix is a
+recurring tax on every resume, not a one-time investment.
+
+Model `gpt-6-astra` at reasoning effort `high` — this required upgrading the VM's Codex CLI itself
 (0.147.0 rejected that model outright; `npm install -g @openai/codex@0.153.4` fixed it). Dispatch
 it not only when something is already broken, but *before* writing an implementation ticket for
 anything non-trivial, to trace the real mechanism first rather than write a ticket from an assumed
-one. Reset (abandoning the accumulated session) is deliberately not a script flag — delete
-`.codex-logs/.root_cause_agent_session_id` by hand if that's ever truly needed.
+one.
 
 **The persistent session is cheap to keep, and the seeding pass is where the cost lives.** Measured
 2026-09-08 across the session's first three invocations: **7,240,905 total tokens, of which
@@ -898,6 +921,29 @@ loaded automatically the way this one is. **After any Root Cause Agent dispatch 
 entry, read what's new and fold anything genuinely durable and generally-applicable into this file
 yourself**, in this file's own voice and level of generality — a `keypatterns.md` entry that never
 makes this trip is a lesson the next session won't have.
+
+**The Patterns Agent fills `keypatterns.md` from the other direction, and you run it by hand.**
+
+    bash data/call_patterns_agent.sh [--since <rev-or-date>] [extra-file ...]
+
+The Root Cause Agent only ever contributes an entry *about whatever was broken that day*, and only
+when someone happens to dispatch it. Patterns that live in the **shape** of the record — the same
+mistake in three commits six weeks apart, a decision reversed twice, a guard that keeps lapsing,
+two areas that always change together — are invisible to that. This agent reads the record instead
+of the bug: pre-gathered git history plus churn (`.codex-logs/patterns_input/`), `keypatterns.md`,
+`CLAUDE.md`, the four trackers and `solved-patterns.md`. Same model (`gpt-6-astra` at `high`, pinned
+by both `-p` and explicit `-c` overrides so a missing profile cannot silently downgrade it), same
+read-only sandbox, same propose-and-the-script-appends write model, same violation audit.
+
+**It is always a FRESH session, deliberately** — the opposite of the Root Cause Agent's scoped keys.
+A resumed sweep would anchor on its own prior conclusions and stop noticing anything new; each sweep
+should be a cold read of the whole corpus.
+
+Two things to hold onto when using it. **An empty sweep is a correct result** — the prompt tells it
+that proposing nothing beats padding, so do not read a quiet run as a failure or re-run it hoping for
+output. And **every appended entry is a proposal, not a verified fact**: review each one, delete any
+that does not earn its place, and commit `keypatterns.md` yourself. The same fold-into-this-file
+responsibility above applies to whatever survives that review.
 
 **Pass `--fresh` unless you mean to continue the same work.** `call_implementation_agent.sh`
 defaults to `resume --last` — it hardcodes that, and nothing checks whether resuming is appropriate:
