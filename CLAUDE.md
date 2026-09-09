@@ -1448,3 +1448,31 @@ Two checks that sweep needs, both of which nearly went wrong: confirm the effect
 versus `$actor`) before calling anything a defect, and confirm the rescuing `prefill` sits in the
 **same workflow** as the transition — Youth Soccer's prefill is 150 lines away from its guard and a
 neighbouring workflow's prefill would have proved nothing.
+
+### Catching an exception inside a transaction boundary commits the writes it was meant to undo
+
+Found 2026-09-09 in the workflow service, verified by reading both ends. `_handle` wraps the entire
+request in `_communityTransactionRunner(communityId, ...)`. Inside that, `_withItemQueueRequest`
+catches every exception and returns an HTTP 500 `Response`. **A returned Response is normal
+completion to the transaction runner**, so PostgreSQL commits whatever the handler already wrote.
+The concrete failure: if anything throws after `repository.join` has inserted — the re-read, the
+position computation, the response construction — the member is queued and the client is told the
+request failed.
+
+`_database.transaction` does not save you: `database.dart:884` executes the callback directly when an
+outer executor already exists, creating **no nested rollback boundary**. Wrapping a sub-section in it
+looks like added safety and adds none.
+
+**The rule: a `catch` that converts an error into a success-shaped return value must live OUTSIDE the
+transaction it is protecting.** Inside, it silently converts "roll this back" into "commit this and
+report failure" — the worst of both, because the client's error message is now evidence *against*
+the state that actually persisted. Either map errors to responses outside the boundary, or throw a
+typed abort that carries the intended response and unwrap it after rollback.
+
+This generalizes past transactions to any scope-exit cleanup — a `catch` inside a `finally`-style
+guard, a retry wrapper, a lock release. **Ask what the enclosing construct does when the block
+returns normally, then ask whether your error path returns normally.** If both answers are "commits"
+and "yes", the error handling is decorative.
+
+Same family as the grep-gated commit and the wrapper that reports its agent's total failure as a
+clean run: **a failure path whose observable behaviour is indistinguishable from success.**
