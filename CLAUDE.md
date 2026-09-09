@@ -1671,3 +1671,29 @@ was accurate and led to a wrong conclusion, because what mattered was how many t
 the whole question. A `pubspec.yaml` dependency edge is not evidence of use either; it is what made
 this look worse than it was. Before treating a count as a risk, ask what would have to be true for
 each counted item to actually reach the surface you care about, and measure *that*.
+
+### Writing a lesson down does not install it — prefer the gate to the note
+
+On 2026-09-09 I wrote "a count measures the thing counted, not the exposure to it", and then within
+the hour shipped `check_b25_status.sh` counting every manifest that *named* a workflow — including
+three recording blocked or partial runs, one of which says "Not proven. No live write was performed."
+The total was correct only because each blocked run happened to have a later successful manifest for
+the same workflow. The tool built to stop the error committed it.
+
+That is the general case, not an anomaly. This file is long, and its rules are recalled when something
+prompts recall — which is exactly when they are least needed, because noticing the risk is the hard
+part. **A rule that must be remembered at the moment of writing code will sometimes not be.**
+
+So when a lesson can be made mechanical, make it mechanical, and treat the note as documentation of
+the gate rather than the safeguard itself. Today's durable artifacts are the ones that run:
+`check_role_parity.sh` (declared vs provisioned roles, proven to fail as well as pass),
+`check_b25_status.sh` (recomputes the bar and refuses to print a combined figure), the
+`make_b25_brief.sh` requirement that every walkthrough record `skillVersion` + `sha256`, and the three
+older parity gates. The prose entries above are worth keeping, but they are reminders; these are
+checks.
+
+Two corollaries. **A report should say what it could not process** — the "unparsed: 3" line is what
+sent me to the file whose title read `**BLOCKED**`, which is how the counting flaw surfaced at all; a
+silently-dropped input hides the case that disproves you. And **when a number comes out right, ask
+whether it came out right for the right reason** — 9 was correct by luck, and nothing about the output
+distinguished luck from design.
