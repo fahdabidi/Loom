@@ -85,6 +85,10 @@ while IFS=$'\t' read -r _c wf; do
 done < "$WORK/rows.tsv"
 
 JUDGE=$(ls "$EVID" 2>/dev/null | grep -icE 'judge|ux-review' || true)
+# screenRowId values are SCREENS, not bar rows. There are 204 of them against a 72-row bar,
+# and the ids read like b25-v4-row-NNN-<slug> which makes them look joinable. They are not.
+SCREENS=$(grep -hoE '"screenRowId": "b25-v4-row-[0-9]+' "$EVID"/*.json 2>/dev/null \
+  | grep -oE 'row-[0-9]+' | sort -u | wc -l)
 
 cat <<REPORT
 
@@ -103,11 +107,20 @@ B25 status -- $(date +%Y-%m-%d)
     REAL ROWS WITH A LIVE WRITE       $MATCHED
 
   judge half
-    judge/UX-review artifacts         $JUDGE   (not joined to rows -- see below)
+    judge/UX-review artifacts         $JUDGE
+    distinct screenRowId values       $SCREENS   (SCREENS, not bar rows -- see below)
 
-  A row is proven only with BOTH halves. This script reports the walkthrough half only:
-  the judge artifacts are not keyed to rows, so joining them is unwritten work. Do NOT
-  quote "$MATCHED of $REAL" as the bar -- it is an upper bound on the walkthrough half.
+  A row is proven only with BOTH halves. This reports the walkthrough half ONLY, and the
+  judge half is not merely uncounted -- it is UNCOMPUTABLE from these artifacts. They are
+  keyed by screenRowId, and those are SCREENS: $SCREENS distinct values against a $REAL-row
+  bar. No artifact records a judge verdict against a B25 row.
+
+  The ids look like b25-v4-row-008-garden-export-custom-schemas-1, so screenRowId reads as
+  a bar row and even embeds a plausible workflow slug. It is not one. Do NOT join on that
+  slug -- the slugs are screen subjects, not workflow types, and the resemblance is what
+  makes the wrong join attractive.
+
+  So do NOT quote "$MATCHED of $REAL" as the bar. It is an upper bound on one half.
 
   Manifests written before 2026-09-09 record no package identity, so a match proves the
   row against whatever the package was that day, not against the package today.
