@@ -100,6 +100,26 @@ The account and fan id you authenticated as, the path you drove, the final UI st
 (instance id, \`created_by_fan_id\`, \`current_state\`, created_at) or its absence, whether the two
 agree, and any defect observed.
 
+## Where to file it — this decides whether your run COUNTS
+
+Write your manifest to **\`docs/Build Plan V2/Evidence/B25/<community>-<workflow>-live-write-$(date +%F).md\`**
+and commit it. Not \`evidence/\`, not a scratch directory: \`check_b25_status.sh\` measures the production
+bar by reading that one directory, and on 2026-09-09 three completed walkthroughs were invisible to it
+because their manifests were filed elsewhere. The work was real, correct, and uncounted until someone
+noticed and republished it by hand.
+
+Your manifest **must** open with these two lines verbatim, because they are the keys the bar is joined
+on — the workflow line is how your run is matched to its B25 row, and the outcome phrase is how a
+genuine proof is told apart from a blocked or partial one:
+
+    **Workflow:** \`$WF\` in $NAME
+    **Outcome:** Both halves of the proof standard were met — <one sentence on what you drove>
+
+**Only claim that outcome phrase if you actually met it.** If you were blocked, or got partway, say so
+plainly instead and describe where you stopped — a manifest that overstates is worse than one that
+reports a failure, because the bar will silently count it. Blocked and partial runs are valuable and
+are read; they are simply not proofs.
+
 **Also record the PACKAGE IDENTITY you exercised, as its own line.** Evidence naming only the
 community and the APK cannot be checked for staleness later: regenerate the package and every earlier
 manifest silently becomes a claim about a file that no longer exists, with nothing to reveal it. Run
