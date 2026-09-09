@@ -1581,3 +1581,24 @@ Three habits:
 The general form: **a claim's age is a better predictor of its wrongness than its status tag**, and a
 blocker is exactly the kind of claim nobody re-tests because its whole function is to stop you
 looking.
+
+**And search the captured knowledge before presenting a finding as new.** The same audit produced two
+write-ups claiming a diagnosis this project already held, in better form:
+
+- Youth Soccer's payment surface, which I reported for many ticks as a decision the user owed. It was
+  answered by `solved-patterns.md` §18 (read the product doc's persona table) plus a scoping already
+  written into the tracker, which had concluded `record-offline-payment` should be *retired* as the
+  completion path rather than re-guarded.
+- Masjid's five `wf_`-prefixed B25 rows. I traced them to the demo app's test harness and recorded
+  that as sharper than the row's framing. **The product doc's own header already said it** — naming
+  them literal `testWidgets` names, citing the three test files, stating no `LoomWorkflowDefinition`
+  with those ids exists, and instructing that no JSON ever be authored for them.
+
+Both times the derivation was correct and the effort was waste, and worse, the write-up implied the
+project had not known. **Before recording a finding, grep the trackers, `solved-patterns.md`,
+`keypatterns.md` and the relevant product doc for its subject.** This project's documents are unusually
+good at recording *why*, which means the answer to "is this already known" is usually yes — and the
+residue after that check is the genuinely new part, which is often narrower and more actionable than
+the thing you set out to report. In the Masjid case the real defect was not the ids at all: it was that
+the doc **disclaims them in its header while its own tables still count them**, which no amount of
+re-deriving their nature would have surfaced.
