@@ -1254,3 +1254,48 @@ That freed 59 GB on 2026-08-28: 94 dispatch logs, a 2.5 GB build directory, four
 **Cleaning the VM does not reclaim host space.** The VDI is grown, not shrunk, by guest activity —
 freeing space inside the guest prevents further growth and returns nothing to D:. Only deleting on the
 host, or compacting the VDI offline, moves that number.
+
+### A package role rename never reaches App Access, and the stale role keeps working
+
+Masjid Nur's donation flow was unreachable for weeks because four transitions guard on
+`byRoleIds: ["owner"]` and no account could hold `owner`. It read as a provisioning miss. It was not.
+
+The 2026-08-26 install **succeeded** — `{"rolesRegistered": ["community-member", "masjid-admin"],
+"permissionsGranted": 44}`, and 44 is exactly 21 + 23, the two roles' derived sets. The package
+declared `masjid-admin` then. On 2026-09-05 commit `14d6e1a6` regenerated it and renamed that role
+to `owner` — **and nothing re-provisioned App Access**. The old role kept its 23 permissions and
+kept working, so nothing failed; only the *new* name had no row.
+
+**Renaming a `roleId` in a package is a migration, not an edit.** Install is not idempotent across a
+rename: it creates the new id and leaves the old one, because the sweep only deletes roles the
+package does not declare — and by then the package no longer declares the old name either. After any
+`roleId` change, diff the package's declared roles against live `app_role` for that group. Nothing
+does this automatically, and the failure is silent in both directions.
+
+**Do not repair this with `installCommunityPackage`.** Its sweep (`AppAccessService:565`) deletes
+undeclared group roles by invoking repository deletion at `:579`, bypassing `deleteRole`'s
+holder-protection checks. `createRole` and `setRolePermissions` are the surgical endpoints and avoid
+the sweep entirely. `createRole` accepts the permission set inline.
+
+**Three headers are required and the spec's prose only makes one obvious:** `Idempotency-Key`,
+`X-Loom-Actor`, and `X-Loom-Correlation-Id` — the last **must be a real UUID**, and any other string
+400s with `Expected type class java.util.UUID`. Each was found by a precise 400, one at a time.
+
+### Absence of a record is evidence only after you measure the window
+
+`masjid-nur-admin` was created 2026-09-02 carrying the *package domain role's* label and 28
+permissions — the 5 governance grants plus the 23 that belong to `owner`. No `idempotency_record`
+exists for that date, which means it was written directly to the database rather than through any
+endpoint.
+
+That conclusion is only available because the window was checked first: `min(created_at)` is
+2026-08-13 and `max(created_at)` is 2026-09-09, continuous across the date in question. Without that
+check the empty result is the ordinary "a search that finds nothing is not evidence of absence", and
+the same query would have proved nothing at all. **When you intend to read meaning into an empty
+audit query, measure the audit's coverage in the same breath.**
+
+The wider point: **a label is not a key, but it is a witness.** The installer keys on `roleId` and
+treats labels as display text — a root cause agent confirmed that by reading the code, killing my
+label-collapse hypothesis. Yet the stray role's `display_name` was still "Masjid Admin", the *domain*
+role's label, which is what identified where its permissions came from. The mechanism theory was
+wrong and the artifact it left behind was still the decisive clue.
