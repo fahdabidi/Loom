@@ -81,8 +81,10 @@ Both provisioned roles are correct in `group_membership_role` (`fan-hoa-member-1
 `fan-hoa-board-1`→`hoa-board`). This is **not** a seeding or role-provisioning gap: it is a missing permission grant,
 and it denies the board exactly as it denies the member.
 
-*Why the three existing rows exist anyway:* all three were created **2026-08-26** by `fan-test-alice`, i.e. before this
-gate was reachable in its current form. They are not evidence that the path works today.
+*Why the three existing rows exist anyway:* all three were created **2026-08-26** by `fan-test-alice`. That account is
+itself denied `calendar.create` today (`allowed:false`, `grantingRoleIds:[]`, same "No active role granted the requested
+permission" reason), so the rows cannot be reproduced by the account that produced them, and they are not evidence that
+the path works now. I did not establish *when* the configuration changed — only that it refuses that account today.
 
 ## Defect 2 — every instance-listing surface in this community returns HTTP 500
 
