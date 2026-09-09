@@ -42,6 +42,25 @@ the engine actually evaluates (e.g. an outstanding-dues guard can block
 `borrow` even though the item is otherwise available — see
 [guards.md](../reference/guards.md) for the guard-expression grammar).
 
+**`join-queue` and `leave-queue` are the deliberate exception to the sentence above.** Those two are
+NOT sourced from `availableTransitionsAsync`. The engine's availability for them is computed from
+`queuedFanIds`, an instance-local list the durable cross-member item queue replaced, so the surface
+selects them from the **declared** machine instead and asks the queue service whether the viewer is
+already queued — that is what decides join-versus-leave. See
+[platform-services.md](../reference/platform-services.md) for the service and the shape a package
+should declare.
+
+Two consequences worth knowing, because each has produced a real defect:
+
+- **Bypassing engine availability does not license bypassing the guard.** These transitions still
+  carry `allowedRoleIds` and `formula` guards, and the service enforces them — a surface that offers
+  the button without evaluating them produces a button the server refuses. Evaluating the guard
+  requires the viewer's **role**, not just their fan id: a role-less evaluation fails every
+  non-empty `allowedRoleIds` and hides the button from everyone, which looks like a fix and is worse.
+- **Do not "restore" `availableTransitionsAsync` for this pair.** It would reintroduce the
+  legacy-membership dependency the item queue exists to escape. Every other button in the list above
+  genuinely is driven live, and that part of the sentence is accurate.
+
 ## Cross-workflow guard example
 
 Tabletop Club gates `borrow` on the member's dues-payment workflow being
