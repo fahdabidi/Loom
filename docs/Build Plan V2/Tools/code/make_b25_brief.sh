@@ -89,4 +89,17 @@ afterwards is necessarily yours. A query returning nothing is a real negative re
 The account and fan id you authenticated as, the path you drove, the final UI state, the DB row
 (instance id, \`created_by_fan_id\`, \`current_state\`, created_at) or its absence, whether the two
 agree, and any defect observed.
+
+**Also record the PACKAGE IDENTITY you exercised, as its own line.** Evidence naming only the
+community and the APK cannot be checked for staleness later: regenerate the package and every earlier
+manifest silently becomes a claim about a file that no longer exists, with nothing to reveal it. Run
+this on the VM and paste both values verbatim:
+
+    P=~/Loom/app/packages/core/loom_communities_app_shell/assets/<the package you drove>.jsonc
+    grep -m1 skillVersion "\$P"; sha256sum "\$P"
+
+So the manifest carries the package's \`skillVersion\` **and** its \`sha256\`. The version says which
+authoring convention produced the file; the hash says it is byte-for-byte the one you drove. Neither
+substitutes for the other — a package can match a recorded \`skillVersion\` and still differ in
+content, and a hash proves identity without saying what convention it followed.
 EOF
