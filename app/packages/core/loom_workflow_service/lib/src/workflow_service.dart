@@ -30,6 +30,18 @@ Future<T> _runWithoutCommunityTransaction<T>(
   Future<T> Function() action,
 ) => action();
 
+/// Escapes the community transaction after an endpoint has built its response.
+///
+/// Endpoint handlers intentionally retain ownership of their public error
+/// bodies. This exception carries that already-built body out through the
+/// transaction runner, where it causes PostgreSQL to roll back before the
+/// adapter returns the exact response to the client.
+class _CommunityTransactionAbort implements Exception {
+  const _CommunityTransactionAbort(this.response);
+
+  final Response response;
+}
+
 /// Shelf HTTP adapter for the workflow-engine OpenAPI surface.
 ///
 /// Implements the workflow-engine OpenAPI operations over the shared engine,
@@ -74,6 +86,10 @@ class WorkflowService {
   final DateTime Function() _clock;
   final CommunityTransactionRunner _communityTransactionRunner;
 
+  // Test-only: forces an exception after a database mutation so real
+  // PostgreSQL rollback coverage does not need to corrupt a production seam.
+  final Future<void> Function(String phase)? _postWriteFailureInjectorForTest;
+
   // WorkflowDatabase's transaction boundary uses one externally-owned
   // PostgreSQL connection. Keep whole transitions sequential so statements
   // from two HTTP requests cannot interleave between BEGIN and COMMIT.
@@ -92,6 +108,7 @@ class WorkflowService {
     Map<String, Duration> queueOfferHoldWindows = const <String, Duration>{},
     DateTime Function()? clock,
     CommunityTransactionRunner? communityTransactionRunner,
+    Future<void> Function(String phase)? postWriteFailureInjectorForTest,
   }) : _database = database,
        _documentRepository = documentRepository,
        _documentObjectStore = documentObjectStore,
@@ -103,6 +120,7 @@ class WorkflowService {
        _clock = clock ?? DateTime.now,
        _communityTransactionRunner =
            communityTransactionRunner ?? _runWithoutCommunityTransaction,
+       _postWriteFailureInjectorForTest = postWriteFailureInjectorForTest,
        _identityExtractor = identityExtractor,
        _appAccessClient = appAccessClient,
        _communityGroupIdResolver = communityGroupIdResolver,
@@ -110,7 +128,7 @@ class WorkflowService {
 
   Handler get handler => _handle;
 
-  Future<Response> _handle(Request request) {
+  Future<Response> _handle(Request request) async {
     final segments = request.url.pathSegments;
     final communityId =
         segments.length >= 3 &&
@@ -120,10 +138,17 @@ class WorkflowService {
         ? segments[2]
         : null;
     if (communityId == null) return _handleUnscoped(request);
-    return _communityTransactionRunner<Response>(
-      communityId,
-      () => _handleUnscoped(request),
-    );
+    try {
+      return await _communityTransactionRunner<Response>(communityId, () async {
+        final response = await _handleUnscoped(request);
+        if (response.statusCode >= 400) {
+          throw _CommunityTransactionAbort(response);
+        }
+        return response;
+      });
+    } on _CommunityTransactionAbort catch (abort) {
+      return abort.response;
+    }
   }
 
   Future<Response> _handleUnscoped(Request request) async {
@@ -579,6 +604,7 @@ class WorkflowService {
               initialInstanceData: body.instanceData,
               fanId: identity.fanId,
             );
+        await _postWriteFailureInjectorForTest?.call('create_instance');
         final created = await _database.readInstance(instanceId);
         if (created == null) {
           throw StateError(
@@ -1593,6 +1619,7 @@ class WorkflowService {
       fanId: context.identity.fanId,
       joinedAt: _clock().toUtc(),
     );
+    await _postWriteFailureInjectorForTest?.call('item_queue_join');
     final currentEntries = await context.repository.listForItem(
       communityId: communityId,
       instanceId: instanceId,
