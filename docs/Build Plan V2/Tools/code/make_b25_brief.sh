@@ -62,10 +62,20 @@ Two device traps that already cost time:
 **A screenshot alone is not sufficient. A row alone is not sufficient.** Report both, and say plainly
 whether they agree — including \`created_by_fan_id\` and whether it matches the identity you drove.
 
-## Baseline measured immediately before this dispatch — your control
+## Baseline — MEASURE IT YOURSELF, do not trust the number below
 
-\`workflow_instances\` held **$BASE** rows total, and **zero** of \`workflow_type = '$WF'\`. Any such row
-afterwards is necessarily yours. A query returning nothing is a real negative result — report it.
+The dispatching session's baseline has been **stale twice on 2026-09-09**, in both walkthroughs run
+that day: it said "5 rows, zero \`garden-tool-loan\`" when there were 21 and the prior row was present,
+and "6 rows, zero \`platform-connection\`" when there were 22 and the prior row was present. Both
+agents caught it; both were right to. So treat this as a hint, not a control:
+
+> at the time this brief was generated the session believed \`workflow_instances\` held about **$BASE**
+> rows, and few or none of \`workflow_type = '$WF'\`.
+
+**Query the table yourself before you touch anything**, and record what you find. **Distinguish your
+row by its instance id and \`created_at\`, never by a change in the row count** — a prior run's row may
+well already exist, and a count that fails to move does not mean your write failed. A query returning
+nothing is a real negative result; report it.
 
 ## Rules
 
