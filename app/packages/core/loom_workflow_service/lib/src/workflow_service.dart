@@ -3914,7 +3914,7 @@ class WorkflowService {
     'instanceId': instance.instanceId,
     'workflowType': instance.workflowType,
     'currentState': instance.currentState,
-    'instanceData': instance.instanceData,
+    'instanceData': _jsonSafeInstanceData(instance.instanceData),
   };
 
   Map<String, dynamic> _visibleChangeInstanceJson(
@@ -3923,11 +3923,37 @@ class WorkflowService {
     'instanceId': candidate.instance.instanceId,
     'workflowType': candidate.instance.workflowType,
     'currentState': candidate.instance.currentState,
-    'instanceData': candidate.instance.instanceData,
+    'instanceData': _jsonSafeInstanceData(candidate.instance.instanceData),
     'createdAt': candidate.row.createdAt,
     'updatedAt': candidate.row.updatedAt,
     'createdByFanId': candidate.instance.createdByFanId,
   };
+
+  /// Converts the one non-JSON value the engine deliberately exposes in
+  /// instance data at the HTTP boundary. Other unsupported values are left for
+  /// [jsonEncode] to reject rather than being silently coerced to text.
+  Map<String, dynamic> _jsonSafeInstanceData(
+    Map<String, dynamic> instanceData,
+  ) => <String, dynamic>{
+    for (final entry in instanceData.entries)
+      entry.key: _jsonSafeInstanceDataValue(entry.value),
+  };
+
+  Object? _jsonSafeInstanceDataValue(Object? value) {
+    if (value is DateTime) return value.toUtc().toIso8601String();
+    if (value is List) {
+      return value
+          .map<Object?>((element) => _jsonSafeInstanceDataValue(element))
+          .toList(growable: false);
+    }
+    if (value is Map) {
+      return <Object?, Object?>{
+        for (final entry in value.entries)
+          entry.key: _jsonSafeInstanceDataValue(entry.value),
+      };
+    }
+    return value;
+  }
 
   Map<String, dynamic> _availableTransitionJson(
     LoomWorkflowTransition transition,
@@ -4266,7 +4292,10 @@ class WorkflowService {
             'instanceId': instanceId,
             'workflowType': before.workflowType,
             'currentState': result.newState,
-            'instanceData': {...result.newInstanceData, ...mintedOpaqueIds},
+            'instanceData': _jsonSafeInstanceData({
+              ...result.newInstanceData,
+              ...mintedOpaqueIds,
+            }),
             'updatedAt': DateTime.fromMillisecondsSinceEpoch(
               persistedAfter.updatedAt,
               isUtc: true,
