@@ -1630,3 +1630,12 @@ So when you correct a claim, **strike or amend the original in place**, and if i
 trackers, fix every copy — a migrated row is a duplicated claim, and correcting one leaves the other
 asserting the opposite with equal authority. When you cannot strike it, say in the new text which
 earlier statement it supersedes, by name, so a reader arriving at either one is pointed at the other.
+
+**And re-test stale PROHIBITIONS first, because they cost capability rather than time.** A stale fact
+costs a re-derivation. A stale "do not do X" stops the next person from trying at all, and it never
+surfaces as a failure — nobody reports the thing they correctly declined to attempt. The
+`🛑 DO NOT RUN apply_app_access_provisioning` warning sat accurate-when-written for eight days after
+Part A had made its central claim false, and in that window it would have blocked the correct fix for
+Masjid's missing `owner` role. Prohibitions also carry more authority than other rows: they are
+written emphatically, they are obeyed without checking, and obeying them produces no evidence that
+they are wrong. **When auditing, sweep the prohibitions before the to-dos.**
