@@ -311,6 +311,20 @@ final class LoomWorkflowReplicaCoordinator {
   }
 }
 
+/// Returns the remote engine when [engine] is remote directly or through the
+/// offline replica wrapper.
+///
+/// The replica wrapper intentionally implements [WorkflowEngineApi] rather
+/// than extending [RemoteWorkflowEngineApi], so callers that need remote-only
+/// capabilities must resolve its public [LoomReplicaFallbackWorkflowEngineApi.remoteEngine]
+/// first.
+RemoteWorkflowEngineApi? resolveRemoteWorkflowEngine(WorkflowEngineApi engine) {
+  final resolved = engine is LoomReplicaFallbackWorkflowEngineApi
+      ? engine.remoteEngine
+      : engine;
+  return resolved is RemoteWorkflowEngineApi ? resolved : null;
+}
+
 /// A remote-engine façade that reads a visible replica only after remote
 /// unavailability. It deliberately has no replica mutation route.
 final class LoomReplicaFallbackWorkflowEngineApi implements WorkflowEngineApi {

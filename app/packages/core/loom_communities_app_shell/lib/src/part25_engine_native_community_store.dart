@@ -244,10 +244,8 @@ class _EngineNativeCommunityStore {
       extensionId: extensionId,
       communityId: experience.communityId,
     );
-    final remote = resolved is LoomReplicaFallbackWorkflowEngineApi
-        ? resolved.remoteEngine
-        : resolved;
-    if (remote is RemoteWorkflowEngineApi) {
+    final remote = resolveRemoteWorkflowEngine(resolved);
+    if (remote != null) {
       loomServiceBindingRegistry.recordBinding(
         service: LoomServiceBindingNames.workflowEngine,
         mode: LoomServiceBindingMode.remote,

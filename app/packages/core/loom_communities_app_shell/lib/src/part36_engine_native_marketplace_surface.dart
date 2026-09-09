@@ -541,13 +541,8 @@ class _EquipmentLoanArchetypeCardState
         transition.action == 'join_queue' || transition.action == 'leave_queue',
   );
 
-  RemoteWorkflowEngineApi? get _remoteEngine {
-    final resolved = widget.engine;
-    final remote = resolved is LoomReplicaFallbackWorkflowEngineApi
-        ? resolved.remoteEngine
-        : resolved;
-    return remote is RemoteWorkflowEngineApi ? remote : null;
-  }
+  RemoteWorkflowEngineApi? get _remoteEngine =>
+      resolveRemoteWorkflowEngine(widget.engine);
 
   bool get _usesServiceItemQueue => _remoteEngine != null && _declaresItemQueue;
 
@@ -1213,13 +1208,8 @@ class _DocumentLibraryArchetypeCardState
   List<String> get _storedDocumentFields =>
       storedDocumentFieldNames(widget.resolved.machine);
 
-  RemoteWorkflowEngineApi? get _remoteEngine {
-    final resolved = widget.engine;
-    final remote = resolved is LoomReplicaFallbackWorkflowEngineApi
-        ? resolved.remoteEngine
-        : resolved;
-    return remote is RemoteWorkflowEngineApi ? remote : null;
-  }
+  RemoteWorkflowEngineApi? get _remoteEngine =>
+      resolveRemoteWorkflowEngine(widget.engine);
 
   bool get _usesServiceDocument =>
       _remoteEngine != null &&
@@ -2206,13 +2196,8 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
   bool get _isChecksumExport =>
       widget.resolved.machine.instanceDataSchema.containsKey('checksum');
 
-  RemoteWorkflowEngineApi? get _remoteEngine {
-    final resolved = widget.engine;
-    final remote = resolved is LoomReplicaFallbackWorkflowEngineApi
-        ? resolved.remoteEngine
-        : resolved;
-    return remote is RemoteWorkflowEngineApi ? remote : null;
-  }
+  RemoteWorkflowEngineApi? get _remoteEngine =>
+      resolveRemoteWorkflowEngine(widget.engine);
 
   bool get _hasChecksum {
     final checksum = _instance.instanceData['checksum'];

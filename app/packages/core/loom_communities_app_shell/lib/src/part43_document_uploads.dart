@@ -117,7 +117,7 @@ String? loomDocumentUploadBlocker({
   required WorkflowEngineApi engine,
   required LoomWorkflowStateMachine machine,
 }) {
-  if (engine is! RemoteWorkflowEngineApi) {
+  if (resolveRemoteWorkflowEngine(engine) == null) {
     return 'Uploading needs a connected community. This build is running on '
         'the local engine.';
   }
