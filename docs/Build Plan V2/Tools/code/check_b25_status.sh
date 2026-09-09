@@ -101,6 +101,14 @@ grep -hoE '"workflowId": "[a-z0-9_-]+"' \
   "$EVID"/llm-vision-ux-review*.json \
   "$EVID"/independent-production-ux-review*.json 2>/dev/null \
   | sed 's/.*: "//;s/"//' | sort -u > "$WORK/judged.txt"
+# Judge verdicts also arrive as markdown, and the JSON-only scan could not see them. A UX judge run
+# on 2026-09-09 produced a PASS for garden-tool-loan that this tool would have ignored, because the
+# verdict was a .md outside the JSON glob -- the measurement could not see the work that had just
+# been done for it. Scan both: the historical JSON artifacts, and verdict markdown that names its
+# workflow the same way the walkthrough manifests do.
+grep -hoE '\*\*Workflow:\*\* `[a-z0-9-]+`' "$EVID"/*ux-judge*.md 2>/dev/null \
+  | grep -oE '`[a-z0-9-]+`' | tr -d '`' >> "$WORK/judged.txt"
+sort -u -o "$WORK/judged.txt" "$WORK/judged.txt"
 JUDGED_TYPES=$(wc -l < "$WORK/judged.txt")
 JUDGE=$(ls "$EVID" 2>/dev/null | grep -icE 'judge|ux-review' || true)
 SCREENS=$(grep -hoE '"screenRowId": "b25-v4-row-[0-9]+' "$EVID"/*.json 2>/dev/null \
