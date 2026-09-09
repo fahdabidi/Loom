@@ -1544,3 +1544,40 @@ Two things worth carrying:
 - **Watch the compression in your own summaries.** "No guardian path into `paid`" became "no pay
   action" in one retelling, and those claim very different things about who erred. A summary that
   drops a qualifier does not merely lose detail — it relocates the blame.
+
+### Re-test every blocker before reporting it, because blockers rot faster than tasks
+
+Prompted by a user challenge on 2026-09-09 — *"have you confirmed these are not already captured
+patterns we already know how to solve?"* — after I had reported the same two items as "awaiting your
+decision" for many consecutive ticks. Six rows audited that day:
+
+| Row | Claimed | Actually |
+|---|---|---|
+| Garden regeneration | not installed | installed; the row predated the artifact by days |
+| `app_group.external_resource_*` | NULL for all 24 groups | 13 groups, 10 correctly populated |
+| Youth Soccer payment surface | a three-way decision for the user | superseded — the product doc and an earlier scoping already answered it |
+| `.create` vocabulary | blocked by a §4/§6 contradiction | live: 12 ids, 72 grants |
+| ten of eleven communities | no members | every community has 5–7 |
+| `calendar.*` catalog gap | 0 deployed, blocks creation | all 9 deployed; and "blocks creation" was never the right mechanism |
+
+**A blocker rots faster than an ordinary task, and its rot is more expensive.** A stale open task
+just gets redone; a stale blocker *withholds work from the queue* and, worse, gets repeated to the
+user as a decision they owe. Four of these had been fixed by later work that never circled back to
+strike the row.
+
+Three habits:
+
+- **Re-run the blocker's own evidence before repeating it**, not the row. Every one of these was
+  settled by a single live query or file read that took under a minute — and none would have been
+  caught by re-reading the tracker, however carefully.
+- **Check the captured patterns first.** Youth Soccer was answered by `solved-patterns.md` §18's
+  rule (read the product doc's persona table) plus a scoping already written into the tracker. I had
+  been treating a documented decision as an open one.
+- **When a blocker turns out half-true, change the question rather than splitting the row.** The
+  calendar permissions were genuinely ungranted — but `roleHasPermission` never reads them, so
+  "blocks creation" was the wrong mechanism, and applying the grants would have been a live
+  authorization change made for a reason that does not hold.
+
+The general form: **a claim's age is a better predictor of its wrongness than its status tag**, and a
+blocker is exactly the kind of claim nobody re-tests because its whole function is to stop you
+looking.
