@@ -198,7 +198,7 @@ The live threads, one line each:
 - [ ] six fakes back 53 platform APIs; retiring `LocalAuthApi` means *building* one → Build §8
 - [ ] Garden walkthrough stall, reproducing on both hosts → Build §8
 - [ ] platform phases A, A.1, B, C, D, E, G.4 → Build §8
-- [ ] outstanding Skill dispatches: DataPortability, AdFree, Camera (rejected), Book Club (held), Garden (not installed) → CJM §8
+- [ ] outstanding Skill dispatches: DataPortability, AdFree, Camera (rejected), Book Club (held), Garden (INSTALLED — that row was stale, corrected 2026-09-08 by diffing the shipped asset against the Skill output: byte-identical apart from the added `skillVersion` stamp) → CJM §8
 - [ ] six dead queue transitions → CJM §8
 - [ ] the `chmod 444` guard is not durable → CJM §8
 - [x] `WorkflowDatabase.memory()` is the app's only engine database → **ANSWERED, not a gap: the real app defaults to the remote, Postgres-backed engine (`LOOM_ENV=dev` by default); in-memory only runs under the explicit `LOOM_ENV=local` dev opt-out. See CLAUDE.md "The demo app IS wired to the deployed backend by default" and ACWS §8.**
