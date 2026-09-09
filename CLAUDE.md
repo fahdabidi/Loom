@@ -1825,3 +1825,28 @@ alone falsifies the hypothesis without any sweeping.
 
 The implementation agent refused to build the ticket, saying a material claim in it was false. That was
 correct, and it is the second time this session an agent's refusal was worth more than compliance.
+
+### Marking a row for humans corrupted a machine key — and three of my own rules would each have caught it
+
+To stop a counting error, I annotated Masjid's B25 first column: `⛔ NOT A WORKFLOW — wf_demo-...`. That
+column is a **parsed contract** — the bundled interaction-model asset is generated from it — so my marker
+became part of a `workflowId` **value**, and `b25_interaction_model_asset_conformance_test.dart` failed.
+It was caught by a dispatch that ran all five suites, hours later.
+
+Three separate rules of this project would have prevented it:
+
+- **My own memory said that column is a parsed contract** and that changing it breaks every row for that
+  community. I read that, and then checked two doc-parsing tests I guessed were the relevant ones.
+- **"Verified means all five suites."** I ran three (the two doc tests and judges), saw green, and said
+  verified. The consuming test lives in app-shell, which I never ran.
+- **Don't put display text in a machine-read field.** A human marker and a machine key want opposite
+  things: one wants to be conspicuous, the other wants to be exactly the value everything else expects.
+
+The fix was not to regenerate the asset — that would have baked the marker into the contract. It was to
+**revert the doc and move the exclusion into the tool**, matching the `wf_` prefix, which is already an
+unambiguous namespace marker. **When a document is consumed by code, put the knowledge in the code and
+leave the document clean.** A comment or header note is for humans; a filter is for the counter.
+
+The general shape, and it recurred all session: **when you cannot see who reads a file, `grep` for its
+consumers before editing it.** `grep -rln "<filename>" app/ --include=*.dart` takes seconds and would
+have named the test I missed.
