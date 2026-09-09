@@ -541,8 +541,15 @@ class _EquipmentLoanArchetypeCardState
         transition.action == 'join_queue' || transition.action == 'leave_queue',
   );
 
-  bool get _usesServiceItemQueue =>
-      widget.engine is RemoteWorkflowEngineApi && _declaresItemQueue;
+  RemoteWorkflowEngineApi? get _remoteEngine {
+    final resolved = widget.engine;
+    final remote = resolved is LoomReplicaFallbackWorkflowEngineApi
+        ? resolved.remoteEngine
+        : resolved;
+    return remote is RemoteWorkflowEngineApi ? remote : null;
+  }
+
+  bool get _usesServiceItemQueue => _remoteEngine != null && _declaresItemQueue;
 
   bool _isQueueAction(LoomWorkflowTransition transition) =>
       transition.action == 'join_queue' || transition.action == 'leave_queue';
@@ -553,10 +560,7 @@ class _EquipmentLoanArchetypeCardState
   LoomItemQueueClient? get _queueClient =>
       _usesServiceItemQueue ? resolveLoomItemQueueClient() : null;
 
-  String? get _queueCommunityId {
-    final engine = widget.engine;
-    return engine is RemoteWorkflowEngineApi ? engine.communityId : null;
-  }
+  String? get _queueCommunityId => _remoteEngine?.communityId;
 
   Future<void> _loadQueue() async {
     if (!_usesServiceItemQueue) return;
@@ -1209,22 +1213,27 @@ class _DocumentLibraryArchetypeCardState
   List<String> get _storedDocumentFields =>
       storedDocumentFieldNames(widget.resolved.machine);
 
+  RemoteWorkflowEngineApi? get _remoteEngine {
+    final resolved = widget.engine;
+    final remote = resolved is LoomReplicaFallbackWorkflowEngineApi
+        ? resolved.remoteEngine
+        : resolved;
+    return remote is RemoteWorkflowEngineApi ? remote : null;
+  }
+
   bool get _usesServiceDocument =>
-      widget.engine is RemoteWorkflowEngineApi &&
+      _remoteEngine != null &&
       (_declaresMemberStateAction ||
           (_storedDocumentFields.length == 1 && _declaresUpload));
 
   LoomDocumentClient? get _documentClient =>
       _usesServiceDocument ? resolveLoomDocumentClient() : null;
 
-  String? get _documentCommunityId {
-    final engine = widget.engine;
-    return engine is RemoteWorkflowEngineApi ? engine.communityId : null;
-  }
+  String? get _documentCommunityId => _remoteEngine?.communityId;
 
   String? get _documentStateConfigurationProblem {
     if (!_declaresMemberStateAction) return null;
-    if (widget.engine is! RemoteWorkflowEngineApi) {
+    if (_remoteEngine == null) {
       return 'Member state is available when connected to a community.';
     }
     return null;
@@ -1461,8 +1470,9 @@ class _DocumentLibraryArchetypeCardState
   /// checks the same guard when it authorises the upload, so the permission is
   /// enforced once, in the place that also holds the bytes.
   Future<void> _uploadDocument() async {
+    final remoteEngine = _remoteEngine;
     final blocker = loomDocumentUploadBlocker(
-      engine: widget.engine,
+      engine: remoteEngine ?? widget.engine,
       machine: widget.resolved.machine,
     );
     if (blocker != null) {
@@ -1477,7 +1487,10 @@ class _DocumentLibraryArchetypeCardState
       return;
     }
 
-    final engine = widget.engine as RemoteWorkflowEngineApi;
+    final engine = remoteEngine;
+    if (engine == null) {
+      throw StateError('Stored documents require a remote community engine.');
+    }
     final client = resolveLoomDocumentClient()!;
     final fieldName = storedDocumentFieldName(widget.resolved.machine)!;
 
@@ -2077,8 +2090,7 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
     WorkflowInstance? appliedNext;
     try {
       final client = _exportClient;
-      final isRemoteChecksumExport =
-          _isChecksumExport && widget.engine is RemoteWorkflowEngineApi;
+      final isRemoteChecksumExport = _isChecksumExport && _remoteEngine != null;
       final generatesBundle = _generatesBundleAfter(transition);
       if (isRemoteChecksumExport &&
           client == null &&
@@ -2194,6 +2206,14 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
   bool get _isChecksumExport =>
       widget.resolved.machine.instanceDataSchema.containsKey('checksum');
 
+  RemoteWorkflowEngineApi? get _remoteEngine {
+    final resolved = widget.engine;
+    final remote = resolved is LoomReplicaFallbackWorkflowEngineApi
+        ? resolved.remoteEngine
+        : resolved;
+    return remote is RemoteWorkflowEngineApi ? remote : null;
+  }
+
   bool get _hasChecksum {
     final checksum = _instance.instanceData['checksum'];
     return checksum is String && checksum.trim().isNotEmpty;
@@ -2233,13 +2253,10 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
     );
   }
 
-  String? get _communityId {
-    final engine = widget.engine;
-    return engine is RemoteWorkflowEngineApi ? engine.communityId : null;
-  }
+  String? get _communityId => _remoteEngine?.communityId;
 
   LoomExportBundleClient? get _exportClient {
-    if (!_isChecksumExport || widget.engine is! RemoteWorkflowEngineApi) {
+    if (!_isChecksumExport || _remoteEngine == null) {
       return null;
     }
     return resolveLoomExportBundleClient();

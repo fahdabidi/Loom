@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,10 +33,10 @@ final class _TokenSession extends LoomAuthSession {
 }
 
 final class _RemoteQueueEngine extends RemoteWorkflowEngineApi {
-  _RemoteQueueEngine(this.transitions)
+  _RemoteQueueEngine(this.transitions, {String communityId = 'community-test'})
     : super(
         baseUri: Uri.parse('https://workflow.test/'),
-        communityId: 'community-test',
+        communityId: communityId,
         bearerTokenProvider: () async => 'test-access-token',
         httpClient: MockClient(
           (_) async => throw StateError('The test engine overrides requests.'),
@@ -77,6 +78,7 @@ final class _QueueService {
   }) : _entriesVisibleFor = entriesVisibleFor;
 
   final List<String> queuedFanIds = <String>[];
+  final List<String> queueCommunityIds = <String>[];
   final Set<String> _entriesVisibleFor;
   final int joinStatusCode;
   late final http.Client client = MockClient(_handle);
@@ -84,6 +86,11 @@ final class _QueueService {
 
   Future<http.Response> _handle(http.Request request) async {
     final path = request.url.path;
+    if (path.endsWith('/queue')) {
+      final segments = request.url.pathSegments;
+      final communityIndex = segments.indexOf('communities');
+      queueCommunityIds.add(segments[communityIndex + 1]);
+    }
     if (request.method == 'GET' && path.endsWith('/queue')) {
       final position = queuedFanIds.indexOf(actor) + 1;
       return http.Response(
@@ -223,7 +230,7 @@ Widget _host(Widget child) => MaterialApp(home: Scaffold(body: child));
 
 Widget _queueCard({
   required LoomWorkflowStateMachine machine,
-  required _RemoteQueueEngine engine,
+  required WorkflowEngineApi engine,
   required String fanId,
   String roleId = 'member',
   Map<String, dynamic> instanceData = const <String, dynamic>{
@@ -390,6 +397,96 @@ void main() {
       expect(engine.appliedTransitionIds, isEmpty);
     },
   );
+
+  testWidgets(
+    'a replica-wrapped remote engine uses the service queue and its canonical community id',
+    (tester) async {
+      const remoteCommunityId = 'canonical-community-314';
+      const wrapperExtensionId = 'equipment-loan-extension-42';
+      final service = _QueueService()..queuedFanIds.add('alice');
+      addTearDown(service.close);
+      overrideLoomItemQueueClientForTesting(
+        LoomItemQueueClient(
+          workflowServiceBaseUri: Uri.parse('https://workflow.test/'),
+          session: _TokenSession(),
+          httpClient: service.client,
+        ),
+      );
+      final changeFeed = MockClient(
+        (_) async =>
+            throw StateError('The wrapped queue test must stay remote.'),
+      );
+      addTearDown(changeFeed.close);
+      final coordinator = LoomWorkflowReplicaCoordinator(
+        databaseDirectory: Directory.systemTemp.path,
+        visibleChangesClient: LoomVisibleChangesClient(
+          workflowServiceBaseUri: Uri.parse('https://workflow.test/'),
+          session: _TokenSession(),
+          httpClient: changeFeed,
+        ),
+      );
+      addTearDown(coordinator.dispose);
+      final remote = _RemoteQueueEngine(
+        const [],
+        communityId: remoteCommunityId,
+      );
+      final wrapped = coordinator.wrap(remote, communityId: wrapperExtensionId);
+
+      await tester.pumpWidget(
+        _host(
+          _queueCard(
+            machine: _queueMachine(hasLegacyQueueFields: true),
+            engine: wrapped,
+            fanId: 'alice',
+            instanceData: const <String, dynamic>{
+              'title': 'Shared lens',
+              'queueLength': 99,
+              'myQueuePosition': 88,
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Queue length: 1'), findsOneWidget);
+      expect(find.text('Your position: 1'), findsOneWidget);
+      expect(find.text('Queue length: 99'), findsNothing);
+      expect(find.text('Your position: 88'), findsNothing);
+      expect(service.queueCommunityIds, isNotEmpty);
+      expect(service.queueCommunityIds, everyElement(remoteCommunityId));
+      expect(service.queueCommunityIds, isNot(contains(wrapperExtensionId)));
+      expect(remote.appliedTransitionIds, isEmpty);
+    },
+  );
+
+  testWidgets('an unwrapped remote engine continues to use its service queue', (
+    tester,
+  ) async {
+    const communityId = 'canonical-community-unwrapped';
+    final service = _QueueService()..queuedFanIds.add('alice');
+    addTearDown(service.close);
+    overrideLoomItemQueueClientForTesting(
+      LoomItemQueueClient(
+        workflowServiceBaseUri: Uri.parse('https://workflow.test/'),
+        session: _TokenSession(),
+        httpClient: service.client,
+      ),
+    );
+    final remote = _RemoteQueueEngine(const [], communityId: communityId);
+
+    await tester.pumpWidget(
+      _host(
+        _queueCard(machine: _queueMachine(), engine: remote, fanId: 'alice'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Queue length: 1'), findsOneWidget);
+    expect(find.text('Your position: 1'), findsOneWidget);
+    expect(service.queueCommunityIds, isNotEmpty);
+    expect(service.queueCommunityIds, everyElement(communityId));
+    expect(remote.appliedTransitionIds, isEmpty);
+  });
 
   testWidgets(
     'leaving the service queue flips the affordance back to Join queue',
