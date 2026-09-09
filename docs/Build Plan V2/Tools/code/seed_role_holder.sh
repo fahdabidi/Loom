@@ -33,7 +33,7 @@ PASS="LoomTest123!"
 USERNAME="loom-$SLUG"
 FANID="fan-$SLUG"
 
-cleanup() { [ -n "${KC_PF:-}" ] && kill "$KC_PF" 2>/dev/null; [ -n "${AA_PF:-}" ] && kill "$AA_PF" 2>/dev/null; true; }
+cleanup() { for v in "${KC_PF:-}" "${AA_PF:-}" "${FP_PF:-}"; do [ -n "$v" ] && kill "$v" 2>/dev/null; done; true; }
 trap cleanup EXIT
 
 kubectl port-forward -n loom svc/keycloak 18081:8080 >/dev/null 2>&1 & KC_PF=$!
@@ -73,6 +73,22 @@ case $(( ${#PAYLOAD} % 4 )) in 2) PAYLOAD="$PAYLOAD==";; 3) PAYLOAD="$PAYLOAD=";
 CLAIM=$(printf '%s' "$PAYLOAD" | base64 -d 2>/dev/null | grep -o '"fanId":"[^"]*' | cut -d'"' -f4 || true)
 [ "$CLAIM" = "$FANID" ] || { echo "FAIL: token fanId is '$CLAIM', expected '$FANID'"; exit 1; }
 echo "  [$USERNAME] fanId claim verified in a real token: $CLAIM"
+
+# 3. Mint the Fan Passport record BEFORE requesting membership.
+#    This step was missing on 2026-09-08 and made all 23 seeded fans unusable:
+#    Keycloak and App Access were both correct, so every check I ran passed,
+#    and not one of them could sign in. A fan needs authentication (Keycloak
+#    fanId claim), identity (this passport) and authorization (the membership
+#    below) -- missing any one still looks correct from the other two.
+FP_PF=""
+kubectl port-forward -n loom svc/fan-passport 18082:8080 >/dev/null 2>&1 & FP_PF=$!
+sleep 4
+MC=$(curl -s -o /tmp/seed_mint.json -w "%{http_code}" -X POST -H "Authorization: Bearer $FT" \
+  -H "Content-Type: application/json" -H "X-Loom-Correlation-Id: $(cat /proc/sys/kernel/random/uuid)" \
+  -H "Idempotency-Key: $(cat /proc/sys/kernel/random/uuid)" \
+  -d "{\"displayName\":\"Test $SLUG\"}" "http://127.0.0.1:18082/v1/fan-passports")
+echo "  [$USERNAME] fan passport: $MC"
+case "$MC" in 200|201|409) ;; *) echo "FAIL: passport mint rejected"; head -c 250 /tmp/seed_mint.json; exit 1 ;; esac
 
 # 3. The fan requests membership FOR THEMSELVES (fan comes from the token).
 RC=$(curl -s -o /tmp/seed_req.json -w "%{http_code}" -X POST -H "Authorization: Bearer $FT" \
