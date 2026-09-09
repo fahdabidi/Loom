@@ -1736,3 +1736,22 @@ Log size told me nothing; `/proc/<pid>/stat` told me everything.
 agent plus the grep whose command line contained the word. That trap is already recorded twice in
 this file and still caught me, which is an argument for resolving the pid and reading `pgrep -af`
 output rather than trusting a count, every time.
+
+### A brief derived by substitution carries the original's specifics
+
+On 2026-09-09 I built the Social Space judge ticket by `sed`-substituting names into the Garden one.
+The judge caught **four** claims that survived the substitution: the evidence path, "14 frames" when
+there were 16, Garden's frame numbers (29/39/40/42/43), and Garden's `published`/`delisted` flow when
+this workflow goes `draft` → `invited` → `connected`. It judged against the directory and manifest
+that actually existed and recorded the discrepancy — the right call, and it should not have had to
+make it.
+
+**Substitution updates the nouns you thought of, never the details you did not.** Names, ids and
+paths get replaced; counts, frame numbers, state names and flow descriptions do not, and they are
+exactly the load-bearing parts of a verification ticket. A stale specific in a brief is worse than a
+vague one, because it tells the agent a confident falsehood about what it is about to look at.
+
+Either generate the brief from a real source — `make_b25_brief.sh` exists for this, and its output
+needed no such corrections — or, after substituting, re-read the result against the artifact it
+describes and check every number and state name. Cheapest check: `grep` the finished brief for the
+donor's own identifiers before sending it.
