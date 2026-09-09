@@ -1493,3 +1493,30 @@ Reverting the whole file usually will not compile, because the test depends on a
 introduced — neutralise the specific behaviour instead, and keep a backup you diff against on the way
 back. This is the same discipline as a control query: the test must be able to fail for the reason it
 claims, and the only way to know is to make it fail.
+
+### `installCommunityPackage` is safe for the generated admin, and still destructive to anything undeclared
+
+Settled 2026-09-09 by a live probe against a disposable handle, after a year of reasoning about it
+from source. The 2026-09-01 warning — that an apply "would destroy all 11 community admin roles,
+unrecoverably" — **was true when written and is no longer true**: Part A made the admin's
+`community.*` grants archetype-derivable, so install now spares `<handle>-admin` and re-grants it.
+
+The experiment, which is the shape to reuse for any "is this apply safe" question:
+
+1. Install a minimal package under a throwaway handle. The generated admin appeared with exactly its
+   five `community.*` permissions.
+2. Create an **undeclared** group-scoped role holding a real permission — the canary.
+3. Re-install the same package. The response said it plainly:
+   `{"rolesRegistered":["zz-member"],"removedRoleIds":["zz-canary"]}`, and the admin still held 5.
+
+**So the rule is conditional, which is exactly what a code read kept failing to settle:
+`installCommunityPackage` is safe when the package declares every role that ought to exist in that
+group, and destructive otherwise** — it deletes undeclared group-scoped roles whether or not anyone
+holds them, bypassing `deleteRole`'s holder protections. The danger was never the admin; it is any
+hand-provisioned role the package has forgotten.
+
+Two habits this reinforces. **A dry run still proves nothing** — this needed a real apply against a
+real service, in a namespace where being wrong was free. And **clean up the probe, then re-run the
+gate**: both probe roles were deleted and `check_role_parity.sh` re-run clean, because an experiment
+that leaves drift behind converts a one-off answer into permanent noise in a check other people
+trust.
