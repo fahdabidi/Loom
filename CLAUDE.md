@@ -1397,3 +1397,31 @@ the correct-looking fix produced three identical private `_remoteEngine` getters
 already held a fourth inline copy. A rule duplicated five times is a rule that will be missed a sixth
 — when a ticket's fix is "apply this unwrap consistently", prefer one shared helper over per-site
 copies, and say so in the ticket.
+
+### A guard that depends on a field only its own transition writes is self-blocking
+
+Found while sweeping `audience: "actor"` bindings, 2026-09-08. Member Social Space's
+`start-conversation` is `from: ["draft"] → "open"` with `guard: {actorEqualsField:
+participantAFanId}` and an effect that **sets** `participantAFanId` to `$actor`. The guard asks
+whether the actor equals a field that only this transition populates, and
+`guard_evaluator.dart:52` is `if (fanId != instanceData[key]) return false;` — a null field can never
+equal a fan id. Nothing upstream would let the transition fire, so the thread could never leave
+`draft` and a conversation could never be started.
+
+It is **not** a live defect, because the create action's `prefill` sets the field first. That is
+exactly the point: the guard is only satisfiable because something upstream populates its field, and
+nothing in the package makes that dependency visible. Delete the `prefill` — or reclassify the field,
+or regenerate the workflow without it — and the workflow dies silently, with every guard, effect and
+binding still looking correct in isolation.
+
+**When a transition's guard reads a field, check who writes it and whether that writer runs before
+this transition can fire.** If the only writer is this transition's own effects, either the create
+path must prefill it or the guard is wrong. Same family as the render-audience trap in
+`solved-patterns.md` §7: both are cases where a field's *timing*, not its presence, decides whether a
+capability exists.
+
+**And the sweep that found it nearly produced two false positives, from one broken query.**
+`grep -o '"prefill": {[^}]*}'` matches only single-line blocks; the two communities whose prefills
+span multiple lines came back empty and looked exactly like the defect being hunted. A control on the
+same file (`grep -c '"prefill"'` → 6) would have shown the query was broken rather than the packages.
+**Run the control on the file you are about to accuse, not just on a file you expect to pass.**
