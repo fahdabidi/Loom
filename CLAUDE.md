@@ -1639,3 +1639,25 @@ Part A had made its central claim false, and in that window it would have blocke
 Masjid's missing `owner` role. Prohibitions also carry more authority than other rows: they are
 written emphatically, they are obeyed without checking, and obeying them produces no evidence that
 they are wrong. **When auditing, sweep the prohibitions before the to-dos.**
+
+### A test run against the wrong checkout is green for the wrong reason
+
+Twice on 2026-09-09. Both times I edited a file on Windows, ran the test **on the VM**, got a pass, and
+had proven nothing — the VM was still on the previous commit, so the suite exercised the unedited
+file. The first was the reference-doc mirror test after editing `solved-patterns.md`; the second was
+the product-doc parsing tests after annotating Masjid's B25 rows.
+
+It is a comfortable failure: the command is right, the suite is real, the result is green, and the
+only thing wrong is *which bytes it read*. Nothing in the output mentions a commit.
+
+**Push, pull, then confirm the change is present at the target before running anything** — a one-line
+`grep -c` for the thing you just wrote, at the machine that will run the test. `grep -c "NOT A
+WORKFLOW" …` returning 5 on the VM is what made the second run meaningful. This generalizes past
+git: the same shape is the stale validator on :8787 answering from last week's grammar, and a
+deployed service tested while the repo holds the fix.
+
+**Related, from the same edit: annotating a row does not change what counts it.** Masjid's five
+non-workflow B25 rows now read `⛔ NOT A WORKFLOW — wf_…` so a *reader* cannot mistake them, but a
+naive row counter still counts six pipes and adds one. The annotation fixes the human hazard and
+documents the machine one; making the denominator automatically correct needs the rows removed, or a
+counter that skips marked rows. Say which of the two a fix achieves rather than implying both.
