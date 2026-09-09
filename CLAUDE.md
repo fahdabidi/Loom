@@ -1425,3 +1425,26 @@ capability exists.
 span multiple lines came back empty and looked exactly like the defect being hunted. A control on the
 same file (`grep -c '"prefill"'` → 6) would have shown the query was broken rather than the packages.
 **Run the control on the file you are about to accuse, not just on a file you expect to pass.**
+
+**A corpus-wide sweep for that shape found zero live instances, and the negative result is worth
+recording so nobody re-runs it.** Across all ten shipped packages there are seven transitions whose
+guard reads a field that same transition also writes:
+
+| Community | Transition | Field | Verdict |
+|---|---|---|---|
+| Book Club | `cancel-loan-request` | `pendingBorrowerFanId` | benign — effect sets it to **null** |
+| Camera Club | `cancel-request` | `requesterFanId` | benign — sets **null** |
+| Garden Club | `cancel-loan`, `return-item` | `borrowerFanId` | benign — both set **null** |
+| Member Social Space | `unblock` | `blockedByFanId` | benign — sets **null** |
+| Member Social Space | `start-thread` | `participantAFanId` | populates `$actor`, but **prefilled at creation** |
+| Youth Soccer | `submit-request` | `guardianFanId` | populates `$actor`, but **prefilled at creation** |
+
+The distinction that makes six of them fine: **a guard reading a field its effect then CLEARS is
+normal** — the borrower cancels their own request and the effect releases the field. Only an effect
+that *populates* the guarded field can be self-blocking, and both such cases are rescued by a create
+action's `prefill` in the same workflow.
+
+Two checks that sweep needs, both of which nearly went wrong: confirm the effect's **value** (`null`
+versus `$actor`) before calling anything a defect, and confirm the rescuing `prefill` sits in the
+**same workflow** as the transition — Youth Soccer's prefill is 150 lines away from its guard and a
+neighbouring workflow's prefill would have proved nothing.
