@@ -84,11 +84,36 @@ while IFS=$'\t' read -r _c wf; do
   grep -qx "$wf" "$WORK/proven.txt" && MATCHED=$((MATCHED+1))
 done < "$WORK/rows.tsv"
 
+# --- the judge half: keyed by workflowId, which IS the bar's key -----------------------------------
+# An earlier version of this script claimed the judge half was UNCOMPUTABLE because the artifacts
+# are keyed by screenRowId and there are 204 of those against a 72-row bar. That was wrong, and the
+# error is worth naming: screenRowId is a SCREEN (roughly three per row -- entry, action, result),
+# and it is *derived from* workflowId, so its embedded slug looks like a bar key without being one.
+# The real key was there all along: 95 artifacts carry a "workflowId" field whose values are genuine
+# workflow types, alongside a "persona". Do not join on the screenRowId slug; join on workflowId.
+#
+# Some workflowId values are comma-joined lists or prose, so restrict to single clean tokens.
+grep -hoE '"workflowId": "[a-z0-9_-]+"' "$EVID"/*.json 2>/dev/null \
+  | sed 's/.*: "//;s/"//' | sort -u > "$WORK/judged.txt"
+JUDGED_TYPES=$(wc -l < "$WORK/judged.txt")
 JUDGE=$(ls "$EVID" 2>/dev/null | grep -icE 'judge|ux-review' || true)
-# screenRowId values are SCREENS, not bar rows. There are 204 of them against a 72-row bar,
-# and the ids read like b25-v4-row-NNN-<slug> which makes them look joinable. They are not.
 SCREENS=$(grep -hoE '"screenRowId": "b25-v4-row-[0-9]+' "$EVID"/*.json 2>/dev/null \
   | grep -oE 'row-[0-9]+' | sort -u | wc -l)
+
+JUDGED_ROWS=0
+while IFS=$'\t' read -r _c wf; do
+  case "$wf" in ⛔*) continue;; esac
+  grep -qx "$wf" "$WORK/judged.txt" && JUDGED_ROWS=$((JUDGED_ROWS+1))
+done < "$WORK/rows.tsv"
+
+# Both halves, for the same row.
+BOTH=0
+while IFS=$'\t' read -r _c wf; do
+  case "$wf" in ⛔*) continue;; esac
+  if grep -qx "$wf" "$WORK/judged.txt" && grep -qx "$wf" "$WORK/proven.txt"; then
+    BOTH=$((BOTH+1))
+  fi
+done < "$WORK/rows.tsv"
 
 cat <<REPORT
 
@@ -108,19 +133,22 @@ B25 status -- $(date +%Y-%m-%d)
 
   judge half
     judge/UX-review artifacts         $JUDGE
-    distinct screenRowId values       $SCREENS   (SCREENS, not bar rows -- see below)
+    distinct workflowId values judged $JUDGED_TYPES
+    REAL ROWS WITH A JUDGE ARTIFACT   $JUDGED_ROWS
+    distinct screenRowId values       $SCREENS   (screens, ~3 per row -- NOT a bar key)
 
-  A row is proven only with BOTH halves. This reports the walkthrough half ONLY, and the
-  judge half is not merely uncounted -- it is UNCOMPUTABLE from these artifacts. They are
-  keyed by screenRowId, and those are SCREENS: $SCREENS distinct values against a $REAL-row
-  bar. No artifact records a judge verdict against a B25 row.
+  both halves
+    REAL ROWS WITH WALKTHROUGH+JUDGE  $BOTH   <-- the bar
 
-  The ids look like b25-v4-row-008-garden-export-custom-schemas-1, so screenRowId reads as
-  a bar row and even embeds a plausible workflow slug. It is not one. Do NOT join on that
-  slug -- the slugs are screen subjects, not workflow types, and the resemblance is what
-  makes the wrong join attractive.
+  A row needs BOTH halves. An earlier version of this script called the judge half
+  UNCOMPUTABLE because the artifacts are keyed by screenRowId and there are $SCREENS of
+  those against a $REAL-row bar. That was wrong. screenRowId is a SCREEN -- roughly three
+  per row -- and it is derived from workflowId, so its slug resembles a bar key without
+  being one. The real key was always there: the artifacts carry "workflowId" and "persona".
 
-  So do NOT quote "$MATCHED of $REAL" as the bar. It is an upper bound on one half.
+  Caveat on the judge column: this counts rows with a judge artifact NAMING the workflow.
+  It does not yet check that artifact's verdict for that row, so treat $JUDGED_ROWS and
+  $BOTH as coverage, not as passes.
 
   Manifests written before 2026-09-09 record no package identity, so a match proves the
   row against whatever the package was that day, not against the package today.
