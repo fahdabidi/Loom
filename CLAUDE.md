@@ -1755,3 +1755,28 @@ Either generate the brief from a real source — `make_b25_brief.sh` exists for 
 needed no such corrections — or, after substituting, re-read the result against the artifact it
 describes and check every number and state name. Cheapest check: `grep` the finished brief for the
 donor's own identifiers before sending it.
+
+### I checked one authorization layer and generalised from it — the classic form of this project's worst bug
+
+On 2026-09-09 I re-examined the row saying zero `calendar.*` grants block calendar-workflow creation.
+I found `roleHasPermission` (`part12_actor_identity_and_tabs.dart:567`) is entirely package-derived —
+it walks bound workflows, `readGuard`s and transition `allowedRoleIds` and never reads
+`role_permission` — and concluded the grants were "a bookkeeping asymmetry, not an authorization gap",
+recording explicit advice **not** to apply them as a creation fix.
+
+**That was wrong, and a walkthrough produced a live HTTP 403 the same day.** `roleHasPermission` is the
+app shell's **tab-visibility** policy. Creation is authorized elsewhere: `workflow_service.dart:572`
+resolves `resolver.permissionId(family, 'create')`, calls `_appAccessClient.checkAccess(...)` at `:592`,
+and refuses on `!allowed`. Cedar's `hoa-facility-reservation` create returned 403 for `hoa-member` and
+`hoa-board` alike, with `event_rsvp.create` allowed for both as a control.
+
+**One layer's answer is not the system's answer.** This file already says a capability must be true at
+every layer and that each layer has its own row — I applied that rule to *packages, catalogs,
+vocabularies and provisioning*, and then failed to apply it to **authorization itself**, which has at
+least two enforcement points that answer different questions. Finding the first plausible mechanism and
+stopping is how a wrong "this is not a real blocker" gets written with full confidence.
+
+**So: when concluding that something is NOT enforced, enumerate the enforcement points before
+concluding.** `grep` for every caller that could refuse the operation — the shell, the service, the
+engine's guards, the archetype's derived permission — and say which ones you checked. A negative claim
+about enforcement is only as strong as the completeness of that list, and mine had one entry.
