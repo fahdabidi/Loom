@@ -1208,9 +1208,12 @@ quoted 79 is unreconciled; trace it before quoting either.
 **Two further defects corrupt the same fraction, so do not quote a completion figure until all three
 are fixed together:** B25 evidence manifests written before 2026-09-09 record no package identity, so
 the numerator cannot be checked for staleness (the brief generator now requires `skillVersion` plus
-`sha256`); and the "roughly 22 of 79 rows are proven-against-fakes" accounting was computed from four
-fakes when **53 distinct APIs** are fake-backed across the six `Community*Fake` files — re-measured
-2026-09-09 and unchanged. A denominator is the number nobody re-derives, which is exactly how this one
+`sha256`); and the "roughly 22 of 79 proven-against-fakes" accounting needs restating over the corrected 72.
+**Do not inflate it toward the 53 fake-backed APIs in `loom_fake_backend`** — those are test and
+legacy-`loom_demo` scaffolding with **zero** imports in `loom_communities_demo/lib` or the app
+shell's `lib`, so they are absent from the path B25 drives. The share is limited by the four
+*missing platform services* (payment, id generation, external search/AI, checksum), which is what
+that accounting was always built on. A denominator is the number nobody re-derives, which is exactly how this one
 stayed wrong while the tables underneath said otherwise.
 
 ## Disk hygiene — check it before it stops the VM
@@ -1661,3 +1664,10 @@ non-workflow B25 rows now read `⛔ NOT A WORKFLOW — wf_…` so a *reader* can
 naive row counter still counts six pipes and adds one. The annotation fixes the human hazard and
 documents the machine one; making the denominator automatically correct needs the rows removed, or a
 counter that skips marked rows. Say which of the two a fix achieves rather than implying both.
+
+**A count measures the thing counted, not the exposure to it.** "53 distinct APIs are fake-backed"
+was accurate and led to a wrong conclusion, because what mattered was how many the shipped app
+*calls* — zero. The measurement to run was an import trace, not a class count, and the two differ by
+the whole question. A `pubspec.yaml` dependency edge is not evidence of use either; it is what made
+this look worse than it was. Before treating a count as a risk, ask what would have to be true for
+each counted item to actually reach the surface you care about, and measure *that*.
