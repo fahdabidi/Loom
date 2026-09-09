@@ -27,14 +27,24 @@ WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT
 for f in "$DOCS"/*-product-experience.md; do
   awk -v C="$(basename "$f" -product-experience.md)" '
     /^\| Workflow \| Persona \| Expected decision \|/{inb=1; next}
-    inb && /^\| *-/{next}
+    inb && /^\|/{split($0,a,"|"); gsub(/^ +| +$/,"",a[2]); print C"	"a[2]; next}| *-/{next}
     inb && /^\|/{split($0,a,"|"); gsub(/^ +| +$/,"",a[2]); print C"\t"a[2]; next}
     inb && !/^\|/{inb=0}' "$f"
 done > "$WORK/rows.tsv"
 
 TOTAL=$(wc -l < "$WORK/rows.tsv")
 # Rows the product doc itself marks as not a workflow (Masjid's testWidgets ids).
-DISCLAIMED=$(grep -c $'\t⛔' "$WORK/rows.tsv" || true)
+# Rows that are not workflows at all. Masjid's product doc header states that `wf_`-prefixed ids are
+# literal Dart `testWidgets` names for the B18/B19/B20 integration tests, that no
+# `LoomWorkflowDefinition` with those ids exists, and that no JSON should ever be authored for them --
+# yet its own addendum tables still list five of them, which is what inflated the quoted denominator.
+#
+# The exclusion lives HERE and not in the product doc. Annotating the doc's first column was tried on
+# 2026-09-09 and broke `b25_interaction_model_asset_conformance_test.dart`: that column is a parsed
+# contract, the interaction-model asset is generated from it, and the annotation became part of a
+# `workflowId` VALUE. Marking a row for humans corrupted a machine key. The `wf_` prefix is already an
+# unambiguous namespace marker, so match on it and leave the doc alone.
+DISCLAIMED=$(grep -cE $'\t(⛔|wf_)' "$WORK/rows.tsv" || true)
 REAL=$((TOTAL - DISCLAIMED))
 
 # --- the walkthrough half: workflow types named INSIDE the live-write manifests --------------------
@@ -80,7 +90,7 @@ fi
 # --- how many of the real rows have a live-write naming their workflow ----------------------------
 MATCHED=0
 while IFS=$'\t' read -r _c wf; do
-  case "$wf" in ⛔*) continue;; esac
+  case "$wf" in ⛔*|wf_*) continue;; esac
   grep -qx "$wf" "$WORK/proven.txt" && MATCHED=$((MATCHED+1))
 done < "$WORK/rows.tsv"
 
@@ -116,14 +126,14 @@ SCREENS=$(grep -hoE '"screenRowId": "b25-v4-row-[0-9]+' "$EVID"/*.json 2>/dev/nu
 
 JUDGED_ROWS=0
 while IFS=$'\t' read -r _c wf; do
-  case "$wf" in ⛔*) continue;; esac
+  case "$wf" in ⛔*|wf_*) continue;; esac
   grep -qx "$wf" "$WORK/judged.txt" && JUDGED_ROWS=$((JUDGED_ROWS+1))
 done < "$WORK/rows.tsv"
 
 # Both halves, for the same row.
 BOTH=0
 while IFS=$'\t' read -r _c wf; do
-  case "$wf" in ⛔*) continue;; esac
+  case "$wf" in ⛔*|wf_*) continue;; esac
   if grep -qx "$wf" "$WORK/judged.txt" && grep -qx "$wf" "$WORK/proven.txt"; then
     BOTH=$((BOTH+1))
   fi
