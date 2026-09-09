@@ -188,6 +188,47 @@ around it, and do not add an effect to fill it in.
 ### Cross-instance eligibility
 Fully expressible in JSON — see [`guards.md`](./guards.md) §5. No service call needed.
 
+### Item queue (waitlists) — a real platform service, not a formula
+
+**This section corrects earlier guidance in this file.** "Queue position" was previously listed in
+the table below as something to compute with `indexOf(queuedFanIds, $viewer)`. That formula reads an
+**instance-local list that is no longer authoritative**, and packages authored against it will
+disagree with what members actually see.
+
+A durable, cross-member item queue is a platform service. It is stored server-side in
+`workflow_item_queue_entries`, exposed by the workflow service's join/leave/read endpoints, and read
+by the app through a queue client that reports the viewer's own position. The queue survives
+restarts and is shared across devices and members; `queuedFanIds` is a legacy per-instance field kept
+only for backwards compatibility.
+
+**How a package participates.** Declare the two transitions and let the platform do the work:
+
+```jsonc
+{ "id": "join-queue", "action": "join_queue", "label": "Join waitlist",
+  "from": ["published"], "to": null,
+  "guard": { "allowedRoleIds": ["book-member"],
+             "formula": "if(ownerFanId == $actor, false, if(availabilityState == 'available', false, true))" } },
+{ "id": "leave-queue", "action": "leave_queue", "label": "Leave queue",
+  "from": ["published"], "to": null,
+  "guard": { "allowedRoleIds": ["book-member"] } }
+```
+
+Three things this shape depends on, each of which has caused a real defect:
+
+- **`"to": null` is correct and required.** Joining a queue is an orthogonal action, not a lifecycle
+  change — the listing stays `published`. A null target does not mean "does nothing": the engine
+  preserves the current state and still runs archetype bookkeeping.
+- **The `action` values are the contract**, not the transition ids. A community owns its ids; the
+  platform keys queue behaviour on `join_queue`/`leave_queue`.
+- **The guard is enforced by the service, so author it honestly.** Exclude the owner, and exclude
+  the state where the item is simply available (there a queue makes no sense — the right affordance
+  is to borrow it). A guard that admits people the service will refuse produces a button that fails.
+
+**Do not author a formula that computes queue length or position from `queuedFanIds`,** and do not
+add effects that maintain that list yourself. Ask for the queue's own data instead. If a package
+needs an audit trail of joins and leaves, say so explicitly — effects declared on these transitions
+are **not** executed by the service queue path.
+
 ## Deliberately NOT platform services
 
 These *look* like they might need code but are plain JSON. Do not reach for a service:
@@ -198,7 +239,6 @@ These *look* like they might need code but are plain JSON. Do not reach for a se
 | Winner / tie detection | `argMaxKey` / `topKeys` / `size(...) > 1` |
 | Runoff creation | `branch` + `createInstance` |
 | Capacity / quorum | A `formula` guard |
-| Queue position | `indexOf(queuedFanIds, $viewer)` |
 | Standings | `sortBy(players, score, 'desc')` |
 | Totals / averages | `sum` / `avg` |
 | Deadline checks | `isPast(dueAt)` |
