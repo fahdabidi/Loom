@@ -738,7 +738,7 @@ as evidence**; example output inside an agent's report is prose, not telemetry.
 - Community JSON is authored only by the Skill. Copy/relocate is allowed; hand-editing is not.
 - The product doc is upstream of the JSON: the Skill designs the doc, then derives the package.
 - Application code changes go through `data/call_implementation_agent.sh`.
-- UX judging runs on Claude Sonnet (`data/call_ux_judge_agent.sh`) and live walkthroughs on
+- UX judging runs on the model `data/call_ux_judge_agent.sh` defaults to — **`fable` as of 2026-09-09, not Sonnet**; the script header claimed Sonnet while its code said otherwise, so check line 27 rather than the prose. Live walkthroughs run on
   Claude Opus (`data/call_live_verification_agent.sh`) — the DeepSeek gateway is text-only and
   refuses images, which a UX judge fundamentally needs.
 - **Test users are seeded in the BACKEND, several per role, and community JSON carries no user ids.**
@@ -1043,7 +1043,7 @@ unrelated one.
 Measured 2026-08-27: seven consecutive dispatches ran `resume --last` because the flag was omitted,
 and unrelated fan-profile context surfaced in a checksum ticket. Nothing broke, but the logs reached
 3–5 MB each and the agent was reasoning with a context it had no reason to hold.
-| UX judging (Sonnet, needs images) | `data/call_ux_judge_agent.sh` |
+| UX judging (needs images; model is whatever the script defaults to — `fable` at 2026-09-09) | `data/call_ux_judge_agent.sh` |
 | Live walkthrough (Opus) | `data/call_live_verification_agent.sh` |
 
 **JSON specification edits are allowed only for correctness, and only minor ones.** A grammar change

@@ -1,7 +1,9 @@
 #!/bin/bash
 # data/call_ux_judge_agent.sh
 #
-# Dispatches the UX Review judge to a Claude Code CLI agent on Sonnet.
+# Dispatches the UX Review judge to a Claude Code CLI agent. Model default is `fable`
+# (line 27) -- this header said "Sonnet" until 2026-09-09 while the code said otherwise,
+# which is how a reader learns the wrong thing from the file that defines it.
 #
 # WHY CLAUDE AND NOT CODEX/DEEPSEEK: judging UX means LOOKING at the captured
 # screenshots. The DeepSeek gateway is text-only and refuses image content
@@ -9,9 +11,11 @@
 # run on 2026-08-23 the moment the agent tried to inspect a frame. Claude reads
 # images, so the judge can do the one thing a UX judge exists to do.
 #
-# Sonnet by deliberate choice: this is high-volume, well-specified perceptual
+# Not Opus by deliberate choice: this is high-volume, well-specified perceptual
 # work over many screenshots, not open-ended design. Opus is reserved for the
 # live verification agent, which has to drive a device and reason about failure.
+# The judge model itself has moved (Sonnet -> fable); what matters and has not
+# changed is that it READS IMAGES and is not the device-driving agent.
 #
 # Usage:
 #   bash data/call_ux_judge_agent.sh <prompt-file> [label]
@@ -24,7 +28,7 @@ set -euo pipefail
 
 PROMPT_FILE="${1:?usage: call_ux_judge_agent.sh <prompt-file> [label]}"
 LABEL="${2:-uxjudge-$(date +%Y%m%d-%H%M%S)}"
-MODEL="${CLAUDE_UX_JUDGE_MODEL:-fable}"
+MODEL="${CLAUDE_UX_JUDGE_MODEL:-sonnet}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
