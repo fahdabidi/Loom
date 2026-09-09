@@ -1373,3 +1373,27 @@ That count is the right check whenever a suite total surprises you, because it i
 runner and of load: it answers "did this change add or remove tests" without re-running anything. The
 danger of the stale number is symmetric — it would equally have let a genuine deletion hide, since a
 suite that dropped from 403 to 390 still looks like growth against a baseline of 375.
+
+### Scope a ticket by the population, not by the file you happened to be reading
+
+Fixing the replica-wrapper bug, I scoped the ticket to "this card, or any sibling archetype card in
+the same file". The agent did exactly that and found two siblings I had not anticipated — the
+document-library and export-wizard cards had the same defect. Good result, wrong boundary.
+
+An exhaustive sweep of the package afterwards found **eleven** sites testing
+`is`/`is!`/`as RemoteWorkflowEngineApi`, and one of them was in a different file entirely
+(`part43_document_uploads.dart`) — the single most user-visible instance, since it blocks document
+uploads and explains it with *"This build is running on the local engine"*, which under the wrapper
+is false.
+
+**When a defect is "this pattern is wrong", the ticket's scope is every instance of the pattern.**
+Enumerate them first — one `grep` over the package — and either list them in the ticket or state
+that the sweep found no others. The cheap sweep is what turns "fix this occurrence" into "fix this
+class", and it is the dispatching session's job, not the agent's: an agent asked about one file
+cannot know what it was not shown.
+
+**A corollary about the fix's shape.** Because the three cards live in one file as separate classes,
+the correct-looking fix produced three identical private `_remoteEngine` getters, and `part25`
+already held a fourth inline copy. A rule duplicated five times is a rule that will be missed a sixth
+— when a ticket's fix is "apply this unwrap consistently", prefer one shared helper over per-site
+copies, and say so in the ticket.
