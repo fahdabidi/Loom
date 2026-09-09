@@ -1520,3 +1520,27 @@ real service, in a namespace where being wrong was free. And **clean up the prob
 gate**: both probe roles were deleted and `check_role_parity.sh` re-run clean, because an experiment
 that leaves drift behind converts a one-off answer into permanent noise in a check other people
 trust.
+
+### A validator cannot flag the absence of something the grammar cannot express
+
+Asked on 2026-09-09 why the validator let Youth Soccer's payment through, after I had described it
+as "the guardian has no pay action". **It let it through because nothing is wrong with it, and my
+description was false.** The guardian holds `start-checkout` ("Pay registration"), `retry-payment`
+and `view-receipt` — exactly the three actions that community's product doc names. The true statement
+is narrower and much less alarming: *the only transition **into `paid`** is coach-guarded.*
+
+Structurally the package is clean, and correctly so: every state is reachable including `paid`,
+`processing` has three exits, every guard is well-formed, every declared role exists. The workflow is
+modelled for a world where a **payment service** completes `processing → paid`. The grammar has no
+way to declare a service-completed transition, so there is no missing declaration for any rule to
+detect. **The gap is a mechanism that does not exist, not a field somebody forgot.**
+
+Two things worth carrying:
+
+- **Before blaming the Skill or the validator for a package defect, read the package and the product
+  doc.** The authored artifact matched its doc exactly here; the fault was that a human-attestation
+  fallback (`record-offline-payment`) silently became the primary completion path when the service it
+  backstopped was never built. That is an architecture gap wearing the costume of an authoring bug.
+- **Watch the compression in your own summaries.** "No guardian path into `paid`" became "no pay
+  action" in one retelling, and those claim very different things about who erred. A summary that
+  drops a qualifier does not merely lose detail — it relocates the blame.
