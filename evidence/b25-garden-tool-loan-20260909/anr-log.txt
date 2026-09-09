@@ -1,0 +1,4 @@
+09-09 10:02:22.399  1648  2144 D MediaGrants: Removed 0 media_grants for 0 user for [com.android.chrome, com.android.chrome]. Reason: Package orphaned
+09-09 10:02:23.094  1648  2144 D MediaGrants: Removed 0 media_grants for 0 user for [com.example.loom_communities_demo, com.example.loom_communities_demo]. Reason: Package orphaned
+09-09 10:02:29.435  1300  1300 D TouchInteractionService: disposeEventHandlers: Reason: Initializing input monitor due to: onTrackpadConnected() instance=188593619
+09-09 10:05:54.769  1300  1300 D TouchInteractionService: disposeEventHandlers: Reason: Initializing input monitor due to: onTrackpadConnected() instance=188593619
