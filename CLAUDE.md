@@ -1299,3 +1299,32 @@ treats labels as display text — a root cause agent confirmed that by reading t
 label-collapse hypothesis. Yet the stray role's `display_name` was still "Masjid Admin", the *domain*
 role's label, which is what identified where its permissions came from. The mechanism theory was
 wrong and the artifact it left behind was still the decisive clue.
+
+### Write the read-only agent's prohibition as "do not mutate", never "do not run commands"
+
+The Root Cause Agent's sandbox is read-only, so *every* read is safe by construction and no write can
+succeed even by accident. The prohibition in a brief therefore only needs to name mutation and
+network — and if it says anything broader, the agent obeys the broader thing.
+
+On 2026-09-08 a brief opened with *"Do not write files, run commands, or reach the network."* The
+agent read no source at all, correctly noting that I had forbidden the commands it would need, and
+returned a request for a hand-assembled source packet instead of an answer. It also declined to guess,
+which was the right call — but a dispatch was spent establishing nothing. Re-dispatched on the same
+session key with *"you can and should READ the repository: run `ls`, `cat`, `sed`, `grep`, `rg`,
+`find` freely"*, it immediately began reading the packages and the widget tree.
+
+**This is the second instance of the identical shape**, after the Patterns Agent read nothing because
+"you cannot write any file" was taken to rule out running anything. Both times the agent's inference
+was reasonable and the brief was wrong. The wording that works names the capability positively and
+explains why it is safe:
+
+> You have READ-ONLY access — reads are safe by construction. Do not attempt to mutate anything or
+> reach the network; read the repository freely with `cat`, `sed`, `grep`, `rg`, `find`.
+
+The compare-and-contrast is exact: the Masjid brief the same day said *"Do not attempt to write
+files, run kubectl, or reach the network"* — naming two specific mutating commands rather than
+commands in general — and that agent read both repositories without hesitation.
+
+**The general rule: a prohibition an agent cannot safely over-apply is worth more than a tighter one
+it can.** When the sandbox already enforces the boundary, the brief should describe the boundary, not
+re-impose it in looser words.
