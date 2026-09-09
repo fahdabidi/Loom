@@ -251,6 +251,30 @@ nothing to check `actorEqualsField` against yet) — a state-level `readGuard` o
 (`workflow-grammar.md`'s per-state `readGuard`, IMPLEMENTED) keeps the creator able to see their own
 just-created, not-yet-stamped instance if the workflow-level `visibility` is `guarded`.
 
+**(3) is the one that actually bites, and readGuards do not cover it: any `renderBindings` entry whose
+`states` include the pre-stamp state must not use `audience: "actor"`.** Read access and render audience
+are resolved by different code and answer different questions — a creator can be fully permitted to read
+their own draft and still never be shown it, because nothing renders a card for them. `role_resolver.dart`
+derives the `actor` audience from the workflow's guards: it takes the **first** `actorEqualsField` guard it
+finds and `break`s, and its `createdByFanId` fallback runs only when no such guard exists at all. So the
+moment the workflow declares an `actorEqualsField` guard anywhere — which is the entire reason the field is
+being stamped — the fallback is switched off, and on the pre-stamp state that guard resolves against a
+field that is still empty. The creator matches nobody, the `audience: "actor"` binding selects nobody, and
+the draft they just created is invisible **to its own author**, with no error anywhere: the instance
+exists, the engine behaves exactly as declared, and the only symptom is a create action that appears to do
+nothing.
+
+Use `audience: "party"` (or a role-scoped audience) for the pre-stamp state's binding and keep
+`audience: "actor"` for the states after the stamping transition. If a workflow genuinely needs the
+creator's own draft on screen before any transition fires, prefer `$actor` in create-action `prefill` (the
+pattern at the top of this entry) — the field is populated at creation, so there is no pre-stamp state and
+this whole class of problem cannot arise.
+
+**Found in:** four Book Club workflows, 2026-09-08 — a `draft` state bound with `audience: "actor"` whose
+`nominatorFanId` is only stamped by the `draft -> submitted` transition, so the nomination form was
+unreachable for the member who created it. Diagnosed by reading `role_resolver.dart:20-31` and
+`guard_evaluator.dart:29`, not by any failing test.
+
 **Found in:** Ad-Free Community's `ad-off-member-checkout`/`ad-off-community-checkout` — discovered via a
 Skill Retrospective while CJM.6 (above) was still an open engine bug; the same authoring agent worked out
 this fix itself when asked what it could have done differently. Kept in this bank as a valid alternative
