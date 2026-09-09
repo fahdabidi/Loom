@@ -1714,3 +1714,25 @@ start; I spent two passes reasoning from filenames instead.
 **A derived identifier looks like its source and is not it.** The same applies to the wrapper whose
 `communityId` field holds an extensionId, and to a manifest filename that is a slug of a workflow
 type. Find the writer, read what it puts there, then join.
+
+### The Claude dispatchers buffer; a zero-byte log is normal for them, not a death signal
+
+The "confirm a dispatch is alive" guidance above was written for the **Codex** dispatchers, whose logs
+stream — so an empty log there means nothing started. The **Claude** dispatchers
+(`call_live_verification_agent.sh`, `call_ux_judge_agent.sh`) run `claude -p`, which **buffers its
+output until completion**. A live walkthrough therefore shows a **0-byte `output.log` for its entire
+run**, which is exactly the documented dead-dispatch signature, and following that rule literally
+would kill a healthy agent mid-device-run.
+
+On 2026-09-09 a Garden walkthrough sat at 0 bytes for 12 minutes. The check that settled it was two
+CPU samples of the resolved pid: **733 ticks in 40 seconds** at 21:50 elapsed — busy, not blocked.
+Log size told me nothing; `/proc/<pid>/stat` told me everything.
+
+    p=<pid from pgrep -af, read and confirmed>
+    a=$(awk '{print $14+$15}' /proc/$p/stat); sleep 40
+    b=$(awk '{print $14+$15}' /proc/$p/stat); echo $((b-a))
+
+**And `pgrep -f "[c]laude"` matched its own shell again** in the same tick — "2 processes" was one
+agent plus the grep whose command line contained the word. That trap is already recorded twice in
+this file and still caught me, which is an argument for resolving the pid and reading `pgrep -af`
+output rather than trusting a count, every time.
