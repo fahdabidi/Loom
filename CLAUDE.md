@@ -1328,3 +1328,36 @@ commands in general — and that agent read both repositories without hesitation
 **The general rule: a prohibition an agent cannot safely over-apply is worth more than a tighter one
 it can.** When the sandbox already enforces the boundary, the brief should describe the boundary, not
 re-impose it in looser words.
+
+### A method belongs to a class, not to the file the class's neighbour named
+
+I spent a dispatch on a confident, wrong theory: that `join_queue` was dead on non-marketplace tabs,
+because `_applyQueueAction` lives in `part36_engine_native_marketplace_surface.dart` and that surface
+is returned only for `case 'MarketplaceTabSurface'`.
+
+The file holds **five** archetype card classes. `EngineNativeMarketplaceSurface` spans lines 10–385;
+`_applyQueueAction` is at 594, inside `_EquipmentLoanArchetypeCardState`. The Home tab resolves to
+`EngineNativeListSurface`, which dispatches `equipment-loan` to that *same* card — so both tabs share
+one queue handler, and the defect I was sure of does not exist.
+
+**In a `partNN_<something>.dart` layout the filename names one occupant, not the contents.** Before
+reasoning about where a method can run, get its enclosing class — `grep -n '^class '` and compare
+line numbers — rather than inferring reachability from the filename. This is the same family as
+matching product vocabulary by substring: a plausible containing string standing in for the real
+structure.
+
+Two more corrections from the same investigation, both worth keeping:
+
+- **`"to": null` with no authored effects is not a no-op.** The engine preserves state with
+  `transition.to ?? row.currentState` and then runs **archetype bookkeeping** — the `equipment-loan`
+  action map adds or removes the actor in the legacy `queuedFanIds` list, and the bookkeeping can
+  introduce that field even when the schema omits it. So a transition with nothing authored on it
+  still mutates the instance. "No declared effects" describes the package, not the behaviour.
+- **A capability check written as `engine is RemoteWorkflowEngineApi` breaks the moment anything
+  wraps the engine.** `LoomReplicaFallbackWorkflowEngineApi` *implements* `WorkflowEngineApi` rather
+  than extending the remote class, so wrapping silently flips the check to false and the feature
+  falls back — on every surface, with no error. Prefer asking the object for the capability over
+  testing its concrete type, and when a concrete-type test is unavoidable, unwrap first. Whether such
+  a latent defect is *live* is a separate question worth answering explicitly: this one is dormant
+  because the wrapper is only installed when a `String.fromEnvironment` directory is non-empty, and
+  it defaults to empty.
