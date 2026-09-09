@@ -839,6 +839,25 @@ entries that generalize beyond the one investigation that found them; the rest s
 Armed 2026-08-27. These are the patterns that actually held up over the preceding week; each one is
 here because ignoring it cost a rework.
 
+
+**The worked example, and I caused it hours after writing the rule above.** A seeded test fan is real
+only when **three** things exist, and missing any one still looks correct from the other two:
+
+| Layer | Where | Missing means |
+|---|---|---|
+| Authentication | Keycloak account **carrying the `fanId` attribute** | authenticates, then fails every authorization check |
+| Identity | a `fan_passport` row | **cannot sign in to the app at all** |
+| Authorization | `group_membership_role` membership + role grant | signs in, can do nothing |
+
+On 2026-09-08 I seeded 23 role holders, wrote layers 1 and 3, skipped layer 2, and reported the job
+complete on the strength of `group_membership_role` showing 24 of 37 roles with 2+ holders — true,
+and useless. Every one of the 23 was unusable, and they existed specifically to unblock two-party
+interactions. A walkthrough dispatched minutes later found it and, correctly, refused to mint the one
+passport it needed because that would have masked a 23-account gap.
+
+**Seed in layer order (passport before membership), and verify the capability rather than the table
+you just wrote to** — end-to-end here means obtaining a token as that fan and reading their own
+passport back, not counting rows.
 ### Build the real thing, or declare honestly that it is missing
 
 **No placeholder values, ever.** A fabricated checksum, a stubbed receipt id, an effect that `set`s
