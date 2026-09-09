@@ -1617,3 +1617,16 @@ residue after that check is the genuinely new part, which is often narrower and 
 the thing you set out to report. In the Masjid case the real defect was not the ids at all: it was that
 the doc **disclaims them in its header while its own tables still count them**, which no amount of
 re-deriving their nature would have surfaced.
+
+**Why these rows rot the way they do: corrections are appended and originals are never struck.** The
+2026-09-09 sweep kept finding the same structure — a claim, a later correction recorded elsewhere, and
+the original still sitting there for the next reader to meet first. The clearest chain: "7 rows name a
+workflow their package does not ship" → superseded by a 12-row finding → and the 12 was itself refined
+when five turned out to be test-harness ids the product doc already disclaimed. **All three counts are
+still recorded.** Likewise the install-safety question existed simultaneously as a row closed
+2026-09-03 and an open `needs-user-decision` I settled by probe on 2026-09-09.
+
+So when you correct a claim, **strike or amend the original in place**, and if it was migrated between
+trackers, fix every copy — a migrated row is a duplicated claim, and correcting one leaves the other
+asserting the opposite with equal authority. When you cannot strike it, say in the new text which
+earlier statement it supersedes, by name, so a reader arriving at either one is pointed at the other.
