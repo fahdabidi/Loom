@@ -1780,3 +1780,24 @@ stopping is how a wrong "this is not a real blocker" gets written with full conf
 concluding.** `grep` for every caller that could refuse the operation — the shell, the service, the
 engine's guards, the archetype's derived permission — and say which ones you checked. A negative claim
 about enforcement is only as strong as the completeness of that list, and mine had one entry.
+
+### Check the words someone wrote, not the version you remember
+
+A walkthrough reported that Cedar's listing failure traced to "the only listed type with `date`/`time`-typed
+**formula** fields; a package sweep found such fields in exactly one community". I paraphrased that as
+"date/time formula fields", swept the packages for `"type": "date"` and `"type": "time"`, found **nine**
+communities, and published the agent's cause as disproved — with a control, on a live reproduction, feeling
+thoroughly rigorous.
+
+I had dropped the word **formula**. Restored, exactly one package has formula-computed date/time fields:
+Cedar, two of them, both in the one workflow type that 500s. The claim was precisely right and the
+discrimination is perfect. My check tested a weaker claim of my own construction.
+
+This is worse than the ordinary broken-query traps because **the checking discipline was fully engaged and
+aimed at a strawman**. A control cannot save you when the hypothesis under test is not the one that was
+made. Both times this session I judged an agent's reasoning defective, the defect was in my reading of it.
+
+**So when checking someone else's claim, quote it before testing it** — literally re-read the sentence and
+build the query from its words, not from your summary of them. The elision that inverts a finding is
+usually one qualifier: `formula`, `into paid`, `only`, `declared`. Those words are doing the work, which is
+why they are the ones a paraphrase drops.
