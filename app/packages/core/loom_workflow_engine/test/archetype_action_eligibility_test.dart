@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:test/test.dart';
 
@@ -95,6 +97,107 @@ void main() {
       expect(afterJoin.map((transition) => transition.id), <String>[
         'leave-queue',
       ]);
+    },
+  );
+
+  test(
+    'authorized queue effects retain audit writes but suppress retired queue membership',
+    () async {
+      const communityId = 'queue-effect-composition';
+      const workflowType = 'queue-effect-item';
+      final database = WorkflowDatabase.memory();
+      addTearDown(database.close);
+      final api = LocalWorkflowEngineApi(
+        db: database,
+        communityId: communityId,
+      )
+        ..registerDefinition(
+          LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+            'initialState': 'published',
+            'states': <String, dynamic>{
+              'published': <String, dynamic>{'label': 'Published'},
+            },
+            'transitions': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 'join-queue',
+                'label': 'Join queue',
+                'action': 'join_queue',
+                'from': <String>['published'],
+                'to': null,
+                'effects': <Map<String, dynamic>>[
+                  <String, dynamic>{
+                    'op': 'append',
+                    'key': 'libraryActivityAudit',
+                    'value': <String, dynamic>{
+                      'event': 'joined-queue',
+                      'fanId': r'$actor',
+                    },
+                  },
+                  <String, dynamic>{
+                    'op': 'appendUnique',
+                    'key': 'queuedFanIds',
+                    'value': r'$actor',
+                  },
+                ],
+              },
+            ],
+            'renderBindings': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'states': <String>['published'],
+                'audience': 'any',
+                'tabId': 'marketplace',
+                'cardSurfaceFamily': 'equipment-loan',
+                'bindingKind': 'primary',
+              },
+            ],
+            'instanceDataSchema': <String, dynamic>{
+              'title': <String, dynamic>{'type': 'text'},
+              'libraryActivityAudit': <String, dynamic>{
+                'type': 'list',
+                'writableBy': 'effect',
+              },
+              'queuedFanIds': <String, dynamic>{
+                'type': 'fanId[]',
+                'writableBy': 'effect',
+              },
+            },
+          }, workflowType),
+        );
+      final instanceId = await api.createInstance(
+        workflowType: workflowType,
+        initialInstanceData: <String, dynamic>{
+          'title': 'A watched game',
+          'libraryActivityAudit': <dynamic>[],
+        },
+        fanId: 'owner',
+      );
+
+      late WorkflowTransitionResult result;
+      await database.transaction(() async {
+        result = await api.applyAuthorizedItemQueueTransitionEffects(
+          workflowType: workflowType,
+          instanceId: instanceId,
+          transitionId: 'join-queue',
+          fanId: 'member',
+        );
+      });
+
+      expect(result.newState, 'published');
+      expect(result.newInstanceData['libraryActivityAudit'], <dynamic>[
+        <String, dynamic>{'event': 'joined-queue', 'fanId': 'member'},
+      ]);
+      expect(result.newInstanceData, isNot(contains('queuedFanIds')));
+      final stored = await database.readInstance(instanceId);
+      expect(stored, isNotNull);
+      expect(
+        jsonDecode(stored!.instanceData),
+        <String, dynamic>{
+          'title': 'A watched game',
+          'libraryActivityAudit': <dynamic>[
+            <String, dynamic>{'event': 'joined-queue', 'fanId': 'member'},
+          ],
+        },
+      );
     },
   );
 }

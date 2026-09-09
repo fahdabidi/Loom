@@ -1109,6 +1109,73 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     }
   }
 
+  /// Applies the effects of an item-queue transition that the workflow service
+  /// has already authorized against its durable queue projection.
+  ///
+  /// The item queue is not instance data. Its service therefore evaluates the
+  /// transition's guard with a short-lived `queuedFanIds` projection, performs
+  /// the queue-row mutation, and calls this method while it still owns the
+  /// surrounding community transaction. Re-evaluating the transition here
+  /// against the stored row would incorrectly apply the retired legacy queue
+  /// eligibility rule.
+  ///
+  /// This is deliberately not a second public transition entrypoint: callers
+  /// must supply the exact transition id they authorized and already own the
+  /// database transaction. The row is locked again here so effect derivation
+  /// and persistence always use the stored data, never the service's guard
+  /// projection.
+  Future<WorkflowTransitionResult> applyAuthorizedItemQueueTransitionEffects({
+    required String workflowType,
+    required String instanceId,
+    required String transitionId,
+    required String fanId,
+  }) async {
+    final machine = await _getDefinition(workflowType);
+    if (machine == null) {
+      throw StateError('Unknown workflow type: $workflowType');
+    }
+    final row = await _db.readInstanceForUpdate(instanceId);
+    if (row == null) throw StateError('Instance $instanceId not found');
+    if (row.workflowType != workflowType) {
+      throw StateError(
+        'Instance $instanceId has workflow type ${row.workflowType}, not '
+        '$workflowType',
+      );
+    }
+
+    LoomWorkflowTransition? transition;
+    for (final candidate in machine.transitions) {
+      if (candidate.id == transitionId) {
+        transition = candidate;
+        break;
+      }
+    }
+    if (transition == null) {
+      throw StateError('Unknown transition $transitionId');
+    }
+    if (transition.action != 'join_queue' &&
+        transition.action != 'leave_queue') {
+      throw StateError(
+        'Transition $transitionId is not an item-queue transition',
+      );
+    }
+    if (!transition.from.contains(row.currentState)) {
+      throw StateError(
+        'Transition $transitionId not available from state ${row.currentState}',
+      );
+    }
+
+    return _applyTransitionEffectsAndPersistWithinTransaction(
+      machine: machine,
+      row: row,
+      sourceData: jsonDecode(row.instanceData) as Map<String, dynamic>,
+      transition: transition,
+      fanId: fanId,
+      inputs: null,
+      suppressLegacyItemQueueBookkeeping: true,
+    );
+  }
+
   /// Resolves a transition without performing writes.
   Future<_ResolvedTransition> _resolveTransition({
     required String workflowType,
@@ -1283,16 +1350,37 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required _ResolvedTransition resolved,
     required String fanId,
   }) async {
-    final machine = resolved.machine;
-    final row = resolved.row;
-    final data = resolved.data;
-    final transition = resolved.transition;
-    final inputs = resolved.inputs;
+    return _applyTransitionEffectsAndPersistWithinTransaction(
+      machine: resolved.machine,
+      row: resolved.row,
+      sourceData: resolved.data,
+      transition: resolved.transition,
+      fanId: fanId,
+      inputs: resolved.inputs,
+      suppressLegacyItemQueueBookkeeping: false,
+    );
+  }
+
+  /// Shared persistence path for ordinary transitions and the queue service's
+  /// already-authorized effect composition. The caller holds [row]'s lock.
+  Future<WorkflowTransitionResult>
+  _applyTransitionEffectsAndPersistWithinTransaction({
+    required LoomWorkflowStateMachine machine,
+    required WorkflowInstanceRow row,
+    required Map<String, dynamic> sourceData,
+    required LoomWorkflowTransition transition,
+    required String fanId,
+    required Map<String, dynamic>? inputs,
+    required bool suppressLegacyItemQueueBookkeeping,
+  }) async {
     final instanceId = row.instanceId;
 
     final newState = transition.to ?? row.currentState;
+    final effects = suppressLegacyItemQueueBookkeeping
+        ? _withoutLegacyItemQueueEffects(transition.effects)
+        : transition.effects;
 
-    if (_containsTransitionRelated(transition.effects)) {
+    if (_containsTransitionRelated(effects)) {
       // Make this transition's new state visible to cross-instance effects.
       // This is essential when a target's fresh relatedAggregate guard
       // observes the source row (for example, a going RSVP releasing a seat
@@ -1301,24 +1389,26 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       await _db.updateInstanceState(
         instanceId: instanceId,
         newState: newState,
-        newInstanceData: _storageOnly(data, machine),
+        newInstanceData: _storageOnly(sourceData, machine),
       );
     }
 
     final effectedData = await _applyExtendedEffects(
-      transition.effects,
+      effects,
       machine: machine,
-      sourceData: data,
+      sourceData: sourceData,
       fanId: fanId,
       inputValues: inputs,
       instanceId: instanceId,
     );
-    final newData = _applyArchetypeBookkeeping(
-      machine: machine,
-      transition: transition,
-      sourceData: effectedData,
-      fanId: fanId,
-    );
+    final newData = suppressLegacyItemQueueBookkeeping
+        ? effectedData
+        : _applyArchetypeBookkeeping(
+            machine: machine,
+            transition: transition,
+            sourceData: effectedData,
+            fanId: fanId,
+          );
     await _db.updateInstanceState(
       instanceId: instanceId,
       newState: newState,
@@ -1697,6 +1787,61 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       if (machine.instanceDataSchema[entry.key]?.formula == null)
         entry.key: entry.value,
   };
+
+  /// Removes only the retired instance-data bookkeeping from a queue route.
+  ///
+  /// Queue packages predating the durable queue service can still declare an
+  /// `appendUnique`/`removeValue` (or another field operation) on
+  /// `queuedFanIds`. Those effects must not recreate the second membership
+  /// store, but every other authored effect — including audit append, branches,
+  /// related updates, and instance creation — keeps its ordinary executor
+  /// semantics. Branches with no remaining work are dropped so an obsolete
+  /// queue-only branch cannot change the outcome of the service route.
+  List<WorkflowEffect> _withoutLegacyItemQueueEffects(
+    List<WorkflowEffect> effects,
+  ) => [
+    for (final effect in effects)
+      if (_withoutLegacyItemQueueEffect(effect) case final retained?) retained,
+  ];
+
+  WorkflowEffect? _withoutLegacyItemQueueEffect(WorkflowEffect effect) {
+    if (effect.key == 'queuedFanIds') return null;
+
+    final thenEffects = _withoutLegacyItemQueueEffects(effect.thenEffects);
+    final elseEffects = _withoutLegacyItemQueueEffects(effect.elseEffects);
+    final onSuccessEffects = effect.onSuccessEffects == null
+        ? null
+        : _withoutLegacyItemQueueEffects(effect.onSuccessEffects!);
+    if (effect.op == workflowEffectBranch &&
+        thenEffects.isEmpty &&
+        elseEffects.isEmpty) {
+      return null;
+    }
+    if (thenEffects.length == effect.thenEffects.length &&
+        elseEffects.length == effect.elseEffects.length &&
+        (onSuccessEffects == null
+            ? effect.onSuccessEffects == null
+            : effect.onSuccessEffects != null &&
+                  onSuccessEffects.length == effect.onSuccessEffects!.length)) {
+      return effect;
+    }
+    return WorkflowEffect(
+      op: effect.op,
+      key: effect.key,
+      value: effect.value,
+      workflowType: effect.workflowType,
+      fields: effect.fields,
+      relatedInstance: effect.relatedInstance,
+      relatedQuery: effect.relatedQuery,
+      transitionId: effect.transitionId,
+      anchorField: effect.anchorField,
+      recurrenceRule: effect.recurrenceRule,
+      condition: effect.condition,
+      thenEffects: thenEffects,
+      elseEffects: elseEffects,
+      onSuccessEffects: onSuccessEffects,
+    );
+  }
 
   Map<String, dynamic> _applyArchetypeBookkeeping({
     required LoomWorkflowStateMachine machine,

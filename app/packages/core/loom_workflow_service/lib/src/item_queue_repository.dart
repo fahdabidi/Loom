@@ -84,7 +84,11 @@ abstract interface class ItemQueueRepository {
     required String fanId,
   });
 
-  Future<void> remove({
+  /// Deletes a member's queue row and reports whether one actually existed.
+  ///
+  /// Queue transition effects are observable state and must follow a real
+  /// membership change, rather than a successful idempotent DELETE request.
+  Future<bool> remove({
     required String communityId,
     required String instanceId,
     required String fanId,
@@ -213,17 +217,18 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
   );
 
   @override
-  Future<void> remove({
+  Future<bool> remove({
     required String communityId,
     required String instanceId,
     required String fanId,
   }) => _withCommunity(communityId, () async {
-    await _session.execute(
+    final rows = await _session.execute(
       pg.Sql.named('''
         DELETE FROM workflow_item_queue_entries
         WHERE community_id = @communityId
           AND instance_id = @instanceId
           AND fan_id = @fanId
+        RETURNING entry_id
       '''),
       parameters: <String, dynamic>{
         'communityId': communityId,
@@ -231,6 +236,7 @@ class PostgresItemQueueRepository implements ItemQueueRepository {
         'fanId': fanId,
       },
     );
+    return rows.isNotEmpty;
   });
 
   @override
@@ -389,12 +395,12 @@ class InMemoryItemQueueRepository implements ItemQueueRepository {
   );
 
   @override
-  Future<void> remove({
+  Future<bool> remove({
     required String communityId,
     required String instanceId,
     required String fanId,
   }) async {
-    _entries.remove(_key(communityId, instanceId, fanId));
+    return _entries.remove(_key(communityId, instanceId, fanId)) != null;
   }
 
   @override

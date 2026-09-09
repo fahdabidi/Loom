@@ -15,7 +15,10 @@ const _createWorkflowType = 'transaction-creatable-item';
 const _correlationId = '99999999-9999-4999-8999-999999999999';
 const _queueMember = 'fan-queue-member';
 const _successfulQueueMember = 'fan-queue-success';
+const _queueEffectFailureMember = 'fan-queue-effect-failure';
 const _creator = 'fan-instance-creator';
+const _queueEffectsInstanceId = 'transaction-queue-effects-item';
+const _queueEffectsFailureInstanceId = 'transaction-queue-effects-failure';
 
 const _queueDefinition = <String, dynamic>{
   'initialState': 'published',
@@ -33,6 +36,48 @@ const _queueDefinition = <String, dynamic>{
       'guard': <String, dynamic>{
         'allowedRoleIds': <String>['queue-member'],
       },
+      'effects': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'op': 'append',
+          'key': 'libraryActivityAudit',
+          'value': <String, dynamic>{
+            'event': 'joined-queue',
+            'fanId': r'$actor',
+            'at': r'$timestamp',
+          },
+        },
+        <String, dynamic>{
+          'op': 'appendUnique',
+          'key': 'queuedFanIds',
+          'value': r'$actor',
+        },
+      ],
+    },
+    <String, dynamic>{
+      'id': 'leave-queue',
+      'label': 'Leave queue',
+      'action': 'leave_queue',
+      'from': <String>['published'],
+      'to': null,
+      'guard': <String, dynamic>{
+        'allowedRoleIds': <String>['queue-member'],
+      },
+      'effects': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'op': 'append',
+          'key': 'libraryActivityAudit',
+          'value': <String, dynamic>{
+            'event': 'left-queue',
+            'fanId': r'$actor',
+            'at': r'$timestamp',
+          },
+        },
+        <String, dynamic>{
+          'op': 'removeValue',
+          'key': 'queuedFanIds',
+          'value': r'$actor',
+        },
+      ],
     },
   ],
   'renderBindings': <Map<String, dynamic>>[
@@ -46,6 +91,14 @@ const _queueDefinition = <String, dynamic>{
   ],
   'instanceDataSchema': <String, dynamic>{
     'title': <String, dynamic>{'type': 'text', 'writableBy': 'formEntry'},
+    'libraryActivityAudit': <String, dynamic>{
+      'type': 'list',
+      'writableBy': 'effect',
+    },
+    'queuedFanIds': <String, dynamic>{
+      'type': 'fanId[]',
+      'writableBy': 'effect',
+    },
   },
 };
 
@@ -242,6 +295,170 @@ void main() {
     },
     skip: skip,
   );
+
+  test(
+    'PostgreSQL queue membership changes compose declared effects without reviving legacy queue data',
+    () async {
+      final config = configuration!;
+      final schema = _uniqueIdentifier('workflow_queue_effects_test');
+      final administrator = await _openDirectConnection(config);
+      WorkflowPostgresConnection? migrationConnection;
+      WorkflowPostgresConnection? postgres;
+      var schemaCreated = false;
+
+      try {
+        await administrator.execute('CREATE SCHEMA $schema');
+        schemaCreated = true;
+        await administrator.execute('SET search_path TO $schema');
+        migrationConnection = await _openAdminPool(config, schema);
+        await migrationConnection.migrateWorkflowSchema();
+        await PostgresItemQueueRepository(
+          migrationConnection.connection,
+        ).migrate();
+        await migrationConnection.close();
+        migrationConnection = null;
+        await _grantRuntimeAccess(administrator, schema, config);
+
+        postgres = await _openRuntimePool(config, schema);
+        final queueRepository = PostgresItemQueueRepository(
+          postgres.connection,
+        );
+        await postgres.runWithCommunity(_communityId, () async {
+          await postgres!.database.upsertDefinition(
+            definitionId: '${_communityId}_$_queueWorkflowType',
+            workflowType: _queueWorkflowType,
+            definitionJson: jsonEncode(_queueDefinition),
+            version: currentCommunitySpecVersion,
+          );
+          for (final instanceId in const <String>[
+            _queueEffectsInstanceId,
+            _queueEffectsFailureInstanceId,
+          ]) {
+            await postgres.database.insertInstance(
+              instanceId: instanceId,
+              communityId: _communityId,
+              workflowType: _queueWorkflowType,
+              currentState: 'published',
+              instanceData: <String, dynamic>{
+                'title': 'Queue effects $instanceId',
+                'libraryActivityAudit': <dynamic>[],
+              },
+              createdByFanId: 'fan-admin',
+            );
+          }
+        });
+
+        final service = _service(postgres, queueRepository);
+        final joined = await service.handler(
+          _queueJoinRequest(_queueMember, instanceId: _queueEffectsInstanceId),
+        );
+        expect(joined.statusCode, 201);
+        await postgres.runWithCommunity(_communityId, () async {
+          final entries = await queueRepository.listForItem(
+            communityId: _communityId,
+            instanceId: _queueEffectsInstanceId,
+          );
+          expect(entries, hasLength(1));
+          expect(entries.single.fanId, _queueMember);
+          final data = await _instanceData(postgres!, _queueEffectsInstanceId);
+          final audit = _auditEntries(data);
+          expect(audit, hasLength(1));
+          expect(audit.single['event'], 'joined-queue');
+          expect(audit.single['fanId'], _queueMember);
+          expect(audit.single['at'], isA<String>());
+          expect(data, isNot(contains('queuedFanIds')));
+        });
+
+        final replay = await service.handler(
+          _queueJoinRequest(_queueMember, instanceId: _queueEffectsInstanceId),
+        );
+        expect(replay.statusCode, 200);
+        await postgres.runWithCommunity(_communityId, () async {
+          final data = await _instanceData(postgres!, _queueEffectsInstanceId);
+          expect(
+            _auditEntries(data),
+            hasLength(1),
+            reason: 'an idempotent join must not append a second audit event',
+          );
+        });
+
+        final absentLeave = await service.handler(
+          _queueLeaveRequest(
+            _successfulQueueMember,
+            instanceId: _queueEffectsInstanceId,
+          ),
+        );
+        expect(absentLeave.statusCode, 204);
+        await postgres.runWithCommunity(_communityId, () async {
+          final data = await _instanceData(postgres!, _queueEffectsInstanceId);
+          expect(
+            _auditEntries(data),
+            hasLength(1),
+            reason: 'a no-op leave must not append an audit event',
+          );
+        });
+
+        final left = await service.handler(
+          _queueLeaveRequest(_queueMember, instanceId: _queueEffectsInstanceId),
+        );
+        expect(left.statusCode, 204);
+        await postgres.runWithCommunity(_communityId, () async {
+          expect(
+            await queueRepository.listForItem(
+              communityId: _communityId,
+              instanceId: _queueEffectsInstanceId,
+            ),
+            isEmpty,
+          );
+          final audit = _auditEntries(
+            await _instanceData(postgres!, _queueEffectsInstanceId),
+          );
+          expect(audit, hasLength(2));
+          expect(audit.last['event'], 'left-queue');
+          expect(audit.last['fanId'], _queueMember);
+          expect(audit.last['at'], isA<String>());
+        });
+
+        final failed =
+            await _service(
+              postgres,
+              queueRepository,
+              failAfter: 'item_queue_join',
+            ).handler(
+              _queueJoinRequest(
+                _queueEffectFailureMember,
+                instanceId: _queueEffectsFailureInstanceId,
+              ),
+            );
+        expect(failed.statusCode, 500);
+        await postgres.runWithCommunity(_communityId, () async {
+          expect(
+            await queueRepository.listForItem(
+              communityId: _communityId,
+              instanceId: _queueEffectsFailureInstanceId,
+            ),
+            isEmpty,
+            reason: 'the failing request must roll back the queue insert',
+          );
+          expect(
+            _auditEntries(
+              await _instanceData(postgres!, _queueEffectsFailureInstanceId),
+            ),
+            isEmpty,
+            reason: 'the failing request must roll back the audit append',
+          );
+        });
+      } finally {
+        await migrationConnection?.close();
+        await postgres?.close();
+        if (schemaCreated) {
+          await administrator.execute('DROP SCHEMA $schema CASCADE');
+        }
+        await administrator.close();
+      }
+    },
+    skip: skip,
+  );
 }
 
 WorkflowService _service(
@@ -266,17 +483,49 @@ WorkflowService _service(
         },
 );
 
-Request _queueJoinRequest(String fanId) => Request(
+Request _queueJoinRequest(
+  String fanId, {
+  String instanceId = _queueInstanceId,
+}) => Request(
   'POST',
   Uri.parse(
     'http://localhost/v1/communities/$_communityId/instances/'
-    '$_queueInstanceId/queue',
+    '$instanceId/queue',
   ),
   headers: <String, String>{
     'x-loom-correlation-id': _correlationId,
     HeaderWorkflowIdentityExtractor.defaultHeaderName: fanId,
   },
 );
+
+Request _queueLeaveRequest(
+  String fanId, {
+  String instanceId = _queueInstanceId,
+}) => Request(
+  'DELETE',
+  Uri.parse(
+    'http://localhost/v1/communities/$_communityId/instances/'
+    '$instanceId/queue',
+  ),
+  headers: <String, String>{
+    'x-loom-correlation-id': _correlationId,
+    HeaderWorkflowIdentityExtractor.defaultHeaderName: fanId,
+  },
+);
+
+Future<Map<String, dynamic>> _instanceData(
+  WorkflowPostgresConnection postgres,
+  String instanceId,
+) async {
+  final row = await postgres.database.readInstance(instanceId);
+  if (row == null) throw StateError('Missing instance $instanceId');
+  return Map<String, dynamic>.from(jsonDecode(row.instanceData) as Map);
+}
+
+List<Map<String, dynamic>> _auditEntries(Map<String, dynamic> data) =>
+    (data['libraryActivityAudit'] as List<dynamic>)
+        .map((entry) => Map<String, dynamic>.from(entry as Map))
+        .toList(growable: false);
 
 Request _createRequest(String title) => Request(
   'POST',
@@ -327,7 +576,9 @@ class _AllowedAppAccessClient implements AppAccessDecisionClient {
     required String groupId,
     required String correlationId,
   }) async => switch (fanId) {
-    _queueMember || _successfulQueueMember => const <String>{'queue-member'},
+    _queueMember ||
+    _successfulQueueMember ||
+    _queueEffectFailureMember => const <String>{'queue-member'},
     _creator => const <String>{'event-organizer'},
     _ => const <String>{},
   };

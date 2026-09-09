@@ -1563,7 +1563,10 @@ class WorkflowService {
     String communityId,
     String instanceId,
   ) => _withItemQueueRequest(request, communityId, (context) async {
-    final lookup = await _readableQueueInstance(
+    // Lock before reading queue entries or synthesizing the guard projection.
+    // Otherwise two members can derive an audit append from the same stored
+    // list and the last replacement write silently loses the first append.
+    final lookup = await _readableQueueInstanceForUpdate(
       context: context,
       communityId: communityId,
       instanceId: instanceId,
@@ -1588,23 +1591,22 @@ class WorkflowService {
           .where((entry) => entry.fanId != context.identity.fanId)
           .toList(growable: false),
     );
-    if (!await _mayAct(
+    final transitionResolution = await _authorizedItemQueueTransition(
       engine: context.engine,
       instance: queueInstance,
       fanId: context.identity.fanId,
       action: 'join_queue',
-    )) {
+      requestedTransitionId: request.url.queryParameters['transitionId'],
+    );
+    if (transitionResolution.isAmbiguous) {
+      return _ambiguousItemQueueTransition(request, transitionResolution);
+    }
+    final authorizedTransition = transitionResolution.transition;
+    if (authorizedTransition == null) {
       return _itemQueueActionForbidden(request, 'join');
     }
-    if (existingPosition != 0) {
-      return _queueEntryResponse(
-        entries[existingPosition - 1],
-        position: existingPosition,
-        correlationId: context.correlationId,
-        statusCode: 200,
-      );
-    }
-    if (_currentlyHoldsItem(instance, context.identity.fanId)) {
+    if (existingPosition == 0 &&
+        _currentlyHoldsItem(instance, context.identity.fanId)) {
       return _error(
         request: request,
         statusCode: 409,
@@ -1619,6 +1621,14 @@ class WorkflowService {
       fanId: context.identity.fanId,
       joinedAt: _clock().toUtc(),
     );
+    if (joined.created) {
+      await context.engine.applyAuthorizedItemQueueTransitionEffects(
+        workflowType: instance.workflowType,
+        instanceId: instanceId,
+        transitionId: authorizedTransition.id,
+        fanId: context.identity.fanId,
+      );
+    }
     await _postWriteFailureInjectorForTest?.call('item_queue_join');
     final currentEntries = await context.repository.listForItem(
       communityId: communityId,
@@ -1641,7 +1651,9 @@ class WorkflowService {
     String communityId,
     String instanceId,
   ) => _withItemQueueRequest(request, communityId, (context) async {
-    final lookup = await _readableQueueInstance(
+    // As join, protect the stored row before deriving the virtual legacy
+    // membership that authorizes this service-owned mutation.
+    final lookup = await _readableQueueInstanceForUpdate(
       context: context,
       communityId: communityId,
       instanceId: instanceId,
@@ -1666,20 +1678,34 @@ class WorkflowService {
       queueFanIds.add(context.identity.fanId);
     }
     final queueInstance = _withQueueFanIds(instance, queueFanIds);
-    if (!await _mayAct(
+    final transitionResolution = await _authorizedItemQueueTransition(
       engine: context.engine,
       instance: queueInstance,
       fanId: context.identity.fanId,
       action: 'leave_queue',
-    )) {
+      requestedTransitionId: request.url.queryParameters['transitionId'],
+    );
+    if (transitionResolution.isAmbiguous) {
+      return _ambiguousItemQueueTransition(request, transitionResolution);
+    }
+    final authorizedTransition = transitionResolution.transition;
+    if (authorizedTransition == null) {
       return _itemQueueActionForbidden(request, 'leave');
     }
 
-    await context.repository.remove(
+    final removed = await context.repository.remove(
       communityId: communityId,
       instanceId: instanceId,
       fanId: context.identity.fanId,
     );
+    if (removed) {
+      await context.engine.applyAuthorizedItemQueueTransitionEffects(
+        workflowType: instance.workflowType,
+        instanceId: instanceId,
+        transitionId: authorizedTransition.id,
+        fanId: context.identity.fanId,
+      );
+    }
     return Response(
       204,
       headers: <String, String>{'x-loom-correlation-id': context.correlationId},
@@ -1936,6 +1962,27 @@ class WorkflowService {
     required String instanceId,
   }) async {
     final stored = await _database.readInstance(instanceId);
+    if (stored == null || stored.communityId != communityId) {
+      return const _QueueInstanceLookup(exists: false);
+    }
+    final instance = await context.engine.readVisibleInstance(
+      instanceId: instanceId,
+      fanId: context.identity.fanId,
+    );
+    return _QueueInstanceLookup(exists: true, instance: instance);
+  }
+
+  /// Queue mutation variant of [_readableQueueInstance].
+  ///
+  /// The resulting visible instance is only the authorization projection. The
+  /// lock protects the actual stored row so queue effects can derive and write
+  /// its audit fields without racing another queue mutation.
+  Future<_QueueInstanceLookup> _readableQueueInstanceForUpdate({
+    required _ItemQueueRequestContext context,
+    required String communityId,
+    required String instanceId,
+  }) async {
+    final stored = await _database.readInstanceForUpdate(instanceId);
     if (stored == null || stored.communityId != communityId) {
       return const _QueueInstanceLookup(exists: false);
     }
@@ -3582,6 +3629,62 @@ class WorkflowService {
     return transitions.any((transition) => transition.action == action);
   }
 
+  /// Resolves the precise queue transition which the service has authorized.
+  ///
+  /// Queue effects cannot safely follow the old action-only boolean: one
+  /// action can have several declarations with distinct effects. When more
+  /// than one declaration is available, callers must select one with
+  /// `?transitionId=<declared-id>`; no arbitrary declaration is executed.
+  Future<_ItemQueueTransitionResolution> _authorizedItemQueueTransition({
+    required LocalWorkflowEngineApi engine,
+    required WorkflowInstance instance,
+    required String fanId,
+    required String action,
+    required String? requestedTransitionId,
+  }) async {
+    final candidates =
+        (await engine.availableTransitionsAsync(
+              workflowType: instance.workflowType,
+              instanceId: instance.instanceId,
+              currentState: instance.currentState,
+              instanceData: instance.instanceData,
+              fanId: fanId,
+            ))
+            .where((transition) => transition.action == action)
+            .toList(growable: false);
+    if (requestedTransitionId != null) {
+      final selected = candidates
+          .where((transition) => transition.id == requestedTransitionId)
+          .toList(growable: false);
+      return _ItemQueueTransitionResolution(
+        transition: selected.length == 1 ? selected.single : null,
+      );
+    }
+    if (candidates.length == 1) {
+      return _ItemQueueTransitionResolution(transition: candidates.single);
+    }
+    return _ItemQueueTransitionResolution(
+      ambiguousTransitionIds: candidates.length > 1
+          ? candidates
+                .map((transition) => transition.id)
+                .toList(growable: false)
+          : const <String>[],
+    );
+  }
+
+  Response _ambiguousItemQueueTransition(
+    Request request,
+    _ItemQueueTransitionResolution resolution,
+  ) => _error(
+    request: request,
+    statusCode: 409,
+    code: 'ambiguous_item_queue_transition',
+    message:
+        'More than one authorized queue transition is available. Pass '
+        '?transitionId=<declared-id> to select one of: '
+        '${resolution.ambiguousTransitionIds.join(', ')}.',
+  );
+
   Future<bool> _declaresField(
     String communityId,
     String workflowType,
@@ -4522,6 +4625,19 @@ class _QueueInstanceLookup {
 
   final bool exists;
   final WorkflowInstance? instance;
+}
+
+/// The service's exact authorization result for a queue action.
+class _ItemQueueTransitionResolution {
+  const _ItemQueueTransitionResolution({
+    this.transition,
+    this.ambiguousTransitionIds = const <String>[],
+  });
+
+  final LoomWorkflowTransition? transition;
+  final List<String> ambiguousTransitionIds;
+
+  bool get isAmbiguous => ambiguousTransitionIds.isNotEmpty;
 }
 
 /// Everything an export bundle handler needs, resolved once by its preamble.
