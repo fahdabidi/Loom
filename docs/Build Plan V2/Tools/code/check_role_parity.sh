@@ -32,6 +32,10 @@ trap 'rm -rf "$WORK"' EXIT
 #   tabletop-*           : tabletop-club is a test fixture, never a shipped community
 ALLOW_LIVE_ONLY='^loom_communities_cedar_commons_hoa\||^loom_communities_tabletop-club\|'
 
+# The dispatch host keeps its toolchain in a profile script that a non-interactive
+# shell does not read -- without this, `dart` is simply "command not found".
+[ -f "$HOME/.loom-env.sh" ] && . "$HOME/.loom-env.sh"
+
 echo "=== deriving DECLARED roles from the shipped packages ==="
 ( cd "$TOOL" && dart run bin/derive_app_access_provisioning_plan.dart "$ASSETS" ) \
   > "$WORK/raw.json" 2>"$WORK/derive.err"
