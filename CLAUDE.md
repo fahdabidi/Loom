@@ -1801,3 +1801,27 @@ made. Both times this session I judged an agent's reasoning defective, the defec
 build the query from its words, not from your summary of them. The elision that inverts a finding is
 usually one qualifier: `formula`, `into paid`, `only`, `declared`. Those words are doing the work, which is
 why they are the ones a paraphrase drops.
+
+### A perfectly discriminating variable can still be a passenger
+
+Cedar's instance listing 500s with `JsonUnsupportedObjectError: Instance of 'DateTime'`. I found that
+**exactly one** of the ten shipped packages has formula-computed `date`/`time` fields — Cedar — while
+nine carry only stored ones and list fine, and the failing workflow type was the one carrying them. Ten
+packages, perfect separation, and I wrote it into a ticket as the cause.
+
+It was wrong. Those formulas resolve to the stored strings. The real leak is `reminderAt`: the dues
+definition has an **unconditional** `reminder` block, and the read projection inserts
+`WorkflowReminder.dueAtFor(...)`'s raw `DateTime` into `instanceData`. Cedar's own healthy control has a
+reminder too — gated by `reminderEnabled`, which its rows do not set, so the field is absent. Cedar was
+simply the only community with *both* computed date fields and an ungated reminder, and I had latched
+onto the wrong one of the two.
+
+**Perfect discrimination feels like proof and is not.** With ten samples, two correlated properties are
+indistinguishable, and the one you notice first is the one you already had a mechanism for. The check
+that would have caught it costs a minute: **trace one real value end to end** — read the actual stored
+row, evaluate the formula against it, and see what type comes out. The two dues rows held
+`"2026-09-30"` and `"17:00"`; a formula returning a stored string cannot produce a `DateTime`, and that
+alone falsifies the hypothesis without any sweeping.
+
+The implementation agent refused to build the ticket, saying a material claim in it was false. That was
+correct, and it is the second time this session an agent's refusal was worth more than compliance.
