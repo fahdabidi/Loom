@@ -1476,3 +1476,20 @@ and "yes", the error handling is decorative.
 
 Same family as the grep-gated commit and the wrapper that reports its agent's total failure as a
 clean run: **a failure path whose observable behaviour is indistinguishable from success.**
+
+**The A/B that proves a regression test is worth more than the test passing.** The dispatch that
+fixed the transaction boundary could not run its own PostgreSQL test — no credentials on that
+invocation — and said so, reporting `0 passed / 1 skipped` rather than claiming a pass. Running it
+with both credential sets showed it green, which proves nothing on its own: a test asserting "the
+queue table is empty after a failed join" also passes against code that never wrote anything.
+
+The evidence came from neutralising **only** the fix (the `statusCode >= 400` abort throw), keeping
+the test and the injector seam, and re-running: `Expected: empty / Actual: [Instance of
+'StoredItemQueueEntry']`. The row had been committed despite the 500. Source restored afterwards and
+`cmp`-verified byte-identical.
+
+**When a dispatch adds a regression test, run it against the un-fixed code before believing it.**
+Reverting the whole file usually will not compile, because the test depends on a seam the fix
+introduced — neutralise the specific behaviour instead, and keep a backup you diff against on the way
+back. This is the same discipline as a control query: the test must be able to fail for the reason it
+claims, and the only way to know is to make it fail.
