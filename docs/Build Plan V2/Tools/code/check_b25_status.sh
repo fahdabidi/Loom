@@ -93,7 +93,13 @@ done < "$WORK/rows.tsv"
 # workflow types, alongside a "persona". Do not join on the screenRowId slug; join on workflowId.
 #
 # Some workflowId values are comma-joined lists or prose, so restrict to single clean tokens.
-grep -hoE '"workflowId": "[a-z0-9_-]+"' "$EVID"/*.json 2>/dev/null \
+# And restrict to the ACTUAL judge artifacts: this directory also holds remediation plans,
+# iteration scorecards, freshness gates and reconciliation reports, several of which carry a
+# workflowId of their own. Globbing *.json returned the same 55 here -- by coincidence, not by
+# construction. Check what a directory holds before globbing it.
+grep -hoE '"workflowId": "[a-z0-9_-]+"' \
+  "$EVID"/llm-vision-ux-review*.json \
+  "$EVID"/independent-production-ux-review*.json 2>/dev/null \
   | sed 's/.*: "//;s/"//' | sort -u > "$WORK/judged.txt"
 JUDGED_TYPES=$(wc -l < "$WORK/judged.txt")
 JUDGE=$(ls "$EVID" 2>/dev/null | grep -icE 'judge|ux-review' || true)
