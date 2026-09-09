@@ -1083,8 +1083,8 @@ other four and calling that "the suites".
 
 | Suite | Path | Baseline (2026-09-04, re-measured) |
 | --- | --- | ---: |
-| UX judges | `app/packages/tooling/loom_ux_judges` | **490** (0 skipped) — was 485 on 2026-09-01 
-| App shell | `app/packages/core/loom_communities_app_shell` | **375** (+2 skipped) — was 371; grew with the editGuard and role-picker regression tests 
+| UX judges | `app/packages/tooling/loom_ux_judges` | **501** (0 skipped) — re-measured 2026-09-08; was 490 
+| App shell | `app/packages/core/loom_communities_app_shell` | **403** (+2 skipped) — re-measured 2026-09-08; was recorded as 375 for four days while the real figure passed 400 
 | Workflow engine | `app/packages/core/loom_workflow_engine` | **312** (+5 skipped) without PG credentials; four PostgreSQL tests skip silently, same trap as the row below 
 | Workflow service | `app/packages/core/loom_workflow_service` | **153 (+1 skipped)** with BOTH credential sets — see the warning below; 146 (+8) with only `LOOM_POSTGRES_PASSWORD`; 142 (+12) with none |
 | Demo app | `app/apps/loom_communities_demo` | 160 |
@@ -1361,3 +1361,15 @@ Two more corrections from the same investigation, both worth keeping:
   a latent defect is *live* is a separate question worth answering explicitly: this one is dormant
   because the wrapper is only installed when a `String.fromEnvironment` directory is non-empty, and
   it defaults to empty.
+
+**A stale baseline raises false alarms in both directions — 2026-09-08 nearly produced one.** The
+app-shell row said 375 while the suite actually ran 403. Verifying a dispatch that had added exactly
+three tests, the jump looked like inflation and I began investigating a fabricated-test problem that
+did not exist. The resolution was to count declared tests at `HEAD` against the working tree —
+`git show HEAD:<path> | grep -cE '^\s*(testWidgets|test)\('` summed across the package — which showed
+398 versus 401, a delta of exactly 3.
+
+That count is the right check whenever a suite total surprises you, because it is independent of the
+runner and of load: it answers "did this change add or remove tests" without re-running anything. The
+danger of the stale number is symmetric — it would equally have let a genuine deletion hide, since a
+suite that dropped from 403 to 390 still looks like growth against a baseline of 375.
