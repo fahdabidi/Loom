@@ -41,9 +41,32 @@ REAL=$((TOTAL - DISCLAIMED))
 # Parse the file's own "**Workflow:** `type`" line rather than its filename: the filenames are
 # community-and-slug (garden-club-tool-loan) while the rows are workflow types (garden-tool-loan),
 # and no rule maps one to the other.
-grep -hoE '\*\*Workflow:\*\* `[a-z0-9-]+`' "$EVID"/*live-write*.md 2>/dev/null \
-  | grep -oE '`[a-z0-9-]+`' | tr -d '`' | sort -u > "$WORK/proven.txt"
+#
+# A manifest naming a workflow is NOT evidence that workflow was proven. Two of these record
+# BLOCKED runs ("Not proven. No live write was performed.") and one records PARTIAL. Counting any
+# manifest that mentions a type would have scored a failed walkthrough as a pass -- it only
+# happened to give the right answer because each blocked run has a later successful manifest for
+# the same workflow. Require the success phrase, and report the rest separately.
+: > "$WORK/proven.txt"; : > "$WORK/notproven.txt"
+for m in "$EVID"/*live-write*.md; do
+  [ -e "$m" ] || continue
+  wf=$(grep -m1 -oE '\*\*Workflow:\*\* `[a-z0-9-]+`' "$m" | grep -oE '`[a-z0-9-]+`' | tr -d '`')
+  [ -n "$wf" ] || continue
+  if grep -qiE 'Both halves of the proof standard were met' "$m"; then
+    echo "$wf" >> "$WORK/proven.txt"
+  else
+    echo "$wf	$(basename "$m")" >> "$WORK/notproven.txt"
+  fi
+done
+sort -u -o "$WORK/proven.txt" "$WORK/proven.txt"
 PROVEN_TYPES=$(wc -l < "$WORK/proven.txt")
+# Workflows whose ONLY manifests are blocked/partial -- these must never be counted as proven.
+BLOCKED_ONLY=0
+if [ -s "$WORK/notproven.txt" ]; then
+  while IFS=$'\t' read -r bwf _f; do
+    grep -qx "$bwf" "$WORK/proven.txt" || BLOCKED_ONLY=$((BLOCKED_ONLY+1))
+  done < "$WORK/notproven.txt"
+fi
 
 MANIFESTS=$(ls "$EVID"/*live-write*.md 2>/dev/null | wc -l)
 UNPARSED=$((MANIFESTS - $(grep -lE '\*\*Workflow:\*\* `[a-z0-9-]+`' "$EVID"/*live-write*.md 2>/dev/null | wc -l)))
@@ -74,7 +97,9 @@ B25 status -- $(date +%Y-%m-%d)
 
   walkthrough half
     live-write manifests              $MANIFESTS   (unparsed: $UNPARSED)
-    distinct workflow types proven    $PROVEN_TYPES
+    distinct workflow types PROVEN    $PROVEN_TYPES   (success phrase present)
+    manifests recording NOT-proven    $(wc -l < "$WORK/notproven.txt" 2>/dev/null || echo 0)   (blocked or partial)
+    workflows with ONLY a failed run  $BLOCKED_ONLY   (must never be counted)
     REAL ROWS WITH A LIVE WRITE       $MATCHED
 
   judge half
