@@ -1196,7 +1196,22 @@ and only reading the other service's schema showed that.
 
 The UX judge and the live walkthrough are the **final polish**, run once all backend services are
 wired and integrated — not as progress checks along the way. The production bar is the B25 addendum
-table: 79 rows, each proven by live walkthrough *and* UX judge.
+table: **72 real rows** (measured 2026-09-09), each proven by live walkthrough *and* UX judge.
+
+**The long-quoted "79" is wrong and should not be repeated.** Counting the B25 addendum table across all
+ten shipped product docs gives **77** rows present, and five of those are Masjid's `wf_` test-harness
+ids — `wf_demo-app-persona-picker`, `wf_community-persona-aware-ux`, `wf_multi-persona-workflow-evidence`
+— which that doc's own header already disclaims as literal `testWidgets` names with no
+`LoomWorkflowDefinition` behind them. So the real bar is **72**. The 2-row gap between 77 and the
+quoted 79 is unreconciled; trace it before quoting either.
+
+**Two further defects corrupt the same fraction, so do not quote a completion figure until all three
+are fixed together:** B25 evidence manifests written before 2026-09-09 record no package identity, so
+the numerator cannot be checked for staleness (the brief generator now requires `skillVersion` plus
+`sha256`); and the "roughly 22 of 79 rows are proven-against-fakes" accounting was computed from four
+fakes when **53 distinct APIs** are fake-backed across the six `Community*Fake` files — re-measured
+2026-09-09 and unchanged. A denominator is the number nobody re-derives, which is exactly how this one
+stayed wrong while the tables underneath said otherwise.
 
 ## Disk hygiene — check it before it stops the VM
 
