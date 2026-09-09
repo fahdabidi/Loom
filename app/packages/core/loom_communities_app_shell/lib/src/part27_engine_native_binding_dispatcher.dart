@@ -427,6 +427,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           resolved: resolved,
           engine: engine,
           fanId: fanId,
+          roleId: roleId,
           accent: accent,
           modernTheme: modernTheme,
           displayContext: displayContext,

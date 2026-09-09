@@ -126,6 +126,7 @@ Widget _card(_BespokeFixture fixture) => switch (fixture.family) {
     resolved: fixture.resolved,
     engine: fixture.engine,
     fanId: 'member',
+    roleId: 'member',
     accent: Colors.blue,
     onInstanceChanged: (_) {},
   ),

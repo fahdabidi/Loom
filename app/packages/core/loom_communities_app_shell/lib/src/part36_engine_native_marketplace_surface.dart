@@ -379,15 +379,16 @@ class _EngineNativeMarketplaceContent extends StatelessWidget {
 /// The facts are projected from the workflow definition's complete
 /// [InstanceDataField] schema. The only specialized behavior here is the
 /// domain action grouping: the declared borrow action is contextual, queue
-/// membership is a single toggle, and giveaways expose claim. Every button
-/// still comes from [availableTransitionsAsync], so cross-workflow and
-/// role guards are authoritative.
+/// membership is a single toggle, and giveaways expose claim. Service-backed
+/// queue membership deliberately bypasses the engine's retired local queue
+/// state, while still evaluating the transition's declared guard locally.
 class EquipmentLoanArchetypeCard extends StatefulWidget {
   const EquipmentLoanArchetypeCard({
     super.key,
     required this.resolved,
     required this.engine,
     required this.fanId,
+    required this.roleId,
     required this.accent,
     required this.onInstanceChanged,
     this.modernTheme,
@@ -398,6 +399,7 @@ class EquipmentLoanArchetypeCard extends StatefulWidget {
   final EngineNativeResolvedBinding resolved;
   final WorkflowEngineApi engine;
   final String fanId;
+  final String roleId;
   final Color accent;
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final LoomCardTheme? modernTheme;
@@ -417,6 +419,7 @@ class _EquipmentLoanArchetypeCardState
   LoomItemQueue? _queue;
   bool _loadingQueue = false;
   bool _queueUnavailable = false;
+  bool _queueActionRefused = false;
   bool _mutating = false;
   String? _error;
   int _actionRequest = 0;
@@ -439,6 +442,7 @@ class _EquipmentLoanArchetypeCardState
         oldInstance.currentState != newInstance.currentState ||
         oldInstance.instanceData != newInstance.instanceData ||
         oldWidget.fanId != widget.fanId ||
+        oldWidget.roleId != widget.roleId ||
         oldWidget.engine != widget.engine) {
       _instance = newInstance;
       _loadActions();
@@ -507,7 +511,13 @@ class _EquipmentLoanArchetypeCardState
   LoomWorkflowTransition? _declaredActionFor(String action) {
     for (final candidate in widget.resolved.machine.transitions) {
       if (candidate.action == action &&
-          candidate.from.contains(_instance.currentState)) {
+          candidate.from.contains(_instance.currentState) &&
+          evaluateGuard(
+            candidate.guard,
+            widget.fanId,
+            _instance.instanceData,
+            roleId: widget.roleId,
+          )) {
         return candidate;
       }
     }
@@ -558,6 +568,7 @@ class _EquipmentLoanArchetypeCardState
         _queue = null;
         _loadingQueue = false;
         _queueUnavailable = true;
+        _queueActionRefused = false;
       });
       return;
     }
@@ -568,6 +579,7 @@ class _EquipmentLoanArchetypeCardState
         _queue = null;
         _loadingQueue = true;
         _queueUnavailable = false;
+        _queueActionRefused = false;
       });
     }
     try {
@@ -580,6 +592,7 @@ class _EquipmentLoanArchetypeCardState
         _queue = queue;
         _loadingQueue = false;
         _queueUnavailable = false;
+        _queueActionRefused = false;
       });
     } catch (_) {
       if (!mounted || request != _queueRequest) return;
@@ -587,6 +600,7 @@ class _EquipmentLoanArchetypeCardState
         _queue = null;
         _loadingQueue = false;
         _queueUnavailable = true;
+        _queueActionRefused = false;
       });
     }
   }
@@ -600,12 +614,14 @@ class _EquipmentLoanArchetypeCardState
         _queue = null;
         _loadingQueue = false;
         _queueUnavailable = true;
+        _queueActionRefused = false;
       });
       return;
     }
     setState(() {
       _mutating = true;
       _error = null;
+      _queueActionRefused = false;
     });
     try {
       switch (transition.action) {
@@ -625,12 +641,33 @@ class _EquipmentLoanArchetypeCardState
           );
       }
       await _loadQueue();
+    } on LoomItemQueueException catch (error) {
+      if (mounted) {
+        setState(() {
+          _loadingQueue = false;
+          if (error.statusCode == 403) {
+            // The service remains authoritative. Keep the last queue snapshot
+            // visible so a refused action does not masquerade as an outage.
+            _queueUnavailable = false;
+            _queueActionRefused = true;
+          } else if (error.isUnavailable) {
+            _queue = null;
+            _queueUnavailable = true;
+            _queueActionRefused = false;
+          } else {
+            _queueUnavailable = false;
+            _queueActionRefused = false;
+            _error = 'Could not update this queue.';
+          }
+        });
+      }
     } catch (_) {
       if (mounted) {
         setState(() {
           _queue = null;
           _loadingQueue = false;
           _queueUnavailable = true;
+          _queueActionRefused = false;
         });
       }
     } finally {
@@ -902,6 +939,13 @@ class _EquipmentLoanArchetypeCardState
                 ? 'You are not queued.'
                 : 'Your position: ${queue.viewerPosition}',
           ),
+          if (_queueActionRefused) ...[
+            const SizedBox(height: 4),
+            Text(
+              'You are not eligible to update this queue.',
+              key: ValueKey('equipment-loan-queue-refused-$instanceId'),
+            ),
+          ],
           if (entries != null) ...[
             const SizedBox(height: 8),
             Text(

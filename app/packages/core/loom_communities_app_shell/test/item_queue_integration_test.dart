@@ -71,11 +71,14 @@ final class _RemoteQueueEngine extends RemoteWorkflowEngineApi {
 }
 
 final class _QueueService {
-  _QueueService({Set<String> entriesVisibleFor = const {}})
-    : _entriesVisibleFor = entriesVisibleFor;
+  _QueueService({
+    Set<String> entriesVisibleFor = const {},
+    this.joinStatusCode = 201,
+  }) : _entriesVisibleFor = entriesVisibleFor;
 
   final List<String> queuedFanIds = <String>[];
   final Set<String> _entriesVisibleFor;
+  final int joinStatusCode;
   late final http.Client client = MockClient(_handle);
   String actor = 'alice';
 
@@ -102,6 +105,9 @@ final class _QueueService {
       );
     }
     if (request.method == 'POST' && path.endsWith('/queue')) {
+      if (joinStatusCode != 201) {
+        return http.Response('not eligible', joinStatusCode);
+      }
       if (!queuedFanIds.contains(actor)) queuedFanIds.add(actor);
       return http.Response(
         jsonEncode(<String, Object?>{
@@ -122,11 +128,23 @@ final class _QueueService {
   void close() => client.close();
 }
 
+const _gardenJoinQueueGuard = <String, Object?>{
+  'allowedRoleIds': <String>['garden-member'],
+  'formula':
+      "if(ownerFanId == \$actor, false, availabilityState == 'reserved' || availabilityState == 'onLoan')",
+};
+
+const _gardenLeaveQueueGuard = <String, Object?>{
+  'allowedRoleIds': <String>['garden-member'],
+};
+
 LoomWorkflowStateMachine _queueMachine({
   String joinId = 'join-queue',
   String leaveId = 'leave-queue',
   bool hasAdminDecision = false,
   bool hasLegacyQueueFields = false,
+  Map<String, Object?>? joinGuard,
+  Map<String, Object?>? leaveGuard,
 }) => LoomWorkflowStateMachine.fromJson(<String, dynamic>{
   'initialState': 'published',
   'states': <String, Object?>{
@@ -141,6 +159,7 @@ LoomWorkflowStateMachine _queueMachine({
       'tone': 'secondary',
       'from': <String>['published'],
       'to': null,
+      if (joinGuard != null) 'guard': joinGuard,
     },
     <String, Object?>{
       'id': leaveId,
@@ -150,6 +169,7 @@ LoomWorkflowStateMachine _queueMachine({
       'tone': 'secondary',
       'from': <String>['published'],
       'to': null,
+      if (leaveGuard != null) 'guard': leaveGuard,
     },
     if (hasAdminDecision)
       <String, Object?>{
@@ -205,6 +225,7 @@ Widget _queueCard({
   required LoomWorkflowStateMachine machine,
   required _RemoteQueueEngine engine,
   required String fanId,
+  String roleId = 'member',
   Map<String, dynamic> instanceData = const <String, dynamic>{
     'title': 'Shared lens',
   },
@@ -212,6 +233,7 @@ Widget _queueCard({
   resolved: _binding(machine, instanceData: instanceData),
   engine: engine,
   fanId: fanId,
+  roleId: roleId,
   accent: Colors.blue,
   displayContext: 'detail',
   onInstanceChanged: (_) {},
@@ -404,6 +426,139 @@ void main() {
         findsOneWidget,
       );
       expect(engine.appliedTransitionIds, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'an owner of an available Garden-shaped tool loan is not offered Join queue',
+    (tester) async {
+      final service = _QueueService()..actor = 'garden-owner';
+      addTearDown(service.close);
+      overrideLoomItemQueueClientForTesting(
+        LoomItemQueueClient(
+          workflowServiceBaseUri: Uri.parse('https://workflow.test/'),
+          session: _TokenSession(),
+          httpClient: service.client,
+        ),
+      );
+      final machine = _queueMachine(
+        joinGuard: _gardenJoinQueueGuard,
+        leaveGuard: _gardenLeaveQueueGuard,
+      );
+
+      await tester.pumpWidget(
+        _host(
+          _queueCard(
+            machine: machine,
+            engine: _RemoteQueueEngine(const []),
+            fanId: 'garden-owner',
+            roleId: 'garden-member',
+            instanceData: const <String, dynamic>{
+              'title': 'Steel wheelbarrow',
+              'mode': 'loan',
+              'ownerFanId': 'garden-owner',
+              'availabilityState': 'available',
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('marketplace-action-join-queue')),
+        findsNothing,
+      );
+      expect(find.text('Join queue'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'a non-owner garden member is offered Join queue for reserved and on-loan tools',
+    (tester) async {
+      final service = _QueueService()..actor = 'garden-member-rina';
+      addTearDown(service.close);
+      overrideLoomItemQueueClientForTesting(
+        LoomItemQueueClient(
+          workflowServiceBaseUri: Uri.parse('https://workflow.test/'),
+          session: _TokenSession(),
+          httpClient: service.client,
+        ),
+      );
+      final machine = _queueMachine(
+        joinGuard: _gardenJoinQueueGuard,
+        leaveGuard: _gardenLeaveQueueGuard,
+      );
+      final engine = _RemoteQueueEngine(const []);
+
+      for (final availabilityState in const ['reserved', 'onLoan']) {
+        await tester.pumpWidget(
+          _host(
+            _queueCard(
+              machine: machine,
+              engine: engine,
+              fanId: 'garden-member-rina',
+              roleId: 'garden-member',
+              instanceData: <String, dynamic>{
+                'title': 'Club hand-tool set',
+                'mode': 'loan',
+                'ownerFanId': 'garden-owner',
+                'availabilityState': availabilityState,
+              },
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.byKey(const ValueKey('marketplace-action-join-queue')),
+          findsOneWidget,
+        );
+      }
+    },
+  );
+
+  testWidgets(
+    'a 403 queue refusal keeps the queue state and is not rendered as unavailable',
+    (tester) async {
+      final service = _QueueService(joinStatusCode: 403);
+      addTearDown(service.close);
+      overrideLoomItemQueueClientForTesting(
+        LoomItemQueueClient(
+          workflowServiceBaseUri: Uri.parse('https://workflow.test/'),
+          session: _TokenSession(),
+          httpClient: service.client,
+        ),
+      );
+      final machine = _queueMachine();
+
+      await tester.pumpWidget(
+        _host(
+          _queueCard(
+            machine: machine,
+            engine: _RemoteQueueEngine(const []),
+            fanId: 'alice',
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Queue length: 0'), findsOneWidget);
+
+      await tester.tap(
+        find.byKey(const ValueKey('marketplace-action-join-queue')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('equipment-loan-queue-refused-listing-7')),
+        findsOneWidget,
+      );
+      expect(
+        find.text('You are not eligible to update this queue.'),
+        findsOneWidget,
+      );
+      expect(find.text('Queue unavailable.'), findsNothing);
+      expect(find.text('Queue length: 0'), findsOneWidget);
+      expect(find.text('You are not queued.'), findsOneWidget);
     },
   );
 

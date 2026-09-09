@@ -187,6 +187,7 @@ void main() {
           resolved: resolved,
           engine: engine,
           fanId: 'camera-club-member',
+          roleId: 'camera-club-member',
           accent: Colors.blue,
           onInstanceChanged: (_) {},
         ),
