@@ -1697,3 +1697,20 @@ sent me to the file whose title read `**BLOCKED**`, which is how the counting fl
 silently-dropped input hides the case that disproves you. And **when a number comes out right, ask
 whether it came out right for the right reason** — 9 was correct by luck, and nothing about the output
 distinguished luck from design.
+
+**When evidence is keyed opaquely, read the code that writes it before inferring from what it looks
+like.** The B25 judge artifacts are keyed by `screenRowId`, values like
+`b25-v4-row-008-garden-export-custom-schemas-1`. I read that question three ways in one session —
+joinable via the slug, then *uncomputable* because 204 ids cannot map to a 72-row bar, then joinable
+via a different field — and shipped a tool asserting the wrong middle answer before catching it.
+
+What settled it was opening the producer. `loom_ux_judges.dart` builds the id as
+`b25-v4-row-NNN-${_slug(workflowId)}`, which explains everything the shape suggested and misled on: it
+is a **screen** (~3 per row, hence 204 over 72), and it is *derived from* `workflowId` — so its slug
+resembles a bar key precisely because it is made from one. The artifacts carry the real key,
+`workflowId` plus `persona`, in 95 files. One `grep '"workflowId"'` would have settled it at the
+start; I spent two passes reasoning from filenames instead.
+
+**A derived identifier looks like its source and is not it.** The same applies to the wrapper whose
+`communityId` field holds an extensionId, and to a manifest filename that is a slug of a workflow
+type. Find the writer, read what it puts there, then join.
