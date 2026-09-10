@@ -1850,3 +1850,26 @@ leave the document clean.** A comment or header note is for humans; a filter is 
 The general shape, and it recurred all session: **when you cannot see who reads a file, `grep` for its
 consumers before editing it.** `grep -rln "<filename>" app/ --include=*.dart` takes seconds and would
 have named the test I missed.
+
+### A validator warning can outlive the thing it was warning about
+
+`workflow_validator.dart`'s `_checkDeadRoleBinding` still flags a `calendar`-tab binding as dead
+unless it uses `role: "any"`, on the premise that "the `calendar` tab passes no role-resolution
+callback." That premise stopped being true on 2026-08-11 (`0eaee6484`), when
+`EngineNativeCalendarSurface` started passing `rolesForInstance` — `deriveInstanceRoles` against the
+viewer's fan and role ids — into the shared binding dispatcher, the same mechanism Marketplace uses.
+`render-bindings.md` documents audience resolution as guard-derived and tab-independent; the
+validator's check is the one place still treating it as tab-dependent.
+
+A later tracker row (dated 2026-09-06, "re-measured") had already proposed a fix for this — but
+proposed porting a whole renderer-reconciliation mechanism into the validator, which would have
+generalized a warning whose underlying claim was already false by the time the row was written. Root
+cause agent sweep confirmed both halves independently: the validator's exact claim (verified by
+reading `workflow_validator.dart:602,622`), and the calendar surface's actual behavior (verified by
+reading `part28_engine_native_calendar_surface.dart:200` and its git blame).
+
+**A validator check and the code it checks are two independent things that can drift apart, same as
+any other pair of layers in this project** — the validator doesn't get an exemption from the
+"a capability has to be true at every layer" rule just because it's the thing doing the checking. The
+fix here is to retire the two obsolete checks and their finding-code declaration, not to build the
+mechanism the stale warning implied was still missing.

@@ -62,7 +62,7 @@ naming the exact rule, so a finding is always machine-attributable, not just pro
 | Dangling references | `dangling_related_aggregate_workflow_type`, `dangling_related_instance_field`, `dangling_response_table_workflow_type`, `dangling_linked_workflow_id`, `dangling_allowed_persona_id`, `dangling_instance_data_key`, `dangling_create_instance_target`, `dangling_transition_related_workflow_type` |
 | Formula correctness | `circular_formula_dependency`, `invalid_formula_syntax`, `unknown_formula_field`, `unknown_formula_function` |
 | State-machine health | `stuck_state`, `unreachable_state`, `no_render_binding_for_reachable_state` (a state reachable by a real transition path has no UI binding that would ever surface it) |
-| Guard/role correctness | `dead_role_binding` (a role referenced in a binding that no transition/guard ever grants), `actor_equals_field_on_list_type` (a guard shape that's structurally meaningless against a list-typed field) |
+| Guard/role correctness | `actor_equals_field_on_list_type` (a guard shape that's structurally meaningless against a list-typed field) |
 | Recurrence | `missing_recurrence_anchor_field`, `dangling_recurrence_anchor_field`, `invalid_recurrence_anchor_field_type`, `missing_recurrence_rule` |
 | Effect correctness | `unknown_effect_op`, `computed_field_written_by_effect` (an effect tries to write a field that's actually formula-derived, which would be silently overwritten on the next recompute) |
 
