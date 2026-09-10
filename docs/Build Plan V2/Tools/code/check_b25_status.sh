@@ -27,7 +27,7 @@ WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT
 for f in "$DOCS"/*-product-experience.md; do
   awk -v C="$(basename "$f" -product-experience.md)" '
     /^\| Workflow \| Persona \| Expected decision \|/{inb=1; next}
-    inb && /^\|/{split($0,a,"|"); gsub(/^ +| +$/,"",a[2]); print C"	"a[2]; next}| *-/{next}
+    inb && /^\| *-/{next}
     inb && /^\|/{split($0,a,"|"); gsub(/^ +| +$/,"",a[2]); print C"\t"a[2]; next}
     inb && !/^\|/{inb=0}' "$f"
 done > "$WORK/rows.tsv"
