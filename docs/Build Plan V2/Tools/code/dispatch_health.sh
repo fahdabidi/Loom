@@ -30,6 +30,21 @@
 # during a long single edit is normal and must never trigger a restart.
 #
 # Exit codes:  0 PROGRESSING   1 SUSPECT (first quiet tick)   2 FROZEN/DEAD
+#
+# CAVEAT for Claude Code CLI dispatches (implementation agent since 2026-09-10,
+# UX judge, live verification): `claude -p` BUFFERS its output, so the log stays
+# 0 bytes for the whole run and the log-growth signal below reads as silence.
+# File modifications still register as progress, which covers an agent that is
+# editing -- but a long read/plan phase writes nothing, and that is exactly when
+# someone checks. If this tool says SUSPECT/FROZEN for a Claude dispatch that has
+# not written files, confirm by hand before killing anything:
+#
+#   p=$(pgrep -x claude | head -1)
+#   a=$(awk '{print $14+$15}' /proc/$p/stat); sleep 40
+#   b=$(awk '{print $14+$15}' /proc/$p/stat); echo $((b-a))
+#
+# A four-figure delta over 40s is a busy agent. That check settled a 22-minute
+# walkthrough on 2026-09-09 whose log said nothing at all.
 #              3 DONE          4 UNKNOWN (no baseline yet; baseline written)
 
 set -uo pipefail
@@ -41,9 +56,14 @@ REPO="${LOOM_REPO:-$HOME/Loom}"
 
 now=$(date +%s)
 
-if grep -aq 'codex exec exited with status' "$LOG" 2>/dev/null; then
+# Matches every dispatcher family. The Codex dispatchers write "codex exec exited
+# with status"; the Claude Code CLI ones write "claude exited with status" -- the
+# implementation agent since 2026-09-10, plus the UX judge and live verification
+# agents, which this tool could never see before.
+DONE_RE='(codex exec|claude) exited with status'
+if grep -aqE "$DONE_RE" "$LOG" 2>/dev/null; then
   echo "VERDICT: DONE"
-  grep -a 'codex exec exited with status' "$LOG" | tail -1
+  grep -aE "$DONE_RE" "$LOG" | tail -1
   rm -f "$STATE"
   exit 3
 fi
@@ -51,8 +71,13 @@ fi
 # ps -eo comm matches the process NAME only. pgrep -f matches its own command
 # line and returns false positives -- it reported RUNNING three times in one
 # session for dispatches that had already exited.
-if ! ps -eo comm --no-headers | grep -qE '^node'; then
-  echo "VERDICT: DEAD (no node process, and no exit line in the log)"
+#
+# Two names, because the families are different binaries: Codex runs under node
+# (`npm exec @openai/codex`), while `claude` on this VM is a NATIVE ELF binary,
+# not a node script. A `^node`-only test therefore reports a perfectly healthy
+# Claude dispatch as DEAD. Verified with `file "$(readlink -f "$(command -v claude)")"`.
+if ! ps -eo comm --no-headers | grep -qE '^(node|claude)'; then
+  echo "VERDICT: DEAD (no node/claude process, and no exit line in the log)"
   echo "  It died without writing its exit line. Partial work is still in the"
   echo "  working tree -- inspect that before re-dispatching, do not assume the"
   echo "  tree is clean."

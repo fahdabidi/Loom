@@ -1,7 +1,43 @@
 #!/bin/bash
 # data/call_implementation_agent.sh
 #
-# Direct invocation of the Implementation Agent (Codex CLI, VirtualBox VM) from
+# ============================================================================
+# ENGINE CHANGED 2026-09-10: this dispatcher now runs the CLAUDE CODE CLI on
+# Sonnet at medium effort, not `codex exec` on GPT-5.6-Terra. User-directed.
+#
+#   claude -p "$PROMPT" --model sonnet --effort medium \
+#     --add-dir <repo> --add-dir <pub-cache/flutter dirs> \
+#     --dangerously-skip-permissions
+#
+# Override per call, nothing removed:
+#   CLAUDE_IMPLEMENTATION_MODEL=opus  CLAUDE_IMPLEMENTATION_EFFORT=high  bash ...
+#
+# THREE THINGS THAT BEHAVE DIFFERENTLY FROM THE CODEX ERA -- read before you
+# debug a dispatch that looks wrong:
+#
+#  1. THE LOG BUFFERS. `claude -p` writes nothing until the run ends, so the
+#     log sits at 0 bytes for 20+ minutes. Under Codex that was the documented
+#     dead-dispatch signature; here it is normal. Check liveness by sampling
+#     CPU on the pid, not by watching the log.
+#  2. THE COMPLETION LINE CHANGED, from "codex exec exited with status <n>" to
+#     "claude exited with status <n>". `dispatch_health.sh` and
+#     `watch_dispatch_log.sh` were updated the same day to match both, so they
+#     keep working -- but any ad-hoc waiter grepping the old string will hang
+#     forever on a dispatch that has already finished.
+#  3. THERE IS NO SANDBOX MODE. Codex took `--sandbox workspace-write` plus a
+#     network-access override, which existed because flutter_tester binds a
+#     localhost socket per test file and the sandbox denied it -- making every
+#     widget suite fail as if there were 54 regressions. Claude Code takes
+#     `--dangerously-skip-permissions` instead; the bind is not blocked. The
+#     `--add-dir` grants are kept because they still scope what it may touch.
+#
+# The rest of this header is the accumulated Codex-era history. It is kept
+# because the REASONS are still true -- the git-integrity guard, the resume
+# semantics, the pgrep traps -- but read model/profile references as history.
+# ============================================================================
+#
+# Direct invocation of the Implementation Agent from the Verification Agent's
+# own session -- replaces the old mailbox+manually-resumed-session handoff.
 # the Verification Agent's own session -- replaces the old mailbox+manually-
 # resumed-session handoff. Adapted from the "Running an unattended
 # Implementation/Verification agent loop" reference guide (2026-07-11),
@@ -30,7 +66,8 @@
 #   # stalls, while every Monitor fired promptly. Never poll, never sleep-loop.
 #   ssh loom-vm '. ~/.loom-env.sh && cd ~/Loom && bash data/watch_dispatch_log.sh <label>'
 #   # That script self-terminates and emits exactly one of:
-#   #   codex exec exited with status <n>  -> normal completion
+#   #   claude exited with status <n>  -> normal completion (was "codex exec
+#   #   exited with status" before 2026-09-10)
 #   #   DISPATCH-DIED: ...                 -> process vanished, no completion
 #   #                                         line (killed/crashed/OOM)
 #   #   DISPATCH-SIGNAL: <line>            -> usage limit / panic / fatal seen
@@ -38,7 +75,7 @@
 #   # Do NOT filter the Monitor down to only the success line: a dispatch that
 #   # dies silently must still wake you. Silence must never be the signal.
 #   # ... once the dispatch has genuinely completed (watcher fired on
-#   # "codex exec exited with status"), commit the round's real edits (once
+#   # "claude exited with status"), commit the round's real edits (once
 #   # confirmed present via `git status`/`git diff`) immediately -- not
 #   # deferred until independent verification passes. See
 #   # codex_dispatch_reliability memory, Failure 8: holding a brand-new
@@ -61,7 +98,8 @@
 # .codex-logs` line below for why that has failed twice in practice.
 #
 # By default this resumes the most recent Codex session for this repo
-# (`resume --last`), so context/continuity builds across calls the same way
+# (`--continue`, the Claude equivalent of the old `resume --last`), so context
+# continuity builds across calls the same way
 # it would in the guide's overnight loop. Pass --fresh to start a brand-new
 # session instead (e.g. the very first call, or after a long gap where
 # resuming stale context would do more harm than good).
@@ -143,7 +181,8 @@
 #
 # To switch back to DeepSeek V4 Pro medium (or any other profile) for a
 # single dispatch without changing this file's default:
-#   CODEX_IMPLEMENTATION_PROFILE=deepseek_v4_pro_medium bash data/call_implementation_agent.sh <ticket> [--fresh]
+#   (historical: CODEX_IMPLEMENTATION_PROFILE=... selected a Codex profile. That
+#   variable is dead; use CLAUDE_IMPLEMENTATION_MODEL/_EFFORT instead.)
 # Override with CODEX_IMPLEMENTATION_PROFILE="" to fall back to Codex's own
 # built-in default model (e.g. for a quick one-off without any profile).
 #
@@ -161,38 +200,21 @@ set -euo pipefail
 
 PROMPT_FILE="${1:?usage: call_implementation_agent.sh <prompt-file> [--fresh]}"
 MODE="${2:-}"
-SANDBOX_MODE="${CODEX_IMPLEMENTATION_SANDBOX:-workspace-write}"
-PROFILE="${CODEX_IMPLEMENTATION_PROFILE-gpt5_6_terra_xhigh}"
-PROFILE_ARGS=()
-if [ -n "$PROFILE" ]; then
-  PROFILE_ARGS=(-p "$PROFILE")
-fi
+# Claude Code CLI, Sonnet at medium effort (user-directed 2026-09-10, replacing
+# `codex exec` on GPT-5.6-Terra @ xhigh). Overridable, nothing removed:
+#   CLAUDE_IMPLEMENTATION_MODEL=opus   bash data/call_implementation_agent.sh ...
+#   CLAUDE_IMPLEMENTATION_EFFORT=high  bash data/call_implementation_agent.sh ...
+# `--effort` accepts low|medium|high|xhigh|max (verified against `claude --help`
+# on the VM, not assumed).
+MODEL="${CLAUDE_IMPLEMENTATION_MODEL:-sonnet}"
+EFFORT="${CLAUDE_IMPLEMENTATION_EFFORT:-medium}"
 
 GATEWAY_KEY_FILE="$HOME/.deepseek_gateway_key"
 GATEWAY_HEALTH_URL="${CODEX_GATEWAY_HEALTH_URL:-http://127.0.0.1:8791/health}"
-if [[ "$PROFILE" == deepseek_* ]]; then
-  # The gateway now runs ON THIS VM, bound to loopback (~/deepseek-gateway).
-  # src/config.mjs only requires GATEWAY_API_KEY when the bind host is NOT
-  # loopback, so a bridge token is optional here. The WSL-era arrangement
-  # needed the token, a Windows firewall rule for 8787, AND a host LAN IP that
-  # went stale whenever DHCP moved -- it broke on all three. If a token file
-  # does exist we still send it, so a remote gateway keeps working unchanged.
-  CURL_AUTH=()
-  if [ -f "$GATEWAY_KEY_FILE" ]; then
-    DEEPSEEK_GATEWAY_KEY="$(cat "$GATEWAY_KEY_FILE")"
-    export DEEPSEEK_GATEWAY_KEY
-    CURL_AUTH=(-H "Authorization: Bearer $DEEPSEEK_GATEWAY_KEY")
-  fi
-  HEALTH_STATUS="$(curl -s -m 5 -o /dev/null -w '%{http_code}' \
-    "${CURL_AUTH[@]}" "$GATEWAY_HEALTH_URL" || true)"
-  if [ "$HEALTH_STATUS" != "200" ]; then
-    echo "ERROR: DeepSeek gateway not reachable/healthy at $GATEWAY_HEALTH_URL (HTTP $HEALTH_STATUS)." >&2
-    echo "       Start it:  nohup ~/deepseek-gateway/start.sh > /tmp/ds_gateway.log 2>&1 &" >&2
-    echo "       It requires ~/.deepseek_api_key (chmod 600) to exist." >&2
-    echo "       To bypass and use Codex's default model instead: CODEX_IMPLEMENTATION_PROFILE=\"\"" >&2
-    exit 1
-  fi
-fi
+# The DeepSeek gateway preflight that stood here is removed with the move to the
+# Claude Code CLI: it only ever guarded `deepseek_*` Codex profiles, and there is
+# no longer a profile to select one. The gateway itself is untouched and still
+# serves the other dispatchers that use it.
 
 if [ ! -f "$PROMPT_FILE" ]; then
   echo "ERROR: prompt file not found: $PROMPT_FILE" >&2
@@ -242,12 +264,17 @@ fi
 PRE_TRACKED_COUNT="$(git ls-files | wc -l)"
 PRE_HEAD="$(git rev-parse HEAD)"
 
-echo "=== Invoking Implementation Agent (codex exec) ==="
+echo "=== Invoking Implementation Agent (Claude Code CLI) ==="
 echo "Repo: $REPO_ROOT"
 echo "Prompt file: $PROMPT_FILE ($(wc -l < "$PROMPT_FILE") lines)"
-echo "Mode: $([ "$MODE" = "--fresh" ] && echo "fresh session" || echo "resume --last")"
-echo "Sandbox: $SANDBOX_MODE"
-echo "Profile: ${PROFILE:-<none -- Codex default model>}"
+echo "Mode: $([ "$MODE" = "--fresh" ] && echo "fresh session" || echo "--continue (most recent conversation)")"
+echo "Model: $MODEL"
+echo "Effort: $EFFORT"
+echo "NOTE: claude -p BUFFERS -- this log stays 0 bytes until the run finishes."
+echo "      That is normal here and is NOT the dead-dispatch signature it is for"
+echo "      the Codex dispatchers. To check liveness, sample CPU on the pid:"
+echo "        p=<pid>; a=\$(awk '{print \$14+\$15}' /proc/\$p/stat); sleep 40; \\"
+echo "        b=\$(awk '{print \$14+\$15}' /proc/\$p/stat); echo \$((b-a))"
 echo "===================================================="
 
 cd "$REPO_ROOT"
@@ -322,51 +349,56 @@ else
   FLUTTER_SDK_DIR="$HOME/flutter"
 fi
 
-# flutter_tester binds a localhost control socket per test file. Under a
-# default workspace-write sandbox that bind returns EPERM, so EVERY Flutter
-# widget suite fails to start -- not a test failure, a harness failure, and one
-# that reads like 54 real regressions in the log. Verified 2026-08-21: with this
-# enabled plus FLUTTER_SDK_DIR granted, a real widget suite runs to
-# "All tests passed!" in-sandbox. Before this, agents could not verify their own
-# widget-test work at all and had to predict results, which they got wrong.
-CODEX_SANDBOX_NETWORK_CONFIG="sandbox_workspace_write.network_access=true"
+# The Codex sandbox knobs that stood here (`--sandbox workspace-write` plus
+# `sandbox_workspace_write.network_access=true`) are gone with the CLI swap.
+# They existed for one reason worth remembering: flutter_tester binds a
+# localhost control socket per test file, and under a default workspace-write
+# sandbox that bind returned EPERM, so EVERY widget suite failed to start --
+# a harness failure that read like 54 real regressions. Claude Code takes
+# `--dangerously-skip-permissions` instead of a sandbox mode, so the socket
+# bind is not blocked and the suites run. The --add-dir grants are kept: they
+# still scope what the agent may touch.
 
-# Captured to a side file (via `tee`) so a transcript survives for post-
-# mortems without losing the live streaming to stdout that callers tail for
-# progress. `${PIPESTATUS[0]}` (not `$?`, which would be tee's exit status)
-# preserves codex's own real exit code through the pipe.
+# Captured to a side file (via `tee`) so a transcript survives for post-mortems.
+# `${PIPESTATUS[0]}` (not `$?`, which would be tee's exit status) preserves the
+# CLI's own real exit code through the pipe.
+#
+# Note the observability change from the Codex era: `claude -p` BUFFERS its
+# output, so this file stays empty until the run ends rather than streaming.
+# Do not read an empty log as a dead dispatch -- see the banner above.
 CODEX_OUTPUT_CAPTURE="$(mktemp)"
 # Disabled around the pipeline itself: with `set -e -o pipefail` active, a
-# non-zero exit from EITHER half of `codex exec | tee` would abort the script
-# right here, before STATUS is even captured -- silently skipping the git-
-# integrity guard below exactly when it matters most.
+# non-zero exit from EITHER half of `claude | tee` would abort the script right
+# here, before STATUS is even captured -- silently skipping the git-integrity
+# guard below exactly when it matters most.
 set +e
 if [ "$MODE" = "--fresh" ]; then
-  npx --yes @openai/codex exec \
-    "${PROFILE_ARGS[@]}" \
-    --sandbox "$SANDBOX_MODE" \
-    --add-dir "$REPO_ROOT/.git" \
+  claude -p "$PROMPT" \
+    --model "$MODEL" \
+    --effort "$EFFORT" \
+    --add-dir "$REPO_ROOT" \
     --add-dir "$PUB_CACHE_DIR" \
     --add-dir "$FLUTTER_CONFIG_DIR" \
     --add-dir "$FLUTTER_SDK_DIR" \
-    -c "$CODEX_SANDBOX_NETWORK_CONFIG" \
-    "$PROMPT" 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
+    --dangerously-skip-permissions \
+    2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
 else
-  npx --yes @openai/codex exec \
-    "${PROFILE_ARGS[@]}" \
-    --sandbox "$SANDBOX_MODE" \
-    --add-dir "$REPO_ROOT/.git" \
+  claude -p "$PROMPT" \
+    --continue \
+    --model "$MODEL" \
+    --effort "$EFFORT" \
+    --add-dir "$REPO_ROOT" \
     --add-dir "$PUB_CACHE_DIR" \
     --add-dir "$FLUTTER_CONFIG_DIR" \
     --add-dir "$FLUTTER_SDK_DIR" \
-    -c "$CODEX_SANDBOX_NETWORK_CONFIG" \
-    resume --last "$PROMPT" 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
+    --dangerously-skip-permissions \
+    2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
 fi
 STATUS="${PIPESTATUS[0]}"
 set -e
 
 echo "===================================================="
-echo "codex exec exited with status $STATUS"
+echo "claude exited with status $STATUS"
 
 rm -f "$CODEX_OUTPUT_CAPTURE"
 

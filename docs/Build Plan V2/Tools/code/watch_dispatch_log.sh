@@ -112,7 +112,11 @@ death_deadline=""
 while true; do
   if IFS= read -r -t 5 line <&3; then
     case "$line" in
-      "codex exec exited with status"*|"muse exec exited with status"*)
+      # "claude exited with status" added 2026-09-10 with the implementation
+      # agent's move to the Claude Code CLI. It also makes this watcher work for
+      # the UX judge and live verification agents, which have always used that
+      # wording and which this watcher could never see.
+      "codex exec exited with status"*|"muse exec exited with status"*|"claude exited with status"*)
         echo "$line"
         sleep "$POST_SLEEP"
         exit 0
