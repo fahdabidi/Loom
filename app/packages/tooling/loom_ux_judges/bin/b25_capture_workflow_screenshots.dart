@@ -275,6 +275,9 @@ void main(List<String> args) async {
           }
         },
       );
+      stdout.writeln(
+        'b25_capture_workflow_screenshots: [$phase] shard ${shardIndex + 1}/$shardCount flutter drive teardown uninstalled the app (expected); the next run reinstalls it automatically',
+      );
 
       output
         ..writeln('--- $phase shard ${shardIndex + 1}/$shardCount ---')
