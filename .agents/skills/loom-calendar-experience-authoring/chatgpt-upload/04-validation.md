@@ -318,24 +318,34 @@ seriously rather than dismissing them as noise.
 | `invalid_parties_arity` | `visibility.fields.parties` does not name exactly two fields. | `parties` means the two sides of a request. For more than two readers use `participants`; for one, use `recipient`. |
 | `no_read_visibility_declared` (warning) | A workflow type omits the workflow-level `visibility` block, so its read policy is implicit even though the compatibility default remains `public`. | Add `"visibility": {"default": "public"}` (or `"default": "membersOnly"` / `"default": "guarded"` with a sibling `"readGuard"`) to make the community's intended read policy explicit. |
 | `no_render_binding_for_reachable_state` (warning) | A state is reachable via a transition path but no `renderBinding`'s `states` list covers it, so an instance sitting there renders on no tab. | Add a `renderBinding` (often `"bindingKind": "summary"`) whose `"states"` includes it, or confirm the state is intentionally never surfaced. |
-| `dead_role_binding` (warning) | `role: "receiver"` used on a `tabId` other than `admin` without `audienceMemberField` (only `admin` ever grants the receiver role), or a non-`"any"` role used on `tabId: "calendar"` (which passes no role-resolution callback at all — only `"any"`, or `"receiver"` + a working `audienceMemberField`, can render there). | Use `role: "any"` instead, move the binding to `admin`, or add `audienceMemberField` for a dynamic-audience notification. See `render-bindings.md`'s per-tab resolution table. |
 
 ---
 
 
-> **Two codes were removed from this table on 2026-08-20** because the validator can no longer emit
-> them, and the conformance test caught that they still had entries here. `legacy_experience_schema`
-> warned that a package used the pre-4 version triple; the specVersion-4-only cut replaced that
-> warning with the `legacy_version_stamp` **error**, since a legacy package no longer loads at all.
-> `unknown_instance_persona` described an undeclared `createdByPersonaId`, and that spelling is
-> retired — the v4 equivalent is `seed_instance_missing_creator`.
+> **Three codes were removed from this table** because the validator can no longer emit them, and the
+> conformance test caught that they still had entries here. Two were removed 2026-08-20:
+> `legacy_experience_schema` warned that a package used the pre-4 version triple; the
+> specVersion-4-only cut replaced that warning with the `legacy_version_stamp` **error**, since a
+> legacy package no longer loads at all. `unknown_instance_persona` described an undeclared
+> `createdByPersonaId`, and that spelling is retired — the v4 equivalent is
+> `seed_instance_missing_creator`.
+>
+> `dead_role_binding` (warning) was removed 2026-09-10. It claimed a `receiver` binding outside
+> `admin` without `audienceMemberField`, or a non-`"any"` role on `tabId: "calendar"`, was
+> unreachable — on the premise that role resolution is tab-dependent and only `admin`/`calendar` ever
+> resolve `receiver`. That premise stopped being true no later than `0eaee6484` (2026-08-11): role
+> resolution (`role_resolver.dart`) has no `tabId` parameter at all, grants `receiver` purely from
+> guard-passing, and every surface including `calendar` passes the same `deriveInstanceRoles` callback
+> through the shared binding dispatcher. A package author following the check's advice would be told
+> to widen a deliberately restricted audience that already worked correctly. See
+> `render-bindings.md`'s per-tab resolution table for the current, tab-independent contract.
 
 ## The remaining findings — what the validator reports
 
 The table above is the curated set: each row carries a diagnosis and a fix direction, because those
 are the findings that most need one.
 
-The validator can emit **115** finding codes. The table above documents 41 of them. The 74 below were
+The validator can emit **114** finding codes. The table above documents 40 of them. The 74 below were
 undocumented entirely until 2026-08-20, when the capability conformance test in
 `validator_capability_conformance_test.dart` counted them — an author who hit one had nothing to
 look up.

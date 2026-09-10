@@ -44,7 +44,6 @@ const Set<String> communityPackageValidatorFindingCodes = <String>{
   'dangling_transition_related_workflow_type',
   'dangling_visibility_field',
   'dangling_visibility_role',
-  'dead_role_binding',
   'dependency_cycle',
   'destructive_transition_ignores_availability_field',
   'duplicate_action_transition_id',

@@ -64,6 +64,49 @@ LoomWorkflowStateMachine _machineWithTabAndFamily({
   ],
 );
 
+LoomWorkflowStateMachine _roleBindingMachine({
+  required String tabId,
+  required String audience,
+  String? guardRoleId,
+}) => _machine(
+  'event',
+  states: {
+    'open': {'label': 'Open'},
+    'done': {'label': 'Done', 'isTerminal': true},
+  },
+  transitions: [
+    {
+      'id': 'finish',
+      'label': 'Finish',
+      'from': ['open'],
+      'to': 'done',
+      if (guardRoleId != null)
+        'guard': {
+          'allowedRoleIds': [guardRoleId],
+        },
+    },
+  ],
+  visibility: {'default': 'public'},
+  renderBindings: [
+    {
+      'states': ['open', 'done'],
+      'audience': audience,
+      'tabId': tabId,
+      'cardSurfaceFamily': 'event-rsvp',
+      'bindingKind': 'summary',
+    },
+  ],
+);
+
+WorkflowInstance _roleBindingInstance({required String createdByFanId}) =>
+    WorkflowInstance(
+      instanceId: 'event-instance',
+      workflowType: 'event',
+      currentState: 'open',
+      instanceData: const <String, dynamic>{},
+      createdByFanId: createdByFanId,
+    );
+
 void main() {
   group('no_render_binding_for_reachable_state', () {
     test('fires for a reachable state not covered by renderBinding states', () {
@@ -946,186 +989,124 @@ void main() {
     });
   });
 
-  group('dead_role_binding', () {
-    test(
-      'fires for receiver role on non-admin tab without audienceMemberField',
-      () {
-        final report = _validate({
-          'event': _machine(
-            'event',
-            states: {
-              'open': {'label': 'Open'},
-            },
-            transitions: [
-              {
-                'id': 'noop',
-                'label': 'Noop',
-                'from': ['open'],
-                'to': null,
-              },
-            ],
-            visibility: {'default': 'public'},
-            renderBindings: [
-              {
-                'states': ['open'],
-                'audience': 'receiver',
-                'tabId': 'messages',
-                'cardSurfaceFamily': 'event-rsvp',
-                'bindingKind': 'summary',
-              },
-            ],
-          ),
-        });
+  group('role_binding_reachability', () {
+    test('creator resolves as actor for a restricted calendar binding', () {
+      final machine = _roleBindingMachine(tabId: 'calendar', audience: 'actor');
+      final instance = _roleBindingInstance(createdByFanId: 'creator');
 
-        expect(
-          report.warnings.where(
-            (finding) => finding.type == 'dead_role_binding',
-          ),
-          hasLength(1),
+      final roles = deriveInstanceRoles(
+        machine,
+        instance,
+        viewerFanId: 'creator',
+      );
+      final resolved = resolveBindings(
+        machine,
+        instance.currentState,
+        roles,
+        instanceData: instance.instanceData,
+        fanId: 'creator',
+      );
+      final report = _validate({'event': machine});
+
+      expect(roles, {'actor'});
+      expect(resolved, hasLength(1));
+      expect(resolved.single.role, 'actor');
+      expect(_hasWarning(report, 'dead_role_binding'), isFalse);
+    });
+
+    test(
+      'guarded non-actor resolves as receiver on a non-admin tab without a member field',
+      () {
+        final machine = _roleBindingMachine(
+          tabId: 'messages',
+          audience: 'receiver',
+          guardRoleId: 'reviewer',
         );
+        final instance = _roleBindingInstance(createdByFanId: 'creator');
+
+        final roles = deriveInstanceRoles(
+          machine,
+          instance,
+          viewerFanId: 'reviewer-account',
+          viewerRoleId: 'reviewer',
+        );
+        final resolved = resolveBindings(
+          machine,
+          instance.currentState,
+          roles,
+          instanceData: instance.instanceData,
+          fanId: 'reviewer-account',
+        );
+        final report = _validate({'event': machine});
+
+        expect(roles, {'receiver'});
+        expect(resolved, hasLength(1));
+        expect(resolved.single.role, 'receiver');
+        expect(resolved.single.audienceMemberField, isNull);
+        expect(_hasWarning(report, 'dead_role_binding'), isFalse);
       },
     );
 
     test(
-      'does not fire for receiver role on non-admin tab with audienceMemberField',
+      'viewer who fails the current-state guard gets no receiver binding',
       () {
-        final report = _validate({
-          'event': _machine(
-            'event',
-            states: {
-              'open': {'label': 'Open'},
-            },
-            transitions: [
-              {
-                'id': 'noop',
-                'label': 'Noop',
-                'from': ['open'],
-                'to': null,
-              },
-            ],
-            visibility: {'default': 'public'},
-            renderBindings: [
-              {
-                'states': ['open'],
-                'audience': 'receiver',
-                'tabId': 'messages',
-                'cardSurfaceFamily': 'event-rsvp',
-                'bindingKind': 'summary',
-                'audienceMemberField': 'recipientFanId',
-              },
-            ],
-          ),
-        });
-
-        expect(
-          report.warnings.where(
-            (finding) => finding.type == 'dead_role_binding',
-          ),
-          isEmpty,
+        final machine = _roleBindingMachine(
+          tabId: 'messages',
+          audience: 'receiver',
+          guardRoleId: 'reviewer',
         );
+        final instance = _roleBindingInstance(createdByFanId: 'creator');
+
+        final roles = deriveInstanceRoles(
+          machine,
+          instance,
+          viewerFanId: 'member-account',
+          viewerRoleId: 'member',
+        );
+        final resolved = resolveBindings(
+          machine,
+          instance.currentState,
+          roles,
+          instanceData: instance.instanceData,
+          fanId: 'member-account',
+        );
+
+        expect(roles, isEmpty);
+        expect(resolved, isEmpty);
       },
     );
 
-    test('does not fire for receiver role on admin tab', () {
-      final report = _validate({
-        'event': _machine(
-          'event',
-          states: {
-            'open': {'label': 'Open'},
-          },
-          transitions: [
-            {
-              'id': 'noop',
-              'label': 'Noop',
-              'from': ['open'],
-              'to': null,
-            },
-          ],
-          visibility: {'default': 'public'},
-          renderBindings: [
-            {
-              'states': ['open'],
-              'audience': 'receiver',
-              'tabId': 'admin',
-              'cardSurfaceFamily': 'event-rsvp',
-              'bindingKind': 'summary',
-            },
-          ],
-        ),
-      });
-
-      expect(
-        report.warnings.where((finding) => finding.type == 'dead_role_binding'),
-        isEmpty,
+    test('renaming the tab does not change binding reachability', () {
+      final instance = _roleBindingInstance(createdByFanId: 'creator');
+      final calendarMachine = _roleBindingMachine(
+        tabId: 'calendar',
+        audience: 'actor',
       );
-    });
-
-    test('fires for actor role on calendar tab', () {
-      final report = _validate({
-        'event': _machine(
-          'event',
-          states: {
-            'open': {'label': 'Open'},
-          },
-          transitions: [
-            {
-              'id': 'noop',
-              'label': 'Noop',
-              'from': ['open'],
-              'to': null,
-            },
-          ],
-          visibility: {'default': 'public'},
-          renderBindings: [
-            {
-              'states': ['open'],
-              'audience': 'actor',
-              'tabId': 'calendar',
-              'cardSurfaceFamily': 'event-rsvp',
-              'bindingKind': 'summary',
-            },
-          ],
-        ),
-      });
-
-      expect(
-        report.warnings.where((finding) => finding.type == 'dead_role_binding'),
-        hasLength(1),
+      final renamedMachine = _roleBindingMachine(
+        tabId: 'community-calendar',
+        audience: 'actor',
       );
-    });
 
-    test('does not fire for any role on calendar tab', () {
-      final report = _validate({
-        'event': _machine(
-          'event',
-          states: {
-            'open': {'label': 'Open'},
-          },
-          transitions: [
-            {
-              'id': 'noop',
-              'label': 'Noop',
-              'from': ['open'],
-              'to': null,
-            },
-          ],
-          visibility: {'default': 'public'},
-          renderBindings: [
-            {
-              'states': ['open'],
-              'audience': 'any',
-              'tabId': 'calendar',
-              'cardSurfaceFamily': 'event-rsvp',
-              'bindingKind': 'summary',
-            },
-          ],
-        ),
-      });
+      List<RenderBinding> resolvedFor(
+        LoomWorkflowStateMachine machine,
+        String tabId,
+      ) {
+        final roles = deriveInstanceRoles(
+          machine,
+          instance,
+          viewerFanId: 'creator',
+        );
+        return resolveBindings(
+          machine,
+          instance.currentState,
+          roles,
+          instanceData: instance.instanceData,
+          fanId: 'creator',
+        ).where((binding) => binding.tabId == tabId).toList();
+      }
 
-      expect(
-        report.warnings.where((finding) => finding.type == 'dead_role_binding'),
-        isEmpty,
-      );
+      expect(resolvedFor(calendarMachine, 'calendar'), hasLength(1));
+      expect(resolvedFor(renamedMachine, 'community-calendar'), hasLength(1));
     });
   });
 
