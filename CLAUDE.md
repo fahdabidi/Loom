@@ -1083,11 +1083,21 @@ other four and calling that "the suites".
 
 | Suite | Path | Baseline (2026-09-04, re-measured) |
 | --- | --- | ---: |
-| UX judges | `app/packages/tooling/loom_ux_judges` | **501** (0 skipped) — re-measured 2026-09-08; was 490 
-| App shell | `app/packages/core/loom_communities_app_shell` | **403** (+2 skipped) — re-measured 2026-09-08; was recorded as 375 for four days while the real figure passed 400 
-| Workflow engine | `app/packages/core/loom_workflow_engine` | **312** (+5 skipped) without PG credentials; four PostgreSQL tests skip silently, same trap as the row below 
-| Workflow service | `app/packages/core/loom_workflow_service` | **153 (+1 skipped)** with BOTH credential sets — see the warning below; 146 (+8) with only `LOOM_POSTGRES_PASSWORD`; 142 (+12) with none |
-| Demo app | `app/apps/loom_communities_demo` | 160 |
+| UX judges | `app/packages/tooling/loom_ux_judges` | **500** (0 skipped) — measured 2026-09-10 after the `dead_role_binding` removal (5 obsolete warning tests replaced by 4 regression tests); was 501, and 490 before that |
+| App shell | `app/packages/core/loom_communities_app_shell` | **408** (+2 skipped) — measured 2026-09-10; was recorded as 403, and as 375 for four days while the real figure passed 400 |
+| Workflow engine | `app/packages/core/loom_workflow_engine` | **310** (+5 skipped) **= 315 cases**, without PG credentials — measured 2026-09-10; was recorded as 312. See the note below on that −2 |
+| Workflow service | `app/packages/core/loom_workflow_service` | **153 (+1 skipped)** with BOTH credential sets — see the warning below; 146 (+8) with only `LOOM_POSTGRES_PASSWORD`; 142 (+12) with none. **NOT re-measured 2026-09-10** — a number taken without both sets would silently skip the tests that matter, so no figure is better than a misleading one |
+| Demo app | `app/apps/loom_communities_demo` | **160** (0 skipped) — confirmed unchanged 2026-09-10 |
+
+**On the engine's −2, recorded rather than waved away.** The suite is green (exit 0, skips unchanged
+at 5), so this is not a failure — but a total moving *down* is the shape that can hide a deletion, so
+it needs a reason. The likeliest one is `c31a1998` (2026-09-06, "remove the dead
+`workflowType==notification` delivery branch"), which would legitimately take its tests with it; the
+engine row carried no re-measurement date, unlike its neighbours, so 312 plausibly predates that
+commit. **That is a probable explanation, not a verified one.** Note also that counting declared
+tests here gives **293** against 315 runtime cases — the two legitimately differ because
+parameterised and looped `test(...)` calls emit several cases each, so the declared-count check
+CLAUDE.md recommends elsewhere is a *change* detector for this package, not an absolute cross-check.
 
 **The workflow service needs TWO credential sets, and supplying only one produces a green run that
 proves nothing.** `LOOM_POSTGRES_PASSWORD` alone still skips `postgres_rls_integration_test.dart` —
