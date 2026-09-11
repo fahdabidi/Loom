@@ -2062,3 +2062,76 @@ Three things to carry, found while root-causing it on 2026-09-10 (session key `b
 And the operational rule that follows: **domain-to-governance is never a rename.** A governance role is
 created separately and assigned deliberately; copying a domain role's grants into a governance id is
 how you get an admin that can do what an owner can, and a schema that cannot tell you it happened.
+
+### A smoke test that only exercises turn one proves nothing about ticket-length work
+
+Switched the implementation agent's default to DeepSeek V4 Flash on 2026-09-11 (the OpenAI/Codex
+account had run out of usage credits) and verified it with `codex exec -p deepseek_v4_flash` replying
+`READY` to a one-line prompt. It worked. That proved the wiring — the gateway, the profile file, the
+provider table — and nothing about reliability, because a one-shot prompt never exercises a second
+turn.
+
+The first two real tickets dispatched on that profile (P4, P6 of the authorization programme) both
+failed identically, well into genuine multi-turn tool use, burning ~127k tokens for zero code
+written:
+
+    {"error":{"message":"The `reasoning_content` in the thinking mode must be passed back to the
+    API.","type":"invalid_request_error"}}
+
+Root cause, read from the gateway's own `protocol.mjs`: DeepSeek's thinking-mode contract requires
+every tool-call-bearing message to carry `reasoning_content` on replay, with no exception for "the
+model didn't produce much reasoning for that call." When DeepSeek itself emits a thin/empty
+`reasoning_content` for a turn — normal whenever a turn is "say something, then call a tool" as two
+separate steps rather than one — the gateway's in-memory fallback store has nothing to cache for that
+turn either, since it only ever stores a *non-empty* value. The very next replay of that turn is then
+rejected outright by DeepSeek's own API, discarding the whole request. Longer, more tool-call-heavy
+prompts hit this far more than trivial ones simply because there are more chances for a thin-reasoning
+tool-call turn to occur — which is exactly why the smoke test passed and the real work didn't.
+
+**This was already a known, already-solved problem in this project's own memory before today**
+(`deepseek_thinking_mode_breaks_multiturn`: *"reasoning_content only kept for tool-call turns; use
+DEEPSEEK_THINKING=disabled"*) — from a different, earlier DeepSeek integration. I switched a new
+gateway's thinking mode to `enabled` without checking whether this project had already hit this exact
+class of failure. Setting `DEEPSEEK_THINKING=disabled` in the gateway's `.env` fixed it immediately:
+verified with a deliberately tool-call-heavy smoke test (two sequential shell calls, one of which
+genuinely errored), then a real ticket re-dispatch that ran substantially further than either failed
+attempt before this was written. The trade is accepted deliberately: no chain-of-thought, in exchange
+for not discarding real work partway through a dispatch.
+
+**Two habits, not one.** First, the one already written elsewhere in this file: search the captured
+patterns before concluding something is new — a `grep` across `keypatterns.md` and this file for
+"DeepSeek" would have surfaced the fix before the first real dispatch, not after two failed ones.
+Second, specific to model/engine switches: **a smoke test must exercise a second turn before it
+counts as verification for anything that will do multi-turn tool-calling work.** "Reply with one
+word" and "drive a real ticket" are different claims wearing the same green checkmark, and the gap
+between them is exactly where this broke, twice, at real cost.
+
+### An anchored sentinel match is still not enough when a transcript can quote another log
+
+`watch_dispatch_log.sh` (and every ad-hoc `grep "^codex exec exited with status"` waiter used earlier
+this session) assumed that anchoring a match to the start of a line was sufficient to identify the
+wrapper's own completion line — a fix for an *earlier* false-positive class where the sentinel
+appeared mid-line inside JSON content. Found 2026-09-11, live, on the same DeepSeek dispatches above:
+during P4, the agent's own transcript dumped an **older** dispatch log's contents while investigating
+tooling conventions, and that older file itself started a line with `codex exec exited with status 0`
+— the exact wrapper-echo format, from whichever run had originally produced it. That text streamed
+through `tail -F` like any other new output and matched the anchored pattern, indistinguishable from
+a real completion. Anchoring does not help here: the embedded line legitimately starts a real line
+too, it is simply not *this* dispatch's own exit line.
+
+Confirmed with byte-level evidence: P4's log had `codex exec exited with status 0` at line 812 while
+`codex exec` was still genuinely running (confirmed via a live pid), and the true final line, `codex
+exec exited with status 1`, did not appear until line 1505 — several minutes and ~700 lines later. A
+first-match check reported completion, and the wrong status, while the dispatch was still working.
+
+**The fix generalizes past this one script: when a sentinel is text a dispatch could plausibly quote
+from another file, text matching alone can never be sufficient, anchored or not.** The disambiguator
+that works: the wrapper's real completion line is followed almost immediately (under a second, a few
+`git status` commands, then EOF) by the wrapper process itself exiting; an embedded occurrence has no
+such property, because the process that would need to exit is the dispatch's own long-running child,
+which keeps running for as long as the dispatch has left. `watch_dispatch_log.sh` now confirms a
+match by polling the tracked dispatch pid for up to 20 seconds before trusting it, and treats a match
+that outlives that window as an embedded false positive rather than a real completion — see the
+script's own 2026-09-11 header note for the full mechanism. Same family as the `grep -c`/binary-log/
+own-command-line traps already recorded above: a check whose signal can be produced by something
+other than the thing it claims to detect is not a check, however precisely the pattern is written.

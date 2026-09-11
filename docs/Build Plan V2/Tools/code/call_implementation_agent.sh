@@ -78,13 +78,49 @@
 # Config: ~/.codex/deepseek_v4_flash.config.toml (model = "deepseek-v4-flash",
 # model_provider = "deepseek_v4_gateway", model_context_window = 1000000,
 # model_reasoning_effort = "xhigh"). Routes through the local gateway at
-# 127.0.0.1:8791 (see the DeepSeek setup block below, no longer inert) --
-# the preflight health check a few lines down enforces it is running before
-# any dispatch starts. Verified end-to-end same day: `codex exec -p
-# deepseek_v4_flash` against a real prompt returns correctly; note the CLI
-# prints `warning: Model metadata for deepseek-v4-flash not found. Defaulting
-# to fallback metadata` on every call -- cosmetic (Codex has no token-cost
-# table for this model), not a functional problem.
+# 127.0.0.1:8791 (see the DeepSeek setup block below, no longer inert). The
+# preflight health check a few lines down enforces the gateway is running
+# before any dispatch starts; note the CLI prints `warning: Model metadata for
+# deepseek-v4-flash not found. Defaulting to fallback metadata` on every call
+# regardless -- cosmetic (Codex has no token-cost table for this model), not a
+# functional problem.
+#
+# GATEWAY MUST RUN WITH DEEPSEEK_THINKING=disabled (~/deepseek-gateway/.env),
+# or real ticket-length dispatches WILL fail mid-run. Root-caused 2026-09-11
+# after the very first two real tickets on this profile (P4, P6 of the
+# authorization programme) both failed identically, deep into genuine
+# multi-turn tool use -- not on the first turn, which is why a trivial
+# "reply with one word" smoke test passed cleanly and gave false confidence
+# before either real dispatch was tried:
+#   {"error":{"message":"The `reasoning_content` in the thinking mode must be
+#   passed back to the API.","type":"invalid_request_error"}}
+# Mechanism (confirmed against the gateway's own protocol.mjs and matched to a
+# project memory that predates this session, deepseek_thinking_mode_breaks_
+# multiturn): DeepSeek's thinking-mode contract requires every tool-call-
+# bearing message to carry reasoning_content on replay, with no exception for
+# "the model didn't produce much reasoning for that particular call." When
+# DeepSeek itself emits a thin/empty reasoning_content for one tool-call turn
+# (normal, common behavior whenever a turn is "say something, then call a
+# tool" as two separate steps rather than one), the gateway's ReasoningStore
+# fallback has nothing to store for that turn either -- it only ever caches a
+# NON-empty reasoning_content -- so the very next replay of that turn is
+# rejected outright by DeepSeek's own API, discarding the whole request.
+# Longer, more tool-call-heavy prompts (real tickets) hit this far more than
+# one-shot prompts simply because there are more chances for a thin-reasoning
+# tool-call turn to occur -- this is not a rare edge case for agentic work.
+# FIX: DEEPSEEK_THINKING=disabled in the gateway's .env sidesteps the whole
+# requirement (protocol.mjs's thinkingEnabled gate is keyed on this setting
+# before anything else, so with it off no reasoning_content is ever required
+# or sent). Verified same day: a deliberately tool-call-heavy smoke test
+# (two sequential shell tool calls, one of which genuinely errored) completed
+# cleanly post-fix, then a real ticket re-dispatch (P6) ran substantially
+# further than either failed attempt -- into the actual verification suite --
+# before this comment was written. The tradeoff is accepted deliberately: no
+# chain-of-thought, in exchange for not discarding real ticket work partway
+# through. Restart the gateway after any .env edit (kill the pid bound to
+# 127.0.0.1:8791, confirmed via `ss -ltnp`, then `~/deepseek-gateway/start.sh`
+# -- never pattern-kill) for the change to take effect; `/health`'s `thinking`
+# field reports which mode is actually live.
 #
 # Model history, for reference (all still fully set up and usable via
 # CODEX_IMPLEMENTATION_PROFILE=<name>, none removed):
