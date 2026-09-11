@@ -70,21 +70,31 @@
 # ~/.codex/config.toml (guest side, `/home/fahd/Loom`) -- done once, not by
 # this script.
 #
-# Model: defaults to GPT-5.6-Terra at XHIGH reasoning effort WITH FAST MODE
-# (switched back 2026-09-06 per user direction). Config:
-# ~/.codex/gpt5_6_terra_xhigh.config.toml (model = "gpt-5.6-terra",
-# model_reasoning_effort = "xhigh", model_verbosity = "medium",
-# model_context_window = 272000, service_tier = "fast" -- the CLI key for
-# Codex "Speed: Fast", ~1.5x speed for more usage) -- a first-party Codex/OpenAI
-# model, no gateway dependency, no preflight health check needed. This exact
-# profile was smoke-tested when it was previously the default (2026-08-07
-# through 2026-09-03); the config file was never modified while inactive.
+# Model: defaults to DeepSeek V4 Flash at XHIGH reasoning effort ("deepseek_v4_flash"),
+# switched 2026-09-11 per user direction, FORCED by the OpenAI/Codex account
+# hitting its usage limit the same day (every first-party GPT-5.6-* profile
+# below returns "ERROR: You've hit your usage limit... try again at Sep 15th,
+# 2026" -- confirmed by a live probe, not assumed from the error alone).
+# Config: ~/.codex/deepseek_v4_flash.config.toml (model = "deepseek-v4-flash",
+# model_provider = "deepseek_v4_gateway", model_context_window = 1000000,
+# model_reasoning_effort = "xhigh"). Routes through the local gateway at
+# 127.0.0.1:8791 (see the DeepSeek setup block below, no longer inert) --
+# the preflight health check a few lines down enforces it is running before
+# any dispatch starts. Verified end-to-end same day: `codex exec -p
+# deepseek_v4_flash` against a real prompt returns correctly; note the CLI
+# prints `warning: Model metadata for deepseek-v4-flash not found. Defaulting
+# to fallback metadata` on every call -- cosmetic (Codex has no token-cost
+# table for this model), not a functional problem.
 #
 # Model history, for reference (all still fully set up and usable via
 # CODEX_IMPLEMENTATION_PROFILE=<name>, none removed):
-#   - GPT-5.6-Luna @ high + fast ("gpt5_6_luna_high") -- THE CURRENT DEFAULT as
-#     of 2026-09-10, per user direction. Profile file created the same day
-#     (cloned from gpt5_6_luna_xhigh.config.toml, effort lowered to "high").
+#   - GPT-5.6-Luna @ high + fast ("gpt5_6_luna_high") -- the default from
+#     2026-09-10 through 2026-09-11, per user direction, until the account
+#     ran out of usage credits. Profile file created 2026-09-10 (cloned from
+#     gpt5_6_luna_xhigh.config.toml, effort lowered to "high").
+#   - GPT-5.6-Terra @ xhigh + fast ("gpt5_6_terra_xhigh") -- the default from
+#     2026-09-06 through 2026-09-10, per user direction (also the default from
+#     2026-08-07 through 2026-09-03, carrying service_tier = "fast").
 #   - Claude Code CLI, Sonnet @ medium effort -- tried as the engine (not just
 #     a Codex profile swap) for a few hours on 2026-09-10, also per user
 #     direction, then reverted to Codex/Luna the same day before a single
@@ -96,9 +106,6 @@
 #     sentinel and a `^node` process test, so neither tool could see the
 #     Claude-based UX judge or live verification dispatches either; that fix
 #     was NOT reverted and both watchers still match both dispatcher families).
-#   - GPT-5.6-Terra @ xhigh + fast ("gpt5_6_terra_xhigh") -- the default from
-#     2026-09-06 through 2026-09-10, per user direction (also the default from
-#     2026-08-07 through 2026-09-03, carrying service_tier = "fast").
 #   - GPT-5.6-Luna @ xhigh + fast ("gpt5_6_luna_xhigh", service_tier = "fast")
 #     -- the default from 2026-09-03 through 2026-09-06, per user direction.
 #   - GPT-5.3-Codex-Spark @ xhigh ("gpt5_3_spark_xhigh") -- default 2026-08-07.
@@ -117,47 +124,53 @@
 #   - DeepSeek V4 Pro @ xhigh, DeepSeek V4 Flash @ high -- available, never
 #     defaulted to, untested for ticket-length prompts.
 #
-# DeepSeek setup, kept intact for a future switch back (config files,
-# gateway, key all still in place -- nothing was torn down). This block is
-# INERT unless a deepseek_* profile is revived:
-#   - served through a local Codex<->DeepSeek gateway
-#     (C:\Users\fahd_\OneDrive\Documents\Codex-DeepSeek-V4-Gateway-1.0.0-windows,
-#     a Windows process) -- MUST be running (`.\start-gateway.cmd` from that
-#     folder, or `.\scripts\Start-Gateway.ps1 -Background`) before dispatching
-#     with any deepseek_* profile, or its preflight health check below fails
-#     fast. Confirmed 2026-07-21: this gateway process does not survive
-#     indefinitely / can be killed by unrelated system activity -- check it's
-#     actually still running (`Get-Process -Id (Get-Content .runtime\
-#     gateway.pid)`) before assuming a past "started successfully" still
-#     holds hours later.
-#   - the gateway runs on the Windows side, bound to 0.0.0.0 (not the default
-#     127.0.0.1) with GATEWAY_API_KEY set in its .env. On the VM, the gateway
-#     is reachable at the HOST's LAN IP (not a WSL default-route IP -- that
-#     address was WSL-specific and is meaningless from the guest), e.g.
-#     http://192.168.50.x:8787/health, plus a Windows Firewall rule allowing
-#     8787 from the LAN (not just from WSL).
-#   - a Windows Firewall inbound-allow rule for TCP 8787 (the box's existing
-#     "Node.js JavaScript Runtime" rules include a conflicting Block that
-#     otherwise wins).
-#   - the shared gateway token saved at ~/.deepseek_gateway_key (guest side,
-#     chmod 600, outside the repo -- never commit this) -- matches
-#     GATEWAY_API_KEY in the gateway's own .env.
-#   - ~/.codex/deepseek_v4_pro_medium.config.toml / deepseek_v4_pro_high.config.toml /
-#     deepseek_v4_pro.config.toml (xhigh) / deepseek_v4_flash.config.toml
-#     (lighter model, high) plus a [model_providers.deepseek_v4_gateway]
-#     block (base_url pointed at the host's LAN IP; env_key =
-#     "DEEPSEEK_GATEWAY_KEY") in the main config.toml.
-#   - BUG FIXED 2026-07-20/21 in that gateway's own scripts\Start-Gateway.ps1:
-#     its Wait-ForGateway health-check polled /health with no Authorization
-#     header, but /health requires the same Bearer GATEWAY_API_KEY real
-#     clients use -- every poll was silently rejected with an auth error,
-#     so startup always timed out and killed the process even when the
-#     gateway was actually healthy the whole time. Now sends the header
-#     (read from .env via the script's existing Get-LocalSetting helper).
+# DeepSeek setup, ACTIVE as of 2026-09-11 -- this block replaces the old
+# WSL-era description (Windows-hosted gateway at 0.0.0.0:8787, a Windows
+# Firewall rule, a bridge token) which no longer describes reality and is not
+# how any deepseek_* profile is served today:
+#   - The gateway now runs ON THIS VM (guest side), at ~/deepseek-gateway,
+#     bound to LOOPBACK on port 8791 (8787 is taken -- that's the community
+#     validator's port, unrelated). Loopback bind means `src/config.mjs`
+#     never demands GATEWAY_API_KEY, so there is no bridge token, no Windows
+#     Firewall rule, and no host LAN IP to go stale -- all three were real
+#     failure points in the old arrangement and none of them exist now.
+#   - Start it with `~/deepseek-gateway/start.sh` (reads the key from
+#     ~/.deepseek_api_key, chmod 600, outside the repo -- never commit this;
+#     exports DEEPSEEK_API_KEY and execs `node --env-file-if-exists=.env
+#     src/server.mjs`). The preflight health check a few lines down
+#     (`GATEWAY_HEALTH_URL`, default `http://127.0.0.1:8791/health`) fails
+#     fast with the exact start command if the gateway is not already up --
+#     it is not auto-started by this script.
+#   - Source is a plain copy of the "Codex-DeepSeek-V4-Gateway-1.0.0-windows"
+#     portable package's `src/` (config.mjs, protocol.mjs, server.mjs,
+#     sse.mjs) -- same software as the original Windows package, just run as
+#     a normal Linux Node process instead of through DPAPI/PowerShell.
+#   - `~/.codex/deepseek_v4_pro.config.toml` (xhigh) / `deepseek_v4_flash.config.toml`
+#     (xhigh) exist as one-file-per-profile configs (this Codex build refuses
+#     `[profiles.X]` tables in the main config.toml with a hard error --
+#     `--profile X cannot be used while config.toml contains legacy... move
+#     those settings into .codex/X.config.toml` -- so each deepseek_* profile
+#     is its own file, matching every gpt5_6_* profile's existing pattern).
+#     The shared `[model_providers.deepseek_v4_gateway]` table (base_url =
+#     "http://127.0.0.1:8791/v1", wire_api = "responses") lives once in the
+#     main config.toml.
+#   - KNOWN COSMETIC ISSUE, not a bug to chase: `codex exec -p deepseek_v4_flash`
+#     prints `warning: Model metadata for deepseek-v4-flash not found.
+#     Defaulting to fallback metadata` on every invocation. Codex has no
+#     built-in token/cost table for this model id; the dispatch still runs
+#     and returns correctly.
+#   - `deepseek-v4-flash` IS a real, working model slug sent directly to
+#     DeepSeek's API (confirmed live 2026-09-11) -- it canonicalizes to
+#     `deepseek-flash` in the response body, which is why `GET /v1/models`
+#     lists `deepseek-flash` and not `deepseek-v4-flash`; the alias's absence
+#     from that list is not evidence it doesn't work. Do not "fix" this by
+#     editing `SUPPORTED_MODELS` in `config.mjs` -- it already accepts both
+#     spellings and is correct as shipped.
 #
-# To switch back to DeepSeek V4 Pro medium (or any other profile) for a
-# single dispatch without changing this file's default:
-#   CODEX_IMPLEMENTATION_PROFILE=deepseek_v4_pro_medium bash data/call_implementation_agent.sh <ticket> [--fresh]
+# To switch back to a first-party Codex/OpenAI profile once usage credits
+# return (or to any other profile) for a single dispatch without changing
+# this file's default:
+#   CODEX_IMPLEMENTATION_PROFILE=gpt5_6_luna_high bash data/call_implementation_agent.sh <ticket> [--fresh]
 # Override with CODEX_IMPLEMENTATION_PROFILE="" to fall back to Codex's own
 # built-in default model (e.g. for a quick one-off without any profile).
 #
@@ -176,12 +189,12 @@ set -euo pipefail
 PROMPT_FILE="${1:?usage: call_implementation_agent.sh <prompt-file> [--fresh]}"
 MODE="${2:-}"
 SANDBOX_MODE="${CODEX_IMPLEMENTATION_SANDBOX:-workspace-write}"
-# GPT-5.6-Luna @ high (user-directed 2026-09-10, reverting the brief Claude Code
-# CLI / Sonnet@medium experiment from the same day -- see git history for that
-# version if it is ever wanted again). Profile file created the same day at
-# ~/.codex/gpt5_6_luna_high.config.toml, cloned from the existing
-# gpt5_6_luna_xhigh.config.toml with model_reasoning_effort lowered to "high".
-PROFILE="${CODEX_IMPLEMENTATION_PROFILE-gpt5_6_luna_high}"
+# DeepSeek V4 Flash via the local gateway (user-directed 2026-09-11, forced
+# by the OpenAI/Codex account exhausting its usage credits the same day --
+# every gpt5_6_* profile fails outright until Sep 15). See the "DeepSeek
+# setup, ACTIVE" block above for the gateway/profile-file details, and switch
+# back with CODEX_IMPLEMENTATION_PROFILE=gpt5_6_luna_high once credits return.
+PROFILE="${CODEX_IMPLEMENTATION_PROFILE-deepseek_v4_flash}"
 PROFILE_ARGS=()
 if [ -n "$PROFILE" ]; then
   PROFILE_ARGS=(-p "$PROFILE")
