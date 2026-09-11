@@ -292,6 +292,48 @@ paths:
         '409':
           $ref: '../_shared/errors.yaml#/components/responses/Conflict'
 
+  /v1/apps/{appId}/role-migrations:
+    post:
+      operationId: migrateRole
+      summary: Atomically replace one role id while preserving every assignment and invitation reference.
+      description: >-
+        The supported operational replacement for a role rename. The service creates the destination
+        role, copies its compatible grant set, moves every group-membership, app-access, and
+        group-invitation reference, then deletes the source role in one transaction. The destination
+        must not already exist and its requested kind must exactly equal the source kind. A domain role
+        cannot become governance through this operation: create a governance role separately and assign
+        it deliberately. A community-system-admin role also remains subject to its group's resolved
+        identity and exact governance grant-set rule.
+
+
+        Every successful migration writes a durable actor-attributed policy audit event. This is the
+        authenticated API path, not a claim that credentialed direct SQL is physically impossible;
+        database-level constraints/triggers remain the required follow-up if operators retain direct
+        write access.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AppId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleMigrationRequest'
+      responses:
+        '200':
+          description: Source replaced and every role reference moved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleMigrationResult'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+
   # ── Fan → app access ────────────────────────────────────────────────────
   /v1/apps/{appId}/access/{fanId}:
     get:
@@ -1045,6 +1087,47 @@ components:
           type: string
         description:
           type: [string, 'null']
+
+    RoleMigrationRequest:
+      type: object
+      additionalProperties: false
+      required: [sourceRoleId, destinationRoleId, destinationRoleKind]
+      properties:
+        sourceRoleId:
+          type: string
+        destinationRoleId:
+          type: string
+        destinationRoleKind:
+          $ref: '#/components/schemas/RoleKind'
+          description: >-
+            Must equal the immutable source kind. It is explicit so an attempted cross-kind migration
+            fails loudly rather than creating a role with a surprising capability class.
+
+    RoleMigrationResult:
+      type: object
+      required:
+        - appId
+        - sourceRoleId
+        - destinationRole
+        - movedGroupMembershipAssignments
+        - movedAppAccessAssignments
+        - movedInvitationAssignments
+      properties:
+        appId:
+          type: string
+        sourceRoleId:
+          type: string
+        destinationRole:
+          $ref: '#/components/schemas/Role'
+        movedGroupMembershipAssignments:
+          type: integer
+          minimum: 0
+        movedAppAccessAssignments:
+          type: integer
+          minimum: 0
+        movedInvitationAssignments:
+          type: integer
+          minimum: 0
 
     GroupInvitation:
       type: object
