@@ -710,8 +710,9 @@ paths:
         leaving a retired role holding live permissions is how stale access accumulates.
 
 
-        The platform `admin` role is provisioned automatically and is never declared in a package -- see
-        `permissions.md` §7.
+        The generated community system-admin role is provisioned automatically and is never declared
+        in a package. A package role id equal to the resolved system-admin id is rejected before the
+        installation writes a group, role, or grant -- see `permissions.md` §7.
       parameters:
         - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
         - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
@@ -992,14 +993,28 @@ components:
         pageInfo:
           $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
 
+    RoleKind:
+      type: string
+      enum: [package_domain, community_system_admin, legacy_unmanaged]
+      description: >-
+        Immutable, service-controlled classification of a role. `package_domain` roles are
+        package-declared roles and can never hold a governance-catalog permission.
+        `community_system_admin` is the generated role for one community group and holds exactly the
+        vocabulary's governance admin grant set. `legacy_unmanaged` preserves an older role that has
+        no recorded community-package provenance; App Access will not reconcile its grants. This kind
+        deliberately does not distinguish package-domain member and owner roles; the installed package
+        derivation remains the authority for their exact permission sets.
+
     Role:
       type: object
-      required: [appId, roleId, displayName, permissionIds]
+      required: [appId, roleId, roleKind, displayName, permissionIds]
       properties:
         appId:
           type: string
         roleId:
           type: string
+        roleKind:
+          $ref: '#/components/schemas/RoleKind'
         groupId:
           type: [string, 'null']
           description: >-
