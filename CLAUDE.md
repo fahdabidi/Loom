@@ -1896,6 +1896,33 @@ any other pair of layers in this project** — the validator doesn't get an exem
 fix here is to retire the two obsolete checks and their finding-code declaration, not to build the
 mechanism the stale warning implied was still missing.
 
+### The demo identity model aliases `fanId` and `roleId`; production does not
+
+`part15_evidence_catalog.dart:785` declares the legacy demo actor identities with **`fanId` and
+`roleId` set to the same string** — `fanId: 'garden-coordinator', roleId: 'garden-coordinator'`, and
+the same for all **14 pairs across every community**. In the local/demo path a fan id therefore *is*
+the role-id-shaped string. In the remote path it is `fan-chess-member-1` against a role `chess-member`.
+
+**Everything that looks like an identifier-space bug in this area is downstream of that one
+assumption, and several of those things are correct in their own context:**
+
+| Artifact | Under the demo model | Under the production model |
+|---|---|---|
+| Chess seeds' `createdByFanId: "chess-member"` | correct | a role id in a fan-id field |
+| `AudienceMultiSelectPicker` writing `roleId` into a `fanId[]` | harmless | corrupting |
+| `v3_milestone_phasef_messages_test.dart`'s aliased fixture | faithful to the catalog | cannot discriminate |
+
+So the live Chess row holding `["chess-member", "chess-organizer", "fan-chess-member-1"]` is exactly
+what you get when a **production** instance is created through a UI path built for the **demo**
+aliasing — a mixed array being the visible seam between the two models.
+
+**The operational rule: before "fixing" a role-id-shaped value in a fan-id field, establish which
+identity model that artifact runs under.** On 2026-09-10 I had a Skill dispatch queued to "correct"
+the Chess seed and checked the convention first; the fix would have broken the demo app, where the
+actor identity genuinely is `chess-member`. A validator rule banning role-id-shaped literals in
+`fanId` fields is wrong for the same reason — it would have to know which model applies, which is the
+actual open question.
+
 ### A fixture whose identifiers alias across spaces cannot discriminate an identifier-space bug
 
 `v3_milestone_phasef_messages_test.dart:305` drives the real creation FAB, taps the audience picker,
