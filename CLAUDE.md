@@ -1086,7 +1086,26 @@ other four and calling that "the suites".
 | UX judges | `app/packages/tooling/loom_ux_judges` | **500** (0 skipped) — measured 2026-09-10 after the `dead_role_binding` removal (5 obsolete warning tests replaced by 4 regression tests); was 501, and 490 before that |
 | App shell | `app/packages/core/loom_communities_app_shell` | **408** (+2 skipped) — measured 2026-09-10; was recorded as 403, and as 375 for four days while the real figure passed 400 |
 | Workflow engine | `app/packages/core/loom_workflow_engine` | **310** (+5 skipped) **= 315 cases**, without PG credentials — measured 2026-09-10; was recorded as 312. See the note below on that −2 |
-| Workflow service | `app/packages/core/loom_workflow_service` | **153 (+1 skipped)** with BOTH credential sets — see the warning below; 146 (+8) with only `LOOM_POSTGRES_PASSWORD`; 142 (+12) with none. **NOT re-measured 2026-09-10** — a number taken without both sets would silently skip the tests that matter, so no figure is better than a misleading one |
+| Workflow service | `app/packages/core/loom_workflow_service` | **156 (+1 skipped) = 157 cases** with BOTH credential sets — measured 2026-09-10; was recorded as 153. 146 (+8) with only `LOOM_POSTGRES_PASSWORD`; 142 (+12) with none. **Read the RLS-timeout note below before trusting a red run here.** The one expected skip is `app_access_create_instance_integration_test.dart` ("Set `LOOM_APP_ACCESS_BASE_URL`…"), not a PostgreSQL test |
+
+**`postgres_rls_integration_test.dart` times out under concurrency, and it will look like a security
+regression.** Measured 2026-09-10: the full suite with both credential sets came back **red** —
+`155 +1 ~1 -1`, the single failure being *"forced RLS isolates every community tenant table and
+permits its owner"*. That is the one test this whole two-credential dance exists to run, so a red
+there reads alarmingly. **It was contention, not a regression.** The failure is a
+`TimeoutException after 0:00:30`, never a failed `expect`; the test walks ~32 per-table checks over
+the port-forward (visible as the counter climbing `+123 → +154` under one test name) and `dart test`
+was running it **concurrently with `postgres_transaction_rollback_integration_test.dart`**, another
+PostgreSQL-heavy file that deliberately injects write failures. Re-run alone it passes in **22
+seconds** — under the 30s default, but with little headroom:
+
+    dart test test/postgres_rls_integration_test.dart --concurrency=1
+
+So: **a timeout on this file is environmental and the documented rule already covers it** ("re-run
+the single test in isolation before calling it a regression; a failed `expect` is a different
+matter"). Do not file an RLS defect, and do not weaken the test's timeout, without an isolated run
+first. Equally, do not record a service baseline from a run where it timed out — the pass count is
+one short.
 | Demo app | `app/apps/loom_communities_demo` | **160** (0 skipped) — confirmed unchanged 2026-09-10 |
 
 **On the engine's −2, recorded rather than waved away.** The suite is green (exit 0, skips unchanged
