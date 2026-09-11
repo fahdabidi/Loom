@@ -25,6 +25,7 @@ const _permissionId = 'event_rsvp.create';
 const _correlationId = '33333333-3333-4333-8333-333333333333';
 const _keycloakRealm = 'loom';
 
+@Timeout(const Duration(minutes: 2))
 void main() {
   final environment = Platform.environment;
   final password = environment['LOOM_POSTGRES_PASSWORD'];

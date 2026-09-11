@@ -70,6 +70,7 @@ const _editableDefinitionJson = '''
 }
 ''';
 
+@Timeout(const Duration(minutes: 2))
 void main() {
   final password = Platform.environment['LOOM_POSTGRES_PASSWORD'];
 

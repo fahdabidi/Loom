@@ -13,6 +13,7 @@ const _ungatedWorkflowType = 'ungated-reminder';
 const _gatedWorkflowType = 'gated-reminder';
 const _correlationId = 'd0e8f0ae-2cf0-44b2-9bcb-972d7dd0e34d';
 
+@Timeout(const Duration(minutes: 2))
 void main() {
   final configuration = _PostgresConfiguration.fromEnvironment(
     Platform.environment,

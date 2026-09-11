@@ -5,6 +5,7 @@ import 'package:loom_workflow_service/loom_workflow_service.dart';
 import 'package:postgres/postgres.dart' as pg;
 import 'package:test/test.dart';
 
+@Timeout(const Duration(minutes: 2))
 void main() {
   final configuration = _PostgresConfiguration.fromEnvironment(
     Platform.environment,

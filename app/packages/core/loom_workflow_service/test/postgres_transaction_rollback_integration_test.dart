@@ -144,6 +144,7 @@ const _createDefinition = <String, dynamic>{
   },
 };
 
+@Timeout(const Duration(minutes: 2))
 void main() {
   final configuration = _PostgresConfiguration.fromEnvironment(
     Platform.environment,
