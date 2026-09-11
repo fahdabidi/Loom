@@ -1202,8 +1202,30 @@ table: **72 real rows** (measured 2026-09-09), each proven by live walkthrough *
 ten shipped product docs gives **77** rows present, and five of those are Masjid's `wf_` test-harness
 ids — `wf_demo-app-persona-picker`, `wf_community-persona-aware-ux`, `wf_multi-persona-workflow-evidence`
 — which that doc's own header already disclaims as literal `testWidgets` names with no
-`LoomWorkflowDefinition` behind them. So the real bar is **72**. The 2-row gap between 77 and the
-quoted 79 is unreconciled; trace it before quoting either.
+`LoomWorkflowDefinition` behind them. So the real bar is **72**.
+
+**The 79-vs-77 gap is now RECONCILED (2026-09-10) and needs no further tracing.** 79 was a correct
+count *of its day*: the generated asset at `b8d019e2` (2026-08-24) declared `rowCount: 79`. Seven rows
+were removed and five added since, netting −2:
+
+    removed  chess-local-install-open, chess-route-home, garden-tool-loan-giveaway,
+             platform-connection-invite, platform-connections-entry,
+             platform-message-stream, platform-messages-entry
+    added    garden-tool-loan, garden-tool-giveaway, hoa-document-access-request,
+             platform-connection, platform-message-thread
+
+Those seven are **exactly** the rows the 2026-08-24 reachability sweep had flagged as naming a
+workflow no package ships — so the gap is that sweep's findings being fixed (Garden's one fused row
+split into the two workflows the package actually ships; the four `platform-*` rows consolidated into
+two real ones; Chess's two route/install rows were never workflows and were dropped). Today's asset:
+`rowCount: 77`, `len(rows) == 77`, three `wf_` ids spanning five rows (two appear twice, under
+different personas), **77 − 5 = 72**.
+
+**The lesson, since this sat "unreconciled" for a day for no reason:** the old figure was not wrong,
+it was *stale*, and the way to tell those apart is to re-derive it **at the commit that recorded it**
+rather than only at HEAD. `git show <commit>:<asset>` answered in one command what re-counting the
+current docs never could. Also note the first search for the figure's origin matched a **commit hash**
+containing `79` — when pickaxing for a number, read the hit before trusting the date it gives you.
 
 **Two further defects corrupt the same fraction, so do not quote a completion figure until all three
 are fixed together:** B25 evidence manifests written before 2026-09-09 record no package identity, so
