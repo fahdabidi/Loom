@@ -92,7 +92,7 @@ unrecognized type parses but renders unpredictably. **specVersion 4 validates it
 | `fanId` | One specific person | `fanId?` for nullable. **specVersion 4** — replaces v1/v2's `personaId` |
 | `fanId[]` | Array of people | **The standard for member lists.** specVersion 4 — replaces `fanId[]` |
 | `roleId` | A kind of member, held by many | specVersion 4. Legal but rare as instance data; roles normally appear only in guards |
-| `image` | Image reference | Use `storage: "reference"` |
+| `image` | Image reference | Use `storage: "reference"`. ⚠️ **NOT IMPLEMENTED (verified 2026-09-10).** No renderer in the app shell handles `type: "image"` for display or for input — a grep of `loom_communities_app_shell/lib` finds zero references, against a control that finds real `url` handling. It therefore falls through to the generic **plain text input** (see the note under Storage), so a **`required`** image field cannot be honestly satisfied: the only way to fill it is to type a string. Do not declare a required `image` field until a picker exists. |
 | `url` | An openable external or embedded link/document | `openMode: "external"` and `"choice"` are ✅ REAL; standalone `"embedded"` alone is not yet implemented — see below. Use `url?` for nullable. |
 
 **Nullable convention:** append `?` (e.g. `date?`, `fanId?`) for fields that are legitimately empty.
@@ -310,6 +310,16 @@ person → `person_outline`, place → `location_on_outlined`, capacity → `gro
 |---|---|
 | `inline` | Stored in `instanceData` (the default for everything) |
 | `reference` | A pointer; the blob lives elsewhere. Set `storageTarget` (e.g. `firebase-storage`). Use for images. |
+
+⚠️ **Form input is typed for only three field types today (verified 2026-09-10).** All three generic
+input builders — `part33_generic_creation_card.dart`, `part26_generic_instance_card.dart` and
+`part28_engine_native_calendar_surface.dart` — switch on `schema.type` with cases for **`bool`,
+`date` and `time`** and a `default:` branch that renders a **plain text field**. So `image`, `url`,
+`fanId`, `fanId[]`, `number`, `roleId` and the rest are all collected as unvalidated free text, and a
+value in the wrong identifier space (a role id typed into a `fanId[]`, say) is accepted silently. This
+is a platform gap, not an authoring one: a package declaring these types is correct, and the input
+surface simply does not honour them yet. Prefer selecting an existing value over typing one wherever
+the surface allows it, and settle anything load-bearing against the stored row.
 
 ---
 
