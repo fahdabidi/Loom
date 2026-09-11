@@ -137,7 +137,68 @@ class CommunityPackageValidator {
     findings.addAll(_validateIdentityKeys(package, experience));
     findings.addAll(_validateNotifications(experience));
     findings.addAll(_validateTabPermissionDeclarations(package));
+    findings.addAll(
+      _validateDeclaredRoleIdsDoNotShadowGovernance(package, experience),
+    );
     return _validateBody(package, experience, findings);
+  }
+
+  /// A package may not declare the governance role's id.
+  ///
+  /// The platform creates the community's system-admin role automatically when
+  /// the package is installed, at the id `governance.adminRole.idTemplate`
+  /// resolves to for this handle. If a package declares a `roleId` equal to it,
+  /// `installCommunityPackage` merges the two silently: the domain loop creates
+  /// or reuses the row, the domain grant loop writes the role's derived
+  /// permissions, the governance loop **overwrites** them with the five
+  /// governance ids, and the deletion sweep spares the row because it is the
+  /// generated admin. Any existing holders of that domain role become community
+  /// administrators. P3 rejects this server-side; this rule surfaces it at
+  /// authoring time so the Skill can act on it. The backend remains
+  /// authoritative.
+  ///
+  /// Deliberately **not** a rule about name shape. A `-admin` / `_admin` suffix
+  /// and a label containing "Admin" are legitimate domain terminology — Masjid
+  /// Nur's domain role is labelled "Masjid Admin" and Cedar Commons HOA's
+  /// precedent role was `cedar_commons_hoa_admin`. Only the exact resolved
+  /// system-admin id collides with the generated role, and security does not
+  /// depend on refusing a word.
+  List<ValidationFinding> _validateDeclaredRoleIdsDoNotShadowGovernance(
+    Map<String, dynamic> package,
+    Map<String, dynamic> experience,
+  ) {
+    final adminRoleId = ArchetypeResolver.resolveSystemAdminRoleId(
+      package['communityHandle'] is String
+          ? package['communityHandle'] as String
+          : null,
+    );
+    if (adminRoleId == null) return const [];
+    final roles = experience['roles'];
+    if (roles is! List) return const [];
+    final findings = <ValidationFinding>[];
+    for (var index = 0; index < roles.length; index++) {
+      final role = roles[index];
+      if (role is! Map || role['roleId'] != adminRoleId) continue;
+      findings.add(
+        _finding(
+          'declared_role_shadows_system_admin',
+          'This package declares roleId "$adminRoleId", which is the '
+              'community\'s generated system-admin role — '
+              '`governance.adminRole.idTemplate` resolves to it from '
+              'communityHandle "${package['communityHandle']}". Installing '
+              'would merge the two: the install would grant this role the five '
+              '`community.*` governance permissions, and every current holder '
+              'of it would become a community administrator. Rename the '
+              'declared role to a domain id of its own; the system-admin role '
+              'is created by the platform and must not be declared in package '
+              'JSON (docs/references/reference/permissions.md §7). The backend '
+              'rejects this too (P3) — this is authoring-time feedback, not the '
+              'authority.',
+          'experience/roles[$index]/roleId',
+        ),
+      );
+    }
+    return findings;
   }
 
   List<ValidationFinding> _validateNotifications(

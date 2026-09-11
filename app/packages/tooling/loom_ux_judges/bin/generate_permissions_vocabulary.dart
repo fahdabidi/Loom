@@ -159,7 +159,7 @@ Map<String, Object?> buildVocabulary({
       'catalog': governanceCatalog,
       'adminRole': {
         'isSystemDefault': true,
-        'idTemplate': '<communityHandle>-admin',
+        'idTemplate': ArchetypeResolver.governanceAdminRoleIdTemplate,
         'grantedPermissions': governancePermissions,
       },
     },

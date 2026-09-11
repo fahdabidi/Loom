@@ -826,6 +826,29 @@ class ArchetypeResolver {
   /// Permission-id prefix for the community governance family.
   static const String governancePermissionPrefix = 'community';
 
+  /// The vocabulary's `governance.adminRole.idTemplate`.
+  ///
+  /// The platform creates the community's system-admin role automatically —
+  /// it is never declared in community JSON. Its id is a deterministic
+  /// function of the community handle, so both the vocabulary artifact and
+  /// any validator that must recognise the id read the template from here
+  /// rather than hardcoding a suffix.
+  static const String governanceAdminRoleIdTemplate = '<communityHandle>-admin';
+
+  /// Resolves [governanceAdminRoleIdTemplate] for one community.
+  ///
+  /// Returns null for a missing or blank handle, because an unresolvable
+  /// handle means there is no system-admin id to collide with — not that the
+  /// empty string is one.
+  static String? resolveSystemAdminRoleId(String? communityHandle) {
+    final handle = communityHandle?.trim();
+    if (handle == null || handle.isEmpty) return null;
+    return governanceAdminRoleIdTemplate.replaceAll(
+      '<communityHandle>',
+      handle,
+    );
+  }
+
   /// Closed action vocabularies, permissions.md §4.
   ///
   /// This compatibility accessor preserves the existing string-shaped API for
