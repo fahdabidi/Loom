@@ -2146,7 +2146,35 @@ Choose **B** if the priority is unblocking the calendar chain fastest with least
 safety invariant but leaves governance permanently un-generated. Either way, sequence: resolver
 completeness → governance mechanism → calendar apply, each verified live before the next.
 
-## Admin-role migration plan (APPROVED 2026-09-02, autonomous)
+## ⛔ RETIRED 2026-09-11 — Admin-role migration plan (was: APPROVED 2026-09-02, autonomous)
+
+> **DO NOT RUN THE SQL BELOW. It is kept only as the record of what was done on 2026-09-02 and why
+> that was a mistake.**
+>
+> This recipe is how eleven admin roles were renamed in one second with **zero** trace in
+> `idempotency_record`, and it is the direct cause of the Masjid escalation: its own mapping line said
+> `masjid-admin → masjid-nur-admin (preserve all 28 grants)`, copying a **domain** role's label, grants
+> and holder into the **governance** id. Its own anomaly note flagged the 23 extra grants "for user
+> decision" and nobody resolved it. A direct write bypasses every rule the service enforces — including
+> everything P1, P2 and P3 now add — and leaves no actor-attributed history.
+>
+> **What replaces it.** Renames go through the authenticated API: `createRole` → move every assignment
+> **and invitation reference** (`group_invitation_role`, not just `group_membership_role`) → `deleteRole`,
+> refusing destination collisions. That path landed in `loom-backend 4668822`, whose
+> `RoleMigrationResult` counts moved group-membership, app-access **and** invitation assignments.
+> Policy writes now emit an actor-attributed audit row (`policy_audit_event`, `V5`) in the same
+> transaction as the change.
+>
+> **Domain → governance is never a rename.** A governance role is created separately and assigned
+> deliberately; copying a domain role's grants into a governance id is exactly what produced an admin
+> that could do what an owner could.
+>
+> **One honest limit, from `services/app-access/docs/policy-audit.md`:** operators still hold the
+> database credentials, so this bypass is **discouraged, not closed**. Service-side rules cannot protect
+> tables reachable by direct SQL. Database-level constraints/triggers and role separation for audit
+> writes are recommended as a follow-up, not claimed as done.
+
+### Historical record of the retired plan
 
 Assignment-preserving canonical admin-role migration. **DB:** `loom_app_access` via
 `kubectl exec -i -n loom postgres-0 -- psql -U loom -d loom_app_access`, `app_id=loom_communities`.
