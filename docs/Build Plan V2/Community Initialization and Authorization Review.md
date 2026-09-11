@@ -223,6 +223,37 @@ membership check then passes legitimately.
 Note also that `IdempotencyService:59` can return a stored response without re-executing the mutation.
 Any authorization check must therefore run *before* idempotency replay, not only inside the write.
 
+### 2.2a The fix already exists in this repo — workflow-service does it properly
+
+Added 2026-09-10, after checking whether the sibling service shares the defect. **It does not, and the
+contrast is the most useful thing in this document**: app-access is not missing a hard capability, it
+is simply not held to the bar its sibling already meets.
+
+`loom_workflow_service`'s `jwt_identity_extractor.dart` does all of the following before a request is
+allowed to name anyone:
+
+| Check | workflow-service | app-access |
+|---|---|---|
+| RS256 pinned, other algorithms rejected | ✅ rejects any `alg` but RS256 | ✅ via Nimbus config |
+| Signature verified against JWKS | ✅ `decodeAndVerify`, `kid`-keyed, with a rotation-aware single refresh when a fresh cache misses | ✅ |
+| Issuer matches | ✅ | ✅ |
+| Expiry present **and** in future | ✅ — a token with **no** `exp` is rejected outright | ✅ |
+| `nbf` honoured | ✅ | ✅ |
+| **Caller identity taken from a verified claim** | ✅ `fanId` read from the verified claims, never from the body or a header | ❌ **no identity claim is required or read** |
+| **Fails closed** | ✅ every handler returns `401 authentication_required` when extraction yields null | ❌ authenticated is the whole policy |
+| **Caller authorization for the operation** | delegates to App Access `checkAccess` per operation | ❌ none on the policy routes |
+
+**The probe in §2.4 makes the gap concrete.** The token I obtained via `admin-cli` carried
+`aud: null`, scope `email profile`, and **no `fanId` claim at all**. `jwt_identity_extractor` would
+have rejected it — no `fanId`, no identity, `401`. App-access accepted it and let it reach
+`createRole` and `setRolePermissions`.
+
+So P1 is not a design problem. The pattern to copy is in-repo, tested, and written by this project:
+require a verified principal claim, fail closed when it is absent, and check per-operation
+authorization above that. The only genuinely new decision is *which* principal a policy write
+requires — a provisioning service account rather than a fan — since workflow-service's answer
+(`fanId`) is the right one for member actions and the wrong one for policy definition.
+
 ### 2.3 Exposure
 
 `app-access` is a **NodePort** service (`8080:30080/TCP`), as is Keycloak (`30082`). Both are
@@ -307,7 +338,7 @@ operator care.
 > installed package plus the vocabulary, computed server-side. Role *membership* is assigned by
 > people and by workflows; role *capability* is not.**
 
-**P1 — Authorize the policy endpoints.** Require a trusted provisioning principal (a Keycloak client
+**P1 — Authorize the policy endpoints.** *(Reference implementation available in-repo — see §2.2a. `loom_workflow_service`'s `jwt_identity_extractor.dart` already does verified-claim identity with fail-closed 401s; app-access needs the same shape plus a per-operation check.)* Require a trusted provisioning principal (a Keycloak client
 role or service account — never an end-user fan token) on `createRole`, `setRolePermissions`,
 `installCommunityPackage`, `deleteRole`, and any catalog-mutation route. Check **before** idempotency
 replay. Keep membership assignment (fan-facing, `requireGroupAdministrator`) separate from permission
