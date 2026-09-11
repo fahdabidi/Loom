@@ -1873,3 +1873,38 @@ any other pair of layers in this project** — the validator doesn't get an exem
 "a capability has to be true at every layer" rule just because it's the thing doing the checking. The
 fix here is to retire the two obsolete checks and their finding-code declaration, not to build the
 mechanism the stale warning implied was still missing.
+
+### A documented invariant with no mechanical guard is a wish, and I broke this one twice myself
+
+`permissions.md:522` says "only the admin role holds `community.*`". On 2026-08-31 I put the five
+governance grants on Masjid's package *domain* role because its id was `masjid-admin` and its label
+"Masjid Admin" — classifying a role by its name, in the same session that wrote "not just a name that
+reads like admin". On 2026-09-02 a documented SQL recipe copied that mixed role — label, 28 grants,
+holder — into the generated `masjid-nur-admin` id, with the mapping literally saying "preserve all 28
+grants" and an anomaly note nobody resolved. The platform accepted both steps because it has no
+notion of role **kind**: `app_role` cannot distinguish a package domain role from the generated
+governance role, `createRole`/`setRolePermissions` check only that a permission id exists, and
+`check_role_parity.sh` compares role *existence*, so it passed the whole time.
+
+Three things to carry, found while root-causing it on 2026-09-10 (session key `b25-provisioning`):
+
+- **When a reference doc states "only X may hold Y", find the line of code that refuses otherwise.**
+  If there is none, the doc describes an intention, and the next operator under time pressure will
+  violate it in good faith. The fix is a kind column plus a write-time rule plus an exact-set parity
+  gate — a prose rule in this file would have been the fourth restatement of an invariant that was
+  already written down.
+- **Enumerate the authorization layers before saying what a leak *does*.** I wrote "every Masjid admin
+  can fire the four owner-only transitions". False: engine guards intersect real role ids
+  (`guard_evaluator.dart:29-37`), never permissions, so the over-granted admin fails those guards. The
+  violation is real at the App Access layer (`checkAccess` grants it domain allowances) and absent at
+  the engine layer. Same trap as the calendar-permissions row — one layer's answer is not the system's.
+- **Check who is allowed to *write* policy, not only who is allowed to act.** The agent found that
+  `createRole`, `setRolePermissions` and `installCommunityPackage` have no caller authorization beyond a
+  valid JWT — the membership endpoints call `requireGroupAdministrator`, the policy endpoints do not —
+  and app-access is a NodePort. Any seeded fan can rewrite any role's grants today. Every prior audit of
+  this service checked *decisions* (`/v1/access-decisions`) and never asked who may change the inputs
+  to them.
+
+And the operational rule that follows: **domain-to-governance is never a rename.** A governance role is
+created separately and assigned deliberately; copying a domain role's grants into a governance id is
+how you get an admin that can do what an owner can, and a schema that cannot tell you it happened.
