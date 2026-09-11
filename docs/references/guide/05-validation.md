@@ -345,7 +345,7 @@ seriously rather than dismissing them as noise.
 The table above is the curated set: each row carries a diagnosis and a fix direction, because those
 are the findings that most need one.
 
-The validator can emit **114** finding codes. The table above documents 40 of them. The 74 below were
+The validator can emit **115** finding codes. The table above documents 41 of them. The 74 below were
 undocumented entirely until 2026-08-20, when the capability conformance test in
 `validator_capability_conformance_test.dart` counted them — an author who hit one had nothing to
 look up.
@@ -382,6 +382,7 @@ them meanwhile, and it is the part that generalises.
 | `dangling_transition_related_transition_id` | transitionRelated transitionId "<x>" is not declared on "<x>". |
 | `dangling_transition_related_workflow_type` | transitionRelated references workflowType "<x>", which is not a known workflow type in the loaded definitions set. |
 | `dangling_visibility_role` | A role named in `visibility.fields.parties` is not declared in `experience.roles[]`. invalid_visibility_principal A `visibility.fields.parties` entry must be a non-empty field name or an object. |
+| `declared_role_shadows_system_admin` | The package declares a roleId equal to the community's generated system-admin role. `governance.adminRole.idTemplate` (`<communityHandle>-admin`) resolves to it from the package's `communityHandle`, so installing merges the two: the install grants the declared role the five `community.*` governance permissions, and every current holder of that domain role silently becomes a community administrator. |
 | `destructive_transition_ignores_availability_field` | Transition "<x>" is destructive on workflow "<x>" but does not guard on availability field "<x>", while sibling transition "<x>" on the same workflow does. This can allow terminal paths to bypass. |
 | `duplicate_action_transition_id` | More than one transition action names "<x>" on this binding. |
 | `identity_compared_to_role` | Compares \<x>/\<x> (a fanId) against "<x>", which is a declared roleId. This can never be true. "This person, or anyone with this role" is a fanId comparison plus an allowedRoleIds guard — they are di. |
