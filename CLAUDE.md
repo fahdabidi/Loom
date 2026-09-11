@@ -1896,15 +1896,40 @@ any other pair of layers in this project** — the validator doesn't get an exem
 fix here is to retire the two obsolete checks and their finding-code declaration, not to build the
 mechanism the stale warning implied was still missing.
 
-### The demo identity model aliases `fanId` and `roleId`; production does not
+### The app shell has no member directory: it derives "identities" from roles, aliasing `fanId` to `roleId`
 
-`part15_evidence_catalog.dart:785` declares the legacy demo actor identities with **`fanId` and
-`roleId` set to the same string** — `fanId: 'garden-coordinator', roleId: 'garden-coordinator'`, and
-the same for all **14 pairs across every community**. In the local/demo path a fan id therefore *is*
-the role-id-shaped string. In the remote path it is `fan-chess-member-1` against a role `chess-member`.
+**Traced end to end 2026-09-10. This is not a demo-only quirk — it is the only way the shell can
+produce an actor identity from a package, and it runs in production.**
+
+    package declares      roles: [{ roleId: "chess-member", label: … }]
+      ↓  part15_evidence_catalog.dart:176   actorIdentities derived from `roles`
+    _parseActorIdentity:398                 LoomActorIdentity(fanId: roleId, roleId: roleId)
+      ↓  part01_local_extension_screen.dart:540
+    picker candidate                        AudienceMultiSelectCandidate(roleId: …)
+      ↓  part33_generic_creation_card.dart:192   (any field of type fanId[])
+    stored value                            participantFanIds: ["chess-member", "chess-organizer"]
+
+**Zero of the ten shipped packages declare `actorIdentities`**, so every one of them goes through
+that derivation. `part15:785`'s legacy catalog aliases the same way (14 pairs), so both paths agree —
+a fan id is a role-id-shaped string *to the shell*, always.
+
+The backend does not agree: there a fan is `fan-chess-member-1` and `chess-member` is a role. **The
+seam is visible in a single shipped row** — Chess's `participantFanIds` holds
+`["chess-member", "chess-organizer", "fan-chess-member-1"]`, where the first two came from the picker
+and the third from the create action's `prefill: ["$actor"]`, `$actor` being the genuinely
+authenticated fan. Two writers, two identifier spaces, one array.
+
+**Consequence to take seriously:** seven Chess transitions guard on that field via `actorInList`, so
+role ids sitting there mean no real fan matches and those transitions are dead for everyone on that
+row. Any community with a `fanId[]` field filled through the creation card has the same exposure.
+
+**So "add a member picker" understates the work.** The shell cannot currently answer "who are the
+members of this community" at all — there is no directory contract, which is why the fix is a new
+capability rather than swapping one widget for another.
 
 **Everything that looks like an identifier-space bug in this area is downstream of that one
-assumption, and several of those things are correct in their own context:**
+assumption, and several of those things are correct relative to the shell while wrong relative to the
+backend:**
 
 | Artifact | Under the demo model | Under the production model |
 |---|---|---|
