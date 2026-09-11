@@ -41,6 +41,36 @@
 # the rule here: if the process died right now, the filter must still emit
 # something. Silence must never be the failure signal.
 #
+# COMPLETION-LINE FALSE POSITIVE (found 2026-09-11, DeepSeek V4 Flash dispatch
+# of ticket P4): a dispatch's own transcript can legitimately contain a
+# VERBATIM DUMP of an earlier dispatch's log -- e.g. the agent `cat`s or reads
+# a prior .codex-logs/*.log file while investigating tooling conventions -- and
+# if that older file itself starts a line with "codex exec exited with
+# status <n>" (the wrapper's own completion line, from whichever run produced
+# it), that text streams through `tail -F` like any other new output and
+# matches the case pattern below, indistinguishable from a real completion.
+# An anchored/exact-prefix match does NOT help: the embedded line legitimately
+# starts a real line too, it's just not *this* dispatch's own exit line.
+# Confirmed live: P4's log had "codex exec exited with status 0" mid-transcript
+# (an embedded dump) while `codex exec` was still genuinely running, followed
+# nearly 700 lines and several more minutes later by the true final line,
+# "codex exec exited with status 1". A naive first-match check reported
+# completion (and the wrong status) while the dispatch was still working.
+#
+# The fix: the wrapper's OWN completion line is followed almost immediately by
+# the wrapper process itself exiting (a few lines of git-status bookkeeping,
+# then EOF) -- typically under a second, never more than a few. An EMBEDDED
+# occurrence has no such property: the process that would need to exit is the
+# dispatch's own long-running `codex exec`/`claude`/`muse` child, which keeps
+# running for as long as the dispatch has left, often minutes. So on a match,
+# this script no longer trusts the text alone -- it confirms the tracked
+# DISPATCH_PID actually exits within COMPLETION_CONFIRM_GRACE seconds before
+# reporting completion. If the pid is still alive once that window elapses,
+# the match is treated as an embedded false positive and the watch continues
+# silently. (When no PID file is available at all, this check is skipped and
+# the text match is trusted directly, same as before 2026-09-11 -- there is no
+# liveness signal to confirm against in that degraded mode either way.)
+#
 # HISTORICAL NOTE (resolved by the WSL2->VirtualBox migration, kept for
 # context): under WSL2, this script also watched for vsock-exhaustion alert
 # lines, since a leaked `tail -F | grep` Monitor pipeline held a live
@@ -82,6 +112,13 @@ esac
 # moment before its final line is flushed to the log.
 DEATH_GRACE="${DEATH_GRACE:-15}"
 
+# How long to wait, after seeing what looks like the completion line, for the
+# tracked DISPATCH_PID to actually exit before trusting it. The wrapper's real
+# exit line is followed by a handful of fast git-status commands then EOF --
+# well under this window in practice. An embedded false positive (see above)
+# leaves the pid alive far longer, since the dispatch itself is still running.
+COMPLETION_CONFIRM_GRACE="${COMPLETION_CONFIRM_GRACE:-20}"
+
 if [ ! -f "$LOG" ]; then
   echo "watch_dispatch_log.sh: log not found: $LOG" >&2
   exit 1
@@ -107,6 +144,24 @@ dispatch_is_alive() {
   kill -0 "$DISPATCH_PID" 2>/dev/null
 }
 
+# Confirms a matched completion line is the wrapper's own, not an embedded
+# false positive (see the 2026-09-11 note above), by waiting up to
+# COMPLETION_CONFIRM_GRACE seconds for DISPATCH_PID to actually exit. With no
+# PID available there is nothing to confirm against, so the match is trusted
+# directly, same as this script's behavior before that fix existed.
+confirm_real_completion() {
+  [ -z "$DISPATCH_PID" ] && return 0
+  local waited=0
+  while dispatch_is_alive; do
+    if [ "$waited" -ge "$COMPLETION_CONFIRM_GRACE" ]; then
+      return 1
+    fi
+    sleep 1
+    waited=$((waited + 1))
+  done
+  return 0
+}
+
 death_deadline=""
 
 while true; do
@@ -117,9 +172,15 @@ while true; do
       # the UX judge and live verification agents, which have always used that
       # wording and which this watcher could never see.
       "codex exec exited with status"*|"muse exec exited with status"*|"claude exited with status"*)
-        echo "$line"
-        sleep "$POST_SLEEP"
-        exit 0
+        if confirm_real_completion; then
+          echo "$line"
+          sleep "$POST_SLEEP"
+          exit 0
+        fi
+        # DISPATCH_PID outlived the grace window -- this was an embedded
+        # occurrence (e.g. a dumped older log), not this dispatch's own exit
+        # line. Keep watching; do not exit, do not treat it as a signal.
+        continue
         ;;
       *"hit your usage limit"*|*"panic:"*|*"FAILED ("*|"fatal:"*)
         # Surface immediately so the watching session sees the real reason
