@@ -225,11 +225,12 @@ paths:
                 $ref: '#/components/schemas/ListRolesResponse'
     post:
       operationId: createRole
-      summary: Create a role and map it to permissions.
+      summary: Create a permissionless role.
       description: >-
         A role with `groupId` set belongs to that group — the group-to-roles mapping, for example
         `cedar_commons_hoa_admin` in `loom_communities_cedar_commons_hoa`. A role with `groupId`
-        null is an app-level template assignable in any group of that app.
+        null is an app-level template assignable in any group of that app. New roles have no
+        permissions; community-package installation derives and reconciles their permission sets.
       parameters:
         - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
         - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
@@ -290,36 +291,6 @@ paths:
           $ref: '../_shared/errors.yaml#/components/responses/NotFound'
         '409':
           $ref: '../_shared/errors.yaml#/components/responses/Conflict'
-
-  /v1/apps/{appId}/roles/{roleId}/permissions:
-    put:
-      operationId: setRolePermissions
-      summary: Replace the permission set a role grants.
-      description: >-
-        The role-to-permissions mapping tool. Every `permissionId` must already exist in the app's
-        catalog; unknown ids are rejected rather than silently created.
-      parameters:
-        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
-        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/AppId'
-        - $ref: '#/components/parameters/RoleId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SetRolePermissionsRequest'
-      responses:
-        '200':
-          description: Role permissions replaced.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Role'
-        '400':
-          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
-        '404':
-          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
 
   # ── Fan → app access ────────────────────────────────────────────────────
   /v1/apps/{appId}/access/{fanId}:
@@ -1048,6 +1019,7 @@ components:
 
     CreateRoleRequest:
       type: object
+      additionalProperties: false
       required: [roleId, displayName]
       properties:
         roleId:
@@ -1058,19 +1030,6 @@ components:
           type: string
         description:
           type: [string, 'null']
-        permissionIds:
-          type: array
-          items:
-            type: string
-
-    SetRolePermissionsRequest:
-      type: object
-      required: [permissionIds]
-      properties:
-        permissionIds:
-          type: array
-          items:
-            type: string
 
     GroupInvitation:
       type: object
