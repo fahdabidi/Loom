@@ -1896,6 +1896,34 @@ any other pair of layers in this project** — the validator doesn't get an exem
 fix here is to retire the two obsolete checks and their finding-code declaration, not to build the
 mechanism the stale warning implied was still missing.
 
+### A fixture whose identifiers alias across spaces cannot discriminate an identifier-space bug
+
+`v3_milestone_phasef_messages_test.dart:305` drives the real creation FAB, taps the audience picker,
+and asserts `instanceData['participantFanIds'] == ['tabletop-member']`. It passes today. It would also
+pass if the value arrived from the **role** picker instead of the actor's **fan id** — because in that
+fixture the fan id and the role id are the *same string*, `tabletop-member`. The test's own comment
+says "the generic form uses the existing audience-style picker for participantFanIds", documenting the
+defect as intended behaviour.
+
+That defect is real and shipped: for a `fanId[]` field the creation card renders
+`AudienceMultiSelectPicker` (`part33_generic_creation_card.dart:192`, parameter literally
+`selectedRoleIds`) over candidates built from `experience.actorIdentities` carrying **`roleId`**
+(`part01_local_extension_screen.dart:540`). Selecting two roles writes two role ids into a fan-id
+array — which is how a shipped Chess row came to hold `["chess-member", "chess-organizer",
+"fan-chess-member-1"]`.
+
+**When a bug is "the wrong identifier space reached this field", every fixture in the test must keep
+those spaces textually distinct** — fan `fan-x`, role `x-member`, never the same token for both.
+Otherwise the assertion is satisfied by both the correct and the incorrect provenance, and it will
+keep passing after someone "fixes" it in either direction. Same family as the grep-gated commit: the
+success condition is met by the failure it exists to catch.
+
+The wider lesson for this project specifically: **"prefer selecting an existing value over typing one"
+is not unconditionally safe.** That rule was written after `adb shell input text` silently truncated
+`payerFanId`, and it is right about typing — but on this path the *picker* is the thing that
+manufactures invalid data, and selecting is worse than typing. A control is only as correct as its
+candidate source and the contract of the field it writes into.
+
 ### A documented invariant with no mechanical guard is a wish, and I broke this one twice myself
 
 `permissions.md:522` says "only the admin role holds `community.*`". On 2026-08-31 I put the five
