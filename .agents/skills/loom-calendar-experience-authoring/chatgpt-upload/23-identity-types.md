@@ -96,6 +96,27 @@ owner approves who gets in" reads like something to encode in JSON, and it is no
 tries to express admission authority is expressing something the engine will not enforce and the
 backend will contradict.
 
+**Do not read "sets the community up and approves who is allowed in" as a grant of technical
+authority to the `owner` roleId itself — it describes the real person's responsibility, carried out
+through a completely separate mechanism.** That mechanism is the platform-generated admin role
+(`permissions.md` §7): installing a community automatically creates `<communityHandle>-admin`,
+scoped to the group, holding the five `community.*` governance permissions — `community.invite`,
+`community.manage_members`, and the rest — and *that* role is what actually approves or rejects a
+join request. The declared `owner` roleId carries none of those permissions on its own; it is an
+ordinary domain role like any other, distinguished only by the real-world job it names.
+
+**These are two different roles, and the same person typically needs to hold both** — the package's
+`owner` (for `owner`-guarded domain workflows) and the generated `<handle>-admin` (for actually
+admitting members) — but they are never the same *declaration*, and a package must never declare a
+`roleId` equal to the resolved admin id (rejected by the validator's
+`declared_role_shadows_system_admin` finding and by the backend at install). **This distinction is
+not academic: conflating "the owner sets up and approves membership" with "so the owner role should
+hold governance permissions" is what produced a real privilege-escalation incident in Masjid Nur**
+(2026-09-05, commit `14d6e1a6`) — a domain role was renamed to `owner` and, separately, ended up
+carrying the generated admin's five `community.*` grants on top of its own 23, so every community
+admin could do what the owner could. The fix was to hold the roles apart, not to merge them; this
+paragraph exists so no future reading of "approves who is allowed in" repeats the merge.
+
 ### Why this is worth reserving
 
 Data portability and export consistently land on this role — `soccer-export-metadata`,
