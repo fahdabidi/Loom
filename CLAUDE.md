@@ -1896,6 +1896,29 @@ any other pair of layers in this project** — the validator doesn't get an exem
 fix here is to retire the two obsolete checks and their finding-code declaration, not to build the
 mechanism the stale warning implied was still missing.
 
+### An unwritten field may be an honest declaration — read its comments before calling it an orphan
+
+Three "orphan field" findings in three days, all mine, all wrong, all produced the same way: grep for
+a writer inside one scope, find none, report a defect.
+
+| Field | Why "no writer" was wrong |
+|---|---|
+| Cedar `explicitReaderFanIds` | written by a **paired workflow** (`hoa-document-access-request`) via a cross-type effect; my grep covered only the document workflow's own transitions |
+| Chess seed `createdByFanId: "chess-member"` | **correct** under the shell's identity model, which aliases fan id to role id — "fixing" it would have broken the demo app |
+| Ad-Free `paymentConfirmationId` | the package **says so itself**, at both declaration sites: *"NEEDS IMPLEMENTATION (platform service)… intentionally never seeded or effect-written"* |
+
+The third is the cheapest to avoid and the most embarrassing to miss: the answer was a comment
+attached to the very lines I was reading. **There are 18 such `NEEDS IMPLEMENTATION` annotations
+across five shipped packages** — Ad-Free 6, Book Club 5, Masjid 4, Cedar 2, Youth Soccer 1 — and they
+are the visible surface of the four missing platform services (payment, id generation, external
+search/AI, checksum), not per-package authoring defects. No Skill dispatch can fix one.
+
+**Before reporting a field as unwritten: read the declaration's own comments, check for cross-workflow
+effects targeting it, and confirm which identity model its values live in.** `hideWhenEmpty: true` on
+such a field is the *correct* pairing, not evidence of concealment — it is the opposite of the
+export-checksum shape, where a field claimed a writer it never had. A field that declares it has no
+writer is honest; a field that implies one is the defect.
+
 ### The app shell has no member directory: it derives "identities" from roles, aliasing `fanId` to `roleId`
 
 **Traced end to end 2026-09-10. This is not a demo-only quirk — it is the only way the shell can
