@@ -183,6 +183,28 @@ plus a `createInstance` into `hoa-owner-notification`. The package does not wait
 
 ### row-138 — Never derive the community key from the group id — underscored vs hyphenated
 
+**MEASURED IN FULL 2026-09-12, and the rule is stronger than "underscored vs hyphenated" — for two communities NO string transformation could ever work.** I listed every `workflow_instances.community_id` against every App Access `group_id`:
+
+| App Access group | workflow-service `community_id` | mapping |
+|---|---|---|
+| `loom_communities_camera-club` | `community_camera_club` | mechanical |
+| `loom_communities_cedar-commons-hoa` | `community_cedar_commons_hoa` | mechanical |
+| `loom_communities_chess-club` | `community_chess_club` | mechanical |
+| `loom_communities_garden-club` | `community_garden_club` | mechanical |
+| `loom_communities_member-social-space` | `community_member_social_space` | mechanical |
+| `loom_communities_neighborhood-book-club` | `community_neighborhood_book_club` | mechanical |
+| `loom_communities_riverside-youth-soccer` | `community_riverside_youth_soccer` | mechanical |
+| `loom_communities_ad-free-community` | `community_ad_free_community` | mechanical |
+| `loom_communities_data-portability-community` | `community_data_portability` | **drops the trailing `-community`** |
+| `loom_communities_masjid-nur` | **`community_mosque`** | **a different word entirely** |
+
+**Masjid is the case that settles the rule.** The handle is `masjid-nur` and the workflow-service id is `community_mosque`. There is no case-folding, separator swap or suffix rule that turns one into the other — the id comes from the package's own declared identity (its file is `..._Mosque_Example.jsonc`), not from the handle. So "derive it carefully" is not a weaker version of this rule; **deriving it is impossible**, and any code or query that constructs one from the other is wrong for at least two of ten communities and will return a clean empty result rather than an error.
+
+**Caught this in time to matter:** the Masjid walkthrough briefed while this was measured was told explicitly *"do not assume the workflow-service `community_id` matches the group id — read it off your own row"*. Constructing `community_masjid_nur` would have found nothing and read as a failed write.
+
+**Separate drift found in the same query, worth its own look:** App Access holds **both** `loom_communities_cedar-commons-hoa` and `loom_communities_cedar_commons_hoa` — the same community under two group ids, hyphenated and underscored. Only the hyphenated one carries the 3 expected roles; the underscored one carries 2. That is exactly the shape this row warns about, now present as live data rather than as a risk.
+
+
 never derive the community key from the group id — underscored vs hyphenated → ACWS §8
 
 ### row-195 — Staleness sweep of the migrated blocks — 54 unadjudicated checkboxes, 12 adjudicated so far
