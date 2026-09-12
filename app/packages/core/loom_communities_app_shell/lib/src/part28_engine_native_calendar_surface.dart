@@ -1852,42 +1852,55 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         instanceData: instance.instanceData,
         fanId: fanId,
       );
-      // A member with no row still gets offered response actions, computed
-      // against a synthetic row in the response workflow's declared
-      // `initialState`. Previously this short-circuited to an empty list, so
-      // anyone who joined after the event was created saw no RSVP controls at
-      // all -- and `_applyTransition`'s create-or-get could never fire, because
-      // there was no control to tap. The row is materialized on that tap, not
-      // here; this stays a pure read.
+      // The local engine can evaluate a synthetic response from the supplied
+      // state, but the remote adapter addresses a persisted instance by id and
+      // ignores that state. Do not send a remote request for an absent row.
+      // `resolveRemoteWorkflowEngine` also covers the offline-replica wrapper,
+      // which implements WorkflowEngineApi rather than extending the remote
+      // class.
       final responseMachine = widget.responseMachine;
-      final syntheticResponse = response == null && responseMachine != null
+      final responseId = response?[r'$id'];
+      final hasPersistedResponse =
+          responseId is String && responseId.trim().isNotEmpty;
+      final syntheticResponse =
+          !hasPersistedResponse &&
+              responseMachine != null &&
+              resolveRemoteWorkflowEngine(engine) == null
           ? <String, dynamic>{
               responseTable!.eventField: instance.instanceId,
               'fanId': fanId,
             }
           : null;
-      final responseActions = responseTable == null
-          ? const <LoomWorkflowTransition>[]
-          : response != null
-          ? await engine.availableTransitionsAsync(
-              workflowType: responseTable.workflowType,
-              instanceId: response['\$id'] as String,
-              currentState: response['\$state'] as String,
-              instanceData: response,
-              fanId: fanId,
-            )
-          : syntheticResponse == null
-          ? const <LoomWorkflowTransition>[]
-          : await engine.availableTransitionsAsync(
-              workflowType: responseTable.workflowType,
-              // No row exists yet, so there is no id to name. Guards that
-              // resolve per-instance data still see the synthetic row's own
-              // fields (notably `fanId`, which `actorEqualsField` reads).
-              instanceId: '',
-              currentState: responseMachine!.initialState,
-              instanceData: syntheticResponse,
-              fanId: fanId,
-            );
+      var responseActions = const <LoomWorkflowTransition>[];
+      String? responseActionError;
+      if (responseTable != null &&
+          (hasPersistedResponse || syntheticResponse != null)) {
+        try {
+          responseActions = hasPersistedResponse
+              ? await engine.availableTransitionsAsync(
+                  workflowType: responseTable.workflowType,
+                  instanceId: responseId as String,
+                  currentState: response![r'$state'] as String,
+                  instanceData: response,
+                  fanId: fanId,
+                )
+              : await engine.availableTransitionsAsync(
+                  workflowType: responseTable.workflowType,
+                  // The local engine evaluates this supplied state without an
+                  // instance lookup. Remote engines never reach this branch.
+                  instanceId: '',
+                  currentState: responseMachine!.initialState,
+                  instanceData: syntheticResponse!,
+                  fanId: fanId,
+                );
+        } catch (_) {
+          // A response action failure is secondary to the parent event's
+          // successful action load. Keep those actions usable, while making
+          // the degraded RSVP controls explicit and retryable.
+          responseActionError =
+              'Could not load RSVP response actions. Event actions remain available.';
+        }
+      }
       if (!_isCurrent(generation, instance, machine, engine, fanId) ||
           request != _actionRequest) {
         return;
@@ -1900,6 +1913,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         _eventActionIds = eventActions.map((action) => action.id).toSet();
         _responseActionIds = responseActions.map((action) => action.id).toSet();
         _loadingActions = false;
+        _error = responseActionError;
+        _retry = responseActionError == null ? null : () => _loadActions();
       });
     } catch (_) {
       if (!_isCurrent(generation, instance, machine, engine, fanId) ||
