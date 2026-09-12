@@ -142,6 +142,23 @@ outstanding Skill dispatches: DataPortability, AdFree, Camera (rejected), Book C
 
 ### row-246 — Archetype-owned bookkeeping unimplemented, so `grant_access`/`share` can never populate the field a grant reads
 
+**RE-TESTED 2026-09-12 — the MECHANISM GAP is real, the stated CONSEQUENCE is false, and the false half is the one that made this look like a milestone.**
+
+**Real:** `grant_access` appears exactly once in the whole engine — `archetypes/archetype_resolver.dart:620`, where it is *declared as an archetype action*. It has **no entry in the bookkeeping map** in `api/local_workflow_engine_api.dart`. Control: that map does implement `join_queue` (`:117`, `('queuedFanIds', addActor)`), so the grep works and the absence is real. So archetype-owned bookkeeping for `grant_access`/`share` genuinely is unimplemented.
+
+**False:** "blocks Cedar's `explicitReaderFanIds` ever being filled". **Cedar fills it today.** `hoa-document-access-request`'s `grant-access` transition (`pending` -> `granted`, guard `hoa-board`) carries an authored effect:
+
+    { "op": "appendUnique", "key": "explicitReaderFanIds", "value": "{requesterFanId}" }
+
+plus a `createInstance` into `hoa-owner-notification`. The package does not wait for the platform mechanism; it authors the write explicitly.
+
+**The sharper finding, which is what this row should actually say.** `explicitReaderFanIds` is declared **`writableBy: "platform"`** (package line 1235) while its *actual* writer is an authored `appendUnique` effect. So the declaration describes the **intended** mechanism and the effect is a **workaround** for that mechanism not existing. Two consequences worth separating:
+- Nothing is broken for Cedar today, so this is **not** a blocker on any B25 row and should not be sequenced as one.
+- But the field lies about its writer, which is precisely the shape that produces false "orphan field" findings — this repo has already logged three of those, all wrong, all from grepping for a writer in one scope. Any future validator rule keyed on `writableBy` will mis-classify this field in one direction or the other until the mechanism exists or the declaration is corrected.
+
+**So the question changes** from "build archetype bookkeeping so the field can be filled" to "decide whether `grant_access` bookkeeping should exist at all, given packages can and do author the write — and if it should not, fix the `writableBy` declarations that claim it does." That is a much smaller question than `new-milestone` implies.
+
+
 `new-milestone` — **archetype-owned bookkeeping is unimplemented**, so `grant_access`/`share` cannot populate the shared-with field a grant reads; blocks Cedar's `explicitReaderFanIds` ever being filled — see [document-library.md §6](../references/archetypes/document-library.md)
 
 ### row-247 — Book Club regeneration is HELD by user decision — dispatching now would bake in a known loss permanently
