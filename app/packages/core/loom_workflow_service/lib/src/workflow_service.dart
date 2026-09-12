@@ -179,6 +179,10 @@ class WorkflowService {
         request.method == 'GET') {
       return _availableTransitions(request, segments[2], segments[4]);
     }
+    if (_matchesInstanceAction(segments, 'required-permissions') &&
+        request.method == 'GET') {
+      return _instanceRequiredPermissions(request, segments[2], segments[4]);
+    }
     if (_matchesInstanceAction(segments, 'transitions') &&
         request.method == 'POST') {
       return _applyTransition(request, segments[2], segments[4]);
@@ -1367,6 +1371,234 @@ class WorkflowService {
         message: 'Available workflow transitions could not be resolved.',
       );
     }
+  }
+
+  // ------------------------------------------------- runtime progress report
+  //
+  // "What does the caller need to progress from here?" -- the read side of the
+  // just-in-time framing, and deliberately nothing more.
+  //
+  // **Read-only introspection.** It reports; it is not an authorization path.
+  // The engine's transition guards and App Access's `checkAccess` remain the
+  // only deciders and this endpoint grants nothing. There is no write of any
+  // kind on this path, and nothing here can widen a role's permission set --
+  // see `permission_progress_analysis.dart` for why that boundary is absolute.
+  //
+  // It reports the two layers **separately by name**, because this project has
+  // conflated them before:
+  //
+  //   * `app_access_permission` -- "may this role perform this class of action
+  //     at all". Per-role, static, and the thing a package's derivation
+  //     produces.
+  //   * `engine_guard` -- "may this fan fire this transition on this instance
+  //     right now". Per-instance, dynamic, evaluated against the real row.
+  //
+  // A caller can hold the permission and still fail the guard -- a
+  // precondition on instance state, or a different actor. The report names
+  // which of the two is blocking rather than collapsing both into "denied".
+  Future<Response> _instanceRequiredPermissions(
+    Request request,
+    String communityId,
+    String instanceId,
+  ) async {
+    final correlationId = request.headers['x-loom-correlation-id'];
+    if (correlationId == null || !_uuidPattern.hasMatch(correlationId)) {
+      return _error(
+        request: request,
+        statusCode: 400,
+        code: 'invalid_correlation_id',
+        message: 'X-Loom-Correlation-Id must be a UUID.',
+      );
+    }
+
+    final identity = await _identityExtractor.extract(request);
+    if (identity == null) {
+      return _error(
+        request: request,
+        statusCode: 401,
+        code: 'authentication_required',
+        message: 'An authenticated fan identity is required.',
+      );
+    }
+
+    try {
+      return await _databaseSerialExecutor.run(() async {
+        final engine = _authoritativeEngine(communityId);
+        final roleResolutionError = await _resolveRolesForRequest(
+          request: request,
+          communityId: communityId,
+          identity: identity,
+          correlationId: correlationId,
+          engine: engine,
+        );
+        if (roleResolutionError != null) return roleResolutionError;
+
+        // The instance's own read visibility gates this report exactly as it
+        // gates every other read. An instance the caller may not see must not
+        // disclose its state, its transitions, or which permission it wants.
+        final instance = await engine.readVisibleInstance(
+          instanceId: instanceId,
+          fanId: identity.fanId,
+        );
+        if (instance == null) {
+          return _error(
+            request: request,
+            statusCode: 404,
+            code: 'workflow_instance_not_found',
+            message: 'The requested workflow instance was not found.',
+          );
+        }
+
+        final definitions = await _database.loadDefinitionsForCommunity(
+          communityId,
+        );
+        final rawDefinition = definitions[instance.workflowType];
+        if (rawDefinition == null) {
+          return _error(
+            request: request,
+            statusCode: 404,
+            code: 'workflow_type_not_found',
+            message: 'The requested workflow type was not found.',
+          );
+        }
+        final definition = LoomWorkflowStateMachine.fromJson(
+          rawDefinition,
+          instance.workflowType,
+        );
+        const resolver = ArchetypeResolver();
+        final archetype = resolver
+            .resolveAll(definitions)[instance.workflowType];
+
+        // The engine's own resolution of what is firable right now. This is
+        // the guard layer, and it is the *same* call `applyTransition` makes,
+        // so the report cannot disagree with the mutation path.
+        final available = await engine.availableTransitionsAsync(
+          workflowType: instance.workflowType,
+          instanceId: instance.instanceId,
+          currentState: instance.currentState,
+          instanceData: instance.instanceData,
+          fanId: identity.fanId,
+        );
+        final availableIds = available.map((t) => t.id).toSet();
+
+        final groupId = await _communityGroupIdResolver.resolveGroupId(
+          communityId,
+        );
+        final family = archetype?.family;
+        final transitions = <Map<String, dynamic>>[];
+        for (final transition in definition.transitionsFrom(
+          instance.currentState,
+        )) {
+          final permissionId = _requiredPermissionIdForTransition(
+            transition: transition,
+            definition: definition,
+            family: family,
+          );
+          final guardPassed = availableIds.contains(transition.id);
+
+          // Only ask App Access for a permission this transition actually
+          // requires. A transition that derives no permission is blocked by
+          // its guard alone, and asking about a null permission would be a
+          // fabricated check.
+          bool? holdsPermission;
+          if (permissionId != null &&
+              groupId != null &&
+              groupId.trim().isNotEmpty) {
+            try {
+              holdsPermission = await _appAccessClient.checkAccess(
+                fanId: identity.fanId,
+                appId: _appId,
+                permissionId: permissionId,
+                groupId: groupId,
+                correlationId: correlationId,
+              );
+            } on AppAccessDecisionException catch (_) {
+              return _authorizationServiceUnavailable(request);
+            } on SocketException catch (_) {
+              return _authorizationServiceUnavailable(request);
+            }
+          }
+
+          transitions.add({
+            'transitionId': transition.id,
+            'label': transition.label,
+            if (transition.to != null) 'toState': transition.to,
+            if (permissionId != null) 'requiredPermissionId': permissionId,
+            'available': guardPassed,
+            'blockedBy': _blockedByFor(
+              guardPassed: guardPassed,
+              holdsPermission: holdsPermission,
+            ),
+          });
+        }
+
+        return Response.ok(
+          jsonEncode({
+            'instanceId': instance.instanceId,
+            'workflowType': instance.workflowType,
+            'currentState': instance.currentState,
+            'roles': engine.roleIdsForFan(identity.fanId).toList()..sort(),
+            'transitions': transitions,
+          }),
+          headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
+        );
+      });
+    } on AppAccessDecisionException catch (_) {
+      return _authorizationServiceUnavailable(request);
+    } on SocketException catch (_) {
+      return _authorizationServiceUnavailable(request);
+    } catch (error, stackTrace) {
+      _logUnexpectedError(request, error, stackTrace);
+      return _error(
+        request: request,
+        statusCode: 500,
+        code: 'workflow_service_error',
+        message: 'The required permissions could not be resolved.',
+      );
+    }
+  }
+
+  /// Names *which layer* blocked a transition, rather than saying "denied".
+  ///
+  /// `app_access_permission` means the caller's role does not hold the
+  /// permission the action class requires. `engine_guard` means the caller may
+  /// perform the action class at all and this particular instance row refuses
+  /// it -- a precondition on instance state, or a different named actor.
+  /// `null` means neither blocked it.
+  String? _blockedByFor({
+    required bool guardPassed,
+    required bool? holdsPermission,
+  }) {
+    if (guardPassed) return null;
+    if (holdsPermission == false) return 'app_access_permission';
+    return 'engine_guard';
+  }
+
+  /// The permission id a declared transition's action requires, or null when
+  /// the transition carries no permission.
+  ///
+  /// Mirrors the derivation the App Access export performs -- a declared
+  /// `action` for a bespoke family, the §5 structural rule for a generic one.
+  /// Keep this in step with
+  /// `loom_workflow_engine/lib/src/analysis/permission_progress_analysis.dart`.
+  String? _requiredPermissionIdForTransition({
+    required LoomWorkflowTransition transition,
+    required LoomWorkflowStateMachine definition,
+    required String? family,
+  }) {
+    if (family == null) return null;
+    const resolver = ArchetypeResolver();
+    final declared = transition.action;
+    if (declared != null && declared.isNotEmpty) {
+      return resolver.permissionId(family, declared);
+    }
+    final target = transition.to;
+    if (target == null) return null;
+    final isTerminal = definition.states[target]?.isTerminal ?? false;
+    final action = transition.tone == 'destructive' || isTerminal
+        ? 'terminate'
+        : 'advance';
+    return resolver.permissionId(family, action);
   }
 
   // ----------------------------------------------------------- reminders

@@ -1,3 +1,4 @@
+export 'src/analysis/permission_progress_analysis.dart';
 export 'src/api/local_workflow_engine_api.dart';
 export 'src/api/notification_delivery_service.dart';
 export 'src/api/remote_workflow_engine_api.dart';

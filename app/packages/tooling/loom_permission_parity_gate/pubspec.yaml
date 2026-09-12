@@ -1,0 +1,17 @@
+name: loom_permission_parity_gate
+description: Compare live App Access role grants against the package-derived export, by exact permission id sets and by workflow state.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  loom_ux_judges:
+    path: ../loom_ux_judges
+  loom_workflow_engine:
+    path: ../../core/loom_workflow_engine
+
+dev_dependencies:
+  test: ^1.25.0

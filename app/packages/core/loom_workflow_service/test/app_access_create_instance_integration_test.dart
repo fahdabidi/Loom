@@ -34,6 +34,11 @@ const _cardSurfaceFamily = 'event-rsvp';
 const _correlationId = '33333333-3333-4333-8333-333333333333';
 const _keycloakRealm = 'loom';
 
+/// The realm role `requireProvisioningPrincipal` checks for on the
+/// community-installation and permission-export routes. Created out of band in
+/// the cluster; this test only assigns it to its own throwaway client.
+const _provisioningRealmRole = 'app-access-provisioner';
+
 @Timeout(const Duration(minutes: 2))
 void main() {
   final environment = Platform.environment;
@@ -95,6 +100,20 @@ void main() {
           adminBaseUri: keycloakAdminBaseUri,
           adminToken: keycloakAdminToken,
           clientName: keycloakClientName,
+        );
+        // A freshly created client authenticates but is authorized for
+        // nothing: `installCommunityPackage` is gated behind
+        // `requireProvisioningPrincipal`, so without the realm role below this
+        // test's `_seedAppAccess` install returns 403
+        // `provisioning_principal_required` even though the token is valid.
+        // Granting the throwaway client's own service-account user the
+        // `app-access-provisioner` realm role is what closes that gap, and it
+        // is the same procedure performed by hand to prove the chain works.
+        await _grantProvisioningRealmRole(
+          client: keycloakAdminClient,
+          adminBaseUri: keycloakAdminBaseUri,
+          adminToken: keycloakAdminToken,
+          clientUuid: keycloakClientId,
         );
         final keycloakClientSecret = await _getKeycloakClientSecret(
           client: keycloakAdminClient,
@@ -396,6 +415,108 @@ Future<String> _createKeycloakClient({
     reason: 'Invalid client Location: $location',
   );
   return pathSegments.last;
+}
+
+/// Grants the throwaway client's service-account user the
+/// `app-access-provisioner` realm role.
+///
+/// Three Keycloak admin-API steps, in this order, because each needs the
+/// previous one's result:
+///
+///   1. `GET /admin/realms/{realm}/clients/{clientUuid}/service-account-user`
+///      -- Keycloak provisions this user when `serviceAccountsEnabled` is set
+///      on the client, and it is the identity a client-credentials token is
+///      issued for. The client UUID from the client's `Location` header is used
+///      here, not the human-readable `clientId`.
+///   2. `GET /admin/realms/{realm}/roles/app-access-provisioner` -- the role
+///      *definition*, not just its name.
+///   3. `POST /admin/realms/{realm}/users/{userId}/role-mappings/realm` with a
+///      JSON **array** containing that role object. Keycloak's realm
+///      role-mappings endpoint takes a list, and it requires the full role
+///      representation (id + name) rather than a bare string; posting
+///      `["app-access-provisioner"]` is rejected.
+///
+/// `_deleteKeycloakClient` in the caller's `finally` removes the client and
+/// with it this service-account user and every mapping it holds, so the grant
+/// needs no separate cleanup.
+Future<void> _grantProvisioningRealmRole({
+  required HttpClient client,
+  required Uri adminBaseUri,
+  required String adminToken,
+  required String clientUuid,
+}) async {
+  final serviceAccountUserRequest = await client.getUrl(
+    adminBaseUri.resolve(
+      'admin/realms/$_keycloakRealm/clients/'
+      '${Uri.encodeComponent(clientUuid)}/service-account-user',
+    ),
+  );
+  serviceAccountUserRequest.headers.set(
+    HttpHeaders.authorizationHeader,
+    'Bearer $adminToken',
+  );
+  final serviceAccountUserResponse = await serviceAccountUserRequest.close();
+  final serviceAccountUserBody = await utf8.decoder
+      .bind(serviceAccountUserResponse)
+      .join();
+  expect(
+    serviceAccountUserResponse.statusCode,
+    HttpStatus.ok,
+    reason: serviceAccountUserBody,
+  );
+  final serviceAccountUser =
+      jsonDecode(serviceAccountUserBody) as Map<String, dynamic>;
+  final serviceAccountUserId = serviceAccountUser['id'];
+  expect(
+    serviceAccountUserId,
+    isA<String>().having((value) => value.isNotEmpty, 'is not empty', isTrue),
+    reason: 'Keycloak returned no service-account user id: '
+        '$serviceAccountUserBody',
+  );
+
+  final roleRequest = await client.getUrl(
+    adminBaseUri.resolve(
+      'admin/realms/$_keycloakRealm/roles/'
+      '${Uri.encodeComponent(_provisioningRealmRole)}',
+    ),
+  );
+  roleRequest.headers.set(HttpHeaders.authorizationHeader, 'Bearer $adminToken');
+  final roleResponse = await roleRequest.close();
+  final roleBody = await utf8.decoder.bind(roleResponse).join();
+  expect(roleResponse.statusCode, HttpStatus.ok, reason: roleBody);
+  final role = jsonDecode(roleBody);
+  expect(
+    role,
+    isA<Map<String, dynamic>>().having(
+      (value) => value['id'],
+      'app-access-provisioner role id',
+      isA<String>().having((value) => value.isNotEmpty, 'is not empty', isTrue),
+    ),
+    reason: 'The realm has no `$_provisioningRealmRole` role to grant. It is '
+        'created out of band; this test cannot create it, only assign it.',
+  );
+
+  final mappingRequest = await client.postUrl(
+    adminBaseUri.resolve(
+      'admin/realms/$_keycloakRealm/users/'
+      '${Uri.encodeComponent(serviceAccountUserId as String)}'
+      '/role-mappings/realm',
+    ),
+  );
+  mappingRequest.headers.contentType = ContentType.json;
+  mappingRequest.headers.set(
+    HttpHeaders.authorizationHeader,
+    'Bearer $adminToken',
+  );
+  // A one-element JSON array of the full role representation.
+  mappingRequest.write(jsonEncode([role]));
+  final mappingResponse = await mappingRequest.close();
+  final mappingBody = await utf8.decoder.bind(mappingResponse).join();
+  expect(
+    mappingResponse.statusCode,
+    HttpStatus.noContent,
+    reason: mappingBody,
+  );
 }
 
 Future<String> _getKeycloakClientSecret({
