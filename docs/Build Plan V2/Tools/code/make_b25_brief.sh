@@ -62,6 +62,14 @@ Two device traps that already cost time:
   compiled into the build you are running. If that line does NOT appear, stop — the APK was built
   without \`--dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true\` and has no route to sign-in at all,
   which is a build problem, not a product one.
+- **A screenshot's coordinates go stale the moment the keyboard opens or the view scrolls, and the
+  tap still "succeeds".** Reported independently by two runs on 2026-09-12: opening the IME shifts a
+  creation dialog's layout, so coordinates read from an earlier screenshot land on the wrong field or
+  on nothing. \`adb\` reports the tap as sent either way — there is no error. **Re-screenshot after
+  every keyboard open and every scroll, immediately before tapping**, and when a tap appears to do
+  nothing, **confirm against Postgres that it wrote nothing** rather than assuming it missed.
+- **\`adb shell input keyevent 61\` (TAB) does NOT move focus** in these creation forms. Do not use it
+  to move between fields; tap each field directly.
 - **\`uiautomator dump\` returns stale trees here.** When it disagrees with a screenshot, the screenshot
   wins; never report an affordance missing on the strength of a dump alone.
 - **The emulator is NOT on this machine and a bare \`adb devices\` here returns an EMPTY list, not an
