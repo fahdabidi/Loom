@@ -1,8 +1,13 @@
 **Workflow:** `photo-walk-rsvp` in Camera Club
-**Outcome:** PARTIAL — a live UI write was driven and independently confirmed in Postgres, but the
-instance rests in its **initial** state `draft`; the only advance out of `draft` (`publish-walk`) is
-blocked by a client-side defect, so this run does **not** meet the "terminal or clearly-advanced
-state" half of the proof standard and must not be counted as a full proof.
+**Outcome:** PARTIAL at the time of this run, **RESOLVED later the same day — see the addendum at the
+end of this file.** The blocking defect was traced, fixed (`58e9e122`), rebuilt into the APK, and the
+same instance was then advanced `draft` → `open` through the UI and confirmed in Postgres.
+**Both halves of the proof standard were met** for this row, across this run plus that confirmation
+run. (That sentence is kept on one line deliberately: `check_b25_status.sh` matches this phrase with a
+line-based grep, so wrapping it mid-phrase makes a proven row read as unproven.)
+
+The original PARTIAL assessment below is left exactly as written rather than rewritten — it was
+correct when made, and it is the record of what the defect looked like from the outside.
 
 **Package identity:** `Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc`
 - `skillVersion`: `3.3.0`
@@ -167,3 +172,66 @@ throughout but `*.png` is gitignored, so this manifest is the durable record.
 
 **No test suites were run** — this was a device walkthrough and touched no code, so suite totals
 would be unchanged and reporting them would add nothing verifiable.
+
+---
+
+## Addendum — 2026-09-12, the blocker was fixed and this instance advanced
+
+The run above could not leave `draft` because the card rendered "Could not load available actions".
+That is now resolved, and this row meets both halves of the proof standard.
+
+**Root cause** (traced by the root cause agent, session key `available-actions-blocked`, then
+confirmed live rather than left as a code-derived prediction): the RSVP card issued two requests — the
+parent event's available transitions, and a **response row's**. `LocalWorkflowEngineApi` evaluates
+transitions against supplied synthetic state, so a not-yet-existent response row was harmless locally;
+`RemoteWorkflowEngineApi` addresses a persisted instance by id and ignores supplied state, so the
+second request asked about a row that cannot exist, and its failure discarded the parent's already
+loaded actions. Circular: the response row does not exist until the walk is published, publishing
+needs the Publish button, and the button was hidden because the row was missing.
+
+Confirmed against the deployed service before any fix was written:
+
+```
+parent event  -> HTTP 200, transitions: publish-walk, cancel-walk
+empty id      -> HTTP 404 route_not_found
+synthetic id  -> HTTP 404 workflow_instance_not_found
+```
+
+**Fix:** `58e9e122` — synthetic evaluation is gated on the engine not being remote (a check that also
+covers the replica-fallback wrapper, which implements the API rather than extending it), and a failed
+response-action load no longer discards event-level actions already in hand.
+
+**Rebuilt and installed:** APK built on the VM 06:17:54, transferred and verified byte-identical by
+sha256, installed on `emulator-5554` 06:19:23. Earlier builds did not carry the fix.
+
+**The confirmation run, driven through the UI only — no `curl` against the workflow service:**
+
+```
+BEFORE  current_state | draft
+        created_at    | 1789214344974   updated_at | 1789214344974   (identical; never advanced)
+
+AFTER   current_state | open
+        created_at    | 1789214344974   updated_at | 1789219411981   (2026-09-12 13:23:31 UTC)
+```
+
+`publish-walk` is declared `from: ["draft"] → to: "open"`, guarded `camera-club-organizer`; the stored
+state matches the declaration. The tap was stamped at `epoch_ms=1789219411701` and the row's
+`updated_at` is 280 ms later, tying the write to the interaction.
+
+**The circular dependency demonstrably broke.** The response row whose prior non-existence hid the
+button was minted 373 ms after the publish:
+
+```
+community_camera_club_photo-walk-response_twxhtip3nmsu | pending | fan-camera-organizer-1
+instance_data: {"eventId":"community_camera_club_photo-walk-rsvp_ak8lexbtkj3r",
+                "fanId":"fan-camera-organizer-1"}
+```
+
+**Independently re-verified by the dispatching session**, not accepted from the agent's report: both
+rows were queried directly in `loom_workflow_service` after the run — the event reads `open` with
+`updated_at` moved ~5067 s past creation, and the response row exists in `pending` for that organizer.
+
+Before the tap, the card showed the parent's Publish and Cancel actions alongside a plain
+informational line, "No response record is available for you for this event" — the missing row is now
+reported rather than swallowing the actions. After the tap it rendered the open-state affordances, and
+the state survived a force-stop and relaunch, where the original failure had survived a restart too.
