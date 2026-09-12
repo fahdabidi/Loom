@@ -193,3 +193,72 @@ looks like a product defect:
 
 A gate nobody runs is a gate that does not exist — that is how six live violations sat unread after
 the tool that finds them was built and closed as done.
+
+---
+
+# Masjid Nur run plan — 7 rows in 6 runs, two of them paired
+
+Swept 2026-09-12 from the shipped package. Masjid is the first cluster after Data Portability
+because the parity gate flagged only `masjid-nur-admin` (the **generated governance** role) and
+**not** the domain roles its walkthroughs actually use — `owner` (2 holders) and `community-member`
+(2 holders) both passed the exact-set comparison.
+
+## Two rows have NO create action and are effect-created — do not brief them standalone
+
+| Row | Created by | Spawning transition guarded by |
+|---|---|---|
+| `mosque-neutral-notification` | `approve-and-assign-care-request` on **`mosque-care-request`** (`submitted` -> `assigned`) | `owner` |
+| `mosque-donor-visibility` | the donation's `pending` -> `paid` transition (the `record-offline-payment` path) | `owner` |
+
+**Both spawned rows are then drivable ONLY by the original member, not by the owner**, because their
+transitions guard on `actorEqualsField`:
+
+- notification prefills `recipientFanId: "{requesterFanId}"`, and all five of its transitions are
+  `actorEqualsField: recipientFanId`
+- donor-visibility prefills `donorFanId: "{payerFanId}"`, and all three of its transitions are
+  `actorEqualsField: donorFanId`
+
+So each paired run needs **two identity switches**: member creates, owner advances, member closes.
+That is unavoidable, and it is the highest SSO-trap exposure in the campaign — brief it with the
+clear-BOTH rule and verify `created_by_fan_id` on every row.
+
+## Suggested runs
+
+| # | Identity path | Rows banked |
+|---|---|---|
+| A | member -> owner -> member | `mosque-care-request` (-> `withdrawn`, terminal, member-only) **and** `mosque-neutral-notification` (-> `archived`, terminal) |
+| B | member -> owner -> member | `mosque-donor-visibility` (state change; see caveat) |
+| C | owner only | `mosque-announcement`: `draft` -> `previewed` -> `sent` -> `archived` (terminal) |
+| D | owner only | `mosque-event-rsvp`: create -> `publish-event` -> `cancel-event` -> `cancelled` (terminal) |
+| E | owner only | `mosque-volunteer-signup`: create -> `close-volunteer-shift` -> `closed` (terminal) |
+| F | member or owner | `mosque-search-ai-citation`: "Ask Masjid Nur" -> `provide-curated-answer` (owner) -> `answered` |
+
+**Caveat on B:** `mosque-donor-visibility` declares **no terminal states at all** — `public`,
+`anonymous`, `restricted`, none `isTerminal`. It cycles by design. So the proof is a *clearly
+advanced* state (e.g. `restricted` -> `public`), not a terminal one. Say so in the manifest rather
+than claiming a terminal state that does not exist.
+
+**Caveat on D:** `mosque-event-rsvp`'s RSVP transitions (`rsvp-going`, `rsvp-maybe`, waitlist,
+reminders) are all `community-member`-guarded. The owner can still create, publish and cancel, which
+is enough for the row. Driving the RSVPs themselves needs a member and is optional — do not switch
+identity just for richness.
+
+## The truncation hazard here is specific and has already corrupted evidence once
+
+`mosque-donor-visibility` inherits `donorFanId` from the donation's **`payerFanId`**, which is a
+typed field. On 2026-09-08 a walkthrough typed `fan-hoa-member-1` into a `payerFanId` and the device
+received **`fan-hoa-memb`** — nothing errored, the row persisted, and the instance was addressed to a
+fan that does not exist. If that happens here the spawned donor-visibility row gets a truncated
+`donorFanId`, and then **every one of its `actorEqualsField` transitions silently fails**, which will
+present as "no buttons render" rather than as a bad value.
+
+So for run B: prefer selecting the payer over typing it; and **read `payerFanId` back from Postgres
+before firing the owner's payment transition**, not off the screen.
+
+## A free measurement to attach to run A or B
+
+Both spawned rows interpolate a field from their parent (`{requesterFanId}`, `{payerFanId}`). Ask the
+run to report the stored value verbatim. This is the *third* interpolation context in the campaign —
+alongside `{id}` in effect fields (measured 2026-09-12, resolves correctly) and `{context.id}` in a
+`scope: "instance"` create prefill (pending on the transfer pair). Cheap to collect while the run is
+happening anyway, and it feeds the open `transitionRelated` resolver question.
