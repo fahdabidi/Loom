@@ -99,6 +99,14 @@ volunteer needs, and care. It must not be a global workflow list or generic repe
 | wf_multi-persona-workflow-evidence | admin | Actor-to-receiver handoff | admin-created announcement state, persona switch path, receiver target | App Shell/events/persona test harness | B20/B25 |
 | wf_multi-persona-workflow-evidence | member | Receiver handoff evidence | received announcement, sender/body/timestamp, read state, continuation action | App Shell/events/persona test harness | B20/B25 |
 
+> **The `wf_*` rows above are not workflows, and are not part of the production bar.** They are literal
+> Dart `testWidgets` names, disclaimed in this document's header note — no `LoomWorkflowDefinition` with
+> those ids exists anywhere. `check_b25_status.sh` excludes them by matching the `wf_` prefix, which is why
+> the bar is **72** rows and not 77. They are listed in these tables because those tests genuinely exercise
+> this community, not because they are shippable rows. **Do not author engine-native JSON for them**, and
+> do not mark the rows themselves — the first column is a parsed contract, and editing it corrupts the
+> generated interaction-model asset.
+
 ## 7. Persona And State Matrix
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
@@ -118,6 +126,14 @@ volunteer needs, and care. It must not be a global workflow list or generic repe
 | wf_community-persona-aware-ux | member sees member actions | admin receives submitted state where applicable | read-only admin rows explained | admin actions disabled/hidden | unauthorized role cannot act |
 | wf_multi-persona-workflow-evidence | admin publishes handoff state | member receives announcement/read state | prior handoff state readable | publish disabled without body/audience | non-admin cannot create handoff |
 | wf_multi-persona-workflow-evidence | member opens received state | admin sees delivery/read state | received announcement remains readable | receive action disabled after read | non-recipient hidden |
+
+> **The `wf_*` rows above are not workflows, and are not part of the production bar.** They are literal
+> Dart `testWidgets` names, disclaimed in this document's header note — no `LoomWorkflowDefinition` with
+> those ids exists anywhere. `check_b25_status.sh` excludes them by matching the `wf_` prefix, which is why
+> the bar is **72** rows and not 77. They are listed in these tables because those tests genuinely exercise
+> this community, not because they are shippable rows. **Do not author engine-native JSON for them**, and
+> do not mark the rows themselves — the first column is a parsed contract, and editing it corrupts the
+> generated interaction-model asset.
 
 ## 8. Content And Seed Data Requirements
 
@@ -162,6 +178,14 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | wf_multi-persona-workflow-evidence | admin | Admin creates a real announcement handoff and verifies which member persona will receive it. | publish announcement, preview receiver, switch persona | edit announcement, save draft, change audience | Fresh screenshots must show actor-created announcement state, body/audience/timestamp, persona switch, and receiver target. |
 | wf_multi-persona-workflow-evidence | member | Member receives the admin-created announcement and can read or continue from the receiver state. | receive announcement, mark read, open inbox | archive, request follow-up, keep unread | Fresh screenshots must show sender/body/timestamp, received/read state, and continuation action. |
 
+> **The `wf_*` rows above are not workflows, and are not part of the production bar.** They are literal
+> Dart `testWidgets` names, disclaimed in this document's header note — no `LoomWorkflowDefinition` with
+> those ids exists anywhere. `check_b25_status.sh` excludes them by matching the `wf_` prefix, which is why
+> the bar is **72** rows and not 77. They are listed in these tables because those tests genuinely exercise
+> this community, not because they are shippable rows. **Do not author engine-native JSON for them**, and
+> do not mark the rows themselves — the first column is a parsed contract, and editing it corrupts the
+> generated interaction-model asset.
+
 
 ### B25 Card Surface Registry Mapping
 
@@ -182,6 +206,14 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | `wf_demo-app-persona-picker` | [app-shell](../15-main-loom-app-app-shell-and-required-structure.md) | `CommunityAppShellApi` | persona switch, active role, capability preview, hidden/disabled state | Demo renderer must show persona options, selected role, capability impact, and current community state. |
 | `wf_community-persona-aware-ux` | [app-shell](../15-main-loom-app-app-shell-and-required-structure.md) | `CommunityAppShellApi` | actor/receiver/read-only/disabled/hidden role rendering | Demo renderer must show admin/member differences, disabled/hidden explanations, and role-driven workflow availability. |
 | `wf_multi-persona-workflow-evidence` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | actor-created announcement, persona switch, receiver inbox/read state | Demo renderer must show admin-created sender/body/audience/timestamp and member receiver/read continuation. |
+
+> **The `wf_*` rows above are not workflows, and are not part of the production bar.** They are literal
+> Dart `testWidgets` names, disclaimed in this document's header note — no `LoomWorkflowDefinition` with
+> those ids exists anywhere. `check_b25_status.sh` excludes them by matching the `wf_` prefix, which is why
+> the bar is **72** rows and not 77. They are listed in these tables because those tests genuinely exercise
+> this community, not because they are shippable rows. **Do not author engine-native JSON for them**, and
+> do not mark the rows themselves — the first column is a parsed contract, and editing it corrupts the
+> generated interaction-model asset.
 
 ## 10. Review And Remediation Log
 
