@@ -670,6 +670,39 @@ This is also why the parity gates exist and why there are now three of them
 compares the same capability across two layers, which is the only check that can see this class.
 surface.
 
+### A local engine that accepts synthetic state and a remote adapter that only addresses persisted rows are different contracts
+
+Found 2026-09-12, by a walkthrough that could not advance a workflow and a root cause agent that traced
+why. The calendar RSVP card loads a card in two requests: the real event's available transitions, and a
+**response row's** transitions. `LocalWorkflowEngineApi` can evaluate transitions against *supplied
+synthetic state*, so a response row that does not exist yet is harmless locally. `RemoteWorkflowEngineApi`
+cannot: it addresses a **persisted instance** by id and ignores supplied state. So the second request asks
+the server about a row that cannot exist, and its failure discarded the first request's successfully
+loaded actions.
+
+The result is a **circular dependency that only exists on the remote path**: the response row does not
+exist until the walk is published, publishing requires the Publish button, and the Publish button is
+hidden because loading the not-yet-existent response row failed. The instance can never leave its initial
+state through the UI.
+
+**Both halves were verified, in opposite directions.** The parent request genuinely returns `200` with
+both transitions for that exact instance and caller. The second genuinely 404s — an empty instance id
+gives `route_not_found`, a synthetic id gives `workflow_instance_not_found`. Neither was inferred.
+
+Three things generalize:
+
+- **"Same engine" is not "same contract."** This file already says the workflow service runs the same
+  engine as the local path but not the same *context*; this is the sharper version — the local API
+  accepts a shape of question the remote API cannot answer at all, so a UI written against the first
+  fails deterministically against the second.
+- **Local-engine tests pass throughout.** There is an existing test asserting exactly the intended
+  behaviour ("missing custom response row keeps organizer event-level actions visible") and it passes,
+  because it runs through the installed local engine. A green suite over the wrong adapter proves
+  nothing about the shipped path.
+- **A failed secondary load must not discard a successful primary one.** Whatever the cause, hiding
+  actions you already hold because a *different* request failed converts a partial degradation into a
+  dead end.
+
 ## Evidence rules
 
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A
