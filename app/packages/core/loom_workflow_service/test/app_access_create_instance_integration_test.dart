@@ -687,6 +687,12 @@ Future<void> _seedAppAccess({
     },
     idempotencyKey: 'b3-membership-$unique',
     bearerToken: bearerToken,
+    // This call targets App Access, not workflow-service, so it needs App
+    // Access's actor header (`X-Loom-Actor`) rather than the `fanId:`
+    // parameter's `x-loom-fan-id`. Reusing `fanId:` here would set the wrong
+    // header and 400 with the same `missing_actor` -- exactly what the install
+    // call above hit before it was fixed.
+    actorHeader: fanId,
   );
   expect(membership.statusCode, HttpStatus.ok, reason: membership.body);
 }
@@ -745,6 +751,7 @@ Future<_HttpResult> _sendJson(
   required Map<String, dynamic> body,
   required String idempotencyKey,
   String? fanId,
+  String? actorHeader,
   String? bearerToken,
 }) async {
   final request = await client.openUrl(method, uri);
@@ -759,6 +766,13 @@ Future<_HttpResult> _sendJson(
       HeaderWorkflowIdentityExtractor.defaultHeaderName,
       fanId,
     );
+  }
+  // App Access reads its actor from `X-Loom-Actor` (`CallerActor.ACTOR_HEADER`),
+  // a different header from the workflow-service `x-loom-fan-id` set above.
+  // This is deliberately a separate parameter: a Target that needs one never
+  // needs the other, and conflating them 400s with `missing_actor`.
+  if (actorHeader != null) {
+    request.headers.set('X-Loom-Actor', actorHeader);
   }
   request.write(jsonEncode(body));
   final response = await request.close();
