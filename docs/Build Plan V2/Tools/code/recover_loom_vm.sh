@@ -256,8 +256,14 @@ if run_stage k3s; then
     fi
   fi
 
-  echo "  Waiting for all pods in the loom namespace to reach 1/1 (up to 180s;"
-  echo "  readiness probes take a couple of minutes after a cold start)..."
+  echo "  Waiting for all pods in the loom namespace to reach 1/1 (up to 480s)."
+  echo "  MEASURED 2026-09-12 after a real unplanned reboot: full readiness took"
+  echo "  about SEVEN minutes. The previous 180s limit expired while app-access,"
+  echo "  fan-passport and keycloak were still 0/1, so this script declared"
+  echo "  FAILURE on a cluster that was merely still starting -- and stages 2"
+  echo "  and 3 then failed for the same reason, compounding one wrong verdict"
+  echo "  into three. A recovery script that cries wolf gets ignored, which is"
+  echo "  the same end state as one that lies."
   pods_all_ready() {
     local out ready total
     out="$(kubectl get pods -n loom --no-headers 2>/dev/null)" || return 1
@@ -266,7 +272,7 @@ if run_stage k3s; then
     ready="$(echo "$out" | awk '{split($2,a,"/"); if (a[1]==a[2] && a[1]!=0) c++} END{print c+0}')"
     [ "$ready" = "$total" ]
   }
-  if wait_for 180 5 "all loom pods 1/1" pods_all_ready; then
+  if wait_for 480 5 "all loom pods 1/1" pods_all_ready; then
     echo "  All pods 1/1:"
     kubectl get pods -n loom --no-headers | sed 's/^/    /'
   else
