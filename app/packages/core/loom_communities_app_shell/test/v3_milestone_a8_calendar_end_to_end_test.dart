@@ -166,6 +166,7 @@ Widget _calendar(
   ValueChanged<WorkflowInstance?>? onFocusedInstanceChanged,
 }) {
   final fanId = accountId ?? _fixtureFanIdForRole(roleId);
+  final resolvedAuthApi = authApi ?? LocalAuthApi();
   if (installed.engine case final LocalWorkflowEngineApi engine) {
     engine.setRoleForFan(fanId, roleId);
   }
@@ -173,8 +174,11 @@ Widget _calendar(
     home: ActiveIdentityScope(
       identity: ActiveIdentityContext(
         accountId: fanId,
-        authApi: authApi ?? LocalAuthApi(),
+        authApi: resolvedAuthApi,
         roleId: roleId,
+        communityMemberLoader: () => resolvedAuthApi.listCommunityMembers(
+          communityExtensionId: installed.community.extensionId,
+        ),
       ),
       child: Scaffold(
         body: SingleChildScrollView(
@@ -663,6 +667,32 @@ void _addAgendaTileFactFixture(Map<String, dynamic> source) {
   friday['organizerNote'] = 'Keep this off the compact row';
 }
 
+void _addNullableFanListEditorFixture(Map<String, dynamic> source) {
+  final experience = source['experience'] as Map<String, dynamic>;
+  final definitions = experience['workflowDefinitions'] as Map<String, dynamic>;
+  final event = definitions['event-rsvp'] as Map<String, dynamic>;
+  final open =
+      (event['states'] as Map<String, dynamic>)['open'] as Map<String, dynamic>;
+  (open['editableFields'] as List<dynamic>).add('cohostFanIds');
+  (event['instanceDataSchema']
+      as Map<String, dynamic>)['cohostFanIds'] = <String, dynamic>{
+    'type': 'fanId[]?',
+    'storage': 'inline',
+    'labelTemplate': 'Cohosts: {value.length}',
+  };
+  final instances = experience['workflowInstances'] as List<dynamic>;
+  final friday =
+      instances.firstWhere(
+            (instance) =>
+                (instance as Map<String, dynamic>)['instanceId'] ==
+                'event-friday-game-night',
+          )
+          as Map<String, dynamic>;
+  (friday['instanceData'] as Map<String, dynamic>)['cohostFanIds'] = [
+    'fan-departed',
+  ];
+}
+
 void _addContainerFixture(Map<String, dynamic> source) {
   final instances =
       (source['experience'] as Map<String, dynamic>)['workflowInstances']
@@ -816,6 +846,86 @@ Future<void> _deleteSeriesWithScope(
 }
 
 void main() {
+  testWidgets(
+    'Calendar fanId[]? editor preserves departed ids and stores selected fan ids',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install(
+          'calendar-nullable-fan-list-editor',
+          configure: _addNullableFanListEditorFixture,
+        ),
+      ))!;
+      final auth = activeAuthForCommunity(
+        community: installed.community,
+        experience: installed.experience,
+        roleId: 'tabletop-organizer',
+      );
+      try {
+        await tester.pumpWidget(
+          _calendar(installed, 'tabletop-organizer', authApi: auth),
+        );
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        final editor = find.byKey(
+          const ValueKey(
+            'event-rsvp-editor-event-friday-game-night-cohostFanIds',
+          ),
+        );
+        await _pumpUntil(tester, editor);
+        await tester.ensureVisible(editor);
+        await _pumpUntil(
+          tester,
+          find.byKey(const ValueKey('fan-id-picker-unknown-fan-departed')),
+        );
+
+        expect(
+          find.byKey(const ValueKey('fan-id-picker-unknown-fan-departed')),
+          findsOneWidget,
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('fan-id-picker-member-tabletop-member-04')),
+        );
+        await tester.pump();
+        final save = find.byKey(
+          const ValueKey('event-rsvp-save-event-friday-game-night'),
+        );
+        await tester.ensureVisible(save);
+        await tester.tap(save);
+        await tester.pump();
+        await _settleMutation(
+          tester,
+          observe: () => _observeInstanceCondition(
+            installed,
+            instanceId: 'event-friday-game-night',
+            condition: (instance) =>
+                (instance.instanceData['cohostFanIds'] as List?)?.contains(
+                  'tabletop-member-04',
+                ) ==
+                true,
+            state: (instance) =>
+                'cohostFanIds=${instance.instanceData['cohostFanIds']}',
+          ),
+          description: 'fan-id calendar edit',
+        );
+
+        final updated = await _instance(
+          tester,
+          installed,
+          'event-friday-game-night',
+        );
+        expect(updated.instanceData['cohostFanIds'], [
+          'fan-departed',
+          'tabletop-member-04',
+        ]);
+        expect(
+          updated.instanceData['cohostFanIds'],
+          isNot(contains('tabletop-member')),
+        );
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
   testWidgets(
     'Calendar event detail editors are organizer-only and persist through the engine',
     (tester) async {

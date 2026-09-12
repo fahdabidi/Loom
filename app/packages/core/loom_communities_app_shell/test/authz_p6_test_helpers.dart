@@ -32,6 +32,13 @@ class TestActiveAuthApi implements LoomAuthApi {
   LoomSession? get currentSession => _session;
 
   @override
+  Future<List<LoomCommunityMember>> listCommunityMembers({
+    required String communityExtensionId,
+  }) => _delegate.listCommunityMembers(
+    communityExtensionId: communityExtensionId,
+  );
+
+  @override
   Future<List<LoomAccount>> listAccounts({
     required String communityExtensionId,
   }) => _delegate.listAccounts(communityExtensionId: communityExtensionId);

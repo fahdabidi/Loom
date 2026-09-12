@@ -55,6 +55,25 @@ class LoomAccount {
   int get hashCode => Object.hash(accountId, roleId);
 }
 
+/// One person in the community member directory used by typed fan-id forms.
+///
+/// Unlike [LoomAccount], this shape deliberately retains every role assigned
+/// to the person. A form stores [fanId]; role ids are presentation metadata
+/// only and must never be substituted for that fan id.
+class LoomCommunityMember {
+  const LoomCommunityMember({
+    required this.fanId,
+    required this.roleIds,
+    required this.status,
+    required this.displayLabel,
+  });
+
+  final String fanId;
+  final List<String> roleIds;
+  final MembershipStatus status;
+  final String displayLabel;
+}
+
 /// A signed-in session binding one [LoomAccount] to the current user.
 class LoomSession {
   final LoomAccount account;
@@ -122,6 +141,12 @@ class LoomAuthException implements Exception {
 /// own pattern — one `Local*` implementation for demo/stub usage, a
 /// separate remote implementation when a real backend exists.
 abstract class LoomAuthApi {
+  /// Lists people without collapsing multi-role memberships into
+  /// [LoomAccount]'s single-role shape.
+  Future<List<LoomCommunityMember>> listCommunityMembers({
+    required String communityExtensionId,
+  });
+
   /// Lists every account registered for this community extension.
   Future<List<LoomAccount>> listAccounts({
     required String communityExtensionId,

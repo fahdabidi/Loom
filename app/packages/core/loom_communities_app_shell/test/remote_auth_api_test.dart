@@ -117,6 +117,52 @@ void main() {
   );
 
   test(
+    'member directory retains all role ids without listAccounts projection',
+    () async {
+      final session = _RemoteTestSession('fan-alice');
+      final client = MockClient((request) async {
+        _expectRemoteHeaders(request, expectedToken: session.token);
+        if (request.url.path == '/api/v1/fans/fan-alice/communities') {
+          return _jsonResponse({
+            'communities': [
+              _communityMembership(fanId: 'fan-alice', roleId: 'hoa-member'),
+            ],
+          });
+        }
+        if (request.url.path ==
+            '/api/v1/apps/$_appId/groups/$_groupId/members') {
+          final membership = _membership(
+            fanId: 'fan-alice',
+            roleId: 'hoa-member',
+          );
+          membership['roleIds'] = ['hoa-member', 'hoa-board'];
+          return _jsonResponse({
+            'items': [membership],
+            'pageInfo': {'hasMore': false, 'nextCursor': null},
+          });
+        }
+        if (request.url.path == '/api/v1/fan-passports/fan-alice') {
+          return _jsonResponse(_passport('fan-alice', 'Alice Active'));
+        }
+        throw StateError(
+          'Unexpected request: ${request.method} ${request.url}',
+        );
+      });
+      addTearDown(client.close);
+      final api = _remoteApi(session, client);
+
+      final members = await api.listCommunityMembers(
+        communityExtensionId: _extensionId,
+      );
+
+      expect(members.single.fanId, 'fan-alice');
+      expect(members.single.roleIds, ['hoa-member', 'hoa-board']);
+      expect(members.single.status, MembershipStatus.active);
+      expect(members.single.displayLabel, 'Alice Active');
+    },
+  );
+
+  test(
     'signIn resolves its group and role from the live fan community membership',
     () async {
       final session = _RemoteTestSession('fan-alice');

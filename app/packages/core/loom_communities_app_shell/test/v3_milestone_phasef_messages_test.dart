@@ -303,8 +303,8 @@ void main() {
         expect(archived.currentState, 'archived');
 
         // F.4: the tab-scoped creation grammar scans the same JSON binding and
-        // exposes the real New thread FAB. The generic form uses the existing
-        // audience-style picker for participantFanIds.
+        // exposes the real New thread FAB. participantFanIds is backed by the
+        // community member directory, never by the role audience picker.
         final fab = find.byKey(
           const ValueKey('creatable-fab-discussion-thread'),
         );
@@ -316,7 +316,7 @@ void main() {
         await _pumpUntil(tester, subjectEditor);
         await tester.enterText(subjectEditor, 'New table setup ideas');
         final memberChoice = find.byKey(
-          const ValueKey('audience-picker-member-tabletop-member'),
+          const ValueKey('fan-id-picker-member-tabletop-member'),
         );
         await _pumpUntil(tester, memberChoice);
         // The v4 prefill already includes the actor; the picker proves the

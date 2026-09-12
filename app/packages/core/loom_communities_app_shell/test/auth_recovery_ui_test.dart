@@ -151,6 +151,11 @@ final class _ThrowingAccountDirectoryAuthApi implements LoomAuthApi {
   );
 
   @override
+  Future<List<LoomCommunityMember>> listCommunityMembers({
+    required String communityExtensionId,
+  }) async => throw StateError('OAuth session is no longer usable');
+
+  @override
   Future<List<LoomAccount>> listAccounts({
     required String communityExtensionId,
   }) async => throw StateError('OAuth session is no longer usable');

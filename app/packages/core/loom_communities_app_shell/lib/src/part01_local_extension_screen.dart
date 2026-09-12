@@ -480,11 +480,13 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   }
 
   Future<void> _openCreatableAction({
+    required BuildContext identityContext,
     required _CreatableWorkflowAction action,
     required LoomActorIdentity activeActorIdentity,
     required String presentationStyle,
   }) async {
     final content = await _creationContentFor(
+      identityContext: identityContext,
       action: action,
       activeActorIdentity: activeActorIdentity,
     );
@@ -511,9 +513,18 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
   }
 
   Future<Widget> _creationContentFor({
+    required BuildContext identityContext,
     required _CreatableWorkflowAction action,
     required LoomActorIdentity activeActorIdentity,
   }) async {
+    // Capture and start the scoped lookup before any dialog/bottom-sheet
+    // builder runs; those overlay builders do not re-provide this scope.
+    final communityMembers =
+        action.machine.instanceDataSchema.values.any(
+          (schema) => _isFanIdFieldType(schema.type),
+        )
+        ? ActiveIdentityScope.of(identityContext).loadCommunityMembers()
+        : null;
     final experience = experienceForExtensionId(
       community.extensionId,
       communityId: community.communityId,
@@ -537,6 +548,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       keyPrefix: keyPrefix,
       title: action.label,
       resolvedInitialValues: action.resolvedInitialValues,
+      communityMembers: communityMembers,
       audienceCandidates: [
         for (final actorIdentity
             in experience.actorIdentities ?? const <LoomActorIdentity>[])
@@ -1107,9 +1119,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                         'actor-identity-option-${activeAccountIdentity.roleId}',
                       ),
                       selected: true,
-                      selectedTileColor: dialogAccent?.withValues(
-                        alpha: 0.08,
-                      ),
+                      selectedTileColor: dialogAccent?.withValues(alpha: 0.08),
                       leading: Icon(
                         Icons.radio_button_checked,
                         color: dialogAccent,
@@ -1126,9 +1136,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                             ? TextStyle(color: communityCard.resolvedBody)
                             : null,
                       ),
-                      onTap: () => Navigator.of(context).pop(
-                        activeAccountIdentity.roleId,
-                      ),
+                      onTap: () => Navigator.of(
+                        context,
+                      ).pop(activeAccountIdentity.roleId),
                     ),
                     const SizedBox(height: 8),
                     if (actorIdentities.any(
@@ -1390,6 +1400,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         accountId: _activeFanId,
         authApi: _authApi,
         roleId: _activeRoleId,
+        communityMemberLoader: () => _authApi.listCommunityMembers(
+          communityExtensionId: community.extensionId,
+        ),
       ),
       child: Builder(
         builder: (context) {
@@ -1932,6 +1945,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                         experience.workflowDefinitions?[workflowType];
                     if (machine == null) return;
                     await _openCreatableAction(
+                      identityContext: context,
                       action: _CreatableWorkflowAction(
                         workflowType: workflowType,
                         machine: machine,
@@ -2027,6 +2041,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     heroTag: 'instance-creatable-fab-${action.workflowType}',
                     tooltip: action.label,
                     onPressed: () => _openCreatableAction(
+                      identityContext: context,
                       action: action,
                       activeActorIdentity: activeActorIdentity,
                       presentationStyle: presentationStyle,
@@ -2043,6 +2058,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                     presentationStyle: presentationStyle,
                     popupContentBuilder: (action) => FutureBuilder<Widget>(
                       future: _creationContentFor(
+                        identityContext: context,
                         action: action,
                         activeActorIdentity: activeActorIdentity,
                       ),
@@ -2055,6 +2071,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                       if (created == true && mounted) setState(() {});
                     },
                     onSelected: (action) => _openCreatableAction(
+                      identityContext: context,
                       action: action,
                       activeActorIdentity: activeActorIdentity,
                       presentationStyle: presentationStyle,

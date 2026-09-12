@@ -52,6 +52,7 @@ class _GenericWorkflowInstanceCardState
   late WorkflowInstance _instance;
   final _controllers = <String, TextEditingController>{};
   final _edits = <String, dynamic>{};
+  Future<List<LoomCommunityMember>>? _communityMembers;
   List<LoomWorkflowTransition> _actions = const [];
   bool _loadingActions = true;
   bool _mutating = false;
@@ -146,7 +147,7 @@ class _GenericWorkflowInstanceCardState
       .toList(growable: false);
 
   String _editorSeedText(String type, Object? value) {
-    if (type != 'list' && type != 'fanId[]') return '${value ?? ''}';
+    if (type != 'list' && !_isFanIdListType(type)) return '${value ?? ''}';
     if (value == null) return '';
     if (value is Iterable) {
       if (value.isEmpty) return '';
@@ -177,11 +178,13 @@ class _GenericWorkflowInstanceCardState
       controller.dispose();
     }
     _controllers.clear();
+    _communityMembers = null;
     for (final key in _editableKeys) {
       final schema = widget.machine.instanceDataSchema[key]!;
       if (schema.type != 'bool' &&
           schema.type != 'date' &&
-          schema.type != 'time') {
+          schema.type != 'time' &&
+          !_isFanIdFieldType(schema.type)) {
         _controllerFor(key, schema);
       }
     }
@@ -670,6 +673,36 @@ class _GenericWorkflowInstanceCardState
     final editorKey = ValueKey(
       'generic-instance-editor-${_instance.instanceId}-$key',
     );
+    if (_isFanIdFieldType(schema.type)) {
+      _communityMembers ??= ActiveIdentityScope.maybeOf(
+        context,
+      )?.loadCommunityMembers();
+      final value = _valueFor(key);
+      final selected = _isFanIdListType(schema.type)
+          ? (value is Iterable ? value : const <dynamic>[])
+                .map((item) => '$item')
+                .where((item) => item.isNotEmpty)
+                .toSet()
+          : value == null || '$value'.isEmpty
+          ? <String>{}
+          : {'$value'};
+      return KeyedSubtree(
+        key: editorKey,
+        child: FanIdFormPicker(
+          label: label,
+          members: _communityMembers,
+          selectedFanIds: selected,
+          multiple: _isFanIdListType(schema.type),
+          nullable: schema.type.endsWith('?'),
+          enabled: !disabled,
+          onChanged: (next) => setState(() {
+            _edits[key] = _isFanIdListType(schema.type)
+                ? (next.toList()..sort())
+                : next.firstOrNull;
+          }),
+        ),
+      );
+    }
     switch (schema.type) {
       case 'bool':
         return SwitchListTile(
@@ -739,7 +772,6 @@ class _GenericWorkflowInstanceCardState
           },
         );
       case 'list':
-      case 'fanId[]':
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: TextField(
@@ -1018,11 +1050,18 @@ Future<Map<String, dynamic>?> _collectTransitionInputs({
   if (precollectedInputsAreComplete) {
     return Future.value(precollectedInputs);
   }
+  // Capture and start this inherited capability before opening the dialog.
+  // Overlay builders do not install another ActiveIdentityScope.
+  final communityMembers =
+      declaredInputs.values.any((spec) => _isFanIdFieldType(spec.type))
+      ? ActiveIdentityScope.maybeOf(context)?.loadCommunityMembers()
+      : null;
   return showDialog<Map<String, dynamic>>(
     context: context,
     builder: (context) => GenericTransitionInputDialog(
       transition: transition,
       instanceData: instanceData,
+      communityMembers: communityMembers,
     ),
   );
 }
@@ -1035,10 +1074,12 @@ class GenericTransitionInputDialog extends StatefulWidget {
     super.key,
     required this.transition,
     required this.instanceData,
+    this.communityMembers,
   });
 
   final LoomWorkflowTransition transition;
   final Map<String, dynamic> instanceData;
+  final Future<List<LoomCommunityMember>>? communityMembers;
 
   @override
   State<GenericTransitionInputDialog> createState() =>
@@ -1226,6 +1267,34 @@ class _GenericTransitionInputDialogState
 
   Widget _field(String key, TransitionInputSpec spec) {
     final fieldKey = ValueKey('generic-transition-input-$key');
+    if (_isFanIdFieldType(spec.type)) {
+      final value = _values[key];
+      final selected = _isFanIdListType(spec.type)
+          ? (value is Iterable ? value : const <dynamic>[])
+                .map((item) => '$item')
+                .where((item) => item.isNotEmpty)
+                .toSet()
+          : value == null || '$value'.isEmpty
+          ? <String>{}
+          : {'$value'};
+      return KeyedSubtree(
+        key: fieldKey,
+        child: FanIdFormPicker(
+          label: _label(key),
+          members: widget.communityMembers,
+          selectedFanIds: selected,
+          multiple: _isFanIdListType(spec.type),
+          nullable: spec.type.endsWith('?'),
+          enabled: true,
+          onChanged: (next) => setState(() {
+            _values[key] = _isFanIdListType(spec.type)
+                ? (next.toList()..sort())
+                : next.firstOrNull;
+            _validationMessage = null;
+          }),
+        ),
+      );
+    }
     // `options` is multi-select for lists.  A text input can also declare
     // options when its persisted contract is a scalar (for example the
     // recurrence position); that remains a single stored string.

@@ -100,6 +100,29 @@ class LocalAuthApi implements LoomAuthApi {
   // ── LoomAuthApi ─────────────────────────────────────────────────────
 
   @override
+  Future<List<LoomCommunityMember>> listCommunityMembers({
+    required String communityExtensionId,
+  }) async {
+    final byFanId = <String, List<LoomAccount>>{};
+    for (final account
+        in _accountsByCommunity[communityExtensionId] ??
+            const <LoomAccount>[]) {
+      (byFanId[account.accountId] ??= []).add(account);
+    }
+    return List.unmodifiable([
+      for (final entry in byFanId.entries)
+        LoomCommunityMember(
+          fanId: entry.key,
+          roleIds: List.unmodifiable({
+            for (final account in entry.value) account.roleId,
+          }),
+          status: entry.value.first.status,
+          displayLabel: entry.value.first.displayName,
+        ),
+    ]);
+  }
+
+  @override
   Future<List<LoomAccount>> listAccounts({
     required String communityExtensionId,
   }) async {

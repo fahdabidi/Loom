@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
@@ -86,6 +88,35 @@ LoomWorkflowStateMachine _labelRegressionMachine() =>
       },
     }, 'label-regression');
 
+LoomWorkflowStateMachine _fanIdMachine() => LoomWorkflowStateMachine.fromJson({
+  'initialState': 'draft',
+  'states': {
+    'draft': {
+      'label': 'Draft',
+      'editableFields': ['participantFanIds'],
+    },
+  },
+  'transitions': const <Map<String, dynamic>>[],
+  'instanceDataSchema': {
+    'participantFanIds': {'type': 'fanId[]', 'required': true},
+  },
+}, 'fan-id-creation');
+
+const _directoryMembers = <LoomCommunityMember>[
+  LoomCommunityMember(
+    fanId: 'fan-x',
+    roleIds: ['x-member', 'x-moderator'],
+    status: MembershipStatus.active,
+    displayLabel: 'Xavier Fan',
+  ),
+  LoomCommunityMember(
+    fanId: 'fan-pending',
+    roleIds: ['x-member'],
+    status: MembershipStatus.pendingApproval,
+    displayLabel: 'Pending Fan',
+  ),
+];
+
 Future<LocalWorkflowEngineApi> _engine() async {
   final engine = LocalWorkflowEngineApi(
     db: WorkflowDatabase.memory(),
@@ -99,6 +130,115 @@ Widget _host(GenericWorkflowCreationCard card) =>
     MaterialApp(home: Scaffold(body: card));
 
 void main() {
+  testWidgets(
+    'fanId[] creation stores fan ids, retains unknown ids, and never stores roles',
+    (tester) async {
+      final machine = _fanIdMachine();
+      final engine = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'fan-id-creation-test',
+      )..registerDefinition(machine);
+      await tester.pumpWidget(
+        _host(
+          GenericWorkflowCreationCard(
+            workflowType: 'fan-id-creation',
+            machine: machine,
+            engine: engine,
+            fanId: 'fan-author',
+            keyPrefix: 'fan-create',
+            resolvedInitialValues: const {
+              'participantFanIds': ['fan-departed'],
+            },
+            // Deliberately distinct identifier spaces. This is the role data
+            // the pre-fix builder incorrectly persisted.
+            audienceCandidates: const [
+              AudienceMultiSelectCandidate(
+                roleId: 'x-member',
+                label: 'Member role',
+              ),
+            ],
+            communityMembers: Future.value(_directoryMembers),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final fanChoice = find.byKey(
+        const ValueKey('fan-id-picker-member-fan-x'),
+      );
+      if (fanChoice.evaluate().isNotEmpty) {
+        expect(
+          find.byKey(const ValueKey('fan-id-picker-unknown-fan-departed')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('audience-picker-member-x-member')),
+          findsNothing,
+        );
+        await tester.tap(fanChoice);
+      } else {
+        // This branch makes the test a discriminating regression oracle for
+        // the pre-fix builder: it can drive that role picker, then the fan-id
+        // assertion below proves that the wrong identifier space was stored.
+        await tester.tap(
+          find.byKey(const ValueKey('audience-picker-member-x-member')),
+        );
+      }
+      await tester.tap(find.byKey(const ValueKey('fan-create-submit')));
+      await tester.pumpAndSettle();
+
+      final created = (await engine.queryInstances(
+        tabId: 'unused',
+        fanId: 'fan-author',
+      )).items.single;
+      expect(created.instanceData['participantFanIds'], [
+        'fan-departed',
+        'fan-x',
+      ]);
+      expect(
+        created.instanceData['participantFanIds'],
+        isNot(contains('x-member')),
+      );
+    },
+  );
+
+  testWidgets('fan directory renders loading, empty, and failed distinctly', (
+    tester,
+  ) async {
+    final machine = _fanIdMachine();
+    final engine = LocalWorkflowEngineApi(
+      db: WorkflowDatabase.memory(),
+      communityId: 'fan-directory-states-test',
+    )..registerDefinition(machine);
+    final loading = Completer<List<LoomCommunityMember>>();
+
+    GenericWorkflowCreationCard card(
+      Future<List<LoomCommunityMember>> members,
+    ) => GenericWorkflowCreationCard(
+      workflowType: 'fan-id-creation',
+      machine: machine,
+      engine: engine,
+      fanId: 'fan-author',
+      keyPrefix: 'fan-states',
+      communityMembers: members,
+    );
+
+    await tester.pumpWidget(_host(card(loading.future)));
+    expect(find.byKey(const ValueKey('fan-id-picker-loading')), findsOneWidget);
+
+    loading.complete(const []);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('fan-id-picker-empty')), findsOneWidget);
+    expect(find.byKey(const ValueKey('fan-id-picker-failed')), findsNothing);
+
+    final failed = Completer<List<LoomCommunityMember>>();
+    await tester.pumpWidget(_host(card(failed.future)));
+    failed.completeError(StateError('directory unavailable'));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('fan-id-picker-failed')), findsOneWidget);
+    expect(find.byKey(const ValueKey('fan-id-picker-empty')), findsNothing);
+  });
+
   testWidgets('creates an instance and calls onCreated', (tester) async {
     final engine = await _engine();
     String? createdId;

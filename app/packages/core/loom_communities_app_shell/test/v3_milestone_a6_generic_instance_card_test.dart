@@ -54,10 +54,30 @@ LoomWorkflowTransition _recurrenceInputTransition() =>
       ],
     }, 'recurrence-input-test').transitions.single;
 
+LoomWorkflowTransition _fanIdInputTransition() =>
+    LoomWorkflowStateMachine.fromJson({
+      'initialState': 'open',
+      'states': {
+        'open': {'label': 'Open'},
+      },
+      'transitions': [
+        {
+          'id': 'assign',
+          'label': 'Assign',
+          'from': ['open'],
+          'to': null,
+          'inputs': {
+            'assigneeFanId': {'type': 'fanId', 'required': true},
+          },
+        },
+      ],
+    }, 'fan-id-transition-input-test').transitions.single;
+
 Widget _transitionInputHost(
   LoomWorkflowTransition transition,
-  ValueChanged<Map<String, dynamic>?> onResult,
-) => MaterialApp(
+  ValueChanged<Map<String, dynamic>?> onResult, {
+  Future<List<LoomCommunityMember>>? communityMembers,
+}) => MaterialApp(
   home: Scaffold(
     body: Builder(
       builder: (context) => FilledButton(
@@ -68,6 +88,7 @@ Widget _transitionInputHost(
             builder: (context) => GenericTransitionInputDialog(
               transition: transition,
               instanceData: const {},
+              communityMembers: communityMembers,
             ),
           ),
         ),
@@ -356,6 +377,21 @@ LoomWorkflowStateMachine _editableListMachine() =>
       },
     }, 'generic-instance-editable-list');
 
+LoomWorkflowStateMachine _nullableFanIdMachine() =>
+    LoomWorkflowStateMachine.fromJson({
+      'initialState': 'open',
+      'states': {
+        'open': {
+          'label': 'Open',
+          'editableFields': ['assigneeFanId'],
+        },
+      },
+      'transitions': <dynamic>[],
+      'instanceDataSchema': {
+        'assigneeFanId': {'type': 'fanId?', 'writableBy': 'formEntry'},
+      },
+    }, 'generic-nullable-fan-id');
+
 GenericWorkflowInstanceCard _card(
   LocalWorkflowEngineApi api,
   WorkflowInstance instance, {
@@ -372,6 +408,134 @@ GenericWorkflowInstanceCard _card(
 );
 
 void main() {
+  testWidgets(
+    'transition fanId input uses the member directory and emits the fan id',
+    (tester) async {
+      Map<String, dynamic>? result;
+      await tester.pumpWidget(
+        _transitionInputHost(
+          _fanIdInputTransition(),
+          (value) => result = value,
+          communityMembers: Future.value(const [
+            LoomCommunityMember(
+              fanId: 'fan-x',
+              roleIds: ['x-member'],
+              status: MembershipStatus.active,
+              displayLabel: 'Xavier Fan',
+            ),
+          ]),
+        ),
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('open-transition-input-dialog')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.byKey(
+            const ValueKey('generic-transition-input-assigneeFanId'),
+          ),
+          matching: find.byType(TextField),
+        ),
+        findsNothing,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('fan-id-picker-member-fan-x')),
+      );
+      await tester.pump();
+      await tester.tap(
+        find.byKey(const ValueKey('generic-transition-input-confirm')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(result, {'assigneeFanId': 'fan-x'});
+      expect(result!['assigneeFanId'], isNot('x-member'));
+    },
+  );
+
+  testWidgets(
+    'generic instance fanId? editor flags an unknown value and stores a fan id',
+    (tester) async {
+      final machine = _nullableFanIdMachine();
+      final api = LocalWorkflowEngineApi(
+        db: WorkflowDatabase.memory(),
+        communityId: 'generic-nullable-fan-id-test',
+      )..registerDefinition(machine);
+      final instanceId = await api.createInstance(
+        workflowType: 'generic-nullable-fan-id',
+        initialInstanceData: const {'assigneeFanId': 'fan-departed'},
+        fanId: 'fan-author',
+      );
+      final instance = (await api.queryInstances(
+        tabId: 'unused',
+        fanId: 'fan-author',
+      )).items.singleWhere((item) => item.instanceId == instanceId);
+      final auth = LocalAuthApi()
+        ..seedAccounts('generic-fans', const [
+          LoomAccount(
+            accountId: 'fan-x',
+            displayName: 'Xavier Fan',
+            roleId: 'x-member',
+          ),
+        ]);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ActiveIdentityScope(
+            identity: ActiveIdentityContext(
+              accountId: 'fan-author',
+              authApi: auth,
+              roleId: 'x-member',
+              communityMemberLoader: () => auth.listCommunityMembers(
+                communityExtensionId: 'generic-fans',
+              ),
+            ),
+            child: Scaffold(
+              body: GenericWorkflowInstanceCard(
+                instance: instance,
+                machine: machine,
+                engine: api,
+                fanId: 'fan-author',
+                roleId: 'x-member',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('fan-id-picker-unknown-fan-departed')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(
+            ValueKey('generic-instance-editor-$instanceId-assigneeFanId'),
+          ),
+          matching: find.byType(TextField),
+        ),
+        findsNothing,
+      );
+      await tester.tap(
+        find.byKey(const ValueKey('fan-id-picker-member-fan-x')),
+      );
+      await tester.pump();
+      await tester.tap(
+        find.byKey(ValueKey('generic-instance-save-$instanceId')),
+      );
+      await tester.pumpAndSettle();
+
+      final updated = (await api.queryInstances(
+        tabId: 'unused',
+        fanId: 'fan-author',
+      )).items.singleWhere((item) => item.instanceId == instanceId);
+      expect(updated.instanceData['assigneeFanId'], 'fan-x');
+      expect(updated.instanceData['assigneeFanId'], isNot('x-member'));
+    },
+  );
+
   testWidgets(
     'weekly recurrence keeps unbounded weekday selections and writes to byDayOfWeek',
     (tester) async {

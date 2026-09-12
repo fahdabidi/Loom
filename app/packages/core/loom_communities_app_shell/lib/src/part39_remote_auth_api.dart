@@ -167,6 +167,47 @@ class RemoteLoomAuthApi implements LoomAuthApi {
   LoomSession? get currentSession => _currentSession;
 
   @override
+  Future<List<LoomCommunityMember>> listCommunityMembers({
+    required String communityExtensionId,
+  }) async {
+    _requireCommunityExtensionId(communityExtensionId);
+    final fanId = await _fanIdFromCurrentSession();
+    final resolvedMembership = await _resolveCommunityMembership(fanId);
+    final memberships = await _listGroupMembers(resolvedMembership.groupId);
+    return Future.wait(
+      memberships.map((membership) async {
+        if (membership.appId != _appId ||
+            membership.groupId != resolvedMembership.groupId) {
+          throw StateError(
+            'App Access returned membership for app "${membership.appId}" '
+            'and group "${membership.groupId}", not configured app "$_appId" '
+            'and resolved group "${resolvedMembership.groupId}".',
+          );
+        }
+        final passport = await _getPassport(membership.fanId);
+        if (passport == null) {
+          throw StateError(
+            'App Access membership for fan "${membership.fanId}" in '
+            'community "$_communityId" has no Fan Passport record.',
+          );
+        }
+        if (passport.fanId != membership.fanId) {
+          throw StateError(
+            'App Access membership fan "${membership.fanId}" does not match '
+            'Fan Passport "${passport.fanId}".',
+          );
+        }
+        return LoomCommunityMember(
+          fanId: membership.fanId,
+          roleIds: List.unmodifiable(membership.roleIds),
+          status: _membershipStatusFor(membership.state),
+          displayLabel: passport.displayName,
+        );
+      }),
+    );
+  }
+
+  @override
   Future<List<LoomAccount>> listAccounts({
     required String communityExtensionId,
   }) async {

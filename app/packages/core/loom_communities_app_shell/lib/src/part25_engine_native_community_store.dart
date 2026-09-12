@@ -11,11 +11,13 @@ class ActiveIdentityContext {
     required this.accountId,
     required this.authApi,
     required this.roleId,
+    this.communityMemberLoader,
   });
 
   final String? accountId;
   final LoomAuthApi authApi;
   final String? roleId;
+  final Future<List<LoomCommunityMember>> Function()? communityMemberLoader;
 
   /// Resolves the engine actor id, preferring the signed-in individual.
   String resolveEngineFanId(String fallbackFanId) => accountId ?? fallbackFanId;
@@ -79,6 +81,20 @@ class ActiveIdentityScopeState extends State<ActiveIdentityScope> {
   LoomAuthApi get authApi => identity.authApi;
   String? get roleId => identity.roleId;
 
+  /// Loads the member directory bound to this community subtree.
+  ///
+  /// A missing injection fails loudly. It must never fall back to role rows or
+  /// the single-role [LoomAuthApi.listAccounts] projection.
+  Future<List<LoomCommunityMember>> loadCommunityMembers() {
+    final loader = identity.communityMemberLoader;
+    if (loader == null) {
+      return Future.error(
+        StateError('No community member directory is installed in this scope.'),
+      );
+    }
+    return loader();
+  }
+
   /// Resolves the effective actor id for an engine call in this scope.
   String resolveEngineFanId(String fallbackFanId) =>
       identity.resolveEngineFanId(fallbackFanId);
@@ -91,6 +107,7 @@ class ActiveIdentityScopeState extends State<ActiveIdentityScope> {
       accountId: accountId,
       authApi: identity.authApi,
       roleId: identity.roleId,
+      communityMemberLoader: identity.communityMemberLoader,
     );
   }
 

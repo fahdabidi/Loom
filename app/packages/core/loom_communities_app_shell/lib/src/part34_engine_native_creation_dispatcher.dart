@@ -19,6 +19,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
     this.title,
     this.resolvedInitialValues = const {},
     this.audienceCandidates = const [],
+    this.communityMembers,
   });
 
   final String? cardSurfaceFamily;
@@ -31,6 +32,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
   final String? title;
   final Map<String, dynamic> resolvedInitialValues;
   final List<AudienceMultiSelectCandidate> audienceCandidates;
+  final Future<List<LoomCommunityMember>>? communityMembers;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +52,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
           title: title,
           resolvedInitialValues: resolvedInitialValues,
           audienceCandidates: audienceCandidates,
+          communityMembers: communityMembers,
         );
       default:
         return GenericWorkflowCreationCard(
@@ -62,6 +65,7 @@ class EngineNativeArchetypeCreationCard extends StatelessWidget {
           title: title,
           resolvedInitialValues: resolvedInitialValues,
           audienceCandidates: audienceCandidates,
+          communityMembers: communityMembers,
         );
     }
   }

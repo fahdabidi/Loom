@@ -1514,6 +1514,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
   WorkflowInstance? _lastAuthoredInstance;
   final _controllers = <String, TextEditingController>{};
   final _edits = <String, dynamic>{};
+  Future<List<LoomCommunityMember>>? _communityMembers;
   List<LoomWorkflowTransition> _actions = const [];
   Set<String> _eventActionIds = const {};
   Set<String> _responseActionIds = const {};
@@ -1580,6 +1581,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       _generation++;
       _edits.clear();
       _disposeControllers();
+      _communityMembers = null;
       _error = null;
       _retry = null;
       _actions = const [];
@@ -1668,7 +1670,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       final schema = widget.machine.instanceDataSchema[key]!;
       if (schema.type != 'bool' &&
           schema.type != 'date' &&
-          schema.type != 'time') {
+          schema.type != 'time' &&
+          !_isFanIdFieldType(schema.type)) {
         _controllerFor(key);
       }
     }
@@ -2493,6 +2496,36 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
       'event-rsvp-editor-${_instance.instanceId}-$key',
     );
     final label = _fieldLabel(key, schema);
+    if (_isFanIdFieldType(schema.type)) {
+      _communityMembers ??= ActiveIdentityScope.maybeOf(
+        context,
+      )?.loadCommunityMembers();
+      final value = _valueFor(key);
+      final selected = _isFanIdListType(schema.type)
+          ? (value is Iterable ? value : const <dynamic>[])
+                .map((item) => '$item')
+                .where((item) => item.isNotEmpty)
+                .toSet()
+          : value == null || '$value'.isEmpty
+          ? <String>{}
+          : {'$value'};
+      return KeyedSubtree(
+        key: editorKey,
+        child: FanIdFormPicker(
+          label: label,
+          members: _communityMembers,
+          selectedFanIds: selected,
+          multiple: _isFanIdListType(schema.type),
+          nullable: schema.type.endsWith('?'),
+          enabled: !disabled,
+          onChanged: (next) => setState(() {
+            _edits[key] = _isFanIdListType(schema.type)
+                ? (next.toList()..sort())
+                : next.firstOrNull;
+          }),
+        ),
+      );
+    }
     switch (schema.type) {
       case 'bool':
         return SwitchListTile(

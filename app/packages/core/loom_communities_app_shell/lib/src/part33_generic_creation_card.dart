@@ -13,6 +13,7 @@ class GenericWorkflowCreationCard extends StatefulWidget {
     this.title,
     this.resolvedInitialValues = const {},
     this.audienceCandidates = const [],
+    this.communityMembers,
   });
 
   final String workflowType;
@@ -24,6 +25,7 @@ class GenericWorkflowCreationCard extends StatefulWidget {
   final String? title;
   final Map<String, dynamic> resolvedInitialValues;
   final List<AudienceMultiSelectCandidate> audienceCandidates;
+  final Future<List<LoomCommunityMember>>? communityMembers;
 
   @override
   State<GenericWorkflowCreationCard> createState() =>
@@ -145,7 +147,7 @@ class _GenericWorkflowCreationCardState
       if (value is String) return num.tryParse(value.trim()) ?? value;
       return value;
     }
-    if (schema.type != 'list' && schema.type != 'fanId[]') return value;
+    if (schema.type != 'list' && !_isFanIdListType(schema.type)) return value;
     if (value is Iterable) return value.toList(growable: false);
     if (value is String) {
       return value
@@ -189,21 +191,30 @@ class _GenericWorkflowCreationCardState
   Widget _editor(String key, InstanceDataField schema) {
     final label = _label(key, schema);
     final editorKey = ValueKey('${widget.keyPrefix}-editor-$key');
-    if (schema.type == 'fanId[]' && widget.audienceCandidates.isNotEmpty) {
-      final selected =
-          (_values[key] is Iterable
-                  ? (_values[key] as Iterable)
-                  : const <dynamic>[])
-              .map((value) => '$value')
-              .toSet();
+    if (_isFanIdFieldType(schema.type)) {
+      final value = _values[key];
+      final selected = _isFanIdListType(schema.type)
+          ? (value is Iterable ? value : const <dynamic>[])
+                .map((item) => '$item')
+                .where((item) => item.isNotEmpty)
+                .toSet()
+          : value == null || '$value'.isEmpty
+          ? <String>{}
+          : {'$value'};
       return KeyedSubtree(
         key: editorKey,
-        child: AudienceMultiSelectPicker(
-          candidates: widget.audienceCandidates,
-          selectedRoleIds: selected,
-          onChanged: (next) =>
-              setState(() => _values[key] = next.toList()..sort()),
+        child: FanIdFormPicker(
           label: label,
+          members: widget.communityMembers,
+          selectedFanIds: selected,
+          multiple: _isFanIdListType(schema.type),
+          nullable: schema.type.endsWith('?'),
+          enabled: !_saving,
+          onChanged: (next) => setState(() {
+            _values[key] = _isFanIdListType(schema.type)
+                ? (next.toList()..sort())
+                : next.firstOrNull;
+          }),
         ),
       );
     }
