@@ -139,3 +139,57 @@ workflow id, so its slug resembles a bar key without being one. I checked this s
 Captures and walkthroughs both need the emulator, so they serialize. Do not start a capture while a
 walkthrough is running — and note this is a *device* constraint, separate from the load constraint
 on the VM. Check both.
+
+---
+
+# Post-Data-Portability queue order — REVISED 2026-09-12 by the parity gate
+
+`check_permission_parity.sh` reports live drift on five package-derived role sets. **Two of the
+queue's biggest clusters are affected and should be DEFERRED until the grants are fixed**, because a
+missing derived permission is exactly what produced the live `403` on Cedar's
+`hoa-facility-reservation` earlier in this campaign.
+
+## Defer until the parity drift is remediated
+
+| Cluster | Rows | Why |
+|---|---|---|
+| Neighborhood Book Club | 7 | `book-member` and `book-organizer` each missing derived permissions (`document_library.download`, `equipment_loan.*`, `event_rsvp.withdraw_response`) |
+| Riverside Youth Soccer | 6 | `soccer-owner` missing `export_wizard.download` (hits `soccer-export-metadata`); `soccer-guardian` missing `document_library.download`; `soccer-coach` holds `document_library.upload` where the package derives `document_library.edit` (hits `soccer-waiver-document`) |
+
+That is 13 of the 34 remaining walkthrough-only rows. Walking them first would likely burn runs on
+403s and produce "missing affordance" findings that are really provisioning gaps.
+
+## Safe to walk now — the gate flagged none of these roles
+
+**Masjid Nur is safe despite being the community with the famous over-grant.** The rule-1 violation
+is on **`masjid-nur-admin`**, the generated governance role. Masjid's walkthroughs use the *domain*
+roles `owner` (2 holders) and `community-member` (2 holders), and **neither was flagged** — both
+passed the exact-set comparison. Do not skip Masjid on the strength of the admin finding; that would
+be conflating governance and domain roles, which is the same confusion that caused the over-grant in
+the first place.
+
+Suggested order, largest clean cluster first:
+
+1. **Masjid Nur** — 7 rows. Splits across two identities: `owner` creates announcement / event /
+   volunteer shift / resource; `community-member` creates donate / request care; "Ask Masjid Nur"
+   and "New discussion" allow both. **Note `mosque-discussion-thread` binds `tabId: "messages"`** —
+   AP-14, the shell ignores community bindings there, so it will not render. It is in the
+   both-halves set, not this queue, but do not brief it blind.
+2. **Ad-Free Community** — 4 rows, `ad-off-member` and `ad-off-owner`.
+3. **Member Social Space** — 4 rows, `moderator` creates the three provisioning workflows,
+   `member` creates messages/invites.
+4. **Cedar Commons HOA** — 4 rows, all needing `hoa-board`; two of them
+   (`hoa-committee-decision`, `hoa-owner-notification`) have **no create action at all** and are
+   only produced by cross-type effects from `hoa-architectural-request`, so they pair the same way
+   the transfer rows do.
+5. **Garden Club** — 2 rows.
+
+## Re-run the gate before each cluster
+
+It takes under a minute and it is the only thing standing between a briefed run and a 403 that
+looks like a product defect:
+
+    bash "docs/Build Plan V2/Tools/code/check_permission_parity.sh"
+
+A gate nobody runs is a gate that does not exist — that is how six live violations sat unread after
+the tool that finds them was built and closed as done.
