@@ -1853,6 +1853,36 @@ engine on the same day, with the difference reduced to a single token. A working
 sweep is broken" into "the sweep is broken *for this token*", which is a much smaller and more
 actionable claim.
 
+### `ps pcpu` is a lifetime average and load average lags — neither tells you what the box is doing NOW
+
+Misread twice in one session, 2026-09-12, and reported to the user both times before being caught.
+
+`ps -eo pcpu` reports **cumulative average CPU since the process started**, not instantaneous usage.
+On this VM `k3s-server` has been up for 19+ hours and shows **86.6%** — which looks like the
+dominant consumer and is not. `top` at the same moment reported **91.1% idle, 0.0% iowait, 3
+runnable, 0 processes in D state**. The box was doing essentially nothing.
+
+Load average misleads in the other direction: it is a decaying 1-minute mean, so it stays high for
+minutes after a spike ends. A load of 11.84 on 8 cores read alongside 91% idle is not a contradiction
+— it is the average still catching up.
+
+**To see current pressure, in this order:**
+
+    top -bn1 | head -4            # us/sy/id/wa -- the truth about right now
+    ps -eo stat --no-headers | grep -c '^R'     # runnable
+    ps -eo pid,stat,comm --no-headers | awk '$2 ~ /D/'   # blocked on IO
+    free -h                       # memory is a SEPARATE failure mode
+
+**And check memory separately, because load does not report it.** The same session had free memory
+fall to 190 MB with load looking merely "high" — the cause was a **Gradle daemon left over from an
+APK build, `-Xmx8G`, 1.6 GB resident, idle for nearly two hours**. Load said nothing about it.
+Stopping it (by resolved pid, after confirming no build was running) restored 1.5 GB. After any
+`flutter build apk` on this VM, check for a surviving `GradleDaemon` before concluding memory
+pressure is mysterious.
+
+Same family as the other measurement traps here: a number that is real, correctly read, and about a
+different question than the one being asked.
+
 ### The Claude dispatchers buffer; a zero-byte log is normal for them, not a death signal
 
 The "confirm a dispatch is alive" guidance above was written for the **Codex** dispatchers, whose logs
