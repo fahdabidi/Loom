@@ -107,16 +107,28 @@ done < "$WORK/rows.tsv"
 # iteration scorecards, freshness gates and reconciliation reports, several of which carry a
 # workflowId of their own. Globbing *.json returned the same 55 here -- by coincidence, not by
 # construction. Check what a directory holds before globbing it.
-grep -hoE '"workflowId": "[a-z0-9_-]+"' \
-  "$EVID"/llm-vision-ux-review*.json \
-  "$EVID"/independent-production-ux-review*.json 2>/dev/null \
+#
+# RECURSIVE since 2026-09-12, and the reason is worth keeping. These globs were flat, so a judge
+# artifact one directory down was invisible -- and there are 28 of them, in phase-a-*/ and
+# phase-a-legacy/*/ subdirectories, all matching these exact filename patterns. Measured that day:
+# the flat and recursive scans produce the SAME bar, because every workflowId those 28 name is
+# already covered by a top-level artifact. So this was a latent fragility, not a live undercount,
+# and the fix is recorded as such rather than as a correction to any past figure.
+# It is still worth fixing: the identical mistake on the WALKTHROUGH half did bite on 2026-09-09,
+# when three completed runs were invisible because their manifests were filed outside this exact
+# directory. A future judge run filed one level down would have been lost the same silent way.
+find "$EVID" \
+  \( -name 'llm-vision-ux-review*.json' -o -name 'independent-production-ux-review*.json' \) \
+  -print0 2>/dev/null \
+  | xargs -0 grep -hoE '"workflowId": "[a-z0-9_-]+"' 2>/dev/null \
   | sed 's/.*: "//;s/"//' | sort -u > "$WORK/judged.txt"
 # Judge verdicts also arrive as markdown, and the JSON-only scan could not see them. A UX judge run
 # on 2026-09-09 produced a PASS for garden-tool-loan that this tool would have ignored, because the
 # verdict was a .md outside the JSON glob -- the measurement could not see the work that had just
 # been done for it. Scan both: the historical JSON artifacts, and verdict markdown that names its
 # workflow the same way the walkthrough manifests do.
-grep -hoE '\*\*Workflow:\*\* `[a-z0-9-]+`' "$EVID"/*ux-judge*.md 2>/dev/null \
+find "$EVID" \( -name '*ux-judge*.md' -o -name 'ux-judge-verdict.md' \) -print0 2>/dev/null \
+  | xargs -0 grep -hoE '\*\*Workflow:\*\* `[a-z0-9-]+`' 2>/dev/null \
   | grep -oE '`[a-z0-9-]+`' | tr -d '`' >> "$WORK/judged.txt"
 sort -u -o "$WORK/judged.txt" "$WORK/judged.txt"
 JUDGED_TYPES=$(wc -l < "$WORK/judged.txt")
