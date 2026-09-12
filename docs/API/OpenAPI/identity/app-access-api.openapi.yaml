@@ -785,6 +785,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommunityInstallationResult'
 
+  # ── Permission-derivation export (read-only introspection) ──────────────
+  /v1/apps/{appId}/community-permission-exports:
+    post:
+      operationId: exportCommunityPermissions
+      summary: Export the permission set each community role derives to, without changing anything.
+      description: >-
+        Read-only counterpart to `installCommunityPackage`. Given the same derivation inputs the
+        installer accepts, it returns, per role, the permission ids the role should hold and the declared
+        action each permission traces back to — the expected side of a permission-parity comparison.
+
+
+        **No side effects.** Nothing is created, modified, or deleted: no group, role, grant, or catalog
+        row is written. The derivation runs in the same `CommunityPermissionDeriver` the installer uses,
+        so this cannot drift into a second implementation of the derivation rules.
+
+
+        **Empty is honest.** A package domain role can legitimately derive to an empty set — a read-only
+        role appears in `readGuard`s and in no transition guard or create action — and that empty set is
+        returned as-is, never special-cased into a non-empty result. The generated `<handle>-admin` role
+        is returned separately as `systemAdminRole`, holding the fixed `community.*` governance set the
+        installer grants it.
+
+
+        Findings are always returned alongside the sets so a caller can tell a genuinely permissionless
+        role from one whose derivation failed structurally. A POST is used so the derivation inputs can
+        travel in the body; the request has no effect.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/AppId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstallCommunityPackageRequest'
+      responses:
+        '200':
+          description: The permission set every role in the package derives to.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityPermissionExport'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+
   /v1/access-decisions:
     post:
       operationId: checkAccess
@@ -1438,6 +1487,92 @@ components:
         transitionId:
           type: string
           nullable: true
+
+    CommunityPermissionExport:
+      type: object
+      description: >-
+        What every role in a community package would hold, per the shared deriver. The expected side of
+        the permission-parity comparison; the caller diffs it against the stored `role_permission` rows.
+      required: [appId, groupId, communityHandle, roles, findings]
+      properties:
+        appId:
+          type: string
+        groupId:
+          type: string
+          description: The community's group id, `loom_communities_<communityHandle>`.
+        communityHandle:
+          type: string
+          description: Echoed so a caller need not reconstruct it from the group id.
+        systemAdminRole:
+          $ref: '#/components/schemas/RolePermissionExport'
+          nullable: true
+          description: >-
+            The generated `<handle>-admin` role and the fixed governance permission set the installer
+            grants it. Null when the vocabulary declares no system-admin template.
+        roles:
+          type: array
+          description: >-
+            Every other (package domain) role declared by the package, sorted by roleId. A role that
+            derives nothing still appears, with an empty `permissionIds` — that is a legitimate
+            read-only-by-design outcome, not a finding.
+          items:
+            $ref: '#/components/schemas/RolePermissionExport'
+        findings:
+          type: array
+          description: >-
+            The same derivation findings `installCommunityPackage` would return. Empty when the package
+            derives cleanly.
+          items:
+            $ref: '#/components/schemas/DerivationFinding'
+
+    RolePermissionExport:
+      type: object
+      required: [roleId, permissionIds, grants]
+      properties:
+        roleId:
+          type: string
+        permissionIds:
+          type: array
+          description: Distinct permission ids this role should hold, sorted. May be empty by design.
+          items:
+            type: string
+        grants:
+          type: array
+          description: >-
+            One entry per derived permission, carrying the declared action it traces back to so a diff
+            can name the action a missing permission would have come from. Empty only for the generated
+            system-admin role, whose grants are the fixed governance set rather than any declared action.
+          items:
+            $ref: '#/components/schemas/RolePermissionGrant'
+
+    RolePermissionGrant:
+      type: object
+      required: [permissionId, sourceKind]
+      properties:
+        permissionId:
+          type: string
+        sourceActionId:
+          type: string
+          nullable: true
+          description: >-
+            The declared action this permission derives from: the create-action id for a
+            `create_action` grant, the transition id for a `transition` grant. Null for a
+            `governance` grant, which traces to the vocabulary's governance family, not to a
+            declared action.
+        sourceKind:
+          type: string
+          description: >-
+            Which declared action produced this permission. `create_action` and `transition` are the
+            two ways a package grants an action; `governance` marks the fixed `community.*` set the
+            generated system-admin role holds.
+          enum:
+            - create_action
+            - transition
+            - governance
+        workflowType:
+          type: string
+          nullable: true
+          description: The workflow that declared the action. Null for a `governance` grant.
 
     RequestGroupMembershipRequest:
       type: object
