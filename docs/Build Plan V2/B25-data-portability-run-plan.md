@@ -222,6 +222,20 @@ So each paired run needs **two identity switches**: member creates, owner advanc
 That is unavoidable, and it is the highest SSO-trap exposure in the campaign — brief it with the
 clear-BOTH rule and verify `created_by_fan_id` on every row.
 
+## Verified credentials, 2026-09-12 — do not re-derive these
+
+| Role | Keycloak user | fan id | Holders |
+|---|---|---|---|
+| `owner` | `loom-masjid-owner-1` | `fan-masjid-owner-1` | 2 (`-1`, `-2`) |
+| `community-member` | `loom-masjid-member-1` | `fan-masjid-member-1` | 2 (`-1`, `-2`) |
+
+The owner account was capability-checked, not merely looked up: a password-grant against
+`loom-test-client` returned **HTTP 200** carrying the claim `fanId: fan-masjid-owner-1`.
+
+**Run the four owner-only rows FIRST, on one sign-in** — `mosque-announcement`,
+`mosque-event-rsvp`, `mosque-volunteer-signup`, `mosque-search-ai-citation` — and only then the two
+paired runs that need member/owner switching. Each avoided switch is one less stale-SSO exposure.
+
 ## Suggested runs
 
 | # | Identity path | Rows banked |
