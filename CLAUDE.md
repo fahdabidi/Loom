@@ -1124,10 +1124,10 @@ other four and calling that "the suites".
 
 | Suite | Path | Baseline (2026-09-04, re-measured) |
 | --- | --- | ---: |
-| UX judges | `app/packages/tooling/loom_ux_judges` | **500** (0 skipped) — measured 2026-09-10 after the `dead_role_binding` removal (5 obsolete warning tests replaced by 4 regression tests); was 501, and 490 before that |
-| App shell | `app/packages/core/loom_communities_app_shell` | **408** (+2 skipped) — measured 2026-09-10; was recorded as 403, and as 375 for four days while the real figure passed 400 |
-| Workflow engine | `app/packages/core/loom_workflow_engine` | **310** (+5 skipped) **= 315 cases**, without PG credentials — measured 2026-09-10; was recorded as 312. See the note below on that −2 |
-| Workflow service | `app/packages/core/loom_workflow_service` | **156 (+1 skipped) = 157 cases** with BOTH credential sets — measured 2026-09-10; was recorded as 153. 146 (+8) with only `LOOM_POSTGRES_PASSWORD`; 142 (+12) with none. **Read the RLS-timeout note below before trusting a red run here.** The one expected skip is `app_access_create_instance_integration_test.dart` ("Set `LOOM_APP_ACCESS_BASE_URL`…"), not a PostgreSQL test |
+| UX judges | `app/packages/tooling/loom_ux_judges` | **505** (0 skipped) — re-measured 2026-09-12; was 500 on 2026-09-10 after the `dead_role_binding` removal (5 obsolete warning tests replaced by 4 regression tests); was 501, and 490 before that |
+| App shell | `app/packages/core/loom_communities_app_shell` | **418** (+2 skipped) — re-measured 2026-09-12. **Derived, and the derivation matters:** a run under load 42 gave 417 passed + 1 failed, and that single failure (`v3_milestone_calr2g_live_package_test.dart`, a 30s `TimeoutException`) passes in **1 second** re-run isolated on a quiet box. So all 418 pass; the failure was environmental and was proven so rather than assumed. Was 408 on 2026-09-10; was recorded as 403, and as 375 for four days while the real figure passed 400 |
+| Workflow engine | `app/packages/core/loom_workflow_engine` | **320** (+5 skipped) **= 325 cases**, without PG credentials — re-measured 2026-09-12 (0 failures); was 310 on 2026-09-10; was recorded as 312. See the note below on that −2 |
+| Workflow service | `app/packages/core/loom_workflow_service` | **164 (+1 skipped) = 165 cases** with BOTH credential sets — re-measured 2026-09-12 on a quiet box, exit 0. **The skip count of 1 is the load-bearing part**: it is how you know the PostgreSQL-backed tests actually ran rather than silently skipping. Was 156 on 2026-09-10; was recorded as 153. 146 (+8) with only `LOOM_POSTGRES_PASSWORD`; 142 (+12) with none. **Read the RLS-timeout note below before trusting a red run here.** The one expected skip is `app_access_create_instance_integration_test.dart` ("Set `LOOM_APP_ACCESS_BASE_URL`…"), not a PostgreSQL test |
 
 **`postgres_rls_integration_test.dart` times out under concurrency, and it will look like a security
 regression.** Measured 2026-09-10: the full suite with both credential sets came back **red** —
@@ -1147,7 +1147,7 @@ the single test in isolation before calling it a regression; a failed `expect` i
 matter"). Do not file an RLS defect, and do not weaken the test's timeout, without an isolated run
 first. Equally, do not record a service baseline from a run where it timed out — the pass count is
 one short.
-| Demo app | `app/apps/loom_communities_demo` | **160** (0 skipped) — confirmed unchanged 2026-09-10 |
+| Demo app | `app/apps/loom_communities_demo` | **160** (0 skipped) — confirmed unchanged again 2026-09-12 |
 
 **On the engine's −2, recorded rather than waved away.** The suite is green (exit 0, skips unchanged
 at 5), so this is not a failure — but a total moving *down* is the shape that can hide a deletion, so
