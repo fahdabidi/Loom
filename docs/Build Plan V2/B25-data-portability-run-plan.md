@@ -262,3 +262,85 @@ run to report the stored value verbatim. This is the *third* interpolation conte
 alongside `{id}` in effect fields (measured 2026-09-12, resolves correctly) and `{context.id}` in a
 `scope: "instance"` create prefill (pending on the transfer pair). Cheap to collect while the run is
 happening anyway, and it feeds the open `transitionRelated` resolver question.
+
+---
+
+# Ad-Free Community — 4 rows in 2 runs, and the decisive `transitionRelated` experiment
+
+Swept 2026-09-12. Roles provisioned: `ad-off-member` (2 holders), `ad-off-owner` (2 holders).
+
+## All four queue rows are effect-created — do not brief any of them standalone
+
+None of `ad-off-ad-suppression`, `ad-off-entitlement-status`, `ad-off-receipt-evidence` or
+`ad-off-settlement-utility` has a create action. They are spawned:
+
+| Spawning transition | Guard | Spawns |
+|---|---|---|
+| `record-payment-confirmed` (`payment-pending` -> `active`) | `ad-off-owner` | **three** rows at once: entitlement-status, receipt-evidence, ad-suppression |
+| `record-funding-confirmed` | `ad-off-owner` | settlement-utility |
+
+**So run A banks three rows and run B banks one.** `record-payment-confirmed` is guarded on role
+only — no formula, no `instanceDataEquals` — and takes two required text `inputs` (`renewalDate`,
+`expiryDate`). It is reachable.
+
+**The `NEEDS IMPLEMENTATION` annotations here are NOT blockers.** There are six, and every one is on
+a *field* (`paymentConfirmationId`, receipt-ID and settlement-ID generation) — honest declarations
+that a platform service owns a value that does not exist yet. No transition guards on any of them.
+
+**None of these workflows declares a terminal state** — they are cyclic by design. The proof standard
+is therefore a *clearly advanced* state, not a terminal one. Say so in the manifest rather than
+claiming a terminal state that does not exist.
+
+## Run A — member -> owner -> member, 3 rows
+
+1. `ad-off-member` "Buy ad-off", advance the checkout to `payment-pending`.
+2. **switch to `ad-off-owner`** — `record-payment-confirmed`, supplying `renewalDate` and
+   `expiryDate`. This spawns all three rows, each prefilled `checkoutInstanceId: "{id}"`.
+3. **switch back to `ad-off-member`** — advance each spawned row (all three guard on
+   `ad-off-member` + `actorEqualsField: memberFanId`): `acknowledge-proof` on ad-suppression,
+   `request-refund` or `view-receipt` on receipt-evidence, `request-plan-change` on
+   entitlement-status.
+
+## The experiment — this settles the unmeasured half of the `transitionRelated` blocker
+
+Ad-Free carries **11** `transitionRelated` filters using `{id}`, the most of any package, and one of
+them makes a clean controlled test that no other package offers.
+
+`cancel-subscription` (`active` -> `cancelled`, guard `ad-off-member` + `actorEqualsField:
+memberFanId`) declares:
+
+    { "op": "transitionRelated",
+      "relatedQuery": { "workflowType": "ad-off-entitlement-status",
+                        "filter": { "checkoutInstanceId": "{id}", "$state": "active" },
+                        "sortKey": "startedAt", "limit": 1 },
+      "transitionId": "member-deactivate" }
+
+**Why this is decisive and the Garden case was not.** The *same token* is written by a mechanism
+already proven to work and then read back by the mechanism under suspicion:
+
+- **write side:** `record-payment-confirmed` sets `checkoutInstanceId: "{id}"` in an effect's
+  `fields`. I measured that exact context live on 2026-09-12 (Data Portability's spawned
+  `export-notification` carried the correct parent id), so it is known-good and independently
+  checkable in Postgres.
+- **read side:** the filter above, which is the context the root cause agent flagged as treating
+  `{id}` as an ordinary data-field lookup.
+- **guards cannot confound it:** `cancel-subscription` and the target `member-deactivate` are *both*
+  `ad-off-member` + `actorEqualsField: memberFanId`, and both are fired by the same person. Garden's
+  failure was ambiguous precisely because a swallowed guard refusal could not be ruled out. Here it
+  can.
+
+**Procedure**, after run A:
+
+1. Read the spawned entitlement row and record `checkoutInstanceId` verbatim. Confirm it equals the
+   checkout instance's id. *(If this fails, stop — the write side is broken and the read side is
+   untestable.)*
+2. As `ad-off-member`, fire **`cancel-subscription`** on the checkout.
+3. Re-read the entitlement row's `current_state`.
+
+| Result | Meaning |
+|---|---|
+| entitlement moved `active` -> `inactive` | `{id}` resolves correctly in a filter. The blocker's remaining half is answered **negatively** — there is no filter-resolver defect, and the decision narrows to the first-match-vs-all-match question alone. |
+| entitlement still `active`, and the parent still moved to `cancelled` | **The defect is confirmed and isolated to the filter resolver**, with the guard explanation ruled out. This is the Garden failure reproduced under control. |
+
+Either outcome is worth having, and both are free — this rides on a run that has to happen anyway.
+Report it as its own section of the manifest and do **not** attempt a fix.
