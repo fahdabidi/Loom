@@ -344,3 +344,73 @@ already proven to work and then read back by the mechanism under suspicion:
 
 Either outcome is worth having, and both are free — this rides on a run that has to happen anyway.
 Report it as its own section of the manifest and do **not** attempt a fix.
+
+---
+
+# Member Social Space, Cedar, Garden — the remaining 10 rows
+
+Swept 2026-09-12. All three communities fully provisioned, 2 holders per domain role.
+
+## Member Social Space — 4 rows, 2 runs, both SINGLE-IDENTITY
+
+**Run A — `moderator`, three rows in one sitting.** All three creates sit on `tab: home`, same role,
+so one sign-in covers them:
+
+| Row | Create FAB | State |
+|---|---|---|
+| `platform-in-stream-ad` | "Provision sponsored item" | `filled` |
+| `platform-sensitive-no-fill` | "Provision protected no-fill" | `suppressed` |
+| `platform-top-banner-no-fill` | "Provision banner slot" | `no-fill` |
+
+**All three are SINGLE-STATE workflows** — `states` has exactly one entry each, no terminal declared,
+and every transition is `to: null`. So there is no state to advance to, and a manifest must **not**
+claim a terminal or advanced state. The proof is: the row exists, and a bookkeeping transition fired
+and mutated `instance_data`. Fire the moderator-permitted ones (`record-impression`,
+`acknowledge-suppression`, `refresh-slot` / `inspect-reason`) and confirm the mutation in Postgres —
+`current_state` will not move, and that is correct.
+
+`dismiss-ad` is `member`-guarded plus `instanceDataEquals: dismissible == true`; skip it, it is not
+needed for the row.
+
+**Run B — `member`, one row, no switch needed.** `platform-blocked-target` has **no create action**;
+it is spawned by the connection workflow's `block` transition, which fires `from: ["invited",
+"connected"]` guarded `member` + formula `$actor == inviterFanId || $actor == inviteeFanId`.
+**The inviter satisfies that from `invited`, so no second member and no acceptance is required:**
+send a connection invite, then block it. The spawn prefills `connectionId: "{id}"`,
+`blockerFanId: "$actor"`. Then the same member fires `close-review` (guard `member` +
+`actorEqualsField: blockerFanId`) into terminal **`closed`**. One identity throughout.
+
+## Cedar Commons HOA — 4 rows
+
+| Row | Create | Terminal | Notes |
+|---|---|---|---|
+| `hoa-export-evidence` | "New HOA export", `hoa-board`, tab admin | none declared | drivable by `hoa-board` alone |
+| `hoa-member-document` | "Add HOA document", `hoa-board`, tab admin | `deleted` | member-only transitions exist (acknowledge/save/request-access) but the board can reach `deleted` alone |
+| `hoa-owner-notification` | "Send owner notice", `hoa-board`, tab admin | none declared | `mark-notification-read` is `hoa-member`; board create + advance is enough |
+| `hoa-committee-decision` | **none** | `superseded`, `withdrawn` | spawned by `submit-request` on `hoa-architectural-request`; both terminals are `hoa-member`-guarded |
+
+**The first three share one `hoa-board` sign-in.** `hoa-committee-decision` needs `hoa-member`
+instead, so run it separately — and note a row already reached terminal `withdrawn` during the
+2026-09-12 architectural-request walkthrough
+(`community_cedar_commons_hoa_hoa-committee-decision_m3z1jsw245x4`). **That row is NOT filed as proof
+and should not be claimed as one**: nobody drove *its* surface, it moved as a cascade. A proper run
+should open the committee-decision card itself and fire `owner-withdraw` or `owner-resubmitted`
+through the UI.
+
+## Garden Club — 2 rows
+
+| Row | Create | Terminal |
+|---|---|---|
+| `garden-export-custom-schemas` | "New export package", `garden-coordinator`, tab documents | `cancelled` |
+| `plant-exchange-submission` | "Offer or request a plant", **`garden-member`**, tab home | `reviewed`, `withdrawn` |
+
+Two identities, or one if you take the cheaper path: `plant-exchange-submission` can be created and
+driven to terminal **`withdrawn`** by the `garden-member` alone. Reaching `reviewed` needs the
+coordinator. Either proves the row; prefer the single-identity path unless the reviewed branch is
+wanted, since every switch is stale-SSO exposure.
+
+## Still deferred — do not walk these yet
+
+**Neighborhood Book Club (7) and Riverside Youth Soccer (6)** remain blocked on the parity drift
+(see the release-blocker row). Re-run `check_permission_parity.sh` before starting either; if it is
+clean, they are the two largest remaining clusters.
