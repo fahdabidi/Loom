@@ -63,14 +63,21 @@ TOOL="$REPO_ROOT/app/packages/tooling/loom_permission_parity_gate"
 export LOOM_APP_ACCESS_BASE_URL="${LOOM_APP_ACCESS_BASE_URL:-http://127.0.0.1:30080}"
 export LOOM_KEYCLOAK_TOKEN_URL="${LOOM_KEYCLOAK_TOKEN_URL:-http://127.0.0.1:30082/realms/loom/protocol/openid-connect/token}"
 
-# The service account the workflow service already uses. It is a
-# client-credentials client, which is the shape `requireProvisioningPrincipal`
-# expects; the client id and secret are read from the live secret rather than
-# inlined, the same way the deployment supplies them.
-export LOOM_APP_ACCESS_CLIENT_ID="${LOOM_APP_ACCESS_CLIENT_ID:-loom-workflow-service}"
+# A DEDICATED provisioning identity, never the running workflow-service's own
+# client. An earlier draft of this script defaulted to `loom-workflow-service`
+# because that client already had the right grant shape (client-credentials) --
+# but that client is the real, always-on identity the deployed workflow-service
+# pod authenticates with for its own live traffic. Granting it provisioning
+# authority (installCommunityPackage, createRole/deleteRole, role migration)
+# would give a standing production identity capabilities it has no legitimate
+# operational need for -- exactly the escalation shape P1 exists to prevent.
+# Found and reverted 2026-09-12; `loom-app-access-provisioner` is a separate
+# client created solely to hold the `app-access-provisioner` realm role, so a
+# compromise of its secret is contained to "can run this gate," nothing else.
+export LOOM_APP_ACCESS_CLIENT_ID="${LOOM_APP_ACCESS_CLIENT_ID:-loom-app-access-provisioner}"
 if [ -z "${LOOM_APP_ACCESS_CLIENT_SECRET:-}" ]; then
-  LOOM_APP_ACCESS_CLIENT_SECRET="$(kubectl get secret -n loom workflow-service-config \
-    -o jsonpath='{.data.app-access-client-secret}' 2>/dev/null | base64 -d)"
+  LOOM_APP_ACCESS_CLIENT_SECRET="$(kubectl get secret -n loom app-access-provisioner-credentials \
+    -o jsonpath='{.data.client-secret}' 2>/dev/null | base64 -d)"
 fi
 [ -n "${LOOM_APP_ACCESS_CLIENT_SECRET:-}" ] || {
   echo "FAIL: could not read LOOM_APP_ACCESS_CLIENT_SECRET and none was supplied."
