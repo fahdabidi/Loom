@@ -722,10 +722,18 @@ Three things generalize:
   it is.** Hit Keycloak's logout endpoint before switching identity, confirm the real form appears,
   and confirm `created_by_fan_id` on the resulting row is the fan you meant. This is the likeliest
   way to bank evidence attributed to the wrong person, and it fails green in every direction.
-  **Clearing the app does not clear the identity — the browser holds it.** On the same day, hitting
-  Keycloak's logout endpoint was not sufficient, and neither was `pm clear` on the Loom app; the
-  OAuth flow still completed with no form and re-issued the previous fan's token. Only
-  `pm clear com.android.chrome` surfaced the real login form.
+  **Clearing the app does not clear the identity — the browser holds it, and clearing the browser
+  alone is not enough either. You need BOTH.** On 2026-09-08, hitting Keycloak's logout endpoint
+  was not sufficient, and neither was `pm clear` on the Loom app; only
+  `pm clear com.android.chrome` surfaced the real login form. **Corrected 2026-09-12, when the
+  opposite half failed:** clearing Chrome alone left the app's own stored session intact, so the
+  account list still loaded — and because it loaded, the error branch carrying "Continue to secure
+  sign-in" never rendered, leaving no route to a fresh login. Clearing app data as well was the
+  fix. Each incident found one half of the answer and reported it as the whole one; the rule is
+  clear both, and expect the failure to look like a missing button rather than a wrong identity.
+  Before clearing app data, note that it also drops the installed communities — the launch
+  screen's "Loaded 10 example communities" is the cheap confirmation that the preload flag is
+  compiled into the build you are running, so the app will repopulate.
 - **`adb shell input text` silently truncates, and a truncated identifier still looks valid.** On
   2026-09-08 a walkthrough typed `fan-hoa-member-1` into a `payerFanId` field and the device received
   `fan-hoa-memb`. Nothing errors: the workflow is created, the row persists, and the instance is
