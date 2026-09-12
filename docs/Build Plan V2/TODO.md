@@ -80,8 +80,8 @@ be batched rather than rediscovered one at a time.
 
 ### 3. Ready to ticket
 
-- [ ] `new-ticket` — A product doc contradicts itself internally — it disclaims rows in its header while its own tables still count them — [detail](TODO-open-detail.md#row-158)
-- [ ] `new-ticket` — 11 B25 evidence manifests predate package-identity recording, so they cannot be checked for staleness — [detail](TODO-open-detail.md#row-160)
+- [x] `new-ticket` — DONE 2026-09-12 (`a8017525`): the four affected Masjid tables now carry a note after each block naming the five `wf_*` rows as test-harness ids. Deliberately NOT in the first column, which is a parsed contract — the note says so, since annotating it directly broke the asset conformance test once. Verified: bar still 72, both doc-parsing tests pass — [detail](TODO-open-detail.md#row-158)
+- [x] `new-ticket` — CLOSED 2026-09-12 as not-actionable: the forward fix already landed — `make_b25_brief.sh` requires every future run to record the driven package's `skillVersion` AND `sha256`. The 11 pre-2026-09-08 manifests are unidentifiable **by construction** and cannot be retrofitted with an identity they never recorded; treat any of them as evidence only while its package asset is unchanged — [detail](TODO-open-detail.md#row-160)
 - [ ] `new-ticket` — pass-42 blockers — `c14` vision review is ~97% scaffold (7 of 204 screens carry real evidence) — [detail](TODO-open-detail.md#row-161)
 - [x] `new-ticket` — DONE 2026-09-12 (`f26dac6e`): typed `fanId`/`fanId[]` pickers in all four builders, backed by a real member directory, all four spellings including the nullable forms. Verified by me: app shell **414 passed / 2 skipped** (was 408+2), analyze clean, zero removed assertions, and the regression test proven discriminating by neutralising the fix — [detail](TODO-open-detail.md#row-269)
   - [ ] `blocked` — ↳ NOT closed by the above, as scoped: a directory of real members still contains a moderator-only fan, and no schema field declares role eligibility. Needs a grammar/product decision on how a `fanId` field states which roles are eligible — [detail](TODO-open-detail.md#row-210)
