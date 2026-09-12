@@ -12,9 +12,11 @@ cat <<EOF
 
 ## Why this exists
 
-A previous dispatch claimed a live write for this community. That claim is **reopened and
-untrusted**: no corresponding row exists in the database today. Do not look for the old instance and
-do not treat its absence as your failure — **you are creating a new one.**
+This row is **unproven and you are creating a new instance of it.** Some rows in this campaign
+carry an older claim that was reopened as untrusted; others were simply never driven. Either way the
+instruction is the same and does not depend on which case this is: **do not go looking for a prior
+instance, and do not treat its absence as your failure.** If one happens to exist, it is not yours —
+distinguish your row by its own instance id and \`created_at\`, never by a change in the row count.
 
 ## Sign-in — you have real credentials, use them
 
@@ -44,10 +46,35 @@ Two device traps that already cost time:
   actually appears, and afterwards confirm \`created_by_fan_id\` on your row is the fan you intended.
   This cost a previous dispatch ~15 minutes and is the likeliest way to bank evidence attributed to
   the wrong identity.
+- **If you are switching identity from a previous run, clear BOTH Chrome and the Loom app — one
+  alone is not enough, and each half fails differently.** 2026-09-08: clearing the app was not
+  sufficient, because the browser held the SSO cookie and re-issued the OLD fan's token with no login
+  form. 2026-09-12: clearing Chrome alone was not sufficient either, because the app's own stored
+  session kept the account list loading — and since the list loaded, the error branch carrying
+  "Continue to secure sign-in" never rendered, leaving **no route to a fresh login at all**. Expect
+  that second failure to look like a missing button rather than a wrong identity. So run both:
+
+      adb shell pm clear com.android.chrome
+      adb shell pm clear com.example.loom_communities_demo
+
+  Clearing app data also drops the installed communities. That is expected and self-healing: the
+  launch screen's **"Loaded 10 example communities"** is your confirmation that the preload flag is
+  compiled into the build you are running. If that line does NOT appear, stop — the APK was built
+  without \`--dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true\` and has no route to sign-in at all,
+  which is a build problem, not a product one.
 - **\`uiautomator dump\` returns stale trees here.** When it disagrees with a screenshot, the screenshot
   wins; never report an affordance missing on the strength of a dump alone.
-- If the VM-local adb server dies mid-run, the Windows-hosted emulator is still reachable with
-  \`adb -H 192.168.56.1 -P 5037\`.
+- **The emulator is NOT on this machine and a bare \`adb devices\` here returns an EMPTY list, not an
+  error.** It runs on the Windows host; the VM talks to the Windows adb server. Export this once at
+  the start of your run and every plain \`adb\` command then works unchanged:
+
+      export ADB_SERVER_SOCKET=tcp:192.168.56.1:5037
+      adb devices        # must list emulator-5554 as "device" before you do anything else
+
+  Confirmed working 2026-09-12. If you skip this, the first \`adb\` call returns an empty device list
+  that reads exactly like a dead emulator, and the equivalent per-command form is
+  \`adb -H 192.168.56.1 -P 5037 ...\`. **Do not conclude the emulator is down until you have tried
+  this** — that empty list is the expected output of the wrong server, not evidence about the device.
 
 ## The proof standard (both halves required, in this one session)
 
