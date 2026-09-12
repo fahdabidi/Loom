@@ -394,6 +394,8 @@ class EquipmentLoanArchetypeCard extends StatefulWidget {
     this.modernTheme,
     this.displayContext = 'tile',
     this.visibleFieldKeys,
+    this.instanceScopedCreateActions = const [],
+    this.onInstanceScopedCreate,
   }) : assert(displayContext == 'tile' || displayContext == 'detail');
 
   final EngineNativeResolvedBinding resolved;
@@ -405,6 +407,8 @@ class EquipmentLoanArchetypeCard extends StatefulWidget {
   final LoomCardTheme? modernTheme;
   final String displayContext;
   final Set<String>? visibleFieldKeys;
+  final List<WorkflowAction> instanceScopedCreateActions;
+  final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
 
   @override
   State<EquipmentLoanArchetypeCard> createState() =>
@@ -1052,6 +1056,12 @@ class _EquipmentLoanArchetypeCardState
                   foreground: foreground,
                   accent: widget.accent,
                 ),
+              _InstanceScopedCreateActionButtons(
+                instanceId: _instance.instanceId,
+                actions: widget.instanceScopedCreateActions,
+                onInstanceScopedCreate: widget.onInstanceScopedCreate,
+                isMutating: _mutating,
+              ),
             ],
           ),
         ),
@@ -1075,6 +1085,8 @@ class DocumentLibraryArchetypeCard extends StatefulWidget {
     this.modernTheme,
     this.displayContext = 'tile',
     this.visibleFieldKeys,
+    this.instanceScopedCreateActions = const [],
+    this.onInstanceScopedCreate,
   }) : assert(displayContext == 'tile' || displayContext == 'detail');
 
   final EngineNativeResolvedBinding resolved;
@@ -1085,6 +1097,8 @@ class DocumentLibraryArchetypeCard extends StatefulWidget {
   final LoomCardTheme? modernTheme;
   final String displayContext;
   final Set<String>? visibleFieldKeys;
+  final List<WorkflowAction> instanceScopedCreateActions;
+  final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
 
   @override
   State<DocumentLibraryArchetypeCard> createState() =>
@@ -1779,6 +1793,12 @@ class _DocumentLibraryArchetypeCardState
                   foreground: foreground,
                   accent: widget.accent,
                 ),
+              _InstanceScopedCreateActionButtons(
+                instanceId: _instance.instanceId,
+                actions: widget.instanceScopedCreateActions,
+                onInstanceScopedCreate: widget.onInstanceScopedCreate,
+                isMutating: _mutating,
+              ),
             ],
           ),
         ),
@@ -1971,6 +1991,8 @@ class ExportWizardArchetypeCard extends StatefulWidget {
     this.modernTheme,
     this.displayContext = 'tile',
     this.visibleFieldKeys,
+    this.instanceScopedCreateActions = const [],
+    this.onInstanceScopedCreate,
   }) : assert(displayContext == 'tile' || displayContext == 'detail');
 
   final EngineNativeResolvedBinding resolved;
@@ -1981,6 +2003,8 @@ class ExportWizardArchetypeCard extends StatefulWidget {
   final LoomCardTheme? modernTheme;
   final String displayContext;
   final Set<String>? visibleFieldKeys;
+  final List<WorkflowAction> instanceScopedCreateActions;
+  final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
 
   @override
   State<ExportWizardArchetypeCard> createState() =>
@@ -2661,6 +2685,12 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
                   foreground: foreground,
                   accent: widget.accent,
                 ),
+              _InstanceScopedCreateActionButtons(
+                instanceId: _instance.instanceId,
+                actions: widget.instanceScopedCreateActions,
+                onInstanceScopedCreate: widget.onInstanceScopedCreate,
+                isMutating: _mutating,
+              ),
             ],
           ),
         ),
@@ -2689,6 +2719,8 @@ class SearchAiAnswerArchetypeCard extends StatefulWidget {
     this.modernTheme,
     this.displayContext = 'tile',
     this.visibleFieldKeys,
+    this.instanceScopedCreateActions = const [],
+    this.onInstanceScopedCreate,
   }) : assert(displayContext == 'tile' || displayContext == 'detail');
 
   final EngineNativeResolvedBinding resolved;
@@ -2699,6 +2731,8 @@ class SearchAiAnswerArchetypeCard extends StatefulWidget {
   final LoomCardTheme? modernTheme;
   final String displayContext;
   final Set<String>? visibleFieldKeys;
+  final List<WorkflowAction> instanceScopedCreateActions;
+  final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
 
   @override
   State<SearchAiAnswerArchetypeCard> createState() =>
@@ -3124,6 +3158,12 @@ class _SearchAiAnswerArchetypeCardState
                   foreground: foreground,
                   accent: widget.accent,
                 ),
+              _InstanceScopedCreateActionButtons(
+                instanceId: _instance.instanceId,
+                actions: widget.instanceScopedCreateActions,
+                onInstanceScopedCreate: widget.onInstanceScopedCreate,
+                isMutating: _mutating,
+              ),
             ],
           ),
         ),

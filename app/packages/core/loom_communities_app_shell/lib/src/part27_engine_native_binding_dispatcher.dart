@@ -344,6 +344,23 @@ class EngineNativeArchetypeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final instanceScopedCreateActions = [
+      for (final action in resolved.binding.actions)
+        if (action.kind == 'create' &&
+            action.scope == 'instance' &&
+            action.presentation == 'button' &&
+            action.byRoleIds?.contains(roleId) == true)
+          action,
+    ];
+    final Future<void> Function(WorkflowAction action)?
+    invokeInstanceScopedCreate = onInstanceScopedCreate == null
+        ? null
+        : (action) => onInstanceScopedCreate!(
+            action: action,
+            instance: resolved.instance,
+            binding: resolved.binding,
+          );
+
     switch (resolved.binding.cardSurfaceFamily) {
       case 'event-rsvp':
         return _EventRsvpDetailCard(
@@ -358,21 +375,8 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           roleId: roleId,
           accent: accent,
           onInstanceChanged: onInstanceChanged,
-          instanceScopedCreateActions: [
-            for (final action in resolved.binding.actions)
-              if (action.kind == 'create' &&
-                  action.scope == 'instance' &&
-                  action.presentation == 'button' &&
-                  action.byRoleIds?.contains(roleId) == true)
-                action,
-          ],
-          onInstanceScopedCreate: onInstanceScopedCreate == null
-              ? null
-              : (action) => onInstanceScopedCreate!(
-                  action: action,
-                  instance: resolved.instance,
-                  binding: resolved.binding,
-                ),
+          instanceScopedCreateActions: instanceScopedCreateActions,
+          onInstanceScopedCreate: invokeInstanceScopedCreate,
         );
       case 'votePoll':
         // The repeater binding is the ballot (candidates plus per-candidate
@@ -390,6 +394,8 @@ class EngineNativeArchetypeCard extends StatelessWidget {
             accent: accent,
             modernTheme: modernTheme,
             onInstanceChanged: onInstanceChanged,
+            instanceScopedCreateActions: instanceScopedCreateActions,
+            onInstanceScopedCreate: invokeInstanceScopedCreate,
           );
         }
         return GenericWorkflowInstanceCard(
@@ -405,21 +411,8 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           accent: accent,
           modernTheme: modernTheme,
           onInstanceChanged: onInstanceChanged,
-          instanceScopedCreateActions: [
-            for (final action in resolved.binding.actions)
-              if (action.kind == 'create' &&
-                  action.scope == 'instance' &&
-                  action.presentation == 'button' &&
-                  action.byRoleIds?.contains(roleId) == true)
-                action,
-          ],
-          onInstanceScopedCreate: onInstanceScopedCreate == null
-              ? null
-              : (action) => onInstanceScopedCreate!(
-                  action: action,
-                  instance: resolved.instance,
-                  binding: resolved.binding,
-                ),
+          instanceScopedCreateActions: instanceScopedCreateActions,
+          onInstanceScopedCreate: invokeInstanceScopedCreate,
         );
       case 'equipment-loan':
         return EquipmentLoanArchetypeCard(
@@ -433,6 +426,8 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           displayContext: displayContext,
           visibleFieldKeys: visibleFieldKeys,
           onInstanceChanged: onInstanceChanged,
+          instanceScopedCreateActions: instanceScopedCreateActions,
+          onInstanceScopedCreate: invokeInstanceScopedCreate,
         );
       case 'documentLibrary':
         return DocumentLibraryArchetypeCard(
@@ -445,6 +440,8 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           displayContext: displayContext,
           visibleFieldKeys: visibleFieldKeys,
           onInstanceChanged: onInstanceChanged,
+          instanceScopedCreateActions: instanceScopedCreateActions,
+          onInstanceScopedCreate: invokeInstanceScopedCreate,
         );
       case 'searchAiAnswer':
         return SearchAiAnswerArchetypeCard(
@@ -457,6 +454,8 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           modernTheme: modernTheme,
           displayContext: displayContext,
           visibleFieldKeys: visibleFieldKeys,
+          instanceScopedCreateActions: instanceScopedCreateActions,
+          onInstanceScopedCreate: invokeInstanceScopedCreate,
         );
       case 'exportWizard':
         return ExportWizardArchetypeCard(
@@ -469,6 +468,8 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           modernTheme: modernTheme,
           displayContext: displayContext,
           visibleFieldKeys: visibleFieldKeys,
+          instanceScopedCreateActions: instanceScopedCreateActions,
+          onInstanceScopedCreate: invokeInstanceScopedCreate,
         );
       default:
         return GenericWorkflowInstanceCard(
@@ -484,22 +485,50 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           accent: accent,
           modernTheme: modernTheme,
           onInstanceChanged: onInstanceChanged,
-          instanceScopedCreateActions: [
-            for (final action in resolved.binding.actions)
-              if (action.kind == 'create' &&
-                  action.scope == 'instance' &&
-                  action.presentation == 'button' &&
-                  action.byRoleIds?.contains(roleId) == true)
-                action,
-          ],
-          onInstanceScopedCreate: onInstanceScopedCreate == null
-              ? null
-              : (action) => onInstanceScopedCreate!(
-                  action: action,
-                  instance: resolved.instance,
-                  binding: resolved.binding,
-                ),
+          instanceScopedCreateActions: instanceScopedCreateActions,
+          onInstanceScopedCreate: invokeInstanceScopedCreate,
         );
     }
+  }
+}
+
+/// Renders binding-authorized instance-scoped creation actions at the bottom
+/// of a bespoke archetype card. The dispatcher owns authorization and context;
+/// a card only decides where this control belongs in its own layout.
+class _InstanceScopedCreateActionButtons extends StatelessWidget {
+  const _InstanceScopedCreateActionButtons({
+    required this.instanceId,
+    required this.actions,
+    required this.onInstanceScopedCreate,
+    required this.isMutating,
+  });
+
+  final String instanceId;
+  final List<WorkflowAction> actions;
+  final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
+  final bool isMutating;
+
+  @override
+  Widget build(BuildContext context) {
+    if (actions.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 12),
+        for (final action in actions)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: OutlinedButton(
+              key: ValueKey(
+                'instance-create-action-$instanceId-${action.workflowType}',
+              ),
+              onPressed: isMutating || onInstanceScopedCreate == null
+                  ? null
+                  : () => onInstanceScopedCreate!(action),
+              child: Text(action.label ?? 'Create ${action.workflowType}'),
+            ),
+          ),
+      ],
+    );
   }
 }

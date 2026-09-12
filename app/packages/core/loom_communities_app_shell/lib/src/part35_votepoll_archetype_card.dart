@@ -17,6 +17,8 @@ class VotePollArchetypeCard extends StatefulWidget {
     required this.onInstanceChanged,
     this.accent,
     this.modernTheme,
+    this.instanceScopedCreateActions = const [],
+    this.onInstanceScopedCreate,
   });
 
   final EngineNativeResolvedBinding resolved;
@@ -25,6 +27,8 @@ class VotePollArchetypeCard extends StatefulWidget {
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final Color? accent;
   final LoomCardTheme? modernTheme;
+  final List<WorkflowAction> instanceScopedCreateActions;
+  final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
 
   @override
   State<VotePollArchetypeCard> createState() => _VotePollArchetypeCardState();
@@ -251,6 +255,12 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
               quorumMet ? 'Quorum met' : 'Quorum not met',
               key: ValueKey('votepoll-quorum-${instance.instanceId}'),
             ),
+            _InstanceScopedCreateActionButtons(
+              instanceId: instance.instanceId,
+              actions: widget.instanceScopedCreateActions,
+              onInstanceScopedCreate: widget.onInstanceScopedCreate,
+              isMutating: _mutating,
+            ),
           ],
         ),
       ),
@@ -411,6 +421,12 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
                   key: ValueKey('votepoll-progress-${instance.instanceId}'),
                 ),
               ),
+            _InstanceScopedCreateActionButtons(
+              instanceId: instance.instanceId,
+              actions: widget.instanceScopedCreateActions,
+              onInstanceScopedCreate: widget.onInstanceScopedCreate,
+              isMutating: _mutating,
+            ),
           ],
         ),
       ),
