@@ -22,6 +22,15 @@ import 'package:test/test.dart';
 /// substituting credentials or infrastructure addresses.
 const _appId = 'loom_communities';
 const _permissionId = 'event_rsvp.create';
+
+/// The archetype whose `create` action derives [_permissionId].
+///
+/// `installCommunityPackage` discovers the permission from this workflow's
+/// resolved family and its `createRoleIds`, so both must agree with
+/// [_permissionId]: an `event-rsvp` family derives `event_rsvp.create`, and
+/// any other family would derive a different permission and quietly stop
+/// authorizing the create this test asserts.
+const _cardSurfaceFamily = 'event-rsvp';
 const _correlationId = '33333333-3333-4333-8333-333333333333';
 const _keycloakRealm = 'loom';
 
@@ -442,6 +451,22 @@ Uri _normalizeBaseUri(Uri baseUri) {
   return baseUri.replace(path: path, query: null, fragment: null);
 }
 
+/// The group id `installCommunityPackage` creates is derived, not supplied:
+/// `loom_communities_<communityHandle>`. The rest of this test asserts against
+/// the group id it chose, so the handle has to be read back out of it rather
+/// than named independently and left to drift.
+String _communityHandleFor(String groupId) {
+  const prefix = 'loom_communities_';
+  if (!groupId.startsWith(prefix) || groupId.length == prefix.length) {
+    throw ArgumentError.value(
+      groupId,
+      'groupId',
+      'must be the group id of a community package install ($prefix...)',
+    );
+  }
+  return groupId.substring(prefix.length);
+}
+
 Future<void> _seedAppAccess({
   required HttpClient client,
   required Uri baseUri,
@@ -454,43 +479,79 @@ Future<void> _seedAppAccess({
   final normalizedBase = baseUri.path.endsWith('/')
       ? baseUri
       : baseUri.replace(path: '${baseUri.path}/');
-  final group = await _sendJson(
+
+  // `installCommunityPackage` is the only sanctioned writer of grants. It
+  // derives the package's permissions and reconciles each role to them, so it
+  // creates the group AND the role AND grants `event_rsvp.create` in one call.
+  //
+  // The alternative this fixture used to take -- `POST /groups`, `POST /roles`,
+  // then `PUT /roles/{roleId}/permissions` -- no longer exists: the App Access
+  // P2 commit removed the public permission-assignment route, making
+  // `role_permission` writable only through this installer path.
+  final installation = await _sendJson(
     client,
     'POST',
-    normalizedBase.resolve('v1/apps/$_appId/groups'),
-    body: {'groupId': groupId, 'displayName': 'Workflow B.3 test $unique'},
-    idempotencyKey: 'b3-group-$unique',
-    bearerToken: bearerToken,
-  );
-  expect(group.statusCode, HttpStatus.created, reason: group.body);
-
-  final role = await _sendJson(
-    client,
-    'POST',
-    normalizedBase.resolve('v1/apps/$_appId/roles'),
+    normalizedBase.resolve('v1/apps/$_appId/community-installations'),
     body: {
-      'roleId': roleId,
-      'groupId': groupId,
-      'displayName': 'Workflow B.3 event creator',
+      'communityHandle': _communityHandleFor(groupId),
+      'communityId': 'community_b3_$unique',
+      'displayName': 'Workflow B.3 test $unique',
+      'grammarVersion': currentCommunitySpecVersion,
+      'roles': [
+        {'roleId': roleId, 'label': 'Workflow B.3 event creator'},
+      ],
+      'workflows': [
+        {
+          // App Access has no business parsing render bindings, so the
+          // derivation inputs travel in their resolved form: the caller states
+          // the archetype and the create actions' byRoleIds.
+          'workflowType': 'b3-event-$unique',
+          'cardSurfaceFamily': _cardSurfaceFamily,
+          'createRoleIds': [roleId],
+          'transitions': [
+            {
+              'transitionId': 'cancel-event',
+              'action': 'cancel',
+              'tone': 'negative',
+              'isTerminal': true,
+              'allowedRoleIds': [roleId],
+            },
+          ],
+        },
+      ],
     },
-    idempotencyKey: 'b3-role-$unique',
+    idempotencyKey: 'b3-installation-$unique',
     bearerToken: bearerToken,
   );
-  expect(role.statusCode, HttpStatus.created, reason: role.body);
+  expect(installation.statusCode, HttpStatus.ok, reason: installation.body);
 
-  final permissions = await _sendJson(
-    client,
-    'PUT',
-    normalizedBase.resolve(
-      'v1/apps/$_appId/roles/${Uri.encodeComponent(roleId)}/permissions',
-    ),
-    body: {
-      'permissionIds': [_permissionId],
-    },
-    idempotencyKey: 'b3-permissions-$unique',
-    bearerToken: bearerToken,
+  // The response is the evidence that the grant really happened, so assert it
+  // rather than assuming the caller and the service agree. A `createRoleIds`
+  // that derived nothing would otherwise leave this fixture passing while
+  // authorizing nobody.
+  final installationJson =
+      jsonDecode(installation.body) as Map<String, dynamic>;
+  expect(installationJson['groupId'], groupId);
+  expect(
+    installationJson['rolesRegistered'],
+    contains(roleId),
+    reason: installation.body,
   );
-  expect(permissions.statusCode, HttpStatus.ok, reason: permissions.body);
+  expect(
+    installationJson['permissionsGranted'],
+    greaterThan(0),
+    reason: installation.body,
+  );
+  expect(
+    installationJson['rolesWithNoPermissions'],
+    isEmpty,
+    reason:
+        'The role must hold $_permissionId, which the $_cardSurfaceFamily '
+        'workflow derives from its create action. Empty means the derivation '
+        'input no longer matches the permission this test asserts. '
+        '${installation.body}',
+  );
+  expect(installationJson['findings'], isEmpty, reason: installation.body);
 
   final membership = await _sendJson(
     client,
