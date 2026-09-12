@@ -15,6 +15,24 @@ Closed rows live in [TODO-closed.md](TODO-closed.md).
 
 ### row-197 — Live cluster holds state that exists nowhere in git (`test-fan-alice`/`test-fan-bob` and their `fanId` claims)
 
+**SHARPENED AGAIN 2026-09-12 — this is no longer just "state not in git". One of those legacy accounts holds a LIVE DOMAIN ROLE in a shipped community.**
+
+    loom_communities_cedar-commons-hoa | fan-test-alice | active | hoa-board
+
+`fan-test-alice` has an **active** membership of Cedar Commons HOA carrying **`hoa-board`** — the role that creates HOA documents, owner notices, dues charges and exports. Of the four legacy accounts, only this one holds anything; one is enough.
+
+**State the exposure precisely, because the layers disagree and overstating it would be the same error this file has logged before.** The grant is **real at the App Access layer** — `checkAccess` will allow `hoa-board` actions for this fan. But the account **cannot complete app sign-in**, because it has **no `fan_passport` row** (verified: `test-fan-%` returns zero there while the control returns rows). So it is a standing privilege that no one can currently *use* through the product, not a live intrusion path. It should still not exist: it is an authorization grant to an account that appears nowhere in git, created for testing, in a community that ships.
+
+**A SECOND finding from the same check, and it nearly cost me a run.** Probing for the Cedar board account, **two** usernames returned HTTP 200:
+
+| account | token | membership | verdict |
+|---|---|---|---|
+| `loom-hoa-board-1` | 200, `fanId: fan-hoa-board-1` | **holds `hoa-board`** | the right one |
+| `loom-cedar-board-1` | 200, `fanId: fan-cedar-board-1` | **none at all** | signs in, can do nothing |
+
+`fan-cedar-board-1` is seeding layer 1 with no layer 3 — a Keycloak account carrying a `fanId` claim and **zero** memberships or roles. Had I briefed a walkthrough with it, the run would have authenticated cleanly, found no create affordances, and reported a missing FAB — a provisioning gap wearing the costume of a product defect. **HTTP 200 proves a token exists, not that its holder can do anything.** Check the membership table as well as the token, every time.
+
+
 **RE-TESTED 2026-09-12 — STILL LIVE, and the row UNDER-states it. Four accounts, not two.** Queried Keycloak directly:
 
 | username | `fanId` claim |
