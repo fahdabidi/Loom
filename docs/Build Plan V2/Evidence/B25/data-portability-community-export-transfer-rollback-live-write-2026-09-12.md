@@ -1,134 +1,115 @@
 **Workflow:** `export-transfer-rollback` in Data Portability Community
-**Outcome:** BLOCKED — not proven. The workflow is uncreatable through the UI: its only create action is declared `scope: "instance"` + `presentation: "button"` on an `exportWizard` binding, and the app shell's `exportWizard` card is the one surface that never receives instance-scoped create actions. No instance was created and no row exists.
+**Outcome:** Both halves of the proof standard were met — signed in as `fan-portability-owner-1`, created a provider transfer, drove it to `transferring`, pressed the now-rendering "Request rollback" button to create `export-transfer-rollback`, and drove that instance through `available → running → complete` (terminal), confirmed in Postgres.
 
-**Package identity:** `skillVersion: "3.6.0"`, sha256 `f30994c9776871da2a4d48480f1ec83b2e7becaf16f860017dde5733ae0def43`
-(`app/packages/core/loom_communities_app_shell/assets/Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc`)
+**Package identity:** `Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc`
+- `skillVersion`: `3.6.0`
+- `sha256`: `f30994c9776871da2a4d48480f1ec83b2e7becaf16f860017dde5733ae0def43`
 
-**Date:** 2026-09-12
-**Device:** `emulator-5554` (Windows host, via `ADB_SERVER_SOCKET=tcp:192.168.56.1:5037`)
-**Identity:** `loom-portability-owner-1` / `fan-portability-owner-1`, role `portability-owner`
+**Build under test:** `com.example.loom_communities_demo`, `lastUpdateTime=2026-09-12 11:28:15` — after fix commit `f869e81e` (2026-09-12 11:23:19 -0700, "fix(app-shell): forward instance-scoped create actions to every card family").
 
-## Where the run stopped
+**Identity:** Keycloak `loom-portability-owner-1` / fan id `fan-portability-owner-1`, role `portability-owner` (shown in-app as "Portability Owner 1 — Owner/Admin"). The session survived the `adb install -r` reinstall; no credential was created or reset, and nothing was cleared.
 
-The ticket's prescribed order was followed exactly, and step 3 is where it stopped:
+---
 
-1. ✅ Created the `export-transfer-verification` transfer (proven — see the companion manifest).
-2. ✅ Fired `start-provider-transfer` → `transferring`, the state in which the rollback button is declared.
-3. ⛔ **"Request rollback" never rendered.** With the transfer sitting in `transferring`, the Admin-tab card
-   was located and read in full. It rendered its three transitions — "Send for provider verification",
-   "Record transfer error", "Cancel transfer" — and the card ended there, followed by the list footer
-   ("Local package details"). There was no "Request rollback" button.
-4. ⛔ Steps 4–5 (drive the rollback to `complete`) were therefore unreachable.
+## The defect this run re-tested: FIXED, confirmed on device
 
-Because the button is the *only* way to create this workflow, the transfer was afterwards taken to its own
-terminal state so that at least that row could be proven. That ordering no longer mattered: the button does
-not render in any state, so cancelling the transfer destroyed nothing that was otherwise reachable.
+The earlier walkthrough today found `export-transfer-rollback` uncreatable because the app shell's
+binding dispatcher did not forward instance-scoped create actions to the `exportWizard` card family.
 
-## This is not "the workflow has no create action"
+**"Request rollback" now renders.** On the Admin tab, on the `export-transfer-verification` card in
+state `transferring`, the card showed four actions: *Send for provider verification*, *Record
+transfer error*, *Cancel transfer*, and **Request rollback**. Pressing it opened the create dialog
+and created a real instance. The defect is closed.
 
-The ticket pre-empted that misreading, and it is not what is being reported. The package **does** declare a
-create action, twice, and it is well-formed:
+### One thing that would have been mis-reported, recorded so nobody repeats it
 
-    "kind": "create", "workflowType": "export-transfer-rollback",
-    "label": "Request rollback", "byRoleIds": ["portability-owner"],
-    "scope": "instance", "presentation": "button",
-    "prefill": { "sourceTransferInstanceId": "{context.id}", ..., "rollbackAvailable": true }
+The same card on the **Transfer** tab shows only three actions and **no "Request rollback"** — and
+that is correct, not a residual bug. The package declares the rollback create action only on
+`tabId: "admin"` bindings (states `transferring`/`awaiting-provider`/`failed`, and separately
+`verified`); the `tabId: "transfer"` binding for the same states declares **no actions at all**.
+I observed the Transfer-tab card first and it looked exactly like the unfixed defect. Reading the
+package's binding declarations, not the screen, is what distinguished "action not declared on this
+tab" from "action declared and dropped by the dispatcher".
 
-on bindings for `["transferring","awaiting-provider","failed"]` and `["verified"]`, both
-`tabId: "admin"`, both `cardSurfaceFamily: "exportWizard"`.
+---
 
-The defect is that this declaration cannot reach the screen.
+## Path driven
 
-## Root cause, read from the app shell source
+1. **Admin** tab → FAB → **"New provider transfer"**. Fields: Transfer Label `RB1`, From `srcA`,
+   To `dstB`, Transfer Scope `posts`. Created in `draft`.
+2. **Start transfer** (`start-provider-transfer`, guard `size(transferScope) > 0`) → `transferring`.
+   Card showed `Status: Transferring`, `Rollback: Available`.
+3. **Request rollback** pressed on that card (Admin tab) → create dialog, prefilled.
+4. Dialog: Rollback Label `RBK1`, Rollback Reason `bad`, Available toggle ON. **Create** →
+   new instance in `available`.
+5. **Roll back transfer** (`start-transfer-rollback`, guard `rollbackAvailable == true`) → `running`.
+6. **Confirm rollback complete** (`complete-transfer-rollback`) → **`complete`** (`isTerminal`).
+   Card rendered "Rollback complete", `Status: Restored`, and no further action buttons.
+7. **Cancel transfer** on the source transfer → `cancelled` (terminal).
 
-`lib/src/part27_engine_native_binding_dispatcher.dart` switches on `cardSurfaceFamily`. Three cases pass the
-binding's instance-scoped create actions down to the card — `event-rsvp`, `votePoll`, and the `default`
-`GenericWorkflowInstanceCard` — each via the same filter:
+## Database confirmation (same session)
 
-    action.kind == 'create' && action.scope == 'instance' &&
-    action.presentation == 'button' && action.byRoleIds?.contains(roleId) == true
+```
+ instance_id                                                      | workflow_type            | created_by_fan_id       | current_state
+ community_data_portability_export-transfer-rollback_8dmyaeanrm0d | export-transfer-rollback | fan-portability-owner-1 | complete
+```
 
-The `exportWizard` case (line 461) constructs `ExportWizardArchetypeCard` and **does not pass them**:
+- `created_at`: `1789238364197` = **2026-09-12 18:39:24 UTC**
+- `community_id`: `community_data_portability`
+- Source transfer: `community_data_portability_export-transfer-verification_tqt9zpajt8b4`,
+  final state `cancelled`, also `created_by_fan_id = fan-portability-owner-1`.
 
-    case 'exportWizard':
-      return ExportWizardArchetypeCard(
-        key: contentKey, resolved: resolved, engine: engine, fanId: fanId,
-        accent: accent, onInstanceChanged: onInstanceChanged,
-        modernTheme: modernTheme, displayContext: displayContext,
-        visibleFieldKeys: visibleFieldKeys,
-      );                                    // no instanceScopedCreateActions / onInstanceScopedCreate
+**Do the two halves agree?** Yes. The device showed "Rollback complete" / `Status: Restored` with no
+remaining actions, and the row reads `current_state = complete`. `created_by_fan_id` is
+`fan-portability-owner-1`, the identity I authenticated and acted as — no stale-SSO mismatch.
 
-`ExportWizardArchetypeCard` (`part36_engine_native_marketplace_surface.dart:1963`) contains **zero**
-occurrences of `instanceScopedCreateActions` — it has no such parameter to pass.
+## `sourceTransferInstanceId` — `{context.id}` RESOLVES CORRECTLY
 
-The one other code path that handles instance-scoped creates,
-`part01_local_extension_screen.dart:1511-1521`, is surface-independent but requires
-`action.presentation == 'fab'`. This package declares `presentation: "button"`.
+Stored value, read verbatim from Postgres:
 
-So `scope:"instance"` + `presentation:"button"` + `cardSurfaceFamily:"exportWizard"` is precisely the
-combination that renders nowhere. Both of this package's create actions are that combination.
+```
+community_data_portability_export-transfer-verification_tqt9zpajt8b4
+```
 
-## Why no validator or test caught it
+This is **exactly equal** to my transfer instance's id (verified by SQL equality, which returned
+`t`). It is not empty, not null, and not the literal `{context.id}`.
 
-`scope: "instance"` appears in **exactly one** of the ten shipped packages — this one — and only on these two
-actions:
+**This answers the open tracker question.** `{context.id}` in a `scope: "instance"` create prefill —
+a third interpolation context, distinct from the effect-field `{id}` measured earlier today and from
+the `transitionRelated` filter case — resolves to the context instance's id. The other three prefills
+resolved too: `sourceProvider` → `srcA`, `destinationProvider` → `dstB`, both from `{context.*}`.
 
-    0  AdFree   0  BookClub   0  CameraClub   0  CedarCommonsHOA   0  ChessClub
-    2  DataPortabilityCommunity
-    0  GardenClub   0  MemberSocialSpace   0  Mosque   0  YouthSoccer
+## `rollbackAvailable` stored type
 
-There is no working instance-scoped button anywhere in the corpus, so there is no control to compare against
-and nothing that would have failed. Every individual declaration here is valid; the defect lives in the
-binding-to-renderer mapping, which no per-declaration check can see.
+`jsonb_typeof` returns **`boolean`**, value `true` — a real JSON boolean, not the string `"true"`.
+`start-transfer-rollback` (guard `instanceDataEquals: rollbackAvailable == true`) rendered and fired,
+consistent with that.
 
-## Evidence that the affordance is genuinely absent
+## Baseline (measured, not assumed)
 
-Per the standing rule against reporting a missing affordance on weak evidence, absence was established three
-independent ways, and **not** from a `uiautomator dump`:
+- Before: **46** rows in `workflow_instances`; **zero** `export-transfer-rollback` rows.
+- After: **48** rows; **one** `export-transfer-rollback` row — mine, distinguished by instance id
+  `..._8dmyaeanrm0d` and `created_at` 18:39:24 UTC.
+- The brief's hint of ~46 rows was accurate this time.
+- A prior `export-transfer-verification` row (`..._0tx8cno6yx9j`, `cancelled`, 17:24 UTC) exists from
+  today's earlier run. Not mine; excluded by id and timestamp.
 
-- **Screenshot, full card.** The `transferring` card was scrolled until its entire extent plus the following
-  list footer were on one screen. Three transition buttons, no create button.
-- **Source read.** The two code paths above — conclusive, and it explains *why*, not just *that*.
-- **Tap test.** Tapping the card body produced no detail view or navigation, and the instance stayed in
-  `transferring`. There is no expanded surface holding the button.
+## Defects and observations
 
-A `uiautomator dump` was attempted first and was **useless, not negative**: it returned 8,641 bytes containing
-**zero** text nodes. A control (`grep` for any text node at all) showed the query was broken rather than the
-screen empty, so it was discarded rather than reported.
+- **No product defect found in this workflow.** Every declared transition rendered for the guarded
+  role, the terminal state was reached, and the prefill mechanism worked.
+- **`adb shell input text` truncation hit twice, both cosmetic and both caught:**
+  - Typing into the first form before the keyboard settled put two values in one field
+    (`RB1srcA`); corrected and re-verified on screen and against the stored row.
+  - `"bad count"` stored as `"bad"` — the space truncated the input. `rollbackReason` is free text
+    and gates nothing. The load-bearing values (`transferScope`, `sourceTransferInstanceId`) were
+    settled against the database, not the screen.
+- **`uiautomator dump` was useless here** — it returned trees with every `text` attribute empty, so
+  text searches over it proved nothing in either direction. All findings above rest on screenshots.
+- No ANR or crash dialog: `dumpsys window lastanr` reports `<no ANR has occurred since boot>`.
+- No `403` / `unknown_permission_id`. Every create and transition was accepted.
 
-Role was ruled out as a cause: the create action requires `portability-owner`, and I demonstrably hold it —
-`start-provider-transfer` is guarded on the same role and I fired it successfully.
+## Not done
 
-## Database confirmation — a real negative result
-
-    select count(*) from workflow_instances where workflow_type='export-transfer-rollback';
-    -- 0
-
-Zero before the run and zero after, consistent with the UI: no instance was created, so nothing was written.
-The workflow-type total for the table went 45 → 46, that one row being the companion
-`export-transfer-verification` instance.
-
-## The `{context.id}` measurement could not be taken
-
-The ticket asked, as its own deliverable, for the stored `sourceTransferInstanceId` verbatim, to settle
-whether `{context.id}` resolves in a `scope: "instance"` create prefill.
-
-**That measurement is unavailable from this run, and honestly so:** the prefill is only evaluated when the
-create action fires, and it never fired. Reporting any value — including "empty" — would be inventing an
-observation. The question is untouched, not answered negatively.
-
-Worth recording for whoever takes it next: the resolver does exist and is surface-independent
-(`resolveInstanceScopedPrefill(action.prefill, focusedInstance, actorId: ...)` in
-`part01_local_extension_screen.dart`, alongside `instance_scoped_action_context.dart`). So `{context.id}`
-resolution is testable today via an instance-scoped action declared with `presentation: "fab"`, which does
-reach that code path — it is only the `"button"` presentation on `exportWizard` that is stranded.
-
-## Scope of the defect
-
-This is not cosmetic. `export-transfer-rollback` declares six states including three terminal ones, five
-transitions, and a full `instanceDataSchema`, and **none of it is reachable by any user** — the workflow has
-no tab-scoped FAB and no other create path. Its B25 row cannot be proven by anyone until either the
-`exportWizard` case forwards instance-scoped create actions, or the package declares the action as
-`presentation: "fab"`.
-
-Per the ticket I changed no application code, no community JSON, and no tracker.
+- No test suites were run; this was a device walkthrough. No application code, community JSON, or
+  tracker was modified, and no credential was created or reset. This manifest is the only commit.
