@@ -230,7 +230,7 @@ SANDBOX_MODE="${CODEX_IMPLEMENTATION_SANDBOX:-workspace-write}"
 # every gpt5_6_* profile fails outright until Sep 15). See the "DeepSeek
 # setup, ACTIVE" block above for the gateway/profile-file details, and switch
 # back with CODEX_IMPLEMENTATION_PROFILE=gpt5_6_luna_high once credits return.
-PROFILE="${CODEX_IMPLEMENTATION_PROFILE-deepseek_v4_flash}"
+PROFILE="${CODEX_IMPLEMENTATION_PROFILE-gpt5_6_sol_high}"
 PROFILE_ARGS=()
 if [ -n "$PROFILE" ]; then
   PROFILE_ARGS=(-p "$PROFILE")
