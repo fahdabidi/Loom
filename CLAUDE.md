@@ -1807,6 +1807,52 @@ start; I spent two passes reasoning from filenames instead.
 `communityId` field holds an extensionId, and to a manifest filename that is a slug of a workflow
 type. Find the writer, read what it puts there, then join.
 
+### A walkthrough's screenshots do not survive it, so judging must be PAIRED with capture
+
+Traced 2026-09-12 while sequencing the remaining B25 both-halves rows, and it inverts the obvious
+plan. A judge run does not look at a device: it reads **PNG files at explicit paths** and applies a
+rubric — `call_ux_judge_agent.sh` runs on a vision-capable model precisely so it can, and a real
+judge prompt lists each frame by path.
+
+**Those frames do not survive.** `.gitignore` carries a blanket `*.png`, so no capture is ever
+committed; the live-verification run directories hold `output.log` and nothing else; and on the day
+this was traced there were **zero** PNGs anywhere in the tree. A walkthrough manifest said it
+outright: *"Screenshots were captured at every step but `*.png` is gitignored, so they are
+transient."*
+
+**So a walkthrough's evidence cannot be judged later.** Running N walkthroughs and then N judge runs
+means capturing everything twice — by the time the second pass begins, the pixels are gone. Capture
+and judge **in the same sitting**, one row at a time, and commit the verdict, which is the durable
+artifact and the thing the bar counts. The capture pipeline already exists
+(`loom_ux_judges/bin/b25_capture_workflow_screenshots.dart`) and `--phases` is not optional: each
+community has exactly one phase it has coverage in, and asking for another is a hard failure.
+
+The general form, worth applying past B25: **before planning a two-pass workflow, ask what the first
+pass leaves behind.** If its output is gitignored, written to `/tmp`, or otherwise transient, the two
+passes are really one pass that must not be split.
+
+### Interpolation tokens resolve differently in different contexts — measure each one
+
+Found 2026-09-12 by contrast rather than by reading, and it explains a defect that had been filed as
+a spec question. The same `{...}` token does **not** behave the same way everywhere:
+
+| context | example | behaviour |
+|---|---|---|
+| effect `fields` | `sourceInstanceId: "{id}"` | **works** — receives the instance id |
+| `transitionRelated` filter, data-field token | `"requestInstanceId": "{requestInstanceId}"` | **works** — ordinary data-field lookup resolves it |
+| `transitionRelated` filter, `{id}` | `"eventId": "{id}"` | **silently matches nothing** |
+
+The mechanism: the filter resolver does an ordinary data-field lookup, and `{id}` names a field that
+does not exist in `instanceData` — the instance id is not a data field. So it yields nothing, the
+filter matches no rows, and the sweep no-ops while returning 200.
+
+Two things generalize. **A token that works in one position is not evidence it works in another** —
+enumerate the positions before concluding a mechanism is sound. And **the cheapest way to isolate
+this class is a contrast, not a code read**: one live case that works and one that fails, on the same
+engine on the same day, with the difference reduced to a single token. A working control turns "the
+sweep is broken" into "the sweep is broken *for this token*", which is a much smaller and more
+actionable claim.
+
 ### The Claude dispatchers buffer; a zero-byte log is normal for them, not a death signal
 
 The "confirm a dispatch is alive" guidance above was written for the **Codex** dispatchers, whose logs
