@@ -83,9 +83,9 @@ be batched rather than rediscovered one at a time.
 - [ ] `new-ticket` — A product doc contradicts itself internally — it disclaims rows in its header while its own tables still count them — [detail](TODO-open-detail.md#row-158)
 - [ ] `new-ticket` — 11 B25 evidence manifests predate package-identity recording, so they cannot be checked for staleness — [detail](TODO-open-detail.md#row-160)
 - [ ] `new-ticket` — pass-42 blockers — `c14` vision review is ~97% scaffold (7 of 204 screens carry real evidence) — [detail](TODO-open-detail.md#row-161)
-- [ ] `new-ticket` — ONE defect behind three rows: all three generic form builders fall through to a plain `TextFormField` for every type but `bool`/`date`/`time` — so `fanId[]`, `image`, `url` collect free text — [detail](TODO-open-detail.md#row-269)
-  - [ ] `new-ticket` — ↳ a `platform-connection` invite can be addressed to a fan who can never answer it — [detail](TODO-open-detail.md#row-210)
-  - [ ] `new-ticket` — ↳ `participantFanIds` mixes role ids and fan ids in one `fanId[]` field — [detail](TODO-open-detail.md#row-268)
+- [x] `new-ticket` — DONE 2026-09-12 (`f26dac6e`): typed `fanId`/`fanId[]` pickers in all four builders, backed by a real member directory, all four spellings including the nullable forms. Verified by me: app shell **414 passed / 2 skipped** (was 408+2), analyze clean, zero removed assertions, and the regression test proven discriminating by neutralising the fix — [detail](TODO-open-detail.md#row-269)
+  - [ ] `blocked` — ↳ NOT closed by the above, as scoped: a directory of real members still contains a moderator-only fan, and no schema field declares role eligibility. Needs a grammar/product decision on how a `fanId` field states which roles are eligible — [detail](TODO-open-detail.md#row-210)
+  - [x] `new-ticket` — ↳ CLOSED by the above: role ids can no longer reach a `fanId[]` field. The contaminated Chess row is preserved and visibly flagged rather than silently repaired — [detail](TODO-open-detail.md#row-268)
 - [ ] `new-ticket` — Backlog of deferred polish findings (ISO-8601 humanization, `maxLines` truncation, contradictory chip pairs) — [detail](TODO-open-detail.md#row-297)
 - [ ] `new-ticket` — Membership-assignment call needs a fan actor, which a client-credentials token structurally cannot supply — header fixed, identity question open — [detail](TODO-open-detail.md#row-353)
 
