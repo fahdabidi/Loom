@@ -77,3 +77,65 @@ A person types it. The row is drivable today; the empty `checksum` is the design
 Keep the same signed-in identity across all of them: every identity switch risks the stale-SSO trap,
 which fails green in both directions. Only step 7 might warrant a second identity, and only if the
 `verified` outcome is wanted rather than the owner-only terminal exit.
+
+---
+
+# Phase two — the judge half, and why it must be PAIRED with the walkthrough
+
+Traced 2026-09-12. This section exists because the obvious sequencing is wrong and would cost a
+whole second pass over the device.
+
+## The constraint
+
+A judge run does not look at a device. It reads **PNG files at explicit paths** and applies a rubric
+to them — `call_ux_judge_agent.sh` runs on a vision-capable model precisely so it can, and a real
+judge prompt lists each frame as
+`docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_<workflow>_<state>.png`.
+
+**Those frames do not survive.** `.gitignore:7` is a blanket `*.png`, so no capture is ever
+committed, and today there are **zero** PNGs anywhere in the tree newer than the campaign's own
+start. The live-verification run directories hold `output.log` and nothing else. The
+`chess-club-night` manifest says so in its own words: *"Screenshots were captured at every step but
+`*.png` is gitignored, so they are transient."*
+
+**So a walkthrough's evidence cannot be judged later.** By the time anyone looks, the pixels are
+gone.
+
+## What follows for the remaining 14 both-halves rows
+
+**Do NOT run 14 walkthroughs and then 14 judge runs.** The first pass's frames would be gone before
+the second pass began, and every row would need capturing twice. Pair them instead: for each row,
+capture/drive and judge **in the same sitting**, then commit the verdict — which is the durable
+artifact and the thing the bar actually counts.
+
+The capture pipeline already exists and is not manual `adb`:
+
+    app/packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart
+      --device emulator-5554
+      --app-package com.example.loom_communities_demo
+      --mode full-b25 | targeted-precheck
+      --phases B12,<the community's own phase>
+
+**`--phases` is not optional and not cosmetic.** Each community has exactly ONE phase it has
+coverage in, and asking for a phase it lacks is a hard failure — pass `B12` plus that community's
+own phase. Chess Club is **B15** (`"phase": "B15"`, `appId: ext_chess_club`, per its legacy review
+input).
+
+## `chess-club-night` is the cheapest +1 on the board, but it is NOT free
+
+It already has a live write (2026-09-12, proven) and no judge artifact, so it is the only row on the
+bar needing just one half. But its frames are gone, so it needs a **fresh capture** before a judge
+can see anything. Budget a capture run, not merely a judge dispatch.
+
+**Do not be fooled into thinking it is already judged.** The legacy Chess judge artifact
+(`phase-a-legacy/chess-club/llm-vision-ux-review-phaseA-legacy-chess-club-1.json`) *contains the
+string* `chess-club-night` — but it has **no `workflowId` field at all**, and the string appears
+only inside screen ids such as `chess-club-chess-club-night-start`. A screen id is derived FROM a
+workflow id, so its slug resembles a bar key without being one. I checked this specifically on
+2026-09-12 while chasing exactly that false positive.
+
+## Device contention
+
+Captures and walkthroughs both need the emulator, so they serialize. Do not start a capture while a
+walkthrough is running — and note this is a *device* constraint, separate from the load constraint
+on the VM. Check both.
