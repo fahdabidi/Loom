@@ -764,6 +764,39 @@ Three things generalize:
   because nothing ever ran it. Same family as the always-quiet guard: code that looks like handling
   and never executes is not handling.
 
+### A fallback path is where a new capability silently fails to exist
+
+Found 2026-09-13. A fix added `ensureVisible` inside the readiness poll for **primary** action
+candidates. The sibling **fallback** check — "is any *other* action tappable?" — was left inspecting
+candidates without scrolling. Nothing failed, because the fallback only runs when the primary path
+has already come up empty, and until then the missing preparation is unreachable.
+
+Then a row arrived where the primary action was **legitimately absent** (a full event correctly
+withholds "Going"). The primary path did nothing, so **no scrolling happened at all**, and the
+perfectly valid alternatives — Join waitlist, Maybe, Not attending — sat below the viewport and
+hit-tested as unreachable. The harness concluded the product offered *nothing*.
+
+**A shipped test disproved that in one line**: `b41_garden_engine_migration_test.dart` selects the
+same role and taps `respond-waitlist` on the same instance — because it calls `ensureVisible` on the
+exact control first.
+
+Three things worth keeping:
+
+- **A fallback branch is under-exercised by construction.** It runs only when the main path fails,
+  so a capability added to the main path can be absent there for a long time without any test going
+  red. When you add preparation, retries, scrolling, logging or auth to one path, **grep for the
+  sibling that handles the same question a different way** — and prefer one shared helper, because
+  two call sites implementing the same idea independently is how the asymmetry arose here.
+- **"We found nothing" and "the system offers nothing" are different claims**, and only the second
+  is evidence. A reclassification that turns the first into the second **conceals the defect that
+  produced it** — which is exactly what a change I had already dispatched would have done, and why
+  it stayed unmerged.
+- **When two artifacts in one repo disagree, that contradiction is the best brief you can write.**
+  Three hypotheses about this row were wrong — the control was disabled (it was absent), the surface
+  was genuinely actionless (a shipped test taps it), the selector dropped it (it does not: a null
+  account id is accepted). What ended it was not more reasoning but a known-good counterexample from
+  the same codebase.
+
 ### Strengthening an existence check into a hit test creates false failures unless the caller prepares the surface
 
 Found 2026-09-13, root cause agent session `b25-capture-auth`, after I had spent three device runs
