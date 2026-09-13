@@ -764,6 +764,46 @@ Three things generalize:
   because nothing ever ran it. Same family as the always-quiet guard: code that looks like handling
   and never executes is not handling.
 
+### Strengthening an existence check into a hit test creates false failures unless the caller prepares the surface
+
+Found 2026-09-13, root cause agent session `b25-capture-auth`, after I had spent three device runs
+on two wrong hypotheses in a row.
+
+Replacing `finder.evaluate().isNotEmpty` with a real hit test is the right direction — this file
+argues for it one section below, because an existence check is satisfied by a control behind a modal
+barrier. But a hit test inspects a control **at its current screen coordinates**, and that makes it
+sensitive to things an existence check never was. On the B25 calendar surface there are **four**
+separate conditions, and the harness was collapsing them into one boolean:
+
+    agenda entry present  →  selected detail present  →  action eligible  →  pointer can reach it
+
+An event's actions **do not exist** until its agenda entry is selected
+(`engine-native-calendar-agenda-<instance>` → `engine-native-calendar-selected-detail-<instance>` →
+`event-rsvp-<instance>-action-<transition>`). And nothing scrolls a candidate into view, so an
+enabled, eligible control reads as "not ready" purely by being off-viewport.
+
+**Three things generalize:**
+
+- **A false "nothing was tappable" does not establish that the system offered nothing.** It can
+  equally mean the caller never put the surface into the state where the offer exists. Before
+  concluding *unavailable*, prove the surface was prepared.
+- **Report the conditions separately.** Collapsed into one "absent", they sent me to a wrong
+  diagnosis (disabled) that a per-candidate reason then disproved in a single line. The fix that
+  keeps paying is recording *which* condition failed, not merely that one did.
+- **A removal that is correct in one archetype can be load-bearing in another.** Deleting a
+  speculative instance tap was right for the Marketplace surface, where it opened a detail dialog and
+  leaked it — and it was the only thing selecting the calendar agenda entry. The answer is not to
+  restore the blind tap but to make the preparation **deliberate, named and scoped to the archetype
+  that needs it**. When you delete a mechanism because it is wrong *here*, check what it was doing
+  *elsewhere*.
+
+**And the companion defect, which is the one most likely to outlive this incident:** the calendar
+surface's action loader catches its exception into `_`, so **a failed load is indistinguishable from
+a successful empty one**. That is the same shape as `if (matches.isNotEmpty)` treating a legitimate
+zero-match query as an unresolved one, and as a `curl` failure leaving the previous response file in
+place. Whenever a catch swallows the error and the caller then sees "nothing", the caller cannot tell
+*nothing* from *never found out*.
+
 ### A probe that mutates the surface changes the answer it was asking about
 
 Found 2026-09-13, root cause agent session `b25-capture-auth`. The B25 action waiter, when it could
