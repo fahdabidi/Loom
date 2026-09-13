@@ -1208,7 +1208,7 @@ the single test in isolation before calling it a regression; a failed `expect` i
 matter"). Do not file an RLS defect, and do not weaken the test's timeout, without an isolated run
 first. Equally, do not record a service baseline from a run where it timed out — the pass count is
 one short.
-| Demo app | `app/apps/loom_communities_demo` | **161** (0 skipped) — re-measured 2026-09-12. Moved 160 → 161 for one reason, verified rather than assumed: the watchdog-race fix (`9c25054f`) added exactly one regression test. A total that moves **up** still needs its reason named, the same as one that moves down |
+| Demo app | `app/apps/loom_communities_demo` | **162** (0 skipped) — re-measured 2026-09-13. Moved 160 → 161 → 162 across two commits on the B25 capture path, each adding exactly one regression test: the watchdog-race fix (`9c25054f`) and the missed-tap fix (`7ba98707`). **A total that moves up needs its reason named as much as one that moves down** — two unexplained +1s look identical to one fabricated test, and this row is the only place that distinction is recorded |
 
 **On the engine's −2, recorded rather than waved away.** The suite is green (exit 0, skips unchanged
 at 5), so this is not a failure — but a total moving *down* is the shape that can hide a deletion, so
