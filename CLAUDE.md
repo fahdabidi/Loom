@@ -764,6 +764,52 @@ Three things generalize:
   because nothing ever ran it. Same family as the always-quiet guard: code that looks like handling
   and never executes is not handling.
 
+### A probe that mutates the surface changes the answer it was asking about
+
+Found 2026-09-13, root cause agent session `b25-capture-auth`. The B25 action waiter, when it could
+not find the action it wanted, **tapped the instance card** to reveal collapsed controls. For a
+Marketplace listing that tap opens the **detail dialog**
+(`part36_engine_native_marketplace_surface.dart:203, :354, :1037`). Three things then went wrong at
+once, and each is worth recognising on its own:
+
+- **The probe changed the surface it was measuring.** After the tap, "is this action available *on
+  this screen*" is a question about a different screen.
+- **The finder kept matching the wrong widgets.** The instance-qualified finder went on matching the
+  tile controls **behind the modal barrier**, while **missing the dialog's own controls**, whose keys
+  omit the instance id. So the tap did not even help discovery.
+- **Nothing unwound it.** The legitimately-`unavailable` return path left the dialog open, and it
+  covered the *next* row's identity picker — turning a correct "this action is unavailable" result
+  into a navigation failure two steps later, in a different community, with an unrelated-looking
+  message.
+
+**The generalisable rule: an existence check is not an interactability check.**
+`finder.evaluate().isNotEmpty` is satisfied by a control behind a modal barrier, by an offstage
+route's subtree, and by a disabled button. If the question is "can the user do this", the predicate
+must be *hit-testable and enabled*, and it must be **non-mutating** — never implemented by trying the
+action to see whether it works.
+
+Two corollaries this cost real time on:
+
+- **Deliberate navigation needs explicit open/close ownership.** If a step must visit a detail
+  surface, it opens a named thing, asserts that named thing, does its work, closes it, and verifies
+  restoration *before* returning its result — and if cleanup fails, it reports the **original**
+  failure, not the cleanup error. The app already exposes
+  `marketplace-listing-tap-<id>` / `marketplace-detail-dialog-<id>` / `marketplace-detail-close-<id>`
+  for exactly this.
+- **A blind "recover to a known screen" loop is not the fix, and the existing helper is a trap.**
+  `workflow_ui_test_harness.dart:390` `_returnToCommunityList` hunts a Back button and taps it with
+  `warnIfMissed: false` — so under a covering dialog it finds the **covered** Back button and misses
+  **silently**, forever. A recovery path built on a suppressed signal is the same
+  indistinguishable-from-success failure this file keeps recording. Assert the expected surface and
+  **fail loudly with the unexpected one named**; never dismiss an unknown overlay and call the row
+  successful.
+
+**And the reason this only appeared now is worth keeping too.** The speculative tap had existed all
+along, but the `unavailable` return path was **unreachable** until the watchdog race above was fixed,
+so the leak had never executed. **Fixing a real defect exposes the next one, and the new failure
+will often surface far from its cause** — here, two rows later, as a tap that "missed" a healthy
+button.
+
 ## Evidence rules
 
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A
@@ -1208,7 +1254,7 @@ the single test in isolation before calling it a regression; a failed `expect` i
 matter"). Do not file an RLS defect, and do not weaken the test's timeout, without an isolated run
 first. Equally, do not record a service baseline from a run where it timed out — the pass count is
 one short.
-| Demo app | `app/apps/loom_communities_demo` | **162** (0 skipped) — re-measured 2026-09-13. Moved 160 → 161 → 162 across two commits on the B25 capture path, each adding exactly one regression test: the watchdog-race fix (`9c25054f`) and the missed-tap fix (`7ba98707`). **A total that moves up needs its reason named as much as one that moves down** — two unexplained +1s look identical to one fabricated test, and this row is the only place that distinction is recorded |
+| Demo app | `app/apps/loom_communities_demo` | **163** (0 skipped) — re-measured 2026-09-13. Moved 160 → 161 → 162 → 163 across three commits on the B25 capture path, each adding exactly one regression test: the watchdog race (`9c25054f`), the silent missed tap (`7ba98707`), and the transition-frame retry (`43168718`). **A total that moves up needs its reason named as much as one that moves down** — three unexplained +1s look identical to three fabricated tests, and this row is the only place that distinction is recorded |
 
 **On the engine's −2, recorded rather than waved away.** The suite is green (exit 0, skips unchanged
 at 5), so this is not a failure — but a total moving *down* is the shape that can hide a deletion, so
