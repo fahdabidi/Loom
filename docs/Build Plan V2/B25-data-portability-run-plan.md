@@ -428,3 +428,71 @@ wanted, since every switch is stale-SSO exposure.
 **Neighborhood Book Club (7) and Riverside Youth Soccer (6)** remain blocked on the parity drift
 (see the release-blocker row). Re-run `check_permission_parity.sh` before starting either; if it is
 clean, they are the two largest remaining clusters.
+
+---
+
+# What is left, and what blocks each — complete accounting, 2026-09-12
+
+Bar at time of writing: **43 of 72**, up from 10 when the campaign resumed this morning. This section
+exists because "29 rows remain" is not actionable; *why* each remains is.
+
+## The 29 rows short of the bar, by blocker
+
+| Blocker | Rows | Who can clear it |
+|---|---:|---|
+| **Parity drift** (missing package-derived grants) | **16** | **user decision** — a `setRolePermissions` backfill |
+| **Capture + judge pairing** (workable now) | **9** | me, no decision needed |
+| **Messages tab not binding-dispatched** | **2** | scope decision — the tab is deliberately unimplemented |
+| **Judge only** (walkthrough already banked) | **1** | me — needs a fresh capture, frames are transient |
+| Last non-deferred walkthrough | 1 | in flight |
+
+The 16 parity-blocked rows are Book Club (7 walkthrough + 2 both-halves) and Youth Soccer
+(6 walkthrough + 1 both-halves). **That is 55% of everything still short of the bar**, gated on one
+authorization change.
+
+## The 9 rows workable now, via paired capture + judge
+
+    cedar-commons-hoa    hoa-document-access-request
+    chess-club           chess-export-package
+    chess-club           chess-match-meetup
+    chess-club           chess-pairing-queue
+    chess-club           chess-rankings-table
+    chess-club           chess-rules-documents
+    garden-club          garden-tool-giveaway
+    masjid-nur           mosque-document-resource
+    member-social-space  platform-message-thread
+
+Chess Club is 5 of the 9 — the obvious cluster to batch. Its phase is **B15**
+(`appId: ext_chess_club`), which `--phases B12,B15` needs.
+
+**These must be captured and judged in the same sitting.** `.gitignore` blanket-excludes `*.png`, so
+frames never survive to a later pass; running 9 walkthroughs and then 9 judge runs would mean
+capturing everything twice.
+
+## The 2 rows blocked by the Messages tab — NOT a package defect
+
+`chess-discussion-thread` and `mosque-discussion-thread` each declare their **only** create action on
+`tabId: "messages"`, and the Messages tab does not dispatch community render bindings: it is
+`_MessagesTabSurface` in `part02_tab_shell.dart`, a bespoke surface backed by its own
+`_MessagesEngineStore`, with its own inbox, thread detail and composer. Verified in source
+2026-09-12; the file's own comment says it "replaces the old static `_MessagesTabSurface` mock
+entirely", and CLAUDE.md records the tab as not-yet-implemented and **out of scope by standing
+instruction**.
+
+So these two rows are unprovable until that scope decision changes. **Both packages are well-formed**
+— the declarations are correct and would render on any binding-dispatched tab. Do not "fix" them by
+moving the binding.
+
+**`platform-message-thread` is NOT in this group**, and the distinction is worth keeping: it declares
+creates on **both** `home` and `messages`, so the `home` one renders and the row is workable. Checking
+the tab list rather than the workflow's name is what separates it from the other two.
+
+## `chess-club-night` — judge only, but not free
+
+It already has a live write and lacks only a judge artifact. Its frames are gone, so it needs a fresh
+**capture** run, not merely a judge dispatch. Batch it with the Chess Club five.
+
+**And it is not already judged**, despite the legacy Chess judge artifact containing the literal
+string `chess-club-night`: that file has no `workflowId` field at all, and the string appears only
+inside screen ids like `chess-club-chess-club-night-start`. A screen id is derived from a workflow id,
+so its slug resembles a bar key without being one.
