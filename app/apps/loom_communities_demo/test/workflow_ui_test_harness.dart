@@ -400,6 +400,148 @@ class PrimaryActionAvailability<T> {
       candidateReadiness.map((candidate) => candidate.description).join(', ');
 }
 
+/// The two explicit Calendar preparation states that precede action polling.
+///
+/// An agenda row merely says the event is listed. Its detail card owns the
+/// action controls, so it must be selected before an action finder can have a
+/// meaningful absent/present result. This deliberately models only the
+/// Calendar surface; callers must not use it as permission to tap an arbitrary
+/// instance on a generic list or Marketplace surface.
+class CalendarActionSurfacePreparation {
+  const CalendarActionSurfacePreparation._({
+    required this.instanceId,
+    required this.isCalendarSurface,
+    required this.agendaEntryMatchCount,
+    required this.selectedDetailMatchCount,
+  });
+
+  final String instanceId;
+  final bool isCalendarSurface;
+  final int agendaEntryMatchCount;
+  final int selectedDetailMatchCount;
+
+  bool get agendaEntryPresent => agendaEntryMatchCount == 1;
+
+  bool get selectedDetailPresent => selectedDetailMatchCount == 1;
+
+  bool get isReadyForActionPolling =>
+      !isCalendarSurface || (agendaEntryPresent && selectedDetailPresent);
+
+  /// A per-instance diagnostic that keeps the three distinct Calendar states
+  /// legible alongside the per-candidate readiness results.
+  String get diagnosticDescription {
+    if (!isCalendarSurface) return 'not a Calendar surface';
+    return 'calendar instance $instanceId: agenda entry present? '
+        '${agendaEntryPresent ? 'yes' : 'no (matches: $agendaEntryMatchCount)'}; '
+        'selected detail present? '
+        '${selectedDetailPresent ? 'yes' : 'no (matches: $selectedDetailMatchCount)'}';
+  }
+
+  /// A missing Calendar agenda entry is a shipped-surface finding, not an
+  /// invitation to try a generic instance tap.
+  String? get unavailableReason {
+    if (!isCalendarSurface || isReadyForActionPolling) return null;
+    if (!agendaEntryPresent) {
+      return 'primary_action_unavailable: calendar agenda entry is absent or '
+          'ambiguous; action candidates were not polled and no blind instance '
+          'tap was attempted. '
+          '$diagnosticDescription.';
+    }
+    return 'primary_action_unavailable: tapping the calendar agenda entry did '
+        'not produce its selected detail, so action candidates were not '
+        'polled. $diagnosticDescription.';
+  }
+}
+
+/// Returns the Calendar agenda entry whose key is emitted by
+/// `part28_engine_native_calendar_surface.dart`.
+///
+/// The final segment is the binding index, not an invariant `0`; matching the
+/// `instanceId-` prefix derives that segment from the rendered Calendar rather
+/// than hardcoding a fixture's key shape.
+Finder calendarAgendaEntryFinder(String instanceId) =>
+    find.byWidgetPredicate((widget) {
+      final key = widget.key;
+      return key is ValueKey<String> &&
+          key.value.startsWith('engine-native-calendar-agenda-$instanceId-');
+    }, description: 'calendar agenda entry for $instanceId');
+
+/// Returns the selected Calendar detail whose key is emitted for [instanceId].
+Finder calendarSelectedDetailFinder(String instanceId) =>
+    find.byWidgetPredicate((widget) {
+      final key = widget.key;
+      return key is ValueKey<String> &&
+          key.value.startsWith(
+            'engine-native-calendar-selected-detail-$instanceId-',
+          );
+    }, description: 'selected calendar detail for $instanceId');
+
+/// Selects a Calendar agenda row before action polling and records both
+/// preparation states for the eventual action diagnostic.
+///
+/// Selection is intentionally limited to the Calendar tab. A missing agenda
+/// entry returns an explicit unavailable finding without touching any other
+/// instance-shaped widget. A present agenda entry is tapped through
+/// [tapWhenVisible], then its selected detail is asserted by its own rendered
+/// key before candidates are allowed to be inspected.
+Future<CalendarActionSurfacePreparation>
+prepareCalendarActionSurfaceForActionPolling({
+  required WidgetTester tester,
+  required Finder surface,
+  required String tabId,
+  required String instanceId,
+}) async {
+  if (tabId != 'calendar') {
+    return CalendarActionSurfacePreparation._(
+      instanceId: instanceId,
+      isCalendarSurface: false,
+      agendaEntryMatchCount: 0,
+      selectedDetailMatchCount: 0,
+    );
+  }
+
+  final agendaEntry = find.descendant(
+    of: surface,
+    matching: calendarAgendaEntryFinder(instanceId),
+  );
+  final agendaEntryMatchCount = agendaEntry.evaluate().length;
+  if (agendaEntryMatchCount != 1) {
+    return CalendarActionSurfacePreparation._(
+      instanceId: instanceId,
+      isCalendarSurface: true,
+      agendaEntryMatchCount: agendaEntryMatchCount,
+      selectedDetailMatchCount: find
+          .descendant(
+            of: surface,
+            matching: calendarSelectedDetailFinder(instanceId),
+          )
+          .evaluate()
+          .length,
+    );
+  }
+
+  await tapWhenVisible(
+    tester,
+    agendaEntry,
+    description: 'calendar agenda entry for $instanceId before action polling',
+  );
+  await tester.pump();
+
+  final selectedDetailMatchCount = find
+      .descendant(
+        of: surface,
+        matching: calendarSelectedDetailFinder(instanceId),
+      )
+      .evaluate()
+      .length;
+  return CalendarActionSurfacePreparation._(
+    instanceId: instanceId,
+    isCalendarSurface: true,
+    agendaEntryMatchCount: agendaEntryMatchCount,
+    selectedDetailMatchCount: selectedDetailMatchCount,
+  );
+}
+
 /// Polls primary action candidates without turning a disabled product answer
 /// into a three-minute stall.
 ///
@@ -419,6 +561,13 @@ Future<PrimaryActionAvailability<T>> waitForPrimaryActionAvailability<T>({
     final candidateReadiness = <PrimaryActionCandidateReadiness<T>>[];
     PrimaryActionCandidate<T>? readyCandidate;
     for (final candidate in candidates) {
+      // A transition can move as its enclosing surface changes. Keep the
+      // readiness inspection non-mutating (it never taps or dismisses), but
+      // scroll every uniquely rendered candidate into the viewport before its
+      // current coordinates are hit-tested on this poll.
+      if (candidate.finder.evaluate().length == 1) {
+        await tester.ensureVisible(candidate.finder);
+      }
       final readiness = PrimaryActionCandidateReadiness(
         candidate: candidate,
         readiness: inspectFinderTapReadiness(tester, candidate.finder),

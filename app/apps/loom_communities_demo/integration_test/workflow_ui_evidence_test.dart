@@ -3260,12 +3260,32 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
   required String diagnosticFrameName,
   required Future<void> Function(String name) captureDiagnostic,
 }) async {
+  final calendarPreparation =
+      await prepareCalendarActionSurfaceForActionPolling(
+        tester: tester,
+        surface: surface,
+        tabId: selector.binding.tabId,
+        instanceId: selector.instance.instanceId,
+      );
+  if (!calendarPreparation.isReadyForActionPolling) {
+    return _ShippedWorkflowActionWait._(
+      unavailableReason: calendarPreparation.unavailableReason,
+    );
+  }
+  final calendarDiagnostic = calendarPreparation.isCalendarSurface
+      ? '${calendarPreparation.diagnosticDescription}. '
+      : '';
+
   String pollingWaitingFor(
     PrimaryActionAvailability<_ShippedTransitionCandidate> availability,
-  ) =>
-      'a tappable shipped workflow action on the '
-      '${selector.binding.tabId} tab for ${selector.roleId}. '
-      'Polled action widgets: [${availability.candidateDescriptions}].';
+  ) {
+    final actionLoadDiagnostic = _visibleActionLoadDiagnostic(surface);
+    return 'a tappable shipped workflow action on the '
+        '${selector.binding.tabId} tab for ${selector.roleId}. '
+        '$calendarDiagnostic'
+        '${actionLoadDiagnostic == null ? '' : 'Action load diagnostic: $actionLoadDiagnostic. '}'
+        'Polled action widgets: [${availability.candidateDescriptions}].';
+  }
 
   final actionAvailability = await waitForPrimaryActionAvailability(
     tester: tester,
@@ -3366,6 +3386,27 @@ Finder _engineInstanceFinder(String instanceId) {
     final key = widget.key;
     return key is ValueKey<String> && key.value.contains(instanceId);
   }, description: 'engine-native widget for $instanceId');
+}
+
+/// Returns a rendered action-load failure from the current surface without
+/// changing it. The Calendar card owns this text rather than an App Shell key;
+/// retaining it in a stall diagnostic distinguishes a failed lookup from an
+/// engine that truthfully offered no transitions.
+String? _visibleActionLoadDiagnostic(Finder surface) {
+  final errors = find.descendant(
+    of: surface,
+    matching: find.byWidgetPredicate(
+      (widget) =>
+          widget is Text &&
+          (widget.data?.trim().startsWith('Could not load ') ?? false),
+      description: 'rendered action-load diagnostic',
+    ),
+  );
+  for (final element in errors.evaluate()) {
+    final text = (element.widget as Text).data?.trim();
+    if (text != null && text.isNotEmpty) return text;
+  }
+  return null;
 }
 
 Finder _engineActionFinder(String instanceId, String transitionId) {

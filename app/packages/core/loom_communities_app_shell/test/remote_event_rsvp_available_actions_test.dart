@@ -47,12 +47,13 @@ final class _TestSession extends LoomAuthSession {
 /// independently proves that a secondary action-load failure cannot erase the
 /// event actions already loaded from the server.
 final class _CameraClubRemoteTransport {
-  _CameraClubRemoteTransport() {
+  _CameraClubRemoteTransport({this.failEventActionLoad = false}) {
     client = MockClient(_handle);
   }
 
   late final http.Client client;
   final List<http.Request> requests = <http.Request>[];
+  final bool failEventActionLoad;
   bool published = false;
   bool cancelled = false;
 
@@ -88,6 +89,12 @@ final class _CameraClubRemoteTransport {
       return _json(_instancePage());
     }
     if (request.method == 'GET' && path == _eventActionsPath) {
+      if (failEventActionLoad) {
+        return _json(<String, Object?>{
+          'code': 'controlled_event_action_failure',
+          'message': 'Controlled event-action failure.',
+        }, statusCode: 503);
+      }
       // This is the deployed projection from the root-cause trace, with the
       // adapter-required instanceId added to make it a complete API response.
       return _json(<String, Object?>{
@@ -355,13 +362,22 @@ Future<void> _exerciseRemoteCalendar(
         'response-action request, independently of the absent-row case.',
   );
   expect(
-    find.text(
-      'Could not load RSVP response actions. Event actions remain available.',
-    ),
+    find.textContaining('Could not load RSVP response actions'),
     findsOneWidget,
     reason:
         'A secondary load failure must be visible without discarding the '
         'loaded event actions.',
+  );
+  expect(
+    find.textContaining('RemoteWorkflowServiceError:'),
+    findsOneWidget,
+    reason:
+        'The secondary action-load diagnostic must name its exception type.',
+  );
+  expect(
+    find.textContaining('Controlled response-action failure.'),
+    findsOneWidget,
+    reason: 'The secondary action-load diagnostic must retain its message.',
   );
 
   // The response request above deliberately returned 503. Cancel remains a
@@ -384,4 +400,38 @@ void main() {
       (tester) => _exerciseRemoteCalendar(tester, wrapWithReplica: wrapped),
     );
   }
+
+  testWidgets(
+    'remote Calendar names the top-level action-load exception type and message',
+    (tester) async {
+      final transport = _CameraClubRemoteTransport(failEventActionLoad: true);
+      addTearDown(transport.close);
+
+      await tester.pumpWidget(_calendar(transport.createEngine()));
+      await _pumpUntil(
+        tester,
+        () => find
+            .textContaining('Could not load available actions')
+            .evaluate()
+            .isNotEmpty,
+        description: 'top-level Calendar action-load diagnostic',
+      );
+
+      expect(
+        find.textContaining('RemoteWorkflowProtocolError:'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Controlled event-action failure.'),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('event-rsvp-$_eventId-action-publish-walk')),
+        findsNothing,
+        reason:
+            'A failed action load must not be misrepresented as an empty '
+            'successful action list.',
+      );
+    },
+  );
 }

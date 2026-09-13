@@ -1879,7 +1879,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
           responseActions = hasPersistedResponse
               ? await engine.availableTransitionsAsync(
                   workflowType: responseTable.workflowType,
-                  instanceId: responseId as String,
+                  instanceId: responseId,
                   currentState: response![r'$state'] as String,
                   instanceData: response,
                   fanId: fanId,
@@ -1893,12 +1893,16 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                   instanceData: syntheticResponse!,
                   fanId: fanId,
                 );
-        } catch (_) {
+        } catch (error) {
           // A response action failure is secondary to the parent event's
           // successful action load. Keep those actions usable, while making
-          // the degraded RSVP controls explicit and retryable.
+          // the degraded RSVP controls explicit and retryable. Preserve both
+          // the exception type and its message: an empty response action list
+          // is a different diagnostic from a response action load that failed.
           responseActionError =
-              'Could not load RSVP response actions. Event actions remain available.';
+              'Could not load RSVP response actions '
+              '(${_actionLoadErrorDescription(error)}). '
+              'Event actions remain available.';
         }
       }
       if (!_isCurrent(generation, instance, machine, engine, fanId) ||
@@ -1916,18 +1920,23 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         _error = responseActionError;
         _retry = responseActionError == null ? null : () => _loadActions();
       });
-    } catch (_) {
+    } catch (error) {
       if (!_isCurrent(generation, instance, machine, engine, fanId) ||
           request != _actionRequest) {
         return;
       }
       setState(() {
         _loadingActions = false;
-        _error = 'Could not load available actions.';
+        _error =
+            'Could not load available actions '
+            '(${_actionLoadErrorDescription(error)}).';
         _retry = () => _loadActions();
       });
     }
   }
+
+  String _actionLoadErrorDescription(Object error) =>
+      '${error.runtimeType}: $error';
 
   Future<void> _applyTransition(String transitionId) async {
     final transition = _actions

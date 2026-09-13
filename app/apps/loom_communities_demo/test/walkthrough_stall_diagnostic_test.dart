@@ -637,6 +637,161 @@ void main() {
   );
 
   testWidgets(
+    'a Calendar action is discovered only after its agenda entry is selected',
+    (WidgetTester tester) async {
+      var actionTapCount = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: _SelectionRequiredCalendar(
+              onAction: () => actionTapCount += 1,
+            ),
+          ),
+        ),
+      );
+
+      const instanceId = 'spring-workshop';
+      final surface = find.byKey(
+        const ValueKey('calendar-selection-test-surface'),
+      );
+      final action = find.descendant(
+        of: surface,
+        matching: find.byKey(
+          const ValueKey('event-rsvp-spring-workshop-action-respond-maybe'),
+        ),
+      );
+      expect(action, findsNothing);
+
+      final preparation = await prepareCalendarActionSurfaceForActionPolling(
+        tester: tester,
+        surface: surface,
+        tabId: 'calendar',
+        instanceId: instanceId,
+      );
+      expect(preparation.agendaEntryPresent, isTrue);
+      expect(preparation.selectedDetailPresent, isTrue);
+      expect(
+        preparation.diagnosticDescription,
+        allOf(
+          contains('agenda entry present? yes'),
+          contains('selected detail present? yes'),
+        ),
+      );
+
+      final availability = await waitForPrimaryActionAvailability(
+        tester: tester,
+        timeout: const Duration(milliseconds: 10),
+        candidates: [
+          PrimaryActionCandidate(
+            value: 'respond-maybe',
+            finder: action,
+            description: 'respond-maybe (Maybe)',
+          ),
+        ],
+      );
+      expect(availability.hasReadyAction, isTrue);
+      expect(
+        availability.candidateReadiness.single.readiness.state,
+        FinderTapReadinessState.ready,
+      );
+      await tester.tap(availability.candidate!.finder, warnIfMissed: false);
+      expect(actionTapCount, 1);
+    },
+  );
+
+  testWidgets(
+    'a missing Calendar agenda entry is a finding without a blind instance tap',
+    (WidgetTester tester) async {
+      var blindInstanceTapCount = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: KeyedSubtree(
+              key: const ValueKey('calendar-selection-test-surface'),
+              child: InkWell(
+                key: const ValueKey('generic-instance-spring-workshop'),
+                onTap: () => blindInstanceTapCount += 1,
+                child: const Center(child: Text('Spring workshop')),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final preparation = await prepareCalendarActionSurfaceForActionPolling(
+        tester: tester,
+        surface: find.byKey(const ValueKey('calendar-selection-test-surface')),
+        tabId: 'calendar',
+        instanceId: 'spring-workshop',
+      );
+
+      expect(preparation.agendaEntryPresent, isFalse);
+      expect(preparation.selectedDetailPresent, isFalse);
+      expect(
+        preparation.unavailableReason,
+        allOf(
+          contains('calendar agenda entry is absent or ambiguous'),
+          contains('no blind instance tap was attempted'),
+          contains('agenda entry present? no'),
+          contains('selected detail present? no'),
+        ),
+      );
+      expect(blindInstanceTapCount, 0);
+    },
+  );
+
+  testWidgets(
+    'an enabled off-viewport candidate becomes ready after every poll scrolls it',
+    (WidgetTester tester) async {
+      var actionTapCount = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 1800),
+                  FilledButton(
+                    key: const ValueKey('off-viewport-primary-action'),
+                    onPressed: () => actionTapCount += 1,
+                    child: const Text('Respond maybe'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final action = find.byKey(const ValueKey('off-viewport-primary-action'));
+      expect(
+        inspectFinderTapReadiness(tester, action).state,
+        FinderTapReadinessState.notHittable,
+      );
+
+      final availability = await waitForPrimaryActionAvailability(
+        tester: tester,
+        timeout: const Duration(milliseconds: 10),
+        candidates: [
+          PrimaryActionCandidate(
+            value: 'respond-maybe',
+            finder: action,
+            description: 'respond-maybe (Maybe)',
+          ),
+        ],
+      );
+
+      expect(availability.hasReadyAction, isTrue);
+      expect(
+        availability.candidateReadiness.single.readiness.state,
+        FinderTapReadinessState.ready,
+      );
+      await tester.tap(availability.candidate!.finder, warnIfMissed: false);
+      expect(actionTapCount, 1);
+    },
+  );
+
+  testWidgets(
     'no primary candidates preserves the unavailable outcome without a '
     'speculative listing tap',
     (WidgetTester tester) async {
@@ -933,6 +1088,59 @@ class _TemporarilyIgnoredWalkthroughTargetState
             onPressed: widget.onPressed,
             child: const Text('Target action'),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SelectionRequiredCalendar extends StatefulWidget {
+  const _SelectionRequiredCalendar({required this.onAction});
+
+  final VoidCallback onAction;
+
+  @override
+  State<_SelectionRequiredCalendar> createState() =>
+      _SelectionRequiredCalendarState();
+}
+
+class _SelectionRequiredCalendarState
+    extends State<_SelectionRequiredCalendar> {
+  var _selected = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: KeyedSubtree(
+        key: const ValueKey('calendar-selection-test-surface'),
+        child: Column(
+          children: [
+            ListTile(
+              key: const ValueKey(
+                'engine-native-calendar-agenda-spring-workshop-7',
+              ),
+              title: const Text('Spring workshop'),
+              onTap: () => setState(() => _selected = true),
+            ),
+            if (_selected)
+              KeyedSubtree(
+                key: const ValueKey(
+                  'engine-native-calendar-selected-detail-spring-workshop-7',
+                ),
+                child: const SizedBox(
+                  height: 80,
+                  child: Center(child: Text('Spring workshop details')),
+                ),
+              ),
+            if (_selected)
+              FilledButton(
+                key: const ValueKey(
+                  'event-rsvp-spring-workshop-action-respond-maybe',
+                ),
+                onPressed: widget.onAction,
+                child: const Text('Maybe'),
+              ),
+          ],
         ),
       ),
     );
