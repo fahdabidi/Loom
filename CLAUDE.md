@@ -1807,6 +1807,36 @@ start; I spent two passes reasoning from filenames instead.
 `communityId` field holds an extensionId, and to a manifest filename that is a slug of a workflow
 type. Find the writer, read what it puts there, then join.
 
+### An unknown boolean defaulted to `false` can AUTHORIZE the thing it was meant to deny
+
+Root Cause Agent, 2026-09-12, correcting a fix I was about to propose. The sentence worth keeping is
+its own: **"Defaulting an unknown boolean to false can authorize its negation."**
+
+The case: a guard reads `formula: "!isSuppressionActive"`. If the underlying data cannot be resolved
+and the engine substitutes `false` for the unknown value, the guard evaluates `!false` -> **`true`**,
+and the transition is *permitted* on data nobody could compute. The safe-looking default is the
+dangerous one, and which direction it fails in depends entirely on whether the expression is negated
+— so there is no globally safe default.
+
+**So "unavailable" must stay a distinct outcome, never collapsed into a boolean.** A guard whose
+inputs cannot be resolved should make its transition *unavailable with a reason*, which is a third
+state, not `false` and not `true`.
+
+Two more traps from the same analysis, both of which the obvious fix walks into:
+
+- **Deferral by omission is not deferral to the caller.** This codebase implements "defer" by
+  *skipping* the formula, so nothing downstream learns the value was unavailable — the expression is
+  simply evaluated against a missing key later. Check what a deferral mechanism *communicates*, not
+  just what it skips.
+- **A successful empty result is not an unresolved one.** The resolver assigns a query source only
+  `if (matches.isNotEmpty)`, so a legitimate zero-match query is indistinguishable from a failed
+  lookup. Adding hydration alone therefore does not fix it. Distinguish "resolved to nothing" from
+  "could not resolve" wherever a source can legitimately be empty.
+
+The general rule: **when a value can be *unknown*, enumerate three outcomes before writing the fix —
+true, false, and unavailable — and decide each deliberately.** Collapsing the third into either of
+the first two is how an availability bug becomes an authorization bug.
+
 ### A walkthrough's screenshots do not survive it, so judging must be PAIRED with capture
 
 Traced 2026-09-12 while sequencing the remaining B25 both-halves rows, and it inverts the obvious
