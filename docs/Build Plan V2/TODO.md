@@ -175,6 +175,24 @@ Reading the code: `primaryCandidates` was **non-empty**, so the walkthrough call
 
 **This also confirms a root cause agent prediction made two dispatches earlier**: the selector enumerates `respond-going` because it checks `instanceDataEquals` and **does not evaluate the formula guard**, so an enumerated candidate can be one the engine legitimately withholds. That selector-fidelity gap is real and is deliberately **out of scope** for the harness fix — the harness should *handle* the condition; changing what the selector enumerates is a separate question.
 
+**PROGRESS 2026-09-13, and the shape of the remaining work is now clear.** After eleven `fix(b25)` commits the walkthrough reached **`completedWorkflows: 4`, screenshots 0/14** (from 1 and 0/5). Garden's `garden-event-rsvp` — the row that consumed six ticks and **three wrong hypotheses of mine** — resolved, along with `plant-exchange-submission` and `garden-tool-loan`.
+
+**Those three wrong hypotheses are worth recording, because the pattern in how each was killed is the reusable part:**
+
+| my hypothesis | what killed it |
+|---|---|
+| the control is **disabled** | the per-candidate reason added one commit earlier said **absent** |
+| the surface is **legitimately actionless** | a shipped test (`b41_garden_engine_migration_test.dart`) taps `respond-waitlist` on that exact instance as that exact role |
+| the **selector** drops the transition | `allowViewerResponse` makes `_transitionAccountId` return null, which the account filter accepts — it was there all along |
+
+None was killed by more reasoning. Each was killed by a diagnostic built one commit earlier, or by an artifact already in the repo. **The expensive part was not being wrong; it was the runs spent before going to look for something that already worked.**
+
+**The real cause was an asymmetry in my own fix:** `ec3a7f0c` added `ensureVisible` to the **primary** readiness poll and not to the fallback "any other tappable" check. Nothing went red, because a fallback only runs once the primary path has come up empty — so the gap stayed invisible until a row arrived whose primary action was *legitimately* absent (Garden's event is full at 2/2, correctly withholding `respond-going`). Then no scrolling happened at all and valid alternatives sat below the fold.
+
+**A terminology finding that constrains the bar itself, and must not be lost:** the B25 row definition lists Going/RSVP/attendance as **primary** and Maybe/decline/cancel as **alternates** — and **"Join waitlist" is in neither set**. So waitlist must not silently substitute for the required primary. **Garden's `garden-event-rsvp` row keeps its incomplete action-proof status**; proving attendance needs a seed with a place available, or an explicit product-doc decision. Both are Skill-authored; no `*.jsonc` was touched.
+
+**Now blocked on the marketplace analogue of the same class**, dispatched 2026-09-13: `garden-tool-giveaway` / `terracotta-pots-giveaway` reports `claim-giveaway: absent`, because marketplace actions live in a **detail dialog** (`marketplace-listing-tap-<id>` → `marketplace-detail-dialog-<id>`) whose **controls omit the instance id**, so the instance-qualified finder structurally cannot see them. `ec3a7f0c` scoped preparation to `tabId == 'calendar'` deliberately; this is the other half, with owned open/close and the primary/fallback symmetry applied up front rather than rediscovered.
+
 **Still true and still the reason the tool must change at all:** every direct `flutter drive` reports `screenshots=0/N`. The frames are captured by the **tool**, which shells out to `adb` in response to the test's `B25_CAPTURE_PROGRESS` events. Driving `flutter drive` by hand — which is how all of today's debugging was done — can never produce evidence frames, only walkthrough outcomes. So the tool change is required before any of this becomes bankable B25 evidence, and the walkthrough must be completing first for that change to be worth making.
 
 **SUPERSEDED — the paragraph below proposed `--host-vmservice-port` + a reverse tunnel. Disproven 2026-09-12 (pinning does not pin), and now moot: driving from Windows removes the problem entirely. Kept only so the reasoning is not re-derived.**
