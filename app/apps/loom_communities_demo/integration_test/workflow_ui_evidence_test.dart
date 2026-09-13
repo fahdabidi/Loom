@@ -29,6 +29,7 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart'
 
 import '../test/b25_visible_postcondition.dart';
 import '../test/b25_actor_audience_resolution.dart';
+import '../test/b25_workflow_row_selection.dart';
 import '../test/workflow_ui_test_harness.dart';
 import '../test/walkthrough_wait.dart';
 
@@ -123,6 +124,7 @@ void main() {
       );
       var completedWorkflowEvidenceEntries = 0;
       var blockedByAudienceWorkflowEvidenceEntries = 0;
+      var blockedBySelectorSetupWorkflowEvidenceEntries = 0;
 
       void recordEvidenceEntry(Map<String, Object?> entry) {
         entries.add(entry);
@@ -137,13 +139,21 @@ void main() {
         required String workflowId,
         String? communityName,
         String? screenshotName,
-        bool blockedByAudience = false,
+        String? blockedRowOutcome,
       }) {
         if (status == 'workflow-complete') {
-          if (blockedByAudience) {
-            blockedByAudienceWorkflowEvidenceEntries += 1;
-          } else {
-            completedWorkflowEvidenceEntries += 1;
+          switch (blockedRowOutcome) {
+            case 'blocked_by_audience':
+              blockedByAudienceWorkflowEvidenceEntries += 1;
+            case 'blocked_by_selector_setup':
+              blockedBySelectorSetupWorkflowEvidenceEntries += 1;
+            case null:
+              completedWorkflowEvidenceEntries += 1;
+            default:
+              throw StateError(
+                'Unexpected blocked walkthrough row outcome '
+                '`$blockedRowOutcome` for $workflowId.',
+              );
           }
           bodyWatch.beat(
             lastCompletedStep:
@@ -170,6 +180,8 @@ void main() {
           'completedWorkflows': completedWorkflowEvidenceEntries,
           'blockedByAudienceWorkflows':
               blockedByAudienceWorkflowEvidenceEntries,
+          'blockedBySelectorSetupWorkflows':
+              blockedBySelectorSetupWorkflowEvidenceEntries,
           'totalWorkflows': totalWorkflowEvidenceEntries,
         });
       }
@@ -182,6 +194,8 @@ void main() {
           'completedWorkflows': completedWorkflowEvidenceEntries,
           'blockedByAudienceWorkflows':
               blockedByAudienceWorkflowEvidenceEntries,
+          'blockedBySelectorSetupWorkflows':
+              blockedBySelectorSetupWorkflowEvidenceEntries,
           'totalWorkflows': totalWorkflowEvidenceEntries,
         });
         return _capture(
@@ -340,7 +354,7 @@ void main() {
               capture: capture,
             );
           } else {
-            final audienceSelection = selectB25ActorAudienceRow(
+            final rowSelection = selectB25WorkflowRow(
               () => _shippedWorkflowSelector(
                 target: target,
                 package: shippedPackage,
@@ -348,16 +362,25 @@ void main() {
                 b25Model: productDocRow,
               ),
             );
-            final selector = audienceSelection.selector;
+            final selector = rowSelection.selector;
             walkthroughResult = selector == null
-                ? await _recordB25AudienceBlockedWorkflow(
-                    tester: tester,
-                    target: target,
-                    b25Model: productDocRow,
-                    reason: audienceSelection.blockedReason!,
-                    cause: audienceSelection.blockedCause!,
-                    capture: capture,
-                  )
+                ? rowSelection.isBlockedByAudience
+                      ? await _recordB25AudienceBlockedWorkflow(
+                          tester: tester,
+                          target: target,
+                          b25Model: productDocRow,
+                          reason: rowSelection.blockedReason!,
+                          cause: rowSelection.blockedCause!,
+                          capture: capture,
+                        )
+                      : await _recordB25SelectorSetupBlockedWorkflow(
+                          tester: tester,
+                          target: target,
+                          b25Model: productDocRow,
+                          reason: rowSelection.blockedReason!,
+                          cause: rowSelection.blockedCause!,
+                          capture: capture,
+                        )
                 : await _runB25ShippedWorkflowWalkthrough(
                     tester: tester,
                     target: target,
@@ -400,6 +423,12 @@ void main() {
             if (walkthroughResult.blockedByAudienceCause != null)
               'blockedByAudienceCause':
                   walkthroughResult.blockedByAudienceCause,
+            if (walkthroughResult.blockedBySelectorSetupReason != null)
+              'blockedBySelectorSetupReason':
+                  walkthroughResult.blockedBySelectorSetupReason,
+            if (walkthroughResult.blockedBySelectorSetupCause != null)
+              'blockedBySelectorSetupCause':
+                  walkthroughResult.blockedBySelectorSetupCause,
             'b25ActionProofStatus': walkthroughResult.actionProofStatus,
             'visiblePrimaryActions': walkthroughResult.visiblePrimaryActions,
             'visibleAlternateActions':
@@ -407,8 +436,8 @@ void main() {
             'availableSupplementaryActions':
                 walkthroughResult.availableSupplementaryActions,
             'productFindings': walkthroughResult.productFindings,
-            'status': walkthroughResult.isBlockedByAudience
-                ? 'blocked_by_audience'
+            'status': walkthroughResult.isBlocked
+                ? walkthroughResult.rowOutcome
                 : 'pass',
           });
           emitProgress(
@@ -416,7 +445,9 @@ void main() {
             phase: target.phase,
             workflowId: productDocRow.workflowId,
             communityName: target.communityName,
-            blockedByAudience: walkthroughResult.isBlockedByAudience,
+            blockedRowOutcome: walkthroughResult.isBlocked
+                ? walkthroughResult.rowOutcome
+                : null,
           );
         }
 
@@ -1026,6 +1057,8 @@ void main() {
         'status': 'run-complete',
         'completedWorkflows': completedWorkflowEvidenceEntries,
         'blockedByAudienceWorkflows': blockedByAudienceWorkflowEvidenceEntries,
+        'blockedBySelectorSetupWorkflows':
+            blockedBySelectorSetupWorkflowEvidenceEntries,
         'totalWorkflows': totalWorkflowEvidenceEntries,
       });
     }
@@ -1364,11 +1397,21 @@ bool _includeWorkflowShard(int workflowOrdinal) {
 Map<String, Object?> _summarizeB25WalkthroughRows(
   Iterable<Map<String, Object?>> entries,
 ) {
+  const blockedOutcomes = <String>{
+    'blocked_by_audience',
+    'blocked_by_selector_setup',
+  };
   final rows = entries
       .where((entry) => entry['b25RowOutcome'] is String)
       .toList(growable: false);
   final blockedRows = rows
+      .where((entry) => blockedOutcomes.contains(entry['b25RowOutcome']))
+      .toList(growable: false);
+  final blockedByAudienceRows = blockedRows
       .where((entry) => entry['b25RowOutcome'] == 'blocked_by_audience')
+      .toList(growable: false);
+  final blockedBySelectorSetupRows = blockedRows
+      .where((entry) => entry['b25RowOutcome'] == 'blocked_by_selector_setup')
       .toList(growable: false);
   final primaryUnavailableRows = rows
       .where((entry) => entry['b25RowOutcome'] == 'primary_action_unavailable')
@@ -1376,53 +1419,97 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
   final provenRows = rows
       .where(
         (entry) =>
-            entry['b25RowOutcome'] != 'blocked_by_audience' &&
+            !blockedOutcomes.contains(entry['b25RowOutcome']) &&
             entry['b25ActionProofStatus'] == 'pass',
       )
       .toList(growable: false);
   final completedRows = rows
-      .where((entry) => entry['b25RowOutcome'] != 'blocked_by_audience')
+      .where((entry) => !blockedOutcomes.contains(entry['b25RowOutcome']))
       .toList(growable: false);
-  final blockedByCommunity = <String, int>{};
-  final blockedByCause = <String, List<Map<String, Object?>>>{};
-  for (final row in blockedRows) {
-    final communityName = row['communityName'] as String? ?? '(unknown)';
-    blockedByCommunity.update(
-      communityName,
-      (count) => count + 1,
-      ifAbsent: () => 1,
-    );
-    final cause = row['blockedByAudienceCause'] as String? ?? '(unknown)';
-    blockedByCause.putIfAbsent(cause, () => <Map<String, Object?>>[]).add(row);
+
+  Map<String, int> countByCommunity(Iterable<Map<String, Object?>> blocked) {
+    final counts = <String, int>{};
+    for (final row in blocked) {
+      final communityName = row['communityName'] as String? ?? '(unknown)';
+      counts.update(communityName, (count) => count + 1, ifAbsent: () => 1);
+    }
+    return <String, int>{
+      for (final communityName in counts.keys.toList()..sort())
+        communityName: counts[communityName]!,
+    };
   }
-  final sortedCommunities = blockedByCommunity.keys.toList()..sort();
-  final sortedCauses = blockedByCause.keys.toList()..sort();
+
+  List<Map<String, Object?>> reasonGroups(
+    Iterable<Map<String, Object?>> blocked, {
+    required String causeField,
+    required String reasonField,
+  }) {
+    final rowsByCause = <String, List<Map<String, Object?>>>{};
+    for (final row in blocked) {
+      final cause = row[causeField] as String? ?? '(unknown)';
+      rowsByCause.putIfAbsent(cause, () => <Map<String, Object?>>[]).add(row);
+    }
+    return <Map<String, Object?>>[
+      for (final cause in rowsByCause.keys.toList()..sort())
+        <String, Object?>{
+          'cause': cause,
+          'count': rowsByCause[cause]!.length,
+          'rows': <Map<String, Object?>>[
+            for (final row in rowsByCause[cause]!)
+              <String, Object?>{
+                'communityName': row['communityName'],
+                'workflowId': row['workflowId'],
+                'role': row['role'],
+                'reason': row[reasonField],
+              },
+          ],
+        },
+    ];
+  }
+
+  final explicitBlockedRows =
+      <Map<String, Object?>>[
+        for (final row in blockedRows)
+          <String, Object?>{
+            'outcome': row['b25RowOutcome'],
+            'communityName': row['communityName'],
+            'workflowId': row['workflowId'],
+            'role': row['role'],
+            'reason': row['b25RowOutcome'] == 'blocked_by_audience'
+                ? row['blockedByAudienceReason']
+                : row['blockedBySelectorSetupReason'],
+          },
+      ]..sort(
+        (
+          left,
+          right,
+        ) => '${left['outcome']}/${left['communityName']}/${left['workflowId']}/${left['role']}'
+            .compareTo(
+              '${right['outcome']}/${right['communityName']}/${right['workflowId']}/${right['role']}',
+            ),
+      );
   return <String, Object?>{
     'recordedRows': rows.length,
     'provenRows': provenRows.length,
     'completedRows': completedRows.length,
     'primaryActionUnavailableRows': primaryUnavailableRows.length,
-    'blockedByAudienceRows': blockedRows.length,
-    'blockedByAudienceRowsByCommunity': <String, int>{
-      for (final communityName in sortedCommunities)
-        communityName: blockedByCommunity[communityName]!,
-    },
-    'blockedByAudienceReasonGroups': <Map<String, Object?>>[
-      for (final cause in sortedCauses)
-        <String, Object?>{
-          'cause': cause,
-          'count': blockedByCause[cause]!.length,
-          'rows': <Map<String, Object?>>[
-            for (final row in blockedByCause[cause]!)
-              <String, Object?>{
-                'communityName': row['communityName'],
-                'workflowId': row['workflowId'],
-                'role': row['role'],
-                'reason': row['blockedByAudienceReason'],
-              },
-          ],
-        },
-    ],
+    'blockedRows': explicitBlockedRows,
+    'blockedByAudienceRows': blockedByAudienceRows.length,
+    'blockedByAudienceRowsByCommunity': countByCommunity(blockedByAudienceRows),
+    'blockedByAudienceReasonGroups': reasonGroups(
+      blockedByAudienceRows,
+      causeField: 'blockedByAudienceCause',
+      reasonField: 'blockedByAudienceReason',
+    ),
+    'blockedBySelectorSetupRows': blockedBySelectorSetupRows.length,
+    'blockedBySelectorSetupRowsByCommunity': countByCommunity(
+      blockedBySelectorSetupRows,
+    ),
+    'blockedBySelectorSetupReasonGroups': reasonGroups(
+      blockedBySelectorSetupRows,
+      causeField: 'blockedBySelectorSetupCause',
+      reasonField: 'blockedBySelectorSetupReason',
+    ),
   };
 }
 
@@ -1456,6 +1543,38 @@ Future<_B25WalkthroughResult> _recordB25AudienceBlockedWorkflow({
     rowOutcome: 'blocked_by_audience',
     blockedByAudienceReason: reason,
     blockedByAudienceCause: cause,
+  );
+}
+
+Future<_B25WalkthroughResult> _recordB25SelectorSetupBlockedWorkflow({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required B25ProductDocInteractionModel b25Model,
+  required String reason,
+  required String cause,
+  required Future<void> Function(String name) capture,
+}) async {
+  // As for an audience block, a selector-setup block has no row-specific
+  // screen to capture. A neighbouring frame would falsely imply that this row
+  // rendered or completed, so boundary assertions prove safe continuation.
+  await assertB25CommunityRowSurface(
+    tester: tester,
+    target: target,
+    workflowId: b25Model.workflowId,
+    role: b25Model.role,
+    boundary: 'blocked-by-selector-setup',
+    captureDiagnostic: capture,
+  );
+  return _B25WalkthroughResult(
+    screenshotNames: const <String>[],
+    actionProofStatus: 'blocked_by_selector_setup',
+    visiblePrimaryActions: const <String>[],
+    visibleAlternateActions: const <String>[],
+    availableSupplementaryActions: const <String>[],
+    productFindings: <String>[reason],
+    rowOutcome: 'blocked_by_selector_setup',
+    blockedBySelectorSetupReason: reason,
+    blockedBySelectorSetupCause: cause,
   );
 }
 
@@ -2523,6 +2642,8 @@ class _B25WalkthroughResult {
     this.rowOutcome = 'attempted',
     this.blockedByAudienceReason,
     this.blockedByAudienceCause,
+    this.blockedBySelectorSetupReason,
+    this.blockedBySelectorSetupCause,
   });
 
   final List<String> screenshotNames;
@@ -2534,8 +2655,13 @@ class _B25WalkthroughResult {
   final String rowOutcome;
   final String? blockedByAudienceReason;
   final String? blockedByAudienceCause;
+  final String? blockedBySelectorSetupReason;
+  final String? blockedBySelectorSetupCause;
 
   bool get isBlockedByAudience => rowOutcome == 'blocked_by_audience';
+  bool get isBlockedBySelectorSetup =>
+      rowOutcome == 'blocked_by_selector_setup';
+  bool get isBlocked => isBlockedByAudience || isBlockedBySelectorSetup;
 }
 
 _B25WalkthroughResult _b25WalkthroughResult({
@@ -2830,7 +2956,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
   _ShippedWorkflowSelector? b25FallbackSelector;
   final machine = package.experience.workflowDefinitions?[workflowType];
   if (machine == null) {
-    fail(
+    throw B25SelectorSetupFailure(
       'Walkthrough workflow $workflowType is absent from the shipped '
       '${target.extensionId} experience.workflowDefinitions.',
     );
@@ -2839,7 +2965,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
       .where((instance) => instance.workflowType == workflowType)
       .toList(growable: false);
   if (instances.isEmpty) {
-    fail(
+    throw B25SelectorSetupFailure(
       'Walkthrough workflow $workflowType has no selector source in the '
       'shipped ${target.extensionId} experience.workflowInstances.',
     );
@@ -2878,7 +3004,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
           ? machine
           : package.experience.workflowDefinitions?[responseWorkflowType];
       if (actionMachine == null) {
-        fail(
+        throw B25SelectorSetupFailure(
           'Shipped workflow $workflowType binding on ${binding.tabId} names '
           'missing response workflow $responseWorkflowType.',
         );
@@ -3019,7 +3145,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
     }
   }
   if (b25FallbackSelector != null) return b25FallbackSelector;
-  fail(
+  throw B25SelectorSetupFailure(
     'Walkthrough workflow $workflowType could not derive an actionable '
     'instance, actorIdentity, and tab from the shipped ${target.extensionId} '
     'experience and appShell${b25Model == null ? '.' : ' for B25 product-doc role `${b25Model.role}` from `${b25Model.productDocPath}`.'}',

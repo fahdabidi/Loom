@@ -219,7 +219,7 @@ void main() {
     }
   });
 
-  test('an audience-blocked row has its own unproven summary bucket', () async {
+  test('blocked rows have separate unproven audience and selector buckets', () async {
     final temporaryRoot = await Directory.systemTemp.createTemp(
       'loom-workflow-evidence-audience-blocked-',
     );
@@ -256,7 +256,7 @@ void main() {
       }
       final responseData = _responseData(screenshotCaptureStatus: 'complete')
         ..['expectedWorkflowCountByPhase'] = <String, int>{
-          'B12': 2 + blockedAudienceRows.length,
+          'B12': 3 + blockedAudienceRows.length,
         }
         ..['workflowEvidence'] = <Map<String, Object?>>[
           <String, Object?>{
@@ -280,6 +280,26 @@ void main() {
             'b25RowOutcome': 'primary_action_unavailable',
             'b25ActionProofStatus': 'fail',
             'status': 'pass',
+          },
+          <String, Object?>{
+            'phase': 'B12',
+            'appId': 'ext_book_club',
+            'communityName': 'Book Club',
+            'workflowId': 'book-vote',
+            'role': 'member',
+            'screenshotNames': const <String>[],
+            'b25RowOutcome': 'blocked_by_selector_setup',
+            'b25ActionProofStatus': 'blocked_by_selector_setup',
+            'blockedBySelectorSetupCause':
+                'selector setup could not derive an actionable instance, '
+                'actorIdentity, and tab',
+            'blockedBySelectorSetupReason':
+                'Walkthrough workflow book-vote could not derive an actionable '
+                'instance, actorIdentity, and tab from the shipped '
+                'ext_neighborhood_book_club experience and appShell for B25 '
+                'product-doc role `member` from '
+                '`docs/references/communities/neighborhood-book-club-product-experience.md`.',
+            'status': 'blocked_by_selector_setup',
           },
           for (final blocked in blockedAudienceRows)
             <String, Object?>{
@@ -309,12 +329,38 @@ void main() {
       final aggregate = await _readAggregate(temporaryRoot);
       final summary = aggregate['b25RowSummary'] as Map<String, dynamic>;
       expect(aggregate['status'], 'fail');
-      expect(summary['recordedRows'], 6);
+      expect(summary['recordedRows'], 7);
       expect(summary['provenRows'], 1);
       expect(summary['completedRows'], 2);
       expect(summary['primaryActionUnavailableRows'], 1);
       expect(summary['blockedByAudienceRows'], 4);
       expect(summary['blockedByAudienceRowsByCommunity'], {'Book Club': 4});
+      expect(summary['blockedBySelectorSetupRows'], 1);
+      expect(summary['blockedBySelectorSetupRowsByCommunity'], {
+        'Book Club': 1,
+      });
+      final blockedRows = summary['blockedRows'] as List<dynamic>;
+      expect(blockedRows, hasLength(5));
+      expect(
+        blockedRows.whereType<Map<String, dynamic>>().map(
+          (row) => row['outcome'],
+        ),
+        containsAll(['blocked_by_audience', 'blocked_by_selector_setup']),
+      );
+      final selectorSetupRow = blockedRows
+          .cast<Map<String, dynamic>>()
+          .singleWhere((row) => row['outcome'] == 'blocked_by_selector_setup');
+      expect(selectorSetupRow['communityName'], 'Book Club');
+      expect(selectorSetupRow['workflowId'], 'book-vote');
+      expect(selectorSetupRow['role'], 'member');
+      expect(
+        selectorSetupRow['reason'],
+        'Walkthrough workflow book-vote could not derive an actionable '
+        'instance, actorIdentity, and tab from the shipped '
+        'ext_neighborhood_book_club experience and appShell for B25 '
+        'product-doc role `member` from '
+        '`docs/references/communities/neighborhood-book-club-product-experience.md`.',
+      );
       final reasonGroups =
           summary['blockedByAudienceReasonGroups'] as List<dynamic>;
       expect(reasonGroups, hasLength(1));
@@ -334,6 +380,18 @@ void main() {
           contains('submitterFanId'),
         ),
       );
+      final selectorSetupReasonGroups =
+          summary['blockedBySelectorSetupReasonGroups'] as List<dynamic>;
+      expect(selectorSetupReasonGroups, hasLength(1));
+      expect(
+        (selectorSetupReasonGroups.single as Map<String, dynamic>)['cause'],
+        'selector setup could not derive an actionable instance, '
+        'actorIdentity, and tab',
+      );
+      expect(
+        (selectorSetupReasonGroups.single as Map<String, dynamic>)['count'],
+        1,
+      );
 
       final phaseManifest =
           jsonDecode(
@@ -347,6 +405,16 @@ void main() {
           .firstWhere((row) => row['b25RowOutcome'] == 'blocked_by_audience');
       expect(blockedRow['recordedRowStatus'], 'blocked_by_audience');
       expect(blockedRow['b25ActionProofStatus'], 'blocked_by_audience');
+      final blockedSetupRow = (phaseManifest['workflows'] as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .firstWhere(
+            (row) => row['b25RowOutcome'] == 'blocked_by_selector_setup',
+          );
+      expect(blockedSetupRow['recordedRowStatus'], 'blocked_by_selector_setup');
+      expect(
+        blockedSetupRow['b25ActionProofStatus'],
+        'blocked_by_selector_setup',
+      );
     } finally {
       await temporaryRoot.delete(recursive: true);
     }

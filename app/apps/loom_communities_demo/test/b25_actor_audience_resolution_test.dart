@@ -3,6 +3,7 @@ import 'package:loom_communities_demo/main.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 import 'b25_actor_audience_resolution.dart';
+import 'b25_workflow_row_selection.dart';
 import 'workflow_ui_test_harness.dart';
 
 void main() {
@@ -63,6 +64,53 @@ void main() {
         expect(nextRow.selector, 'book-member');
       },
     );
+
+    test(
+      'a selector setup failure is blocked verbatim and the next row runs',
+      () {
+        final selectedRows = <String>[];
+        const reason =
+            'Walkthrough workflow book-vote could not derive an actionable '
+            'instance, actorIdentity, and tab from the shipped '
+            'ext_neighborhood_book_club experience and appShell for B25 '
+            'product-doc role `member` from '
+            '`docs/references/communities/neighborhood-book-club-product-experience.md`.';
+
+        final blocked = selectB25WorkflowRow<String>(() {
+          selectedRows.add('book-vote');
+          throw B25SelectorSetupFailure(reason);
+        });
+        final nextRow = selectB25WorkflowRow<String>(() {
+          selectedRows.add('next-workflow');
+          return 'book-member';
+        });
+
+        expect(selectedRows, ['book-vote', 'next-workflow']);
+        expect(blocked.selector, isNull);
+        expect(blocked.isBlockedBySelectorSetup, isTrue);
+        expect(blocked.isBlockedByAudience, isFalse);
+        expect(blocked.rowOutcome, 'blocked_by_selector_setup');
+        expect(blocked.blockedCause, B25SelectorSetupFailure.cause);
+        expect(blocked.blockedReason, reason);
+        expect(nextRow.isBlocked, isFalse);
+        expect(nextRow.selector, 'book-member');
+      },
+    );
+
+    test('an unexpected selector exception still aborts', () {
+      expect(
+        () => selectB25WorkflowRow<String>(() {
+          throw StateError('unexpected package selector defect');
+        }),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            'unexpected package selector defect',
+          ),
+        ),
+      );
+    });
 
     test('missing actorEqualsField fails promptly with the audience cause', () {
       final stopwatch = Stopwatch()..start();

@@ -84,6 +84,9 @@ class WorkflowUiEvidenceWriter {
     final b25RowSummary = _summarizeB25Rows(entries);
     final b25BlockedAudienceReasonGroups =
         _formatB25BlockedAudienceReasonGroups(b25RowSummary);
+    final b25BlockedSelectorSetupReasonGroups =
+        _formatB25BlockedSelectorSetupReasonGroups(b25RowSummary);
+    final b25BlockedRows = _formatB25BlockedRows(b25RowSummary);
     final requestedPhases = _stringList(data?['requestedPhases']);
     final phases = <String>{
       ...requestedPhases,
@@ -358,6 +361,11 @@ class WorkflowUiEvidenceWriter {
       '${b25RowSummary['primaryActionUnavailableRows']} '
       'b25BlockedByAudience=${b25RowSummary['blockedByAudienceRows']} '
       'b25BlockedByAudienceReasonGroups=$b25BlockedAudienceReasonGroups '
+      'b25BlockedBySelectorSetup='
+      '${b25RowSummary['blockedBySelectorSetupRows']} '
+      'b25BlockedBySelectorSetupReasonGroups='
+      '$b25BlockedSelectorSetupReasonGroups '
+      'b25BlockedRows=$b25BlockedRows '
       'screenshots=${_screenshotPaths.length}/${expectedScreenshotNames.length} '
       'completionGateEligible=${runStatus == 'pass'}',
     );
@@ -374,9 +382,7 @@ class WorkflowUiEvidenceWriter {
       File('${evidenceRoot.path}/B20/all-workflow-ui-evidence.json');
 }
 
-String _formatB25BlockedAudienceReasonGroups(
-  Map<String, Object?> summary,
-) {
+String _formatB25BlockedAudienceReasonGroups(Map<String, Object?> summary) {
   final groups =
       summary['blockedByAudienceReasonGroups'] as List<Map<String, Object?>>;
   if (groups.isEmpty) {
@@ -390,12 +396,42 @@ String _formatB25BlockedAudienceReasonGroups(
       .join(',');
 }
 
+String _formatB25BlockedSelectorSetupReasonGroups(
+  Map<String, Object?> summary,
+) {
+  final groups =
+      summary['blockedBySelectorSetupReasonGroups']
+          as List<Map<String, Object?>>;
+  if (groups.isEmpty) {
+    return 'none';
+  }
+  return groups
+      .map(
+        (group) =>
+            '${(group['cause']! as String).replaceAll(' ', '_')}:${group['count']}',
+      )
+      .join(',');
+}
+
+String _formatB25BlockedRows(Map<String, Object?> summary) =>
+    jsonEncode(summary['blockedRows']);
+
 Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
+  const blockedOutcomes = <String>{
+    'blocked_by_audience',
+    'blocked_by_selector_setup',
+  };
   final rows = entries
       .where((entry) => entry['b25RowOutcome'] is String)
       .toList(growable: false);
   final blockedRows = rows
+      .where((entry) => blockedOutcomes.contains(entry['b25RowOutcome']))
+      .toList(growable: false);
+  final blockedByAudienceRows = blockedRows
       .where((entry) => entry['b25RowOutcome'] == 'blocked_by_audience')
+      .toList(growable: false);
+  final blockedBySelectorSetupRows = blockedRows
+      .where((entry) => entry['b25RowOutcome'] == 'blocked_by_selector_setup')
       .toList(growable: false);
   final primaryUnavailableRows = rows
       .where((entry) => entry['b25RowOutcome'] == 'primary_action_unavailable')
@@ -403,53 +439,97 @@ Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
   final provenRows = rows
       .where(
         (entry) =>
-            entry['b25RowOutcome'] != 'blocked_by_audience' &&
+            !blockedOutcomes.contains(entry['b25RowOutcome']) &&
             entry['b25ActionProofStatus'] == 'pass',
       )
       .toList(growable: false);
   final completedRows = rows
-      .where((entry) => entry['b25RowOutcome'] != 'blocked_by_audience')
+      .where((entry) => !blockedOutcomes.contains(entry['b25RowOutcome']))
       .toList(growable: false);
-  final blockedByCommunity = <String, int>{};
-  final blockedByCause = <String, List<Map<String, dynamic>>>{};
-  for (final row in blockedRows) {
-    final communityName = row['communityName'] as String? ?? '(unknown)';
-    blockedByCommunity.update(
-      communityName,
-      (count) => count + 1,
-      ifAbsent: () => 1,
-    );
-    final cause = row['blockedByAudienceCause'] as String? ?? '(unknown)';
-    blockedByCause.putIfAbsent(cause, () => <Map<String, dynamic>>[]).add(row);
+
+  Map<String, int> countByCommunity(Iterable<Map<String, dynamic>> blocked) {
+    final counts = <String, int>{};
+    for (final row in blocked) {
+      final communityName = row['communityName'] as String? ?? '(unknown)';
+      counts.update(communityName, (count) => count + 1, ifAbsent: () => 1);
+    }
+    return <String, int>{
+      for (final communityName in counts.keys.toList()..sort())
+        communityName: counts[communityName]!,
+    };
   }
-  final sortedCommunities = blockedByCommunity.keys.toList()..sort();
-  final sortedCauses = blockedByCause.keys.toList()..sort();
+
+  List<Map<String, Object?>> reasonGroups(
+    Iterable<Map<String, dynamic>> blocked, {
+    required String causeField,
+    required String reasonField,
+  }) {
+    final rowsByCause = <String, List<Map<String, dynamic>>>{};
+    for (final row in blocked) {
+      final cause = row[causeField] as String? ?? '(unknown)';
+      rowsByCause.putIfAbsent(cause, () => <Map<String, dynamic>>[]).add(row);
+    }
+    return <Map<String, Object?>>[
+      for (final cause in rowsByCause.keys.toList()..sort())
+        <String, Object?>{
+          'cause': cause,
+          'count': rowsByCause[cause]!.length,
+          'rows': <Map<String, Object?>>[
+            for (final row in rowsByCause[cause]!)
+              <String, Object?>{
+                'communityName': row['communityName'],
+                'workflowId': row['workflowId'],
+                'role': row['role'],
+                'reason': row[reasonField],
+              },
+          ],
+        },
+    ];
+  }
+
+  final explicitBlockedRows =
+      <Map<String, Object?>>[
+        for (final row in blockedRows)
+          <String, Object?>{
+            'outcome': row['b25RowOutcome'],
+            'communityName': row['communityName'],
+            'workflowId': row['workflowId'],
+            'role': row['role'],
+            'reason': row['b25RowOutcome'] == 'blocked_by_audience'
+                ? row['blockedByAudienceReason']
+                : row['blockedBySelectorSetupReason'],
+          },
+      ]..sort(
+        (
+          left,
+          right,
+        ) => '${left['outcome']}/${left['communityName']}/${left['workflowId']}/${left['role']}'
+            .compareTo(
+              '${right['outcome']}/${right['communityName']}/${right['workflowId']}/${right['role']}',
+            ),
+      );
   return <String, Object?>{
     'recordedRows': rows.length,
     'provenRows': provenRows.length,
     'completedRows': completedRows.length,
     'primaryActionUnavailableRows': primaryUnavailableRows.length,
-    'blockedByAudienceRows': blockedRows.length,
-    'blockedByAudienceRowsByCommunity': <String, int>{
-      for (final communityName in sortedCommunities)
-        communityName: blockedByCommunity[communityName]!,
-    },
-    'blockedByAudienceReasonGroups': <Map<String, Object?>>[
-      for (final cause in sortedCauses)
-        <String, Object?>{
-          'cause': cause,
-          'count': blockedByCause[cause]!.length,
-          'rows': <Map<String, Object?>>[
-            for (final row in blockedByCause[cause]!)
-              <String, Object?>{
-                'communityName': row['communityName'],
-                'workflowId': row['workflowId'],
-                'role': row['role'],
-                'reason': row['blockedByAudienceReason'],
-              },
-          ],
-        },
-    ],
+    'blockedRows': explicitBlockedRows,
+    'blockedByAudienceRows': blockedByAudienceRows.length,
+    'blockedByAudienceRowsByCommunity': countByCommunity(blockedByAudienceRows),
+    'blockedByAudienceReasonGroups': reasonGroups(
+      blockedByAudienceRows,
+      causeField: 'blockedByAudienceCause',
+      reasonField: 'blockedByAudienceReason',
+    ),
+    'blockedBySelectorSetupRows': blockedBySelectorSetupRows.length,
+    'blockedBySelectorSetupRowsByCommunity': countByCommunity(
+      blockedBySelectorSetupRows,
+    ),
+    'blockedBySelectorSetupReasonGroups': reasonGroups(
+      blockedBySelectorSetupRows,
+      causeField: 'blockedBySelectorSetupCause',
+      reasonField: 'blockedBySelectorSetupReason',
+    ),
   };
 }
 
