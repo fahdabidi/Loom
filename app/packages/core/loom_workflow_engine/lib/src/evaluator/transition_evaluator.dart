@@ -39,6 +39,41 @@ class GuardEvaluationFailure {
 typedef GuardEvaluationFailureReporter =
     void Function(GuardEvaluationFailure failure);
 
+/// The observable record emitted when a guard cannot be evaluated because an
+/// input source is unresolved. This is not a [GuardEvaluationFailure]: the
+/// expression did not throw and no boolean was manufactured from missing data.
+class GuardEvaluationUnavailable {
+  const GuardEvaluationUnavailable({
+    required this.workflowType,
+    required this.instanceId,
+    required this.transitionId,
+    required this.unavailableInputs,
+  });
+
+  final String workflowType;
+  final String? instanceId;
+  final String transitionId;
+  final Map<String, GuardInputUnavailable> unavailableInputs;
+
+  /// A structured one-line diagnostic suitable for host logs.
+  String get logLine {
+    final fields = unavailableInputs.entries
+        .map((entry) => '${entry.key}:${entry.value.code}')
+        .join(',');
+    return 'LOOM_GUARD_EVALUATION_UNAVAILABLE '
+        'workflowType=$workflowType '
+        'instanceId=${instanceId ?? '<unknown>'} '
+        'transitionId=$transitionId '
+        'unavailable=$fields';
+  }
+}
+
+/// Receives a guard that is unavailable because its data could not be
+/// resolved. Hosts can distinguish this expected availability state from an
+/// expression failure reported through [GuardEvaluationFailureReporter].
+typedef GuardEvaluationUnavailableReporter =
+    void Function(GuardEvaluationUnavailable unavailable);
+
 /// Returns the list of transitions available from [currentState] for the given
 /// [fanId] and [instanceData]. Returns an empty list (never null) — the
 /// stuck-state regression case is handled here, not at parse time.
@@ -59,21 +94,37 @@ List<LoomWorkflowTransition> availableTransitions(
   bool Function(LoomWorkflowTransition transition)? grantedByArchetype,
   String? instanceId,
   GuardEvaluationFailureReporter? onGuardEvaluationFailure,
+  GuardEvaluationUnavailableReporter? onGuardEvaluationUnavailable,
+  Map<String, GuardInputUnavailable> unavailableInputs = const {},
 }) {
   final available = <LoomWorkflowTransition>[];
   for (final transition in machine.transitionsFrom(currentState)) {
     final bool guardPassed;
     try {
-      guardPassed = evaluateGuard(
+      final evaluation = evaluateGuardWithAvailability(
         transition.guard,
         fanId,
         instanceData,
+        unavailableInputs: unavailableInputs,
         roleId: roleId,
         roleIds: roleIds,
         completedWorkflowIds: completedWorkflowIds,
         skipRelatedAggregate: skipRelatedAggregate,
         clock: clock,
       );
+      if (evaluation.status == GuardEvaluationStatus.unavailable) {
+        _reportGuardEvaluationUnavailable(
+          GuardEvaluationUnavailable(
+            workflowType: machine.workflowType,
+            instanceId: instanceId,
+            transitionId: transition.id,
+            unavailableInputs: evaluation.unavailableInputs,
+          ),
+          onGuardEvaluationUnavailable,
+        );
+        continue;
+      }
+      guardPassed = evaluation.passed;
     } catch (error, stackTrace) {
       final failure = GuardEvaluationFailure(
         workflowType: machine.workflowType,
@@ -101,6 +152,34 @@ List<LoomWorkflowTransition> availableTransitions(
     }
   }
   return available;
+}
+
+void reportGuardEvaluationUnavailable(
+  GuardEvaluationUnavailable unavailable,
+  GuardEvaluationUnavailableReporter? reporter,
+) => _reportGuardEvaluationUnavailable(unavailable, reporter);
+
+void _reportGuardEvaluationUnavailable(
+  GuardEvaluationUnavailable unavailable,
+  GuardEvaluationUnavailableReporter? reporter,
+) {
+  developer.log(unavailable.logLine, name: 'loom.workflow_engine');
+  if (reporter == null) return;
+  try {
+    reporter(unavailable);
+  } catch (error, stackTrace) {
+    developer.log(
+      'LOOM_GUARD_EVALUATION_UNAVAILABLE_REPORTER_FAILURE '
+      'workflowType=${unavailable.workflowType} '
+      'instanceId=${unavailable.instanceId ?? '<unknown>'} '
+      'transitionId=${unavailable.transitionId} '
+      'errorType=${error.runtimeType} '
+      'exception=$error',
+      name: 'loom.workflow_engine',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
 }
 
 void _reportGuardEvaluationFailure(

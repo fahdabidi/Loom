@@ -79,6 +79,28 @@ class _QueryCandidate {
   });
 }
 
+/// The authoritative (or caller-supplied) state of source-backed fields.
+class _SourceFieldResolution {
+  const _SourceFieldResolution({
+    required this.data,
+    required this.unavailableInputs,
+  });
+
+  final Map<String, dynamic> data;
+  final Map<String, GuardInputUnavailable> unavailableInputs;
+}
+
+/// Formula data plus the source/formula inputs intentionally deferred from it.
+class _ComputedDataResolution {
+  const _ComputedDataResolution({
+    required this.data,
+    required this.unavailableInputs,
+  });
+
+  final Map<String, dynamic> data;
+  final Map<String, GuardInputUnavailable> unavailableInputs;
+}
+
 /// SQLite-backed implementation of [WorkflowEngineApi].
 ///
 /// Uses [WorkflowDatabase] (sqlite3, transitively available via drift) so
@@ -148,6 +170,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   ActiveMembershipLookup? _activeMembershipLookup;
   WorkflowSurfacePermissionLookup? _surfacePermissionLookup;
   final trans_eval.GuardEvaluationFailureReporter? onGuardEvaluationFailure;
+  final trans_eval.GuardEvaluationUnavailableReporter?
+  onGuardEvaluationUnavailable;
 
   /// Registry of loaded workflow definitions, keyed by definition ID
   /// (`"communityId_workflowType"`).
@@ -192,6 +216,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     ActiveMembershipLookup? activeMembershipLookup,
     WorkflowSurfacePermissionLookup? surfacePermissionLookup,
     this.onGuardEvaluationFailure,
+    this.onGuardEvaluationUnavailable,
     bool failClosedOnMissingDefinition = false,
   }) : _db = db,
        _communityId = communityId,
@@ -470,7 +495,11 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final raw = _rawInstance(row);
     final machine = await _getDefinition(raw.workflowType);
     final hydrated = machine != null
-        ? await _hydrateSourceFields(raw.instanceData, machine, raw.instanceId)
+        ? (await _hydrateSourceFields(
+            raw.instanceData,
+            machine,
+            raw.instanceId,
+          )).data
         : raw.instanceData;
     final instance = WorkflowInstance(
       instanceId: raw.instanceId,
@@ -892,7 +921,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       // does more work.
       final machine = await _getDefinition(row.workflowType);
       final hydrated = machine != null
-          ? await _hydrateSourceFields(data, machine, row.instanceId)
+          ? (await _hydrateSourceFields(data, machine, row.instanceId)).data
           : data;
       final computed = _withComputedFields(hydrated, machine);
 
@@ -954,7 +983,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final machine = _definitions[defId];
     if (machine == null) return const [];
 
-    final resolvedData = _withComputedFields(
+    final resolved = _withComputedFieldsWithAvailability(
       instanceData,
       machine,
       viewerId: fanId,
@@ -963,16 +992,18 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       machine,
       currentState,
       fanId,
-      resolvedData,
+      resolved.data,
       roleIds: _roleIdsByFanId[fanId],
       clock: _clock,
       grantedByArchetype: _archetypeGrantPredicate(
         machine,
-        resolvedData,
+        resolved.data,
         fanId,
       ),
       instanceId: instanceId,
       onGuardEvaluationFailure: onGuardEvaluationFailure,
+      onGuardEvaluationUnavailable: onGuardEvaluationUnavailable,
+      unavailableInputs: resolved.unavailableInputs,
     );
   }
 
@@ -991,48 +1022,57 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     // invisible to the UI action resolver even though the mutation is
     // already persisted.
     final completedWorkflowIds = await completedWorkflowIdsForFan(fanId);
-    final computedForFan = _withComputedFields(
+    final hydrated = await _hydrateSourceFields(
       instanceData,
       machine,
+      instanceId,
+      authoritative: true,
+    );
+    final computedForFan = _withComputedFieldsWithAvailability(
+      hydrated.data,
+      machine,
       viewerId: fanId,
+      sourceUnavailability: hydrated.unavailableInputs,
     );
     final candidates = trans_eval.availableTransitions(
       machine,
       currentState,
       fanId,
-      computedForFan,
+      computedForFan.data,
       roleIds: _roleIdsByFanId[fanId],
       completedWorkflowIds: completedWorkflowIds,
       skipRelatedAggregate: true,
       clock: _clock,
       grantedByArchetype: _archetypeGrantPredicate(
         machine,
-        computedForFan,
+        computedForFan.data,
         fanId,
       ),
       instanceId: instanceId,
       onGuardEvaluationFailure: onGuardEvaluationFailure,
+      onGuardEvaluationUnavailable: onGuardEvaluationUnavailable,
+      unavailableInputs: computedForFan.unavailableInputs,
     );
     final result = <LoomWorkflowTransition>[];
     for (final transition in candidates) {
       if (!_isArchetypeActionEligible(
         machine: machine,
         transition: transition,
-        instanceData: instanceData,
+        instanceData: computedForFan.data,
         fanId: fanId,
       )) {
         continue;
       }
       if (!await _passesRelatedListGuard(
         transition.guard,
-        instanceData,
+        computedForFan.data,
         fanId,
       )) {
         continue;
       }
       if (!await _passesRelatedAggregateGuard(
         transition.guard,
-        instanceData,
+        computedForFan.data,
         fanId,
       )) {
         continue;
@@ -1104,11 +1144,11 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       final machine = await _getDefinition(workflowType);
       return WorkflowTransitionResult(
         newState: result.newState,
-        newInstanceData: await _hydrateSourceFields(
+        newInstanceData: (await _hydrateSourceFields(
           result.newInstanceData,
           machine!,
           instanceId,
-        ),
+        )).data,
       );
     } on _TransitionGuardFailure catch (error) {
       throw StateError(error.message);
@@ -1202,28 +1242,37 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 
     final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
     final completedWorkflowIds = await completedWorkflowIdsForFan(fanId);
-    final computedData = _withComputedFields(
+    final hydrated = await _hydrateSourceFields(
       data,
+      machine,
+      instanceId,
+      authoritative: true,
+    );
+    final computedData = _withComputedFieldsWithAvailability(
+      hydrated.data,
       machine,
       viewerId: fanId,
       actorId: fanId,
+      sourceUnavailability: hydrated.unavailableInputs,
     );
     final transitions = trans_eval.availableTransitions(
       machine,
       row.currentState,
       fanId,
-      computedData,
+      computedData.data,
       roleIds: _roleIdsByFanId[fanId],
       completedWorkflowIds: completedWorkflowIds,
       skipRelatedAggregate: true,
       clock: _clock,
       grantedByArchetype: _archetypeGrantPredicate(
         machine,
-        computedData,
+        computedData.data,
         fanId,
       ),
       instanceId: instanceId,
       onGuardEvaluationFailure: onGuardEvaluationFailure,
+      onGuardEvaluationUnavailable: onGuardEvaluationUnavailable,
+      unavailableInputs: computedData.unavailableInputs,
     );
 
     final declaredTransition = machine.transitions.firstWhere(
@@ -1250,19 +1299,27 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     if (!_isArchetypeActionEligible(
       machine: machine,
       transition: transition,
-      instanceData: data,
+      instanceData: computedData.data,
       fanId: fanId,
     )) {
       throw _TransitionGuardFailure(
         'Transition $transitionId is not available for $fanId',
       );
     }
-    if (!await _passesRelatedListGuard(transition.guard, data, fanId)) {
+    if (!await _passesRelatedListGuard(
+      transition.guard,
+      computedData.data,
+      fanId,
+    )) {
       throw _TransitionGuardFailure(
         'Transition $transitionId is not available for $fanId',
       );
     }
-    if (!await _passesRelatedAggregateGuard(transition.guard, data, fanId)) {
+    if (!await _passesRelatedAggregateGuard(
+      transition.guard,
+      computedData.data,
+      fanId,
+    )) {
       throw _TransitionGuardFailure(
         'Transition $transitionId is not available for $fanId',
       );
@@ -1595,24 +1652,39 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         'Unknown state ${machine.initialState} for $workflowType',
       );
     }
+    // Allocate before guard preparation so a creation guard can authoritatively
+    // resolve a source joined on `id`. The id is not persisted unless every
+    // guard passes, so this is only a local correlation value.
+    final instanceId = '${_communityId}_${workflowType}_${_generateId()}';
     final creationGuard = initialState.creationGuard;
-    if (creationGuard != null &&
-        !await _passesGuard(
-          creationGuard,
-          initialInstanceData,
-          fanId,
-          workflowType: workflowType,
-        )) {
-      throw StateError('Creation of $workflowType is not available for $fanId');
+    if (creationGuard != null) {
+      final preparedGuardData = await _prepareAuthoritativeGuardData(
+        data: initialInstanceData,
+        machine: machine,
+        instanceId: instanceId,
+        fanId: fanId,
+      );
+      if (!await _passesGuard(
+        creationGuard,
+        preparedGuardData.data,
+        fanId,
+        workflowType: workflowType,
+        instanceId: instanceId,
+        guardContext: 'creation',
+        unavailableInputs: preparedGuardData.unavailableInputs,
+      )) {
+        throw StateError(
+          'Creation of $workflowType is not available for $fanId',
+        );
+      }
     }
 
-    final instanceId = '${_communityId}_${workflowType}_${_generateId()}';
     await _db.insertInstance(
       instanceId: instanceId,
       communityId: _communityId,
       workflowType: workflowType,
       currentState: machine.initialState,
-      instanceData: initialInstanceData,
+      instanceData: _storageOnly(initialInstanceData, machine),
       createdByFanId: fanId,
     );
 
@@ -1729,23 +1801,32 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
       if (fieldUpdates.isNotEmpty) {
         final editGuard = stateDef.editGuard;
-        // A location-overlap edit guard must examine the proposed booking,
-        // while existing edit guards retain their established current-data
-        // authorization semantics.
-        final guardData = editGuard?.locationOverlap != null
-            ? {...data, ...fieldUpdates}
-            : data;
-        if (editGuard != null &&
-            !await _passesGuard(
-              editGuard,
-              guardData,
-              fanId,
-              workflowType: workflowType,
-              instanceId: instanceId,
-            )) {
-          throw WorkflowAuthorizationError(
-            'Fields are not editable in state "${row.currentState}" for $fanId',
+        if (editGuard != null) {
+          // A location-overlap edit guard must examine the proposed booking,
+          // while existing edit guards retain their established current-data
+          // authorization semantics.
+          final guardData = editGuard.locationOverlap != null
+              ? {...data, ...fieldUpdates}
+              : data;
+          final preparedGuardData = await _prepareAuthoritativeGuardData(
+            data: guardData,
+            machine: machine,
+            instanceId: instanceId,
+            fanId: fanId,
           );
+          if (!await _passesGuard(
+            editGuard,
+            preparedGuardData.data,
+            fanId,
+            workflowType: workflowType,
+            instanceId: instanceId,
+            guardContext: 'edit',
+            unavailableInputs: preparedGuardData.unavailableInputs,
+          )) {
+            throw WorkflowAuthorizationError(
+              'Fields are not editable in state "${row.currentState}" for $fanId',
+            );
+          }
         }
       }
 
@@ -1783,18 +1864,43 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 
   /// Storage-only projection of instance data.
   ///
-  /// Computed fields exist only on the read projection. Their evaluated
-  /// values are re-derived by [_withComputedFields] on every read and must
-  /// never be handed to the database, since some computed types (for example
-  /// [DateTime]) are not JSON-encodable.
+  /// Computed and query-source fields exist only on the read/guard projection.
+  /// Their values are re-derived on demand and must never be handed to the
+  /// database: formula values can be non-JSON types, and a source value would
+  /// turn a transient related-row query into a stale persisted snapshot.
   Map<String, dynamic> _storageOnly(
     Map<String, dynamic> data,
     LoomWorkflowStateMachine machine,
   ) => {
     for (final entry in data.entries)
-      if (machine.instanceDataSchema[entry.key]?.formula == null)
+      if (machine.instanceDataSchema[entry.key]?.formula == null &&
+          machine.instanceDataSchema[entry.key]?.source == null)
         entry.key: entry.value,
   };
+
+  /// Prepares data for a guard that is allowed to read engine-resolvable
+  /// sources. The returned values are a short-lived projection; callers must
+  /// keep using their original stored data for persistence.
+  Future<_ComputedDataResolution> _prepareAuthoritativeGuardData({
+    required Map<String, dynamic> data,
+    required LoomWorkflowStateMachine machine,
+    required String instanceId,
+    required String fanId,
+  }) async {
+    final hydrated = await _hydrateSourceFields(
+      data,
+      machine,
+      instanceId,
+      authoritative: true,
+    );
+    return _withComputedFieldsWithAvailability(
+      hydrated.data,
+      machine,
+      viewerId: fanId,
+      actorId: fanId,
+      sourceUnavailability: hydrated.unavailableInputs,
+    );
+  }
 
   /// Removes only the retired instance-data bookkeeping from a queue route.
   ///
@@ -1938,6 +2044,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     String fanId, {
     String? workflowType,
     String? instanceId,
+    String guardContext = 'guard',
+    Map<String, GuardInputUnavailable> unavailableInputs = const {},
   }) async {
     if (!await _passesRelatedListGuard(guard, data, fanId)) return false;
     if (!await _passesRelatedAggregateGuard(guard, data, fanId)) {
@@ -1951,14 +2059,30 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     )) {
       return false;
     }
-    return evaluateGuard(
+    final evaluation = evaluateGuardWithAvailability(
       guard,
       fanId,
       data,
+      unavailableInputs: unavailableInputs,
       roleIds: _roleIdsByFanId[fanId],
       skipRelatedAggregate: true,
       clock: _clock,
     );
+    if (evaluation.status == GuardEvaluationStatus.unavailable) {
+      if (workflowType != null) {
+        trans_eval.reportGuardEvaluationUnavailable(
+          trans_eval.GuardEvaluationUnavailable(
+            workflowType: workflowType,
+            instanceId: instanceId,
+            transitionId: guardContext,
+            unavailableInputs: evaluation.unavailableInputs,
+          ),
+          onGuardEvaluationUnavailable,
+        );
+      }
+      return false;
+    }
+    return evaluation.passed;
   }
 
   Future<bool> _passesLocationOverlapGuard(
@@ -2096,7 +2220,11 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     var data = Map<String, dynamic>.from(sourceData);
     Future<void> applyList(List<WorkflowEffect> list) async {
       for (final effect in list) {
-        final hydrated = await _hydrateSourceFields(data, machine, instanceId);
+        final hydrated = (await _hydrateSourceFields(
+          data,
+          machine,
+          instanceId,
+        )).data;
         final computed = _withComputedFields(
           hydrated,
           machine,
@@ -2373,37 +2501,72 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         _containsTransitionRelated(effect.elseEffects),
   );
 
-  /// Executes GAP-4 source queries for every field with a `source`
-  /// on the given machine and populates them into [data].
-  Future<Map<String, dynamic>> _hydrateSourceFields(
+  /// Resolves GAP-4 source queries for every field with a `source` on the
+  /// given machine.
+  ///
+  /// A query which succeeds with no rows resolves to an empty list. In
+  /// contrast, unsupported source syntax, a missing join value, and read
+  /// failures remain explicitly unavailable. [authoritative] ignores an
+  /// existing supplied query value so guard preparation cannot trust a stale
+  /// render projection.
+  Future<_SourceFieldResolution> _hydrateSourceFields(
     Map<String, dynamic> data,
     LoomWorkflowStateMachine machine,
-    String instanceId,
-  ) async {
+    String instanceId, {
+    bool authoritative = false,
+  }) async {
     final result = Map<String, dynamic>.from(data);
+    final unavailableInputs = <String, GuardInputUnavailable>{};
     for (final entry in machine.instanceDataSchema.entries) {
-      if (entry.value.source == null || result.containsKey(entry.key)) {
+      final source = entry.value.source;
+      if (source == null) {
         continue;
       }
-      final query = SourceQuery.tryParse(entry.value.source);
-      if (query == null) continue;
+      if (!authoritative && result.containsKey(entry.key)) continue;
+
+      final query = SourceQuery.tryParse(source);
+      if (query == null) {
+        result.remove(entry.key);
+        unavailableInputs[entry.key] = GuardInputUnavailable(
+          code: 'unsupported_source',
+          message: 'Source for "${entry.key}" is not a supported query',
+        );
+        continue;
+      }
       try {
         final localValue = query.localField == 'id'
             ? instanceId
             : result[query.localField];
-        if (localValue == null) continue;
+        if (localValue == null) {
+          result.remove(entry.key);
+          unavailableInputs[entry.key] = GuardInputUnavailable(
+            code: 'missing_join_value',
+            message:
+                'Source "${entry.key}" cannot resolve join field '
+                '"${query.localField}"',
+          );
+          continue;
+        }
         final allRows = await _readAllInstancesOfType(query.workflowType);
         final matches = allRows
             .where((row) => row[query.foreignField] == localValue)
             .toList();
-        if (matches.isNotEmpty) {
-          result[entry.key] = matches;
-        }
-      } catch (_) {
-        // Source resolution failed — leave field unpopulated.
+        // An empty result is a successfully resolved source value, not a
+        // deferred one. This distinction matters for negated guard formulas.
+        result[entry.key] = matches;
+      } catch (error) {
+        result.remove(entry.key);
+        unavailableInputs[entry.key] = GuardInputUnavailable(
+          code: 'source_read_failed',
+          message: 'Source "${entry.key}" could not be read',
+          cause: error,
+        );
       }
     }
-    return result;
+    return _SourceFieldResolution(
+      data: result,
+      unavailableInputs: unavailableInputs,
+    );
   }
 
   /// Instance data as consumers see it: formula fields evaluated, and the
@@ -2420,10 +2583,28 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     LoomWorkflowStateMachine? machine, {
     String? viewerId,
     String? actorId,
+  }) => _withComputedFieldsWithAvailability(
+    data,
+    machine,
+    viewerId: viewerId,
+    actorId: actorId,
+  ).data;
+
+  _ComputedDataResolution _withComputedFieldsWithAvailability(
+    Map<String, dynamic> data,
+    LoomWorkflowStateMachine? machine, {
+    String? viewerId,
+    String? actorId,
+    Map<String, GuardInputUnavailable> sourceUnavailability = const {},
   }) {
-    final computed = Map<String, dynamic>.from(
-      _withFormulaFields(data, machine, viewerId: viewerId, actorId: actorId),
+    final formulaResolution = _withFormulaFieldsWithAvailability(
+      data,
+      machine,
+      viewerId: viewerId,
+      actorId: actorId,
+      sourceUnavailability: sourceUnavailability,
     );
+    final computed = Map<String, dynamic>.from(formulaResolution.data);
     final reminder = machine?.reminder;
     if (reminder != null) {
       final dueAt = reminder.dueAtFor(computed);
@@ -2432,7 +2613,10 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       // omitting it keeps instance data free of fields that mean nothing.
       if (dueAt != null) computed['reminderAt'] = dueAt;
     }
-    return computed;
+    return _ComputedDataResolution(
+      data: computed,
+      unavailableInputs: formulaResolution.unavailableInputs,
+    );
   }
 
   Map<String, dynamic> _withFormulaFields(
@@ -2440,13 +2624,36 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     LoomWorkflowStateMachine? machine, {
     String? viewerId,
     String? actorId,
+  }) => _withFormulaFieldsWithAvailability(
+    data,
+    machine,
+    viewerId: viewerId,
+    actorId: actorId,
+  ).data;
+
+  _ComputedDataResolution _withFormulaFieldsWithAvailability(
+    Map<String, dynamic> data,
+    LoomWorkflowStateMachine? machine, {
+    String? viewerId,
+    String? actorId,
+    Map<String, GuardInputUnavailable> sourceUnavailability = const {},
   }) {
-    if (machine == null) return Map<String, dynamic>.from(data);
+    if (machine == null) {
+      return _ComputedDataResolution(
+        data: Map<String, dynamic>.from(data),
+        unavailableInputs: sourceUnavailability,
+      );
+    }
     final formulas = <String, String?>{
       for (final entry in machine.instanceDataSchema.entries)
         if (entry.value.formula != null) entry.key: entry.value.formula,
     };
-    if (formulas.isEmpty) return Map<String, dynamic>.from(data);
+    if (formulas.isEmpty) {
+      return _ComputedDataResolution(
+        data: Map<String, dynamic>.from(data),
+        unavailableInputs: sourceUnavailability,
+      );
+    }
 
     final analyses = <String, FormulaAnalysis>{
       for (final entry in formulas.entries)
@@ -2468,33 +2675,71 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     }
     _validateFormulaCycles(analyses, formulas.keys.toSet());
 
-    final unavailable = <String>{};
+    final unavailable = <String, GuardInputUnavailable>{
+      ...sourceUnavailability,
+    };
     for (final entry in machine.instanceDataSchema.entries) {
-      if (entry.value.source != null && !data.containsKey(entry.key)) {
-        unavailable.add(entry.key);
+      final source = entry.value.source;
+      if (source == null) continue;
+      if (SourceQuery.tryParse(source) == null) {
+        unavailable.putIfAbsent(
+          entry.key,
+          () => GuardInputUnavailable(
+            code: 'unsupported_source',
+            message: 'Source for "${entry.key}" is not a supported query',
+          ),
+        );
+      } else if (!data.containsKey(entry.key)) {
+        unavailable.putIfAbsent(
+          entry.key,
+          () => GuardInputUnavailable(
+            code: 'source_not_supplied',
+            message:
+                'Source "${entry.key}" was not supplied for synchronous '
+                'guard evaluation',
+          ),
+        );
       }
     }
     var changed = true;
     while (changed) {
       changed = false;
       for (final entry in formulas.entries) {
-        if (unavailable.contains(entry.key)) continue;
-        if (analyses[entry.key]!.referencedFields.any(unavailable.contains)) {
-          unavailable.add(entry.key);
+        if (unavailable.containsKey(entry.key)) continue;
+        String? dependency;
+        for (final field in analyses[entry.key]!.referencedFields) {
+          if (unavailable.containsKey(field)) {
+            dependency = field;
+            break;
+          }
+        }
+        if (dependency != null) {
+          unavailable[entry.key] = GuardInputUnavailable(
+            code: 'dependent_formula_unavailable',
+            message:
+                'Formula "${entry.key}" depends on unavailable field '
+                '"$dependency"',
+            dependency: dependency,
+          );
           changed = true;
         }
       }
     }
     final evaluable = Map<String, String?>.fromEntries(
-      formulas.entries.where((entry) => !unavailable.contains(entry.key)),
+      formulas.entries.where((entry) => !unavailable.containsKey(entry.key)),
     );
-    if (evaluable.isEmpty) return Map<String, dynamic>.from(data);
-    return evaluateComputedFields(
-      instanceData: data,
-      formulas: evaluable,
-      viewerId: viewerId,
-      actorId: actorId,
-      clock: _clock,
+    final computed = evaluable.isEmpty
+        ? Map<String, dynamic>.from(data)
+        : evaluateComputedFields(
+            instanceData: data,
+            formulas: evaluable,
+            viewerId: viewerId,
+            actorId: actorId,
+            clock: _clock,
+          );
+    return _ComputedDataResolution(
+      data: computed,
+      unavailableInputs: unavailable,
     );
   }
 

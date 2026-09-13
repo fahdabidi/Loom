@@ -1,6 +1,52 @@
 import '../models/workflow_models.dart';
 import 'formula_evaluator.dart';
 
+/// Why a field required to evaluate a guard is not available.
+///
+/// This is deliberately data rather than an exception. An unresolved source is
+/// neither a passing nor a failing boolean guard: it is a third outcome which
+/// callers must make visible and exclude from mutation.
+class GuardInputUnavailable {
+  const GuardInputUnavailable({
+    required this.code,
+    required this.message,
+    this.dependency,
+    this.cause,
+  });
+
+  final String code;
+  final String message;
+
+  /// The upstream unavailable field when this field is a dependent formula.
+  final String? dependency;
+
+  /// The source read failure, when there was one. This is retained for
+  /// diagnostics and is never converted into a default guard value.
+  final Object? cause;
+}
+
+enum GuardEvaluationStatus { passed, denied, unavailable }
+
+/// A guard's tri-state evaluation result.
+class GuardEvaluationResult {
+  const GuardEvaluationResult._(this.status, this.unavailableInputs);
+
+  const GuardEvaluationResult.passed()
+    : this._(GuardEvaluationStatus.passed, const {});
+
+  const GuardEvaluationResult.denied()
+    : this._(GuardEvaluationStatus.denied, const {});
+
+  const GuardEvaluationResult.unavailable(
+    Map<String, GuardInputUnavailable> unavailableInputs,
+  ) : this._(GuardEvaluationStatus.unavailable, unavailableInputs);
+
+  final GuardEvaluationStatus status;
+  final Map<String, GuardInputUnavailable> unavailableInputs;
+
+  bool get passed => status == GuardEvaluationStatus.passed;
+}
+
 /// Evaluates a [WorkflowGuard] against the given fan and instance data.
 /// All conditions must pass (AND semantics). Empty/null guards always pass.
 ///
@@ -112,6 +158,75 @@ bool evaluateGuard(
   }
 
   return true;
+}
+
+/// Evaluates [guard] while preserving unresolved input metadata.
+///
+/// This is the guard-path companion to formula deferral. Formula values whose
+/// source inputs are unavailable are intentionally omitted from the data
+/// projection; evaluating a guard over such an omission must not turn into a
+/// boolean default (especially for negated guards).
+GuardEvaluationResult evaluateGuardWithAvailability(
+  WorkflowGuard guard,
+  String fanId,
+  Map<String, dynamic> instanceData, {
+  Map<String, GuardInputUnavailable> unavailableInputs = const {},
+  String? roleId,
+  Set<String>? roleIds,
+  Set<String>? completedWorkflowIds,
+  num? precomputedRelatedAggregate,
+  num? resolvedRelatedAggregateCompareTo,
+  bool skipRelatedAggregate = false,
+  DateTime Function()? clock,
+}) {
+  final referenced = <String>{
+    if (guard.actorInList != null) guard.actorInList!.key,
+    if (guard.actorEqualsField != null) guard.actorEqualsField!.key,
+    if (guard.instanceDataEquals != null) guard.instanceDataEquals!.key,
+    if (guard.cancellationDeadline != null) ...[
+      guard.cancellationDeadline!.dateField,
+      if (guard.cancellationDeadline!.timeField != null)
+        guard.cancellationDeadline!.timeField!,
+    ],
+    if (guard.formula != null)
+      ...analyzeFormula(guard.formula!).referencedFields,
+  };
+  final unavailable = <String, GuardInputUnavailable>{
+    for (final field in referenced)
+      if (unavailableInputs.containsKey(field))
+        field: unavailableInputs[field]!,
+  };
+  if (unavailable.isNotEmpty) {
+    final withDependencies = <String, GuardInputUnavailable>{...unavailable};
+    final pending = List<String>.of(unavailable.keys);
+    while (pending.isNotEmpty) {
+      final field = pending.removeLast();
+      final dependency = unavailableInputs[field]?.dependency;
+      if (dependency == null || !unavailableInputs.containsKey(dependency)) {
+        continue;
+      }
+      if (!withDependencies.containsKey(dependency)) {
+        withDependencies[dependency] = unavailableInputs[dependency]!;
+        pending.add(dependency);
+      }
+    }
+    return GuardEvaluationResult.unavailable(withDependencies);
+  }
+
+  return evaluateGuard(
+        guard,
+        fanId,
+        instanceData,
+        roleId: roleId,
+        roleIds: roleIds,
+        completedWorkflowIds: completedWorkflowIds,
+        precomputedRelatedAggregate: precomputedRelatedAggregate,
+        resolvedRelatedAggregateCompareTo: resolvedRelatedAggregateCompareTo,
+        skipRelatedAggregate: skipRelatedAggregate,
+        clock: clock,
+      )
+      ? const GuardEvaluationResult.passed()
+      : const GuardEvaluationResult.denied();
 }
 
 DateTime? _cancellationDeadline(

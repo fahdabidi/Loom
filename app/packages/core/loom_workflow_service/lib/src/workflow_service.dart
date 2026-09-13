@@ -4009,6 +4009,8 @@ class WorkflowService {
         communityId: communityId,
         onGuardEvaluationFailure: (failure) =>
             _logGuardEvaluationFailure(communityId, failure),
+        onGuardEvaluationUnavailable: (unavailable) =>
+            _logGuardEvaluationUnavailable(communityId, unavailable),
       ),
     );
     engine.setFailClosedOnMissingDefinition(true);
@@ -4029,6 +4031,34 @@ class WorkflowService {
         'errorType': failure.error.runtimeType.toString(),
         'error': failure.error.toString(),
         'stackTrace': failure.stackTrace.toString(),
+      }),
+    );
+  }
+
+  void _logGuardEvaluationUnavailable(
+    String communityId,
+    GuardEvaluationUnavailable unavailable,
+  ) {
+    _unexpectedErrorLogSink(
+      jsonEncode({
+        'event': 'workflow_guard_evaluation_unavailable',
+        'communityId': communityId,
+        'workflowType': unavailable.workflowType,
+        'instanceId': unavailable.instanceId,
+        'transitionId': unavailable.transitionId,
+        'unavailableInputs': {
+          for (final entry in unavailable.unavailableInputs.entries)
+            entry.key: {
+              'code': entry.value.code,
+              'message': entry.value.message,
+              if (entry.value.dependency != null)
+                'dependency': entry.value.dependency,
+              if (entry.value.cause != null) ...{
+                'causeType': entry.value.cause.runtimeType.toString(),
+                'cause': entry.value.cause.toString(),
+              },
+            },
+        },
       }),
     );
   }

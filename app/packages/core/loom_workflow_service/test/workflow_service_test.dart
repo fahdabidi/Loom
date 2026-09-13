@@ -1071,6 +1071,116 @@ void main() {
   );
 
   test(
+    'listing then mutation refreshes a query-sourced restoration guard',
+    () async {
+      const workflowType = 'query-source-restoration';
+      const entitlementWorkflowType = 'query-source-entitlement';
+      const instanceId = 'query-source-restoration-1';
+      const checkoutInstanceId = 'checkout-query-source-1';
+      await database.upsertDefinition(
+        definitionId: '${_communityId}_$entitlementWorkflowType',
+        workflowType: entitlementWorkflowType,
+        definitionJson: jsonEncode({
+          'initialState': 'inactive',
+          'states': {
+            'inactive': {'label': 'Inactive'},
+            'active': {'label': 'Active'},
+          },
+          'transitions': <Map<String, dynamic>>[],
+          'instanceDataSchema': {
+            'checkoutInstanceId': {'type': 'text', 'required': true},
+          },
+        }),
+        version: 1,
+      );
+      await database.upsertDefinition(
+        definitionId: '${_communityId}_$workflowType',
+        workflowType: workflowType,
+        definitionJson: jsonEncode({
+          'initialState': 'active',
+          'states': {
+            'active': {'label': 'Active'},
+            'restored': {'label': 'Restored'},
+          },
+          'transitions': [
+            {
+              'id': 'request-restoration',
+              'label': 'Request restoration',
+              'from': ['active'],
+              'to': 'restored',
+              'guard': {'formula': '!isSuppressionActive'},
+            },
+          ],
+          'instanceDataSchema': {
+            'checkoutInstanceId': {'type': 'text', 'required': true},
+            'linkedEntitlements': {
+              'type': 'list',
+              'source':
+                  'query($entitlementWorkflowType where checkoutInstanceId == checkoutInstanceId)',
+            },
+            'entitlementStateCounts': {
+              'type': 'map',
+              'formula': r"groupCount(linkedEntitlements, '$state')",
+            },
+            'isSuppressionActive': {
+              'type': 'bool',
+              'formula':
+                  "mapGet(entitlementStateCounts, 'active') + mapGet(entitlementStateCounts, 'change-requested') + mapGet(entitlementStateCounts, 'change-declined') > 0",
+            },
+          },
+        }),
+        version: 1,
+      );
+      await database.insertInstance(
+        instanceId: instanceId,
+        communityId: _communityId,
+        workflowType: workflowType,
+        currentState: 'active',
+        instanceData: const {'checkoutInstanceId': checkoutInstanceId},
+        createdByFanId: 'fan-owner',
+      );
+
+      final listing = await service.handler(
+        _getRequest(
+          '/v1/communities/$_communityId/instances/$instanceId/'
+              'available-transitions',
+          'fan-owner',
+        ),
+      );
+      expect(listing.statusCode, 200);
+      expect(
+        jsonDecode(await listing.readAsString()),
+        containsPair('transitions', [
+          containsPair('transitionId', 'request-restoration'),
+        ]),
+      );
+
+      await database.insertInstance(
+        instanceId: 'query-source-entitlement-active',
+        communityId: _communityId,
+        workflowType: entitlementWorkflowType,
+        currentState: 'active',
+        instanceData: const {'checkoutInstanceId': checkoutInstanceId},
+        createdByFanId: 'service',
+      );
+      final mutation = await service.handler(
+        _transitionRequest(
+          fanId: 'fan-owner',
+          instanceId: instanceId,
+          body: const {'transitionId': 'request-restoration'},
+        ),
+      );
+
+      expect(mutation.statusCode, 403);
+      expect(
+        jsonDecode(await mutation.readAsString()),
+        containsPair('code', 'workflow_guard_refused'),
+      );
+      expect((await database.readInstance(instanceId))!.currentState, 'active');
+    },
+  );
+
+  test(
     'updateInstanceFields allows an engine-authorized edit and returns it',
     () async {
       await _seedEditableInstance(database);
