@@ -1,95 +1,100 @@
 **Workflow:** `ad-off-ad-suppression` in Ad-Free Community
-**Outcome:** BLOCKED — not a proof. The row was spawned live and confirmed in Postgres, but it **cannot be advanced by anyone**: every transition request against it fails server-side with `FormulaEvaluationException: Expected bool, got null`, so `acknowledge-proof` never fires and the row is stuck in `unreviewed`. Half 1 of the proof standard was not met; I am not claiming it.
+**Outcome:** Both halves of the proof standard were met — signed in as `loom-ad-off-member-1`, opened the live "Suppression proof ready" card on the Home tab and fired `acknowledge-proof` ("Mark reviewed"), advancing instance `…_bessl9tachgu` from `unreviewed` to `reviewed` in Postgres with `updated_at` no longer equal to `created_at`.
+
+**This row was previously BLOCKED and is now reachable.** The manifest this file replaces recorded that every transition against this instance failed server-side with `FormulaEvaluationException: Expected bool, got null`, leaving it immovable in `unreviewed`. The fix (Loom `03b93f1c` — a throwing guard now disqualifies only its own transition) was deployed as **`loom-workflow-service:1.0.6`**, and this run confirms the button works on a real device.
 
 **Package identity:** `skillVersion: "3.6.0"`, sha256 `dd455f4890eec4fb71d6dc9ef189f9ef2c60e225effb07f59cb72a9dbd16a44c`
 (`app/packages/core/loom_communities_app_shell/assets/Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc`)
 
-**Date:** 2026-09-12 · **Device:** `emulator-5554` (Windows host, via `ADB_SERVER_SOCKET=tcp:192.168.56.1:5037`)
+**Date:** 2026-09-13 (UTC; device clock 2026-09-12 local) · **Device:** `emulator-5554` (Windows host, via `ADB_SERVER_SOCKET=tcp:192.168.56.1:5037`)
 **Community id (workflow-service):** `community_ad_free_community` — read off the row.
+**Deployed image at time of run:** `loom-workflow-service:1.0.6` (pod `workflow-service-666578b69b-8rw8l`, 3 minutes old at session start), `loom/app-access:0.3.11`.
 
-## What DID succeed
+## Identity
+
+Authenticated as **`loom-ad-off-member-1`** / fan id **`fan-ad-off-member-1`**, role `ad-off-member`.
+The session was already live from an earlier run; the in-app "Account role and permissions" dialog was
+opened first and read **"Signed in as Ad Off Member 1 … ID: fan-ad-off-member-1"**, role `Member`,
+before anything was driven. No credential was created or reset.
+
+## Half 1 — driven live through the real UI
+
+1. Ad-Free Community → **Home** tab. Card **"Suppression proof ready"** rendered. (The affordance was
+   never missing — this matches what the prior run reported.)
+2. Two suppression cards render on this tab. They were disambiguated by the `checkoutInstanceId`
+   shown in the card's Linked Entitlements block, joined against Postgres, so the correct instance
+   was targeted rather than whichever card happened to be on screen:
+   - `…_o1otolp4pkda` → instance `…_bessl9tachgu` ← **the target**
+   - `…_9kmvxftjpbjr` → instance `…_2d0t7n4botql` (left untouched, see control below)
+3. Tapped **"Mark reviewed"** on the target card.
+4. The card's state pill changed to **"Suppression proof reviewed"** and its button changed to
+   **"Review later"** — which is `review-again`, firable only from `reviewed`.
+
+## Half 2 — independently confirmed in Postgres, same session
 
 | | |
 |---|---|
 | instance_id | `community_ad_free_community_ad-off-ad-suppression_bessl9tachgu` |
-| created_by_fan_id | `fan-ad-off-owner-1` (spawned by the owner's `record-payment-confirmed`) |
-| current_state | **`unreviewed`** — the initial state, never advanced |
-| created_at | 1789254987485 — 2026-09-12T23:16:27Z |
-| updated_at | 1789254987485 — **identical to `created_at`; the row was never mutated** |
-| checkoutInstanceId | `community_ad_free_community_ad-off-member-checkout_o1otolp4pkda` |
+| community_id | `community_ad_free_community` |
+| created_by_fan_id | `fan-ad-off-owner-1` — see note below |
+| current_state | **`reviewed`** (was `unreviewed`) |
+| created_at | 1789254987485 |
+| updated_at | **1789261021760 — no longer equal to `created_at`** |
+| acknowledgedAt | `2026-09-13T00:57:01.760119Z` (written by the transition's effect) |
 | memberFanId | `fan-ad-off-member-1` |
 
-The row was spawned correctly and renders correctly. Its card is visible to the member, shows
-*"Suppression proof ready"*, the suppressed surfaces, the no-fill reason, a **Linked Entitlements**
-block resolving to my entitlement `…_jam3e7fa6bqx`, and a **"Mark reviewed"** button. The affordance
-is present — this is not a missing-affordance report.
+**The two halves agree.** The UI showed `reviewed` and the database holds `reviewed`, with the
+`acknowledgedAt` effect written.
 
-## Where it stopped
+**On `created_by_fan_id` being the owner, not me.** This row is *spawned* by a `createInstance` effect
+on the owner's `record-payment-confirmed`, so the creator column records the owner and always did —
+it is not evidence about who fired `acknowledge-proof`. The actor is established instead by the
+guard: `acknowledge-proof` carries `allowedRoleIds: ["ad-off-member"]` **and**
+`actorEqualsField: {key: memberFanId}`, and `memberFanId` on this row is `fan-ad-off-member-1`. Only
+that fan could have fired it, and it fired.
 
-Signed in as `loom-ad-off-member-1` (`fan-ad-off-member-1`, role `ad-off-member`) — exactly the role
-`acknowledge-proof` requires, and the fan in this row's `memberFanId`. Tapped **"Mark reviewed"**.
+## Control — the sibling row proves the write was targeted
 
-The device showed: **"Could not save this change. Please try again."** with a Retry button.
-Tapped again; identical failure. Postgres confirms no state change on either attempt.
+The other suppression row, `…_2d0t7n4botql`, was left alone and still reads `unreviewed` with
+`updated_at = created_at` (never mutated) and `acknowledgedAt` null. So the state change is
+attributable to the specific button pressed, not to a broad sweep or a re-render.
 
-`workflow-service` logged, both times, for
-`POST /v1/communities/community_ad_free_community/instances/community_ad_free_community_ad-off-ad-suppression_bessl9tachgu/transitions`:
+## `request-restoration` — absent, as expected, but NOT cleanly diagnostic
 
-    "errorType":"FormulaEvaluationException"
-    "error":"FormulaEvaluationException: Expected bool, got null"
-      #0  _bool            (formula_evaluator.dart:408)
-      #1  _evaluate        (formula_evaluator.dart:239)
-      #2  evaluateFormula  (formula_evaluator.dart:139)
-      #3  evaluateGuard    (guard_evaluator.dart:64)
-      #4  availableTransitions.<anonymous closure> (transition_evaluator.dart:27)
-      #10 availableTransitions                     (transition_evaluator.dart:48)
-      #11 LocalWorkflowEngineApi._resolveTransition (local_workflow_engine_api.dart:1205)
-      #12 LocalWorkflowEngineApi.applyTransition    (local_workflow_engine_api.dart:1085)
+`request-restoration` ("Restore ad-off") did not render, which the ticket predicted. **I cannot
+distinguish the two possible reasons from the device**, and am not claiming the stronger one:
 
-## Mechanism
+- its guard formula is `!isSuppressionActive`, and the card itself displayed **"Ads suppressed now:
+  Yes"** — so `!isSuppressionActive` is legitimately **false** here, which alone suffices to hide it;
+- the ticket's expectation is that the same formula yields `null` server-side and the transition is
+  now *excluded* rather than aborting the whole enumeration.
 
-The package declares `isSuppressionActive` as a **formula field** over a **query-sourced** field:
+Both predict absence. The decisive evidence that the fix took is elsewhere and is unambiguous:
+**under the old behaviour a single throwing guard killed all three transitions, and here
+`acknowledge-proof` succeeded and `review-again` subsequently rendered.** The enumeration no longer
+aborts.
 
-    linkedEntitlements      source:  query(ad-off-entitlement-status where checkoutInstanceId == checkoutInstanceId)
-    entitlementStateCounts  formula: groupCount(linkedEntitlements, '$state')
-    isSuppressionActive     formula: mapGet(entitlementStateCounts,'active') + … > 0
+## Defects observed
 
-and the third transition, `request-restoration`, guards on `formula: "!isSuppressionActive"`.
+**None in this workflow.** The previously reported blocker is resolved on the deployed build.
 
-On the **render** path that formula evaluates fine — the card displays *"Ads suppressed now: Yes"*.
-On the **server guard** path it resolves to `null`, and `!null` throws.
+Two notes carried forward, neither a defect in this row:
 
-**The damage is not confined to `request-restoration`.** `_resolveTransition` calls
-`availableTransitions`, which evaluates **every** transition's guard eagerly inside a `.where(...)`.
-One guard throwing aborts the whole enumeration, so the request fails before `acknowledge-proof` is
-ever considered — even though `acknowledge-proof`'s own guard (`ad-off-member` +
-`actorEqualsField: memberFanId`) is perfectly satisfiable and was satisfied. **All three transitions
-are therefore dead, and the workflow has no reachable state beyond `unreviewed`.**
+- The deeper render/guard asymmetry behind `request-restoration`'s `null`-valued query-sourced field
+  is tracked separately and was deliberately not fixed. It is not observable as a failure here.
+- As the owner (during the Row 2 session on the same device), this same card correctly rendered
+  **"Suppression proof reviewed"** with **no** "Mark reviewed" button — the member-only guard is
+  enforced on the render side too. This is a second, independent confirmation of the state change
+  from a different identity.
 
-## Evidence this is deterministic and pre-existing, not my run
+## Verification commands used
 
-- **Two identical failures** on two attempts, same exception, same instance.
-- **The prior run's row is stuck the same way.** `…_2d0t7n4botql`, spawned 2026-09-08, is still
-  `unreviewed` with `updated_at` equal to its `created_at` — it was never advanced either. Two rows,
-  four days apart, same terminal-at-birth state.
-- **Contrast, same session, same actor, same community:** the sibling rows spawned by the *same*
-  transition advanced without trouble — `ad-off-entitlement-status` through three transitions
-  (`active` → `change-requested` → `change-declined` → `active`) and `ad-off-receipt-evidence`
-  through two `instance_data` mutations. So this is not authentication, authorization, membership,
-  connectivity or node load; it is specific to this workflow's guard.
+    PW=$(kubectl get secret postgres-credentials -n loom -o jsonpath='{.data.password}' | base64 -d)
+    kubectl exec -i -n loom postgres-0 -- env PGPASSWORD="$PW" psql -U loom -d loom_workflow_service \
+      -c "select instance_id, created_by_fan_id, current_state, created_at, updated_at,
+                 (updated_at=created_at) as never_mutated,
+                 instance_data::jsonb->>'acknowledgedAt'
+          from workflow_instances where workflow_type='ad-off-ad-suppression' order by created_at;"
 
-This is the shape `CLAUDE.md` already describes — a capability that is well-formed in the package and
-unreachable as deployed, and a formula that evaluates in one context and not another. It is recorded
-here rather than fixed: **no fix was attempted, and no code, JSON or tracker was modified.**
-
-## Not the cause
-
-The package's six `NEEDS IMPLEMENTATION` annotations are all on **fields**, and **no transition
-guards on any of them** — including this one. They are not implicated, and the empty
-`paymentConfirmationId` / receipt-id / settlement-id fields are the expected designed state.
-
-## Cross-references
-
-- `ad-free-community-ad-off-entitlement-status-live-write-2026-09-12.md` — proven, and carries the
-  step-4 `{id}`-in-`transitionRelated`-filter measurement (result: the cascade silently did nothing).
-- `ad-free-community-ad-off-receipt-evidence-live-write-2026-09-12.md` — proven.
+Baseline measured at session start, before anything was driven: **71** rows in `workflow_instances`,
+**2** of `ad-off-ad-suppression`, both `unreviewed` and both with `updated_at = created_at`.
