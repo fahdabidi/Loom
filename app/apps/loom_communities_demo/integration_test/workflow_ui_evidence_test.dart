@@ -1465,9 +1465,12 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       model: b25Model,
       selector: selector,
       screenshotNames: [start, primaryUnavailable, resultUnavailable],
+      primaryUnavailableReason:
+          'primary_action_unavailable: no primary action candidates were '
+          'selected for this workflow row.',
     );
   }
-  final visibleAction = await _waitForShippedWorkflowAction(
+  final actionWait = await _waitForShippedWorkflowAction(
     tester: tester,
     bodyWatch: bodyWatch,
     selector: selector,
@@ -1478,7 +1481,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
     diagnosticFrameName: stallDiagnosticName,
     captureDiagnostic: capture,
   );
-  if (visibleAction == null) {
+  if (actionWait.action == null) {
     final primaryUnavailable = _b25ScreenshotName(
       target,
       b25Model,
@@ -1495,8 +1498,10 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       model: b25Model,
       selector: selector,
       screenshotNames: [start, primaryUnavailable, resultUnavailable],
+      primaryUnavailableReason: actionWait.unavailableReason,
     );
   }
+  final visibleAction = actionWait.action!;
   final sourceInstance = identical(selector.actionMachine, selector.machine)
       ? await _readShippedInstance(
           tester: tester,
@@ -2324,6 +2329,7 @@ _B25WalkthroughResult _b25WalkthroughResult({
   LoomWorkflowTransition? executedPrimary,
   LoomWorkflowTransition? executedAlternate,
   required List<String> screenshotNames,
+  String? primaryUnavailableReason,
 }) {
   final primaryTermMatch = executedPrimary == null
       ? const (primary: <String>[], alternate: <String>[])
@@ -2348,6 +2354,7 @@ _B25WalkthroughResult _b25WalkthroughResult({
           .toList()
         ..sort();
   final findings = <String>[
+    if (primaryUnavailableReason != null) primaryUnavailableReason,
     if (visiblePrimary.isEmpty)
       '${model.communityName} / ${model.workflowId} / ${model.role}: '
           '${executedPrimary == null ? 'no documented primary package action was exercised' : 'the exercised package action `${executedPrimary.label}` does not match any documented primary action'} '
@@ -3235,8 +3242,14 @@ String _shippedTransitionInputValue(String key, String type, String roleId) {
   return 'Evidence $key';
 }
 
-Future<({_ShippedTransitionCandidate candidate, Finder finder})?>
-_waitForShippedWorkflowAction({
+class _ShippedWorkflowActionWait {
+  const _ShippedWorkflowActionWait._({this.action, this.unavailableReason});
+
+  final ({_ShippedTransitionCandidate candidate, Finder finder})? action;
+  final String? unavailableReason;
+}
+
+Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
   required WidgetTester tester,
   required WalkthroughBodyWatch bodyWatch,
   required _ShippedWorkflowSelector selector,
@@ -3247,45 +3260,59 @@ _waitForShippedWorkflowAction({
   required String diagnosticFrameName,
   required Future<void> Function(String name) captureDiagnostic,
 }) async {
-  final budget = WalkthroughWaitBudget();
-  final actionDescriptions = candidates
-      .map(
-        (candidate) =>
-            '${candidate.transition.id} (${candidate.transition.label})',
-      )
-      .join(', ');
-  final pollingWaitingFor =
+  String pollingWaitingFor(
+    PrimaryActionAvailability<_ShippedTransitionCandidate> availability,
+  ) =>
       'a tappable shipped workflow action on the '
       '${selector.binding.tabId} tab for ${selector.roleId}. '
-      'Polled action widgets: [$actionDescriptions].';
-  while (!budget.expired) {
-    // A 50ms poll is active work, not a stopped walkthrough. Beat before each
-    // awaited poll operation so the body watchdog still catches a genuinely
-    // hung pump or platform call, while the bounded inner wait owns its
-    // defined unavailable outcome.
-    bodyWatch.beat(
-      lastCompletedStep: lastCompletedStep,
-      attemptedStep: attemptedStep,
-      waitingFor: pollingWaitingFor,
-    );
-    for (final candidate in candidates) {
-      final finder = _engineActionFinder(
-        selector.instance.instanceId,
-        candidate.transition.id,
+      'Polled action widgets: [${availability.candidateDescriptions}].';
+
+  final actionAvailability = await waitForPrimaryActionAvailability(
+    tester: tester,
+    candidates: [
+      for (final candidate in candidates)
+        PrimaryActionCandidate(
+          value: candidate,
+          finder: find.descendant(
+            of: surface,
+            matching: _engineActionFinder(
+              selector.instance.instanceId,
+              candidate.transition.id,
+            ),
+          ),
+          description:
+              '${candidate.transition.id} (${candidate.transition.label})',
+        ),
+    ],
+    onPoll: (availability) {
+      // A 50ms poll is active work, not a stopped walkthrough. Beat before
+      // the next awaited poll operation so the body watchdog still catches a
+      // genuinely hung pump or platform call, while the bounded inner wait
+      // owns its defined unavailable outcome.
+      bodyWatch.beat(
+        lastCompletedStep: lastCompletedStep,
+        attemptedStep: attemptedStep,
+        waitingFor: pollingWaitingFor(availability),
       );
-      final readyFinder = firstReadyActionOnSurface(
-        tester: tester,
-        surface: surface,
-        candidates: [finder],
-      );
-      if (readyFinder != null) {
-        return (candidate: candidate, finder: readyFinder);
-      }
-    }
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    },
+  );
+  final latestPollingWaitingFor = pollingWaitingFor(actionAvailability);
+  if (actionAvailability.hasReadyAction) {
+    final readyAction = actionAvailability.candidate!;
+    return _ShippedWorkflowActionWait._(
+      action: (candidate: readyAction.value, finder: readyAction.finder),
     );
-    await tester.pump(const Duration(milliseconds: 50));
+  }
+  if (actionAvailability.allCandidatesPresentAndDisabled) {
+    // The engine intentionally withholds disabled transitions, such as an
+    // RSVP whose capacity guard has become false. Waiting cannot change that
+    // answer: record the unavailable branch immediately instead of consuming
+    // the inner three-minute budget.
+    return _ShippedWorkflowActionWait._(
+      unavailableReason:
+          'primary_action_unavailable: every primary candidate is present '
+          'but disabled. $latestPollingWaitingFor',
+    );
   }
   final anyOtherTappable = selector.transitions.any((candidate) {
     if (candidates.any(
@@ -3310,20 +3337,25 @@ _waitForShippedWorkflowAction({
     // The instance is live and offers other actions, but none of the
     // required primary actions is offered to this role in this state. That
     // is a product finding, not a stall.
-    return null;
+    return _ShippedWorkflowActionWait._(
+      unavailableReason:
+          'primary_action_unavailable: the instance offered another '
+          'tappable transition, but no required primary transition. '
+          '$latestPollingWaitingFor',
+    );
   }
   bodyWatch.beat(
     lastCompletedStep: lastCompletedStep,
     attemptedStep: attemptedStep,
-    waitingFor: 'capturing $diagnosticFrameName after $pollingWaitingFor',
+    waitingFor: 'capturing $diagnosticFrameName after $latestPollingWaitingFor',
   );
   await captureDiagnostic(diagnosticFrameName);
   throw WalkthroughStallFailure(
     buildWalkthroughStallMessage(
       lastCompletedStep: lastCompletedStep,
       attemptedStep: attemptedStep,
-      waitingFor: pollingWaitingFor,
-      budget: budget,
+      waitingFor: latestPollingWaitingFor,
+      budget: actionAvailability.budget,
       diagnosticFrameName: diagnosticFrameName,
     ),
   );

@@ -462,6 +462,213 @@ void main() {
     },
   );
 
+  testWidgets('all present but disabled primary candidates become unavailable '
+      'immediately', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: KeyedSubtree(
+            key: ValueKey('expected-community-surface'),
+            child: Center(
+              child: FilledButton(
+                key: ValueKey('respond-going-action'),
+                onPressed: null,
+                child: Text('Going'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final availability = await waitForPrimaryActionAvailability(
+      tester: tester,
+      // The production caller uses its normal 2m45s inner budget. This
+      // short test-only budget keeps the requested neutralization proof fast.
+      timeout: const Duration(milliseconds: 10),
+      candidates: [
+        PrimaryActionCandidate(
+          value: 'respond-going',
+          finder: find.descendant(
+            of: find.byKey(const ValueKey('expected-community-surface')),
+            matching: find.byKey(const ValueKey('respond-going-action')),
+          ),
+          description: 'respond-going (Going)',
+        ),
+      ],
+    );
+
+    final outcome = availability.allCandidatesPresentAndDisabled
+        ? 'primary_action_unavailable'
+        : 'primary_action_stalled';
+    expect(outcome, 'primary_action_unavailable');
+    expect(availability.hasReadyAction, isFalse);
+    expect(
+      availability.candidateDescriptions,
+      'respond-going (Going): present, disabled',
+    );
+    // This is deliberately far below the 2m45s device wait. A disabled
+    // control is a product answer, not a reason to burn the polling budget.
+    expect(availability.budget.elapsed, lessThan(const Duration(seconds: 1)));
+  });
+
+  testWidgets(
+    'an enabled primary candidate covered for the full budget remains a '
+    'stall diagnosis with its hit-test path',
+    (WidgetTester tester) async {
+      var tapCount = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Stack(
+              children: [
+                Center(
+                  child: FilledButton(
+                    key: const ValueKey('respond-going-action'),
+                    onPressed: () => tapCount += 1,
+                    child: const Text('Going'),
+                  ),
+                ),
+                const Positioned.fill(
+                  child: AbsorbPointer(child: SizedBox.expand()),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      final availability = await waitForPrimaryActionAvailability(
+        tester: tester,
+        timeout: const Duration(milliseconds: 1),
+        candidates: [
+          PrimaryActionCandidate(
+            value: 'respond-going',
+            finder: find.byKey(const ValueKey('respond-going-action')),
+            description: 'respond-going (Going)',
+          ),
+        ],
+      );
+
+      expect(availability.hasReadyAction, isFalse);
+      expect(availability.allCandidatesPresentAndDisabled, isFalse);
+      expect(
+        availability.candidateReadiness.single.readiness.state,
+        FinderTapReadinessState.notHittable,
+      );
+      expect(
+        availability.candidateDescriptions,
+        allOf(
+          contains('respond-going (Going): present, enabled, not hittable'),
+          contains('RenderAbsorbPointer'),
+        ),
+      );
+      final message = buildWalkthroughStallMessage(
+        lastCompletedStep: 'start screenshot',
+        attemptedStep: 'tapping respond-going',
+        waitingFor:
+            'a tappable shipped workflow action. Polled action widgets: '
+            '[${availability.candidateDescriptions}].',
+        budget: availability.budget,
+      );
+      expect(message, contains('present, enabled, not hittable'));
+      expect(message, contains('RenderAbsorbPointer'));
+      expect(tapCount, 0);
+    },
+  );
+
+  testWidgets(
+    'an enabled primary candidate covered mid-poll is tapped once it clears',
+    (WidgetTester tester) async {
+      var tapCount = 0;
+      final blocked = ValueNotifier(true);
+      addTearDown(blocked.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Stack(
+              children: [
+                Center(
+                  child: FilledButton(
+                    key: const ValueKey('respond-going-action'),
+                    onPressed: () => tapCount += 1,
+                    child: const Text('Going'),
+                  ),
+                ),
+                Positioned.fill(
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: blocked,
+                    builder: (context, isBlocked, child) => isBlocked
+                        ? const AbsorbPointer(child: SizedBox.expand())
+                        : const SizedBox.shrink(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      var polls = 0;
+      final availability = await waitForPrimaryActionAvailability(
+        tester: tester,
+        candidates: [
+          PrimaryActionCandidate(
+            value: 'respond-going',
+            finder: find.byKey(const ValueKey('respond-going-action')),
+            description: 'respond-going (Going)',
+          ),
+        ],
+        onPoll: (_) {
+          polls += 1;
+          if (polls == 2) blocked.value = false;
+        },
+      );
+
+      expect(polls, greaterThanOrEqualTo(2));
+      expect(availability.hasReadyAction, isTrue);
+      expect(
+        availability.candidateReadiness.single.readiness.state,
+        FinderTapReadinessState.ready,
+      );
+      await tester.tap(availability.candidate!.finder, warnIfMissed: false);
+      expect(tapCount, 1);
+    },
+  );
+
+  testWidgets(
+    'no primary candidates preserves the unavailable outcome without a '
+    'speculative listing tap',
+    (WidgetTester tester) async {
+      var listingTapCount = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: InkWell(
+              onTap: () => listingTapCount += 1,
+              child: const Center(child: Text('Steel wheelbarrow')),
+            ),
+          ),
+        ),
+      );
+
+      final primaryCandidates = <Finder>[];
+      final action = primaryCandidates.isEmpty
+          ? null
+          : firstReadyActionOnSurface(
+              tester: tester,
+              surface: find.byType(Scaffold),
+              candidates: primaryCandidates,
+            );
+      final outcome = action == null
+          ? 'primary_action_unavailable'
+          : 'primary_action_fired';
+
+      expect(outcome, 'primary_action_unavailable');
+      expect(listingTapCount, 0);
+    },
+  );
+
   test(
     'an inner wait exhausts its default budget before the watchdog fires',
     () {

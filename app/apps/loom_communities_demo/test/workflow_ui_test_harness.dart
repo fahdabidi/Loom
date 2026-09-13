@@ -267,24 +267,184 @@ Future<void> tapWhenVisible(
   );
 }
 
-/// Returns whether [finder] resolves to one enabled control that can receive
-/// a pointer at its current location. This only inspects the rendered tree; it
-/// never scrolls, pumps, taps, or otherwise changes the current UI surface.
-bool isFinderReadyForTap(WidgetTester tester, Finder finder) {
+/// The reason a rendered action is, or is not, ready for a walkthrough tap.
+///
+/// A disabled action is deliberately distinct from an enabled action that
+/// cannot receive a pointer. The former is a product answer; the latter can be
+/// a transient route transition or a real obstruction that merits polling.
+enum FinderTapReadinessState { ready, absent, ambiguous, disabled, notHittable }
+
+/// The non-mutating tap-readiness inspection for a [Finder].
+class FinderTapReadiness {
+  const FinderTapReadiness._({required this.state, this.hitTestPath});
+
+  final FinderTapReadinessState state;
+  final String? hitTestPath;
+
+  bool get isReady => state == FinderTapReadinessState.ready;
+
+  bool get isPresentAndDisabled => state == FinderTapReadinessState.disabled;
+
+  /// Human-readable diagnostic wording for one candidate action.
+  String get description => switch (state) {
+    FinderTapReadinessState.ready => 'present, enabled, tappable',
+    FinderTapReadinessState.absent => 'absent',
+    FinderTapReadinessState.ambiguous => 'not uniquely present',
+    FinderTapReadinessState.disabled => 'present, disabled',
+    FinderTapReadinessState.notHittable =>
+      'present, enabled, not hittable'
+          '${hitTestPath == null ? '' : ' (hit-test path: $hitTestPath)'}',
+  };
+}
+
+/// Inspects why [finder] is, or is not, ready for a tap.
+///
+/// This only inspects the rendered tree; it never scrolls, pumps, taps, or
+/// otherwise changes the current UI surface.
+FinderTapReadiness inspectFinderTapReadiness(
+  WidgetTester tester,
+  Finder finder,
+) {
   final matches = finder.evaluate();
-  if (matches.length != 1 || !_finderHasEnabledTapHandler(finder)) {
-    return false;
+  if (matches.isEmpty) {
+    return const FinderTapReadiness._(state: FinderTapReadinessState.absent);
+  }
+  if (matches.length != 1) {
+    return const FinderTapReadiness._(state: FinderTapReadinessState.ambiguous);
+  }
+  if (!_finderHasEnabledTapHandler(finder)) {
+    return const FinderTapReadiness._(state: FinderTapReadinessState.disabled);
   }
   final targetElement = matches.single;
   if (targetElement.renderObject is! RenderBox ||
       targetElement.findAncestorWidgetOfExactType<View>() == null) {
-    return false;
+    return const FinderTapReadiness._(
+      state: FinderTapReadinessState.notHittable,
+      hitTestPath: 'target has no RenderBox or Flutter view',
+    );
   }
-  return _tapTargetHitTest(
+  final hitTest = _tapTargetHitTest(
     tester: tester,
     finder: finder,
     targetElement: targetElement,
-  ).targetWasHit;
+  );
+  if (hitTest.targetWasHit) {
+    return const FinderTapReadiness._(state: FinderTapReadinessState.ready);
+  }
+  return FinderTapReadiness._(
+    state: FinderTapReadinessState.notHittable,
+    hitTestPath: hitTest.miss.hitTestPath,
+  );
+}
+
+/// Returns whether [finder] resolves to one enabled control that can receive
+/// a pointer at its current location.
+///
+/// Kept as the boolean compatibility API for existing walkthrough callers;
+/// new action-selection code should use [inspectFinderTapReadiness] when its
+/// outcome must distinguish a disabled control from an obstruction.
+bool isFinderReadyForTap(WidgetTester tester, Finder finder) =>
+    inspectFinderTapReadiness(tester, finder).isReady;
+
+/// A named primary-action candidate and the precise finder scoped to its
+/// current workflow surface.
+class PrimaryActionCandidate<T> {
+  const PrimaryActionCandidate({
+    required this.value,
+    required this.finder,
+    required this.description,
+  });
+
+  final T value;
+  final Finder finder;
+  final String description;
+}
+
+/// One candidate's latest readiness result during a primary-action poll.
+class PrimaryActionCandidateReadiness<T> {
+  const PrimaryActionCandidateReadiness({
+    required this.candidate,
+    required this.readiness,
+  });
+
+  final PrimaryActionCandidate<T> candidate;
+  final FinderTapReadiness readiness;
+
+  String get description =>
+      '${candidate.description}: ${readiness.description}';
+}
+
+/// The result of a bounded primary-action availability wait.
+class PrimaryActionAvailability<T> {
+  const PrimaryActionAvailability._({
+    required this.candidateReadiness,
+    required this.budget,
+    this.candidate,
+  });
+
+  final List<PrimaryActionCandidateReadiness<T>> candidateReadiness;
+  final WalkthroughWaitBudget budget;
+  final PrimaryActionCandidate<T>? candidate;
+
+  bool get hasReadyAction => candidate != null;
+
+  /// Every expected primary control is visibly present and deliberately
+  /// disabled. Waiting cannot make this product decision actionable.
+  bool get allCandidatesPresentAndDisabled =>
+      candidateReadiness.isNotEmpty &&
+      candidateReadiness.every(
+        (candidate) => candidate.readiness.isPresentAndDisabled,
+      );
+
+  String get candidateDescriptions =>
+      candidateReadiness.map((candidate) => candidate.description).join(', ');
+}
+
+/// Polls primary action candidates without turning a disabled product answer
+/// into a three-minute stall.
+///
+/// An enabled but unhittable action retains the existing bounded polling path.
+/// [timeout] and [now] exist for deterministic unit coverage; device
+/// walkthroughs intentionally use the default inner wait budget.
+Future<PrimaryActionAvailability<T>> waitForPrimaryActionAvailability<T>({
+  required WidgetTester tester,
+  required List<PrimaryActionCandidate<T>> candidates,
+  Duration? timeout,
+  DateTime Function()? now,
+  void Function(PrimaryActionAvailability<T> availability)? onPoll,
+}) async {
+  final budget = WalkthroughWaitBudget(timeout: timeout, now: now);
+  late PrimaryActionAvailability<T> availability;
+  do {
+    final candidateReadiness = <PrimaryActionCandidateReadiness<T>>[];
+    PrimaryActionCandidate<T>? readyCandidate;
+    for (final candidate in candidates) {
+      final readiness = PrimaryActionCandidateReadiness(
+        candidate: candidate,
+        readiness: inspectFinderTapReadiness(tester, candidate.finder),
+      );
+      candidateReadiness.add(readiness);
+      if (readyCandidate == null && readiness.readiness.isReady) {
+        readyCandidate = candidate;
+      }
+    }
+    availability = PrimaryActionAvailability._(
+      candidateReadiness: candidateReadiness,
+      budget: budget,
+      candidate: readyCandidate,
+    );
+    onPoll?.call(availability);
+    if (availability.hasReadyAction ||
+        availability.allCandidatesPresentAndDisabled) {
+      return availability;
+    }
+
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  } while (!budget.expired);
+  return availability;
 }
 
 /// Waits for [finder] to resolve to one enabled control that can receive a
