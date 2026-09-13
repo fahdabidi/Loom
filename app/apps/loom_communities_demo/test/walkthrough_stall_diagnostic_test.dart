@@ -89,6 +89,57 @@ void main() {
     },
   );
 
+  testWidgets(
+    'a missed walkthrough tap fails at the named target with its hit-test path',
+    (WidgetTester tester) async {
+      const targetDescription = 'deliberately obscured walkthrough action';
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Stack(
+              children: [
+                Center(
+                  child: TextButton(
+                    key: ValueKey('deliberately-obscured-walkthrough-action'),
+                    onPressed: null,
+                    child: Text('Target action'),
+                  ),
+                ),
+                Positioned.fill(
+                  child: AbsorbPointer(
+                    child: ColoredBox(color: Colors.transparent),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      await expectLater(
+        tapWhenVisible(
+          tester,
+          find.byKey(
+            const ValueKey('deliberately-obscured-walkthrough-action'),
+          ),
+          description: targetDescription,
+        ),
+        throwsA(
+          isA<Object>().having(
+            (error) => error.toString(),
+            'error message',
+            allOf(
+              contains(targetDescription),
+              contains('Walkthrough tap missed'),
+              contains('Hit-test path:'),
+              isNot(contains('later widget not found')),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
   test(
     'an inner wait exhausts its default budget before the watchdog fires',
     () {

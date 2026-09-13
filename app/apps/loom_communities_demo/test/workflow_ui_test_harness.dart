@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
@@ -167,12 +168,83 @@ Future<void> installMetadataEvidenceTarget(
   );
 }
 
+/// Scrolls [finder] into view and fails at the attempted tap if it cannot
+/// receive the resulting pointer event.
+///
+/// Flutter's [WidgetTester.tap] reports a missed hit test only as a warning.
+/// Walkthroughs need the failure at the action that missed, rather than at the
+/// unrelated postcondition which would otherwise fail afterwards.
+Future<void> tapWhenVisible(
+  WidgetTester tester,
+  Finder finder, {
+  required String description,
+}) async {
+  final initialMatches = finder.evaluate();
+  if (initialMatches.length != 1) {
+    fail(
+      'Walkthrough tap target "$description" must resolve to exactly one '
+      'widget before it can be made visible; finder "$finder" found '
+      '${initialMatches.length}.',
+    );
+  }
+
+  await tester.ensureVisible(finder);
+
+  final targetElement = finder.evaluate().single;
+  final targetRenderObject = targetElement.renderObject;
+  if (targetRenderObject is! RenderBox) {
+    fail(
+      'Walkthrough tap target "$description" has no RenderBox after '
+      'ensureVisible; finder "$finder" resolved to $targetRenderObject.',
+    );
+  }
+
+  final targetView = targetElement.findAncestorWidgetOfExactType<View>();
+  if (targetView == null) {
+    fail(
+      'Walkthrough tap target "$description" has no Flutter view for hit '
+      'testing; finder "$finder" resolved to $targetRenderObject.',
+    );
+  }
+
+  final location = tester.getCenter(finder, warnIfMissed: false);
+  final hitTestResult = HitTestResult();
+  tester.binding.hitTestInView(hitTestResult, location, targetView.view.viewId);
+  final targetWasHit = hitTestResult.path.any(
+    (entry) => entry.target == targetRenderObject,
+  );
+  if (!targetWasHit) {
+    final renderView = tester.binding.renderViews.firstWhere(
+      (view) => view.flutterView.viewId == targetView.view.viewId,
+    );
+    final outOfBounds = !(Offset.zero & renderView.size).contains(location);
+    final hitPath = hitTestResult.path
+        .map((entry) => entry.target)
+        .join(' -> ');
+    final outcome = outOfBounds
+        ? 'The target is off-screen: $location is outside the root render '
+              'bounds ${renderView.size} after ensureVisible.'
+        : 'The target is inside the root render bounds but did not receive '
+              'the pointer. It is obscured or cannot receive pointer events.';
+    fail(
+      'Walkthrough tap missed "$description" at $location. $outcome '
+      'Hit-test path: $hitPath.',
+    );
+  }
+
+  await tester.tap(finder, warnIfMissed: false);
+}
+
 Future<void> _installEvidencePackagePair(
   WidgetTester tester,
   EvidencePackagePair fixture, {
   required ValueKey<String> openButtonKey,
 }) async {
-  await tester.tap(find.byKey(openButtonKey));
+  await tapWhenVisible(
+    tester,
+    find.byKey(openButtonKey),
+    description: 'local community package installer open button',
+  );
   await tester.pumpAndSettle();
   await tester.enterText(
     find.byKey(const ValueKey('extension-package-path-field')),
@@ -182,7 +254,11 @@ Future<void> _installEvidencePackagePair(
     find.byKey(const ValueKey('initialization-package-path-field')),
     fixture.initializationPath,
   );
-  await tester.tap(find.byKey(const ValueKey('load-local-community-button')));
+  await tapWhenVisible(
+    tester,
+    find.byKey(const ValueKey('load-local-community-button')),
+    description: 'load local community button',
+  );
   await tester.pumpAndSettle();
 }
 
@@ -388,7 +464,11 @@ Future<void> selectActorIdentity(WidgetTester tester, String fanId) async {
     pickerButton,
     description: 'actor identity picker while selecting $fanId',
   );
-  await tester.tap(pickerButton);
+  await tapWhenVisible(
+    tester,
+    pickerButton,
+    description: 'actor identity picker while selecting $fanId',
+  );
   await tester.pumpAndSettle();
   expect(
     find.byKey(const ValueKey('actor-identity-picker-dialog')),
@@ -409,7 +489,11 @@ Future<void> selectActorIdentity(WidgetTester tester, String fanId) async {
       .selected;
   final signedInAccount = find.textContaining('Signed in as ');
   if (signedInAccount.evaluate().isEmpty || selectedActorIdentity) {
-    await tester.tap(actorIdentityOption);
+    await tapWhenVisible(
+      tester,
+      actorIdentityOption,
+      description: 'actor identity option for $fanId',
+    );
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey('actor-identity-picker-dialog')),
@@ -488,7 +572,11 @@ Future<void> signInEvidenceAccount(
       pickerButton,
       description: 'actor identity picker before signing in as $displayName',
     );
-    await tester.tap(pickerButton);
+    await tapWhenVisible(
+      tester,
+      pickerButton,
+      description: 'actor identity picker before signing in as $displayName',
+    );
     await tester.pumpAndSettle();
     final specificPerson = find.byKey(
       const ValueKey('actor-identity-sign-in-specific-person'),
@@ -793,7 +881,11 @@ Future<void> completeWorkflow(
   );
   await scrollFinderIntoViewport(tester, workflowButton);
   await tester.pumpAndSettle();
-  await tester.tap(workflowButton);
+  await tapWhenVisible(
+    tester,
+    workflowButton,
+    description: 'workflow action for ${workflow.workflowId}',
+  );
   await tester.pumpAndSettle();
   expect(
     find.byKey(ValueKey('workflow-action-surface-${workflow.workflowId}')),
@@ -804,7 +896,11 @@ Future<void> completeWorkflow(
   );
   await scrollFinderIntoViewport(tester, submitButton);
   await tester.pumpAndSettle();
-  await tester.tap(submitButton);
+  await tapWhenVisible(
+    tester,
+    submitButton,
+    description: 'workflow submit action for ${workflow.workflowId}',
+  );
   await tester.pumpAndSettle();
   await scrollToWorkflowCard(tester, workflow);
   expect(
