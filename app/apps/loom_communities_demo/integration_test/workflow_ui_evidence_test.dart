@@ -28,6 +28,7 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart'
         workflowEffectTransitionRelated;
 
 import '../test/b25_visible_postcondition.dart';
+import '../test/b25_actor_audience_resolution.dart';
 import '../test/workflow_ui_test_harness.dart';
 import '../test/walkthrough_wait.dart';
 
@@ -2748,15 +2749,28 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
         ...packageRoleIds,
       };
       for (final roleId in roleIds.where(preferredRoleIds.contains)) {
-        final bindingAccountId = _bindingAudienceAccountId(
-          machine: machine,
-          instance: instance,
-          binding: binding,
-          roleId: roleId,
-        );
-        if (binding.role == 'actor' && bindingAccountId == null) {
-          continue;
-        }
+        final bindingAccountId = binding.role == 'actor'
+            ? requireB25ActorBindingAudience(
+                workflowId: machine.workflowType,
+                instance: WorkflowInstance(
+                  instanceId: instance.instanceId,
+                  workflowType: instance.workflowType,
+                  currentState: instance.currentState,
+                  instanceData: instance.instanceData,
+                  createdByFanId: instance.createdByFanId ?? '',
+                ),
+                roleId: roleId,
+                candidates: package.experience.actorIdentities!
+                    .where((identity) => identity.roleId == roleId)
+                    .map(
+                      (identity) => B25ActorAudienceCandidate(
+                        fanId: identity.fanId,
+                        roleId: identity.roleId,
+                      ),
+                    ),
+                machine: machine,
+              )
+            : null;
         final tabs = appShellTabsFor(
           experience: package.experience,
           roleId: roleId,
@@ -3173,28 +3187,6 @@ String _seriesIdDifferentFrom(dynamic current) {
   const base = '__walkthrough-generated-series__';
   if (current != base) return base;
   return '${base}next';
-}
-
-String? _bindingAudienceAccountId({
-  required LoomWorkflowStateMachine machine,
-  required LoomWorkflowSeedInstance instance,
-  required RenderBinding binding,
-  required String roleId,
-}) {
-  if (binding.role != 'actor') return null;
-  final fieldKeys = <String>{
-    if (machine.visibility.readGuard?.actorEqualsField case final actorField?)
-      actorField.key,
-    for (final transition in machine.transitions)
-      if (transition.guard.actorEqualsField case final actorField?)
-        actorField.key,
-  };
-  for (final fieldKey in fieldKeys) {
-    final fanId = instance.instanceData[fieldKey];
-    if (fanId is String && _fanIdMatchesRole(fanId, roleId)) return fanId;
-  }
-  final creator = instance.createdByFanId;
-  return creator != null && _fanIdMatchesRole(creator, roleId) ? creator : null;
 }
 
 bool _transitionCanBeSelectedForRole({

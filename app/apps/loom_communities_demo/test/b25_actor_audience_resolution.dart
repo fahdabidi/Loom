@@ -1,0 +1,85 @@
+import 'package:loom_workflow_engine/loom_workflow_engine.dart';
+
+/// An actor identity B25 may sign in as while exercising a shipped workflow.
+///
+/// B25 selection must use the same individual fan id and role id the App
+/// Shell gives the workflow engine. A role id alone is not an ownership rule.
+class B25ActorAudienceCandidate {
+  const B25ActorAudienceCandidate({required this.fanId, required this.roleId});
+
+  final String fanId;
+  final String roleId;
+}
+
+/// The actor candidates the rendering resolver accepts for [instance].
+///
+/// This deliberately delegates the ownership decision to
+/// [deriveInstanceRoles]. In particular, it must not use `createdByFanId` as
+/// a fallback when a workflow declares an `actorEqualsField`: the App Shell
+/// does not do so either.
+List<B25ActorAudienceCandidate> b25ResolvableActorAudienceCandidates({
+  required LoomWorkflowStateMachine machine,
+  required WorkflowInstance instance,
+  required Iterable<B25ActorAudienceCandidate> candidates,
+}) {
+  return [
+    for (final candidate in candidates)
+      if (deriveInstanceRoles(
+        machine,
+        instance,
+        viewerFanId: candidate.fanId,
+        viewerRoleId: candidate.roleId,
+      ).contains('actor'))
+        candidate,
+  ];
+}
+
+/// Resolves the identity B25 may use for an `audience: "actor"` binding.
+///
+/// The returned fan id is safe to hand to the UI because it was accepted by
+/// the renderer's own role resolver. Failure is synchronous and descriptive
+/// so a malformed seed cannot consume a full widget wait budget.
+String requireB25ActorBindingAudience({
+  required String workflowId,
+  required WorkflowInstance instance,
+  required String roleId,
+  required Iterable<B25ActorAudienceCandidate> candidates,
+  required LoomWorkflowStateMachine machine,
+}) {
+  final resolved = b25ResolvableActorAudienceCandidates(
+    machine: machine,
+    instance: instance,
+    candidates: candidates,
+  );
+  if (resolved.isNotEmpty) return resolved.first.fanId;
+
+  final actorEqualsField = _firstActorEqualsField(machine);
+  if (actorEqualsField != null &&
+      !instance.instanceData.containsKey(actorEqualsField)) {
+    throw StateError(
+      'B25 audience resolution failed promptly: workflow $workflowId, '
+      'instance ${instance.instanceId}, role $roleId, actorEqualsField '
+      '$actorEqualsField is absent from the instance data. '
+      'deriveInstanceRoles did not resolve an actor audience, so B25 will '
+      'not wait for a widget the renderer cannot show.',
+    );
+  }
+
+  throw StateError(
+    'B25 audience resolution failed promptly: workflow $workflowId, '
+    'instance ${instance.instanceId}, role $roleId. '
+    'deriveInstanceRoles did not resolve an actor audience for the selected '
+    'identity.',
+  );
+}
+
+/// Mirrors only the field declaration order used by [deriveInstanceRoles] to
+/// make a failed audience diagnostic actionable. It never makes an audience
+/// decision; that decision is exclusively delegated to the shared resolver.
+String? _firstActorEqualsField(LoomWorkflowStateMachine machine) {
+  for (final transition in machine.transitions) {
+    final actorEqualsField = transition.guard.actorEqualsField;
+    if (actorEqualsField != null) return actorEqualsField.key;
+  }
+  return null;
+}

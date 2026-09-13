@@ -219,6 +219,29 @@ void main() {
       find.byKey(const ValueKey('generic-instance-card-nom-selected-1')),
       findsOneWidget,
     );
+
+    await seedEvidenceAccounts(tester, target, const [
+      LoomAccount(
+        accountId: 'book-member',
+        displayName: 'Seeded Book Member',
+        roleId: 'book-member',
+      ),
+    ]);
+    await signInEvidenceAccount(tester, 'Seeded Book Member');
+
+    await _selectTab(tester, 'books');
+    expect(
+      find.byKey(const ValueKey('engine-native-list-root-books')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('generic-instance-card-nom-draft-1')),
+      findsOneWidget,
+      reason:
+          'The creating member must be able to see their own nomination '
+          'draft; the separate non-owner assertion above cannot prove that '
+          'alone.',
+    );
   });
 }
 
