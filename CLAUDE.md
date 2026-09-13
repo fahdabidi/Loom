@@ -1824,8 +1824,22 @@ the command line, and a monitor that greps for a phase necessarily *contains* th
 
 Two agreeing checks felt like confirmation. They were the same bug twice.
 
-**The fix is structural, not vigilance.** When you launch something you intend to watch, capture its
-pid and use `kill -0 "$PID"`. A pid cannot match itself. Where a pid is unavailable, prefer a signal
+**The fix is structural, not vigilance — and it has to be specific about HOW, because the vague
+form is not enough.** I wrote "capture its pid and use `kill -0`" and then, one tick later,
+obtained that pid with `pgrep -f "[d]rivetest.sh"` — run from a shell whose own command line
+contained `drivetest.sh`. It matched itself, I tracked the wrong pid, and the monitor declared a
+healthy Gradle build dead. **Fourth instance in one session, the first three of which I had
+already written up.**
+
+So the rule is not "capture the pid" but **capture it from the launch itself**:
+
+    setsid nohup bash work.sh > out.log 2>&1 < /dev/null &
+    W=$!            # <- from the launch. Never pgrep for it afterwards.
+    disown
+
+`$!` cannot be wrong. Any search performed *after* launching runs in a shell that necessarily
+mentions what it is searching for. A pid cannot match itself; a `pgrep` for the thing you just
+started always can. Where a pid is unavailable, prefer a signal
 the *watched process writes* — a log marker, a progress file, a directory size — over anything that
 inspects the process table.
 
