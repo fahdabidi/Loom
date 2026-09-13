@@ -764,6 +764,39 @@ Three things generalize:
   because nothing ever ran it. Same family as the always-quiet guard: code that looks like handling
   and never executes is not handling.
 
+### "Fail fast" is not a complete instruction when one item fails inside a batch
+
+I wrote a ticket asking a walkthrough to **"fail fast with an explicit diagnostic"** instead of
+waiting 2m 45s for a widget that could never render. The agent did exactly that: it threw a
+`StateError` carrying a precise, correct message naming the workflow, the instance, the role and the
+missing field. Measured result — the stalls went to zero and the diagnosis became a single read.
+
+And the run still ended at the same row, because a throw **aborts all eighty workflows**. I had
+converted a slow death into a fast one. The agent built what I asked for; the gap was in the ask.
+
+**The distinction the ticket needed to make:** a defect that belongs to *one item in a batch* must
+change that item's **recorded outcome**, not the batch's **control flow**. "Fail fast" says when to
+stop waiting; it says nothing about what to stop. Write the second half explicitly:
+
+> record this row's outcome with the reason and **continue to the next row**
+
+and then assert the continuation in a test, because "it kept going" is exactly the property that is
+invisible in a single-row fixture.
+
+Two corollaries worth keeping:
+
+- **Give the new outcome its own name.** Reusing an existing one ("action unavailable") collapses two
+  different facts — *the row ran and the action was not offered* versus *the row could not be
+  attempted at all* — and the second must never be counted as evidence about the first.
+- **Say explicitly that a skipped-over row is not proven.** A row nobody could attempt has to land in
+  its own bucket with its own total, or a completion figure quietly absorbs it. This file already
+  records that a denominator nobody re-derives is how a wrong number survives; this is the numerator
+  version of the same hazard.
+
+The general shape: **when you ask for a failure to become louder or faster, say what it must not
+take down with it.** Diagnosis and throughput are independent properties, and improving one at the
+cost of the other reads as progress right up until you look at the totals.
+
 ### A fallback path is where a new capability silently fails to exist
 
 Found 2026-09-13. A fix added `ensureVisible` inside the readiness poll for **primary** action
