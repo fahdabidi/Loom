@@ -122,6 +122,7 @@ void main() {
         b25InteractionCatalog,
       );
       var completedWorkflowEvidenceEntries = 0;
+      var blockedByAudienceWorkflowEvidenceEntries = 0;
 
       void recordEvidenceEntry(Map<String, Object?> entry) {
         entries.add(entry);
@@ -136,9 +137,14 @@ void main() {
         required String workflowId,
         String? communityName,
         String? screenshotName,
+        bool blockedByAudience = false,
       }) {
         if (status == 'workflow-complete') {
-          completedWorkflowEvidenceEntries += 1;
+          if (blockedByAudience) {
+            blockedByAudienceWorkflowEvidenceEntries += 1;
+          } else {
+            completedWorkflowEvidenceEntries += 1;
+          }
           bodyWatch.beat(
             lastCompletedStep:
                 'phase $phase, community ${communityName ?? '(unknown)'}, '
@@ -162,6 +168,8 @@ void main() {
           if (communityName != null) 'communityName': communityName,
           if (screenshotName != null) 'screenshotName': screenshotName,
           'completedWorkflows': completedWorkflowEvidenceEntries,
+          'blockedByAudienceWorkflows':
+              blockedByAudienceWorkflowEvidenceEntries,
           'totalWorkflows': totalWorkflowEvidenceEntries,
         });
       }
@@ -172,6 +180,8 @@ void main() {
           'phase': _phaseForScreenshotName(name),
           'screenshotName': name,
           'completedWorkflows': completedWorkflowEvidenceEntries,
+          'blockedByAudienceWorkflows':
+              blockedByAudienceWorkflowEvidenceEntries,
           'totalWorkflows': totalWorkflowEvidenceEntries,
         });
         return _capture(
@@ -317,32 +327,47 @@ void main() {
             workflowId: productDocRow.workflowId,
             communityName: target.communityName,
           );
-          final walkthroughResult =
-              shippedPackage.experience.workflowDefinitions!.containsKey(
-                productDocRow.workflowId,
-              )
-              ? await _runB25ShippedWorkflowWalkthrough(
-                  tester: tester,
-                  target: target,
-                  package: shippedPackage,
-                  bodyWatch: bodyWatch,
-                  selector: _shippedWorkflowSelector(
+          late final _B25WalkthroughResult walkthroughResult;
+          if (!shippedPackage.experience.workflowDefinitions!.containsKey(
+            productDocRow.workflowId,
+          )) {
+            walkthroughResult = await _captureMissingB25PackageWorkflow(
+              tester: tester,
+              target: target,
+              package: shippedPackage,
+              bodyWatch: bodyWatch,
+              b25Model: productDocRow,
+              capture: capture,
+            );
+          } else {
+            final audienceSelection = selectB25ActorAudienceRow(
+              () => _shippedWorkflowSelector(
+                target: target,
+                package: shippedPackage,
+                workflowType: productDocRow.workflowId,
+                b25Model: productDocRow,
+              ),
+            );
+            final selector = audienceSelection.selector;
+            walkthroughResult = selector == null
+                ? await _recordB25AudienceBlockedWorkflow(
+                    tester: tester,
+                    target: target,
+                    b25Model: productDocRow,
+                    reason: audienceSelection.blockedReason!,
+                    cause: audienceSelection.blockedCause!,
+                    capture: capture,
+                  )
+                : await _runB25ShippedWorkflowWalkthrough(
+                    tester: tester,
                     target: target,
                     package: shippedPackage,
-                    workflowType: productDocRow.workflowId,
+                    bodyWatch: bodyWatch,
+                    selector: selector,
                     b25Model: productDocRow,
-                  ),
-                  b25Model: productDocRow,
-                  capture: capture,
-                )
-              : await _captureMissingB25PackageWorkflow(
-                  tester: tester,
-                  target: target,
-                  package: shippedPackage,
-                  bodyWatch: bodyWatch,
-                  b25Model: productDocRow,
-                  capture: capture,
-                );
+                    capture: capture,
+                  );
+          }
           await assertB25CommunityRowSurface(
             tester: tester,
             target: target,
@@ -368,6 +393,13 @@ void main() {
               productDocRow.resultAndReceiverState,
             ],
             'screenshotNames': walkthroughResult.screenshotNames,
+            'b25RowOutcome': walkthroughResult.rowOutcome,
+            if (walkthroughResult.blockedByAudienceReason != null)
+              'blockedByAudienceReason':
+                  walkthroughResult.blockedByAudienceReason,
+            if (walkthroughResult.blockedByAudienceCause != null)
+              'blockedByAudienceCause':
+                  walkthroughResult.blockedByAudienceCause,
             'b25ActionProofStatus': walkthroughResult.actionProofStatus,
             'visiblePrimaryActions': walkthroughResult.visiblePrimaryActions,
             'visibleAlternateActions':
@@ -375,13 +407,16 @@ void main() {
             'availableSupplementaryActions':
                 walkthroughResult.availableSupplementaryActions,
             'productFindings': walkthroughResult.productFindings,
-            'status': 'pass',
+            'status': walkthroughResult.isBlockedByAudience
+                ? 'blocked_by_audience'
+                : 'pass',
           });
           emitProgress(
             'workflow-complete',
             phase: target.phase,
             workflowId: productDocRow.workflowId,
             communityName: target.communityName,
+            blockedByAudience: walkthroughResult.isBlockedByAudience,
           );
         }
 
@@ -982,12 +1017,15 @@ void main() {
       screenshotCapture.finish();
       binding.reportData!['workflowEvidenceSchemaVersion'] = 2;
       binding.reportData!['workflowEvidence'] = entries;
+      binding.reportData!['b25WalkthroughSummary'] =
+          _summarizeB25WalkthroughRows(entries);
       binding.reportData!['screenshotVisibleTextByName'] =
           screenshotVisibleTextByName;
       binding.reportData!['walkthroughStatus'] = 'pass';
       _emitCaptureProgress({
         'status': 'run-complete',
         'completedWorkflows': completedWorkflowEvidenceEntries,
+        'blockedByAudienceWorkflows': blockedByAudienceWorkflowEvidenceEntries,
         'totalWorkflows': totalWorkflowEvidenceEntries,
       });
     }
@@ -1321,6 +1359,104 @@ bool _includeWorkflowShard(int workflowOrdinal) {
     return true;
   }
   return workflowOrdinal % _workflowShardCount == _workflowShardIndex;
+}
+
+Map<String, Object?> _summarizeB25WalkthroughRows(
+  Iterable<Map<String, Object?>> entries,
+) {
+  final rows = entries
+      .where((entry) => entry['b25RowOutcome'] is String)
+      .toList(growable: false);
+  final blockedRows = rows
+      .where((entry) => entry['b25RowOutcome'] == 'blocked_by_audience')
+      .toList(growable: false);
+  final primaryUnavailableRows = rows
+      .where((entry) => entry['b25RowOutcome'] == 'primary_action_unavailable')
+      .toList(growable: false);
+  final provenRows = rows
+      .where(
+        (entry) =>
+            entry['b25RowOutcome'] != 'blocked_by_audience' &&
+            entry['b25ActionProofStatus'] == 'pass',
+      )
+      .toList(growable: false);
+  final completedRows = rows
+      .where((entry) => entry['b25RowOutcome'] != 'blocked_by_audience')
+      .toList(growable: false);
+  final blockedByCommunity = <String, int>{};
+  final blockedByCause = <String, List<Map<String, Object?>>>{};
+  for (final row in blockedRows) {
+    final communityName = row['communityName'] as String? ?? '(unknown)';
+    blockedByCommunity.update(
+      communityName,
+      (count) => count + 1,
+      ifAbsent: () => 1,
+    );
+    final cause = row['blockedByAudienceCause'] as String? ?? '(unknown)';
+    blockedByCause.putIfAbsent(cause, () => <Map<String, Object?>>[]).add(row);
+  }
+  final sortedCommunities = blockedByCommunity.keys.toList()..sort();
+  final sortedCauses = blockedByCause.keys.toList()..sort();
+  return <String, Object?>{
+    'recordedRows': rows.length,
+    'provenRows': provenRows.length,
+    'completedRows': completedRows.length,
+    'primaryActionUnavailableRows': primaryUnavailableRows.length,
+    'blockedByAudienceRows': blockedRows.length,
+    'blockedByAudienceRowsByCommunity': <String, int>{
+      for (final communityName in sortedCommunities)
+        communityName: blockedByCommunity[communityName]!,
+    },
+    'blockedByAudienceReasonGroups': <Map<String, Object?>>[
+      for (final cause in sortedCauses)
+        <String, Object?>{
+          'cause': cause,
+          'count': blockedByCause[cause]!.length,
+          'rows': <Map<String, Object?>>[
+            for (final row in blockedByCause[cause]!)
+              <String, Object?>{
+                'communityName': row['communityName'],
+                'workflowId': row['workflowId'],
+                'role': row['role'],
+                'reason': row['blockedByAudienceReason'],
+              },
+          ],
+        },
+    ],
+  };
+}
+
+Future<_B25WalkthroughResult> _recordB25AudienceBlockedWorkflow({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required B25ProductDocInteractionModel b25Model,
+  required String reason,
+  required String cause,
+  required Future<void> Function(String name) capture,
+}) async {
+  // There is deliberately no screenshot here. The package cannot render this
+  // row for the selected role, so capturing a neighbouring screen would be
+  // false evidence. The before and after boundary assertions instead prove the
+  // walkthrough stayed on the expected community and moved on.
+  await assertB25CommunityRowSurface(
+    tester: tester,
+    target: target,
+    workflowId: b25Model.workflowId,
+    role: b25Model.role,
+    boundary: 'blocked-by-audience',
+    captureDiagnostic: capture,
+  );
+  return _B25WalkthroughResult(
+    screenshotNames: const <String>[],
+    actionProofStatus: 'blocked_by_audience',
+    visiblePrimaryActions: const <String>[],
+    visibleAlternateActions: const <String>[],
+    availableSupplementaryActions: const <String>[],
+    productFindings: <String>[reason],
+    rowOutcome: 'blocked_by_audience',
+    blockedByAudienceReason: reason,
+    blockedByAudienceCause: cause,
+  );
 }
 
 Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
@@ -2384,6 +2520,9 @@ class _B25WalkthroughResult {
     required this.visibleAlternateActions,
     required this.availableSupplementaryActions,
     required this.productFindings,
+    this.rowOutcome = 'attempted',
+    this.blockedByAudienceReason,
+    this.blockedByAudienceCause,
   });
 
   final List<String> screenshotNames;
@@ -2392,6 +2531,11 @@ class _B25WalkthroughResult {
   final List<String> visibleAlternateActions;
   final List<String> availableSupplementaryActions;
   final List<String> productFindings;
+  final String rowOutcome;
+  final String? blockedByAudienceReason;
+  final String? blockedByAudienceCause;
+
+  bool get isBlockedByAudience => rowOutcome == 'blocked_by_audience';
 }
 
 _B25WalkthroughResult _b25WalkthroughResult({
@@ -2431,6 +2575,9 @@ _B25WalkthroughResult _b25WalkthroughResult({
           .toSet()
           .toList()
         ..sort();
+  final rowOutcome = primaryUnavailableReason == null
+      ? 'attempted'
+      : 'primary_action_unavailable';
   final findings = <String>[
     if (primaryUnavailableReason != null) primaryUnavailableReason,
     if (supplementaryActions.isNotEmpty)
@@ -2455,6 +2602,7 @@ _B25WalkthroughResult _b25WalkthroughResult({
     visibleAlternateActions: visibleAlternate,
     availableSupplementaryActions: supplementaryActions,
     productFindings: findings,
+    rowOutcome: rowOutcome,
   );
 }
 

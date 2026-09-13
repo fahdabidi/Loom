@@ -81,6 +81,9 @@ class WorkflowUiEvidenceWriter {
         .whereType<Map<String, dynamic>>()
         .map((entry) => Map<String, dynamic>.from(entry))
         .toList(growable: false);
+    final b25RowSummary = _summarizeB25Rows(entries);
+    final b25BlockedAudienceReasonGroups =
+        _formatB25BlockedAudienceReasonGroups(b25RowSummary);
     final requestedPhases = _stringList(data?['requestedPhases']);
     final phases = <String>{
       ...requestedPhases,
@@ -245,6 +248,7 @@ class WorkflowUiEvidenceWriter {
         }
         writtenEntries.add({
           ...entry,
+          'recordedRowStatus': entry['status'],
           'status': phaseStatus,
           'assertionStatus': entry['status'] == 'pass' ? 'pass' : 'fail',
           'screenshotStatus': phaseScreenshotStatus,
@@ -269,6 +273,7 @@ class WorkflowUiEvidenceWriter {
         'commandOutputPath': commandOutputPath,
         'expectedWorkflowCount': expectedPhaseWorkflowCount,
         'workflowCount': phaseEntries.length,
+        'b25RowSummary': _summarizeB25Rows(phaseEntries),
         'requestedScreenshotCount': phaseExpectedNames.length,
         'screenshotCount': phaseCapturedCount,
         'missingScreenshotCount': phaseMissingNames.length,
@@ -327,6 +332,7 @@ class WorkflowUiEvidenceWriter {
           (total, count) => total + count,
         ),
         'workflowCount': entries.length,
+        'b25RowSummary': b25RowSummary,
         'requestedScreenshotCount': expectedScreenshotNames.length,
         'screenshotCount': _screenshotPaths.length,
         'missingScreenshotCount': missingScreenshots.length,
@@ -346,6 +352,12 @@ class WorkflowUiEvidenceWriter {
       'WORKFLOW_EVIDENCE_RESULT status=$runStatus '
       'walkthroughStatus=${walkthroughPassed ? 'pass' : 'fail'} '
       'screenshotStatus=$screenshotStatus workflows=${entries.length} '
+      'b25Proven=${b25RowSummary['provenRows']}/'
+      '${b25RowSummary['recordedRows']} '
+      'b25PrimaryActionUnavailable='
+      '${b25RowSummary['primaryActionUnavailableRows']} '
+      'b25BlockedByAudience=${b25RowSummary['blockedByAudienceRows']} '
+      'b25BlockedByAudienceReasonGroups=$b25BlockedAudienceReasonGroups '
       'screenshots=${_screenshotPaths.length}/${expectedScreenshotNames.length} '
       'completionGateEligible=${runStatus == 'pass'}',
     );
@@ -360,6 +372,85 @@ class WorkflowUiEvidenceWriter {
 
   File get _aggregateFile =>
       File('${evidenceRoot.path}/B20/all-workflow-ui-evidence.json');
+}
+
+String _formatB25BlockedAudienceReasonGroups(
+  Map<String, Object?> summary,
+) {
+  final groups =
+      summary['blockedByAudienceReasonGroups'] as List<Map<String, Object?>>;
+  if (groups.isEmpty) {
+    return 'none';
+  }
+  return groups
+      .map(
+        (group) =>
+            '${(group['cause']! as String).replaceAll(' ', '_')}:${group['count']}',
+      )
+      .join(',');
+}
+
+Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
+  final rows = entries
+      .where((entry) => entry['b25RowOutcome'] is String)
+      .toList(growable: false);
+  final blockedRows = rows
+      .where((entry) => entry['b25RowOutcome'] == 'blocked_by_audience')
+      .toList(growable: false);
+  final primaryUnavailableRows = rows
+      .where((entry) => entry['b25RowOutcome'] == 'primary_action_unavailable')
+      .toList(growable: false);
+  final provenRows = rows
+      .where(
+        (entry) =>
+            entry['b25RowOutcome'] != 'blocked_by_audience' &&
+            entry['b25ActionProofStatus'] == 'pass',
+      )
+      .toList(growable: false);
+  final completedRows = rows
+      .where((entry) => entry['b25RowOutcome'] != 'blocked_by_audience')
+      .toList(growable: false);
+  final blockedByCommunity = <String, int>{};
+  final blockedByCause = <String, List<Map<String, dynamic>>>{};
+  for (final row in blockedRows) {
+    final communityName = row['communityName'] as String? ?? '(unknown)';
+    blockedByCommunity.update(
+      communityName,
+      (count) => count + 1,
+      ifAbsent: () => 1,
+    );
+    final cause = row['blockedByAudienceCause'] as String? ?? '(unknown)';
+    blockedByCause.putIfAbsent(cause, () => <Map<String, dynamic>>[]).add(row);
+  }
+  final sortedCommunities = blockedByCommunity.keys.toList()..sort();
+  final sortedCauses = blockedByCause.keys.toList()..sort();
+  return <String, Object?>{
+    'recordedRows': rows.length,
+    'provenRows': provenRows.length,
+    'completedRows': completedRows.length,
+    'primaryActionUnavailableRows': primaryUnavailableRows.length,
+    'blockedByAudienceRows': blockedRows.length,
+    'blockedByAudienceRowsByCommunity': <String, int>{
+      for (final communityName in sortedCommunities)
+        communityName: blockedByCommunity[communityName]!,
+    },
+    'blockedByAudienceReasonGroups': <Map<String, Object?>>[
+      for (final cause in sortedCauses)
+        <String, Object?>{
+          'cause': cause,
+          'count': blockedByCause[cause]!.length,
+          'rows': <Map<String, Object?>>[
+            for (final row in blockedByCause[cause]!)
+              <String, Object?>{
+                'communityName': row['communityName'],
+                'workflowId': row['workflowId'],
+                'role': row['role'],
+                'reason': row['blockedByAudienceReason'],
+              },
+          ],
+        },
+    ],
+  };
 }
 
 Map<String, Object?> _deviceFields(Map<String, dynamic>? data) => {
@@ -449,26 +540,26 @@ Map<String, List<_SystemDialogFinding>> _detectSystemDialogFrames({
       final phase = _phaseFor(name, null);
       final deviceFindings = deviceFindingsByPhase.putIfAbsent(
         phase,
-        () => readDeviceDialogFindings(
-          evidenceRoot: evidenceRoot,
-          phase: phase,
-        ),
+        () =>
+            readDeviceDialogFindings(evidenceRoot: evidenceRoot, phase: phase),
       );
       final deviceFinding = deviceFindings[name];
       if (deviceFinding != null) {
-        findings.putIfAbsent(name, () => <_SystemDialogFinding>[]).add(
-          _SystemDialogFinding(
-            frame: name,
-            source: 'device',
-            detected:
-                '${deviceFinding.kind} at ${deviceFinding.stage}: '
-                '${deviceFinding.detail}',
-            workflowId: workflowId,
-            role: role,
-            appId: appId,
-            communityId: communityId,
-          ),
-        );
+        findings
+            .putIfAbsent(name, () => <_SystemDialogFinding>[])
+            .add(
+              _SystemDialogFinding(
+                frame: name,
+                source: 'device',
+                detected:
+                    '${deviceFinding.kind} at ${deviceFinding.stage}: '
+                    '${deviceFinding.detail}',
+                workflowId: workflowId,
+                role: role,
+                appId: appId,
+                communityId: communityId,
+              ),
+            );
       }
 
       // SECONDARY: an in-app dialog rendered by Flutter itself.
@@ -477,17 +568,19 @@ Map<String, List<_SystemDialogFinding>> _detectSystemDialogFrames({
       if (marker == null) {
         continue;
       }
-      findings.putIfAbsent(name, () => <_SystemDialogFinding>[]).add(
-        _SystemDialogFinding(
-          frame: name,
-          source: 'flutter-text',
-          detected: marker,
-          workflowId: workflowId,
-          role: role,
-          appId: appId,
-          communityId: communityId,
-        ),
-      );
+      findings
+          .putIfAbsent(name, () => <_SystemDialogFinding>[])
+          .add(
+            _SystemDialogFinding(
+              frame: name,
+              source: 'flutter-text',
+              detected: marker,
+              workflowId: workflowId,
+              role: role,
+              appId: appId,
+              communityId: communityId,
+            ),
+          );
     }
   }
   return findings;

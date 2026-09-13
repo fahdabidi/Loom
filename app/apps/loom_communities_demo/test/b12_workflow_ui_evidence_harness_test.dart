@@ -25,8 +25,7 @@ void main() {
       final responseData = _responseData(screenshotCaptureStatus: 'complete');
       (responseData['screenshotVisibleTextByName'] = <String, String>{
         ..._harnessVisibleTexts,
-        'B12_harness_action':
-            'System UI isn\'t responding  Close app  Wait',
+        'B12_harness_action': 'System UI isn\'t responding  Close app  Wait',
       });
       responseData['workflowEvidence'] = <Map<String, Object?>>[
         <String, Object?>{
@@ -42,18 +41,17 @@ void main() {
       await expectLater(
         writer.writeEvidence(responseData),
         throwsA(
-          isA<StateError>()
-              .having(
-                (error) => error.message,
-                'message',
-                allOf(
-                  contains('System dialog detected'),
-                  contains('B12_harness_action'),
-                  contains("isn't responding"),
-                  contains('workflow-ui-evidence-harness'),
-                  contains('harness-member'),
-                ),
-              )
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            allOf(
+              contains('System dialog detected'),
+              contains('B12_harness_action'),
+              contains("isn't responding"),
+              contains('workflow-ui-evidence-harness'),
+              contains('harness-member'),
+            ),
+          ),
         ),
       );
 
@@ -86,11 +84,10 @@ void main() {
         }
 
         final responseData = _responseData(screenshotCaptureStatus: 'complete');
-        (responseData['screenshotVisibleTextByName'] =
-            <String, String>{
-              ..._harnessVisibleTexts,
-              'B12_harness_action': 'Event is full  Join waitlist',
-            });
+        (responseData['screenshotVisibleTextByName'] = <String, String>{
+          ..._harnessVisibleTexts,
+          'B12_harness_action': 'Event is full  Join waitlist',
+        });
 
         await writer.writeEvidence(responseData);
 
@@ -100,10 +97,7 @@ void main() {
         expect(aggregate['screenshotStatus'], 'complete');
         expect(aggregate['completionGateEligible'], isTrue);
         expect(aggregate['screenshotCount'], 3);
-        expect(
-          (aggregate['missingScreenshotNames'] as List<dynamic>),
-          isEmpty,
-        );
+        expect((aggregate['missingScreenshotNames'] as List<dynamic>), isEmpty);
         expect(aggregate.containsKey('failureReason'), isFalse);
       } finally {
         await temporaryRoot.delete(recursive: true);
@@ -135,7 +129,8 @@ void main() {
           screenshotName: 'B12_harness_action',
           finding: const DeviceDialogFinding(
             kind: 'system-dialog',
-            detail: 'an Android system dialog window is present: '
+            detail:
+                'an Android system dialog window is present: '
                 '"Application Not Responding: com.google.android.gms"',
             focusedWindow: 'Application Not Responding: com.google.android.gms',
             stage: 'after-capture',
@@ -219,6 +214,139 @@ void main() {
       expect(aggregate['status'], 'pass');
       expect(aggregate['screenshotCount'], 3);
       expect(aggregate.containsKey('failureReason'), isFalse);
+    } finally {
+      await temporaryRoot.delete(recursive: true);
+    }
+  });
+
+  test('an audience-blocked row has its own unproven summary bucket', () async {
+    final temporaryRoot = await Directory.systemTemp.createTemp(
+      'loom-workflow-evidence-audience-blocked-',
+    );
+    try {
+      final writer = WorkflowUiEvidenceWriter(
+        evidenceRoot: temporaryRoot,
+        commandOutputPath: 'audience-blocked.log',
+      );
+      const blockedAudienceRows =
+          <({String workflowId, String instanceId, String actorEqualsField})>[
+            (
+              workflowId: 'book-nomination',
+              instanceId: 'nom-draft-1',
+              actorEqualsField: 'nominatorFanId',
+            ),
+            (
+              workflowId: 'book-vote-response',
+              instanceId: 'vresp-2',
+              actorEqualsField: 'voterFanId',
+            ),
+            (
+              workflowId: 'book-shared-library-item',
+              instanceId: 'item-draft',
+              actorEqualsField: 'ownerFanId',
+            ),
+            (
+              workflowId: 'book-search-ai-digest',
+              instanceId: 'digest-draft',
+              actorEqualsField: 'submitterFanId',
+            ),
+          ];
+      for (final name in _harnessScreenshotNames) {
+        await writer.recordScreenshot(name, <int>[1, 2, 3]);
+      }
+      final responseData = _responseData(screenshotCaptureStatus: 'complete')
+        ..['expectedWorkflowCountByPhase'] = <String, int>{
+          'B12': 2 + blockedAudienceRows.length,
+        }
+        ..['workflowEvidence'] = <Map<String, Object?>>[
+          <String, Object?>{
+            'phase': 'B12',
+            'appId': 'ext_book_club',
+            'communityName': 'Book Club',
+            'workflowId': 'book-available',
+            'role': 'book-member',
+            'screenshotNames': _harnessScreenshotNames,
+            'b25RowOutcome': 'attempted',
+            'b25ActionProofStatus': 'pass',
+            'status': 'pass',
+          },
+          <String, Object?>{
+            'phase': 'B12',
+            'appId': 'ext_book_club',
+            'communityName': 'Book Club',
+            'workflowId': 'book-guarded-off',
+            'role': 'book-member',
+            'screenshotNames': _harnessScreenshotNames,
+            'b25RowOutcome': 'primary_action_unavailable',
+            'b25ActionProofStatus': 'fail',
+            'status': 'pass',
+          },
+          for (final blocked in blockedAudienceRows)
+            <String, Object?>{
+              'phase': 'B12',
+              'appId': 'ext_book_club',
+              'communityName': 'Book Club',
+              'workflowId': blocked.workflowId,
+              'role': 'book-member',
+              'screenshotNames': const <String>[],
+              'b25RowOutcome': 'blocked_by_audience',
+              'b25ActionProofStatus': 'blocked_by_audience',
+              'blockedByAudienceCause':
+                  'actorEqualsField absent from the instance data',
+              'blockedByAudienceReason':
+                  'B25 audience resolution failed promptly: workflow '
+                  '${blocked.workflowId}, instance ${blocked.instanceId}, role '
+                  'book-member, actorEqualsField ${blocked.actorEqualsField} '
+                  'is absent from the instance data. deriveInstanceRoles did '
+                  'not resolve an actor audience, so B25 will not wait for a '
+                  'widget the renderer cannot show.',
+              'status': 'blocked_by_audience',
+            },
+        ];
+
+      await writer.writeEvidence(responseData);
+
+      final aggregate = await _readAggregate(temporaryRoot);
+      final summary = aggregate['b25RowSummary'] as Map<String, dynamic>;
+      expect(aggregate['status'], 'fail');
+      expect(summary['recordedRows'], 6);
+      expect(summary['provenRows'], 1);
+      expect(summary['completedRows'], 2);
+      expect(summary['primaryActionUnavailableRows'], 1);
+      expect(summary['blockedByAudienceRows'], 4);
+      expect(summary['blockedByAudienceRowsByCommunity'], {'Book Club': 4});
+      final reasonGroups =
+          summary['blockedByAudienceReasonGroups'] as List<dynamic>;
+      expect(reasonGroups, hasLength(1));
+      expect(
+        (reasonGroups.single as Map<String, dynamic>)['cause'],
+        'actorEqualsField absent from the instance data',
+      );
+      expect((reasonGroups.single as Map<String, dynamic>)['count'], 4);
+      expect(
+        ((reasonGroups.single as Map<String, dynamic>)['rows'] as List<dynamic>)
+            .map((row) => (row as Map<String, dynamic>)['reason'])
+            .join(' '),
+        allOf(
+          contains('nominatorFanId'),
+          contains('voterFanId'),
+          contains('ownerFanId'),
+          contains('submitterFanId'),
+        ),
+      );
+
+      final phaseManifest =
+          jsonDecode(
+                await File(
+                  '${temporaryRoot.path}/B12/workflow-ui-evidence.json',
+                ).readAsString(),
+              )
+              as Map<String, dynamic>;
+      final blockedRow = (phaseManifest['workflows'] as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .firstWhere((row) => row['b25RowOutcome'] == 'blocked_by_audience');
+      expect(blockedRow['recordedRowStatus'], 'blocked_by_audience');
+      expect(blockedRow['b25ActionProofStatus'], 'blocked_by_audience');
     } finally {
       await temporaryRoot.delete(recursive: true);
     }

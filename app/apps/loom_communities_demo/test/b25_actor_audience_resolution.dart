@@ -11,6 +11,74 @@ class B25ActorAudienceCandidate {
   final String roleId;
 }
 
+/// The one resolver failure that means B25 cannot even attempt this row.
+///
+/// Keeping this distinct from a generic [StateError] lets the walkthrough
+/// record a malformed actor audience as a blocked row while preserving loud
+/// failures for every other selector defect.
+class B25ActorAudienceResolutionFailure extends StateError {
+  B25ActorAudienceResolutionFailure({
+    required this.workflowId,
+    required this.instanceId,
+    required this.roleId,
+    required this.actorEqualsField,
+  }) : super(
+         'B25 audience resolution failed promptly: workflow $workflowId, '
+         'instance $instanceId, role $roleId, actorEqualsField '
+         '$actorEqualsField is absent from the instance data. '
+         'deriveInstanceRoles did not resolve an actor audience, so B25 will '
+         'not wait for a widget the renderer cannot show.',
+       );
+
+  static const absentActorEqualsFieldCause =
+      'actorEqualsField absent from the instance data';
+
+  final String workflowId;
+  final String instanceId;
+  final String roleId;
+  final String actorEqualsField;
+}
+
+/// The selector result for one row with an `audience: "actor"` binding.
+///
+/// A blocked result is deliberately not a substitute selector. Callers must
+/// record it as `blocked_by_audience`, not try a fallback identity or action.
+class B25ActorAudienceRowSelection<T> {
+  const B25ActorAudienceRowSelection.selected(this.selector)
+    : blockedReason = null,
+      blockedCause = null;
+
+  const B25ActorAudienceRowSelection.blocked({
+    required this.blockedReason,
+    required this.blockedCause,
+  }) : selector = null;
+
+  final T? selector;
+  final String? blockedReason;
+  final String? blockedCause;
+
+  bool get isBlockedByAudience => blockedReason != null;
+}
+
+/// Runs one B25 selector and converts only a known absent actor identity into
+/// a row-local blocked result.
+///
+/// All other errors propagate. In particular, this is not a silent fallback
+/// for an unrelated malformed package, a missing workflow, or a bad tab.
+B25ActorAudienceRowSelection<T> selectB25ActorAudienceRow<T>(
+  T Function() select,
+) {
+  try {
+    return B25ActorAudienceRowSelection<T>.selected(select());
+  } on B25ActorAudienceResolutionFailure catch (error) {
+    return B25ActorAudienceRowSelection<T>.blocked(
+      blockedReason: error.message,
+      blockedCause:
+          B25ActorAudienceResolutionFailure.absentActorEqualsFieldCause,
+    );
+  }
+}
+
 /// The actor candidates the rendering resolver accepts for [instance].
 ///
 /// This deliberately delegates the ownership decision to
@@ -56,12 +124,11 @@ String requireB25ActorBindingAudience({
   final actorEqualsField = _firstActorEqualsField(machine);
   if (actorEqualsField != null &&
       !instance.instanceData.containsKey(actorEqualsField)) {
-    throw StateError(
-      'B25 audience resolution failed promptly: workflow $workflowId, '
-      'instance ${instance.instanceId}, role $roleId, actorEqualsField '
-      '$actorEqualsField is absent from the instance data. '
-      'deriveInstanceRoles did not resolve an actor audience, so B25 will '
-      'not wait for a widget the renderer cannot show.',
+    throw B25ActorAudienceResolutionFailure(
+      workflowId: workflowId,
+      instanceId: instance.instanceId,
+      roleId: roleId,
+      actorEqualsField: actorEqualsField,
     );
   }
 
