@@ -176,6 +176,125 @@ void main() {
   );
 
   testWidgets(
+    'a B25 row boundary waits for its expected picker to become tappable',
+    (WidgetTester tester) async {
+      final target = loomEvidenceTargets.firstWhere(
+        (target) => target.extensionId == 'ext_garden_club',
+      );
+      final capturedDiagnostics = <String>[];
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await installMetadataEvidenceTarget(tester, target);
+      await openEvidenceTarget(tester, target);
+
+      final blocking = ValueNotifier(true);
+      final blockingOverlay = OverlayEntry(
+        builder: (context) => Positioned.fill(
+          child: ValueListenableBuilder<bool>(
+            valueListenable: blocking,
+            builder: (context, absorbing, child) =>
+                AbsorbPointer(absorbing: absorbing, child: child),
+            child: const SizedBox.expand(),
+          ),
+        ),
+      );
+      Overlay.of(
+        tester.element(evidenceTargetRoute(target)),
+      ).insert(blockingOverlay);
+      await tester.pump();
+      var readinessPolls = 0;
+      try {
+        await assertB25CommunityRowSurface(
+          tester: tester,
+          target: target,
+          workflowId: 'garden-event-rsvp',
+          role: 'member',
+          boundary: 'before',
+          captureDiagnostic: (name) async => capturedDiagnostics.add(name),
+          onReadinessPoll: () {
+            readinessPolls += 1;
+            if (readinessPolls == 2) blocking.value = false;
+          },
+        );
+
+        expect(capturedDiagnostics, isEmpty);
+        expect(readinessPolls, 2);
+      } finally {
+        blockingOverlay.remove();
+        blocking.dispose();
+      }
+    },
+  );
+
+  testWidgets(
+    'a B25 row boundary names its picker and wait when it never becomes '
+    'interactable',
+    (WidgetTester tester) async {
+      final target = loomEvidenceTargets.firstWhere(
+        (target) => target.extensionId == 'ext_garden_club',
+      );
+      final capturedDiagnostics = <String>[];
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await installMetadataEvidenceTarget(tester, target);
+      await openEvidenceTarget(tester, target);
+
+      final blockingOverlay = OverlayEntry(
+        builder: (context) => const Positioned.fill(
+          child: AbsorbPointer(child: SizedBox.expand()),
+        ),
+      );
+      Overlay.of(
+        tester.element(evidenceTargetRoute(target)),
+      ).insert(blockingOverlay);
+      addTearDown(blockingOverlay.remove);
+
+      final start = DateTime.utc(2026, 1, 1);
+      var nowCalls = 0;
+      DateTime expireAfterFirstReadinessCheck() {
+        nowCalls += 1;
+        return nowCalls == 1
+            ? start
+            : start.add(WalkthroughWaitBudget.defaultInnerWaitTimeout);
+      }
+
+      await expectLater(
+        () => assertB25CommunityRowSurface(
+          tester: tester,
+          target: target,
+          workflowId: 'garden-event-rsvp',
+          role: 'member',
+          boundary: 'before',
+          captureDiagnostic: (name) async => capturedDiagnostics.add(name),
+          now: expireAfterFirstReadinessCheck,
+        ),
+        throwsA(
+          isA<Object>().having(
+            (error) => error.toString(),
+            'picker readiness failure',
+            allOf(
+              contains(
+                'B25 actor identity picker never became interactable before '
+                'garden-event-rsvp/member',
+              ),
+              contains('picker actor-identity-picker-button'),
+              contains(
+                'Waited ${formatWaitDuration(WalkthroughWaitBudget.defaultInnerWaitTimeout)}',
+              ),
+              isNot(contains('B25 surface mismatch')),
+            ),
+          ),
+        ),
+      );
+      expect(
+        capturedDiagnostics,
+        contains(
+          '${target.phase}_${target.extensionId}_garden-event-rsvp_member_'
+          'PICKER_NOT_INTERACTABLE_BEFORE',
+        ),
+      );
+    },
+  );
+
+  testWidgets(
     'a B25 row boundary fails loudly when a blocking dialog covers its '
     'community surface',
     (WidgetTester tester) async {
@@ -233,6 +352,12 @@ void main() {
           '${target.phase}_${target.extensionId}_garden-tool-loan_member_'
           'SURFACE_MISMATCH_AFTER',
         ),
+      );
+      expect(
+        find.byKey(
+          const ValueKey('marketplace-detail-dialog-steel-wheelbarrow'),
+        ),
+        findsOneWidget,
       );
     },
   );

@@ -287,6 +287,41 @@ bool isFinderReadyForTap(WidgetTester tester, Finder finder) {
   ).targetWasHit;
 }
 
+/// Waits for [finder] to resolve to one enabled control that can receive a
+/// pointer. The readiness predicate itself remains a one-shot inspection; this
+/// caller owns the bounded pumping and visibility work needed at a transition
+/// boundary.
+///
+/// A route transition can change both hit testing and scroll layout between
+/// frames. Re-applying [WidgetTester.ensureVisible] after every bounded pump
+/// therefore matters just as it does for [tapWhenVisible].
+Future<({bool isReady, Duration elapsed})> waitForFinderReadyForTap(
+  WidgetTester tester,
+  Finder finder, {
+  DateTime Function()? now,
+  VoidCallback? onReadinessPoll,
+}) async {
+  final budget = WalkthroughWaitBudget(now: now);
+  do {
+    onReadinessPoll?.call();
+    // Do not use pumpAndSettle here: the walkthrough intentionally permits
+    // continuously animated screens, while this check needs a bounded wait.
+    await tester.pump(const Duration(milliseconds: 50));
+
+    // A route can still be constructing its control while it transitions. In
+    // that case there is nothing to make visible on this frame; keep polling.
+    if (finder.evaluate().length != 1) {
+      continue;
+    }
+
+    await tester.ensureVisible(finder);
+    if (isFinderReadyForTap(tester, finder)) {
+      return (isReady: true, elapsed: budget.elapsed);
+    }
+  } while (!budget.expired);
+  return (isReady: false, elapsed: budget.elapsed);
+}
+
 /// Finds the first action candidate that is both inside [surface] and ready to
 /// receive a pointer. In particular, controls remaining in the tree behind a
 /// modal route do not count as available actions.
@@ -314,29 +349,124 @@ Future<void> assertB25CommunityRowSurface({
   required String role,
   required String boundary,
   required Future<void> Function(String name) captureDiagnostic,
+  DateTime Function()? now,
+  VoidCallback? onReadinessPoll,
 }) async {
   final expectedSurface = _evidenceTargetRoute(target);
-  final currentExpectedSurfaces = expectedSurface
-      .evaluate()
-      .where((element) => ModalRoute.of(element)?.isCurrent ?? false)
-      .toList(growable: false);
   final picker = find.descendant(
     of: expectedSurface,
     matching: find.byKey(const ValueKey('actor-identity-picker-button')),
   );
-  if (currentExpectedSurfaces.length == 1 &&
-      isFinderReadyForTap(tester, picker)) {
+  final initialUnexpectedSurface = _currentUnexpectedB25SurfaceDescription(
+    expectedExtensionId: target.extensionId,
+  );
+  if (initialUnexpectedSurface != null) {
+    await _failB25SurfaceMismatch(
+      target: target,
+      workflowId: workflowId,
+      role: role,
+      boundary: boundary,
+      foundSurface: initialUnexpectedSurface,
+      captureDiagnostic: captureDiagnostic,
+    );
+  }
+
+  // The expected route is correct while a transition's IgnorePointer or
+  // AnimatedOpacity briefly leaves its picker un-hittable. Poll that distinct
+  // readiness condition instead of sampling a single transition frame.
+  final pickerReadiness = await waitForFinderReadyForTap(
+    tester,
+    picker,
+    now: now,
+    onReadinessPoll: onReadinessPoll,
+  );
+  if (pickerReadiness.isReady &&
+      _isExpectedB25CommunitySurfaceCurrent(expectedSurface)) {
     return;
   }
 
+  final unexpectedSurface = _currentUnexpectedB25SurfaceDescription(
+    expectedExtensionId: target.extensionId,
+  );
+  if (unexpectedSurface != null ||
+      !_isExpectedB25CommunitySurfaceCurrent(expectedSurface)) {
+    await _failB25SurfaceMismatch(
+      target: target,
+      workflowId: workflowId,
+      role: role,
+      boundary: boundary,
+      foundSurface:
+          unexpectedSurface ??
+          _unexpectedCommunitySurfaceDescription(
+            expectedExtensionId: target.extensionId,
+            expectedSurface: expectedSurface,
+            picker: picker,
+          ),
+      captureDiagnostic: captureDiagnostic,
+    );
+  }
+
+  await _failB25PickerNeverBecameInteractable(
+    target: target,
+    workflowId: workflowId,
+    role: role,
+    boundary: boundary,
+    waited: pickerReadiness.elapsed,
+    captureDiagnostic: captureDiagnostic,
+  );
+}
+
+bool _isExpectedB25CommunitySurfaceCurrent(Finder expectedSurface) =>
+    expectedSurface
+        .evaluate()
+        .where((element) => ModalRoute.of(element)?.isCurrent ?? false)
+        .length ==
+    1;
+
+/// Returns an immediately actionable surface mismatch. A keyed current dialog
+/// or a different current community is not a healthy transition frame and
+/// must never be waited out or dismissed by the walkthrough.
+String? _currentUnexpectedB25SurfaceDescription({
+  required String expectedExtensionId,
+}) {
+  final currentDialogKeys = find
+      .byWidgetPredicate((widget) {
+        final key = widget.key;
+        return key is ValueKey<String> && key.value.contains('dialog');
+      }, description: 'current dialog surface')
+      .evaluate()
+      .where((element) => ModalRoute.of(element)?.isCurrent ?? false)
+      .map((element) => (element.widget.key! as ValueKey<String>).value)
+      .toList(growable: false);
+  if (currentDialogKeys.isNotEmpty) return currentDialogKeys.first;
+
+  final unexpectedCommunitySurfaces = find
+      .byType(LocalExtensionScreen)
+      .evaluate()
+      .where((element) => ModalRoute.of(element)?.isCurrent ?? false)
+      .map(
+        (element) =>
+            'local-extension-${(element.widget as LocalExtensionScreen).community.extensionId}',
+      )
+      .where((surface) => surface != 'local-extension-$expectedExtensionId')
+      .toList(growable: false);
+  if (unexpectedCommunitySurfaces.isNotEmpty) {
+    return unexpectedCommunitySurfaces.first;
+  }
+  return null;
+}
+
+Future<void> _failB25SurfaceMismatch({
+  required LoomEvidenceTarget target,
+  required String workflowId,
+  required String role,
+  required String boundary,
+  required String foundSurface,
+  required Future<void> Function(String name) captureDiagnostic,
+}) async {
   final diagnosticName =
       '${target.phase}_${target.extensionId}_${workflowId}_${role}_'
       'SURFACE_MISMATCH_${boundary.toUpperCase()}';
-  final foundSurface = _unexpectedCommunitySurfaceDescription(
-    expectedExtensionId: target.extensionId,
-    expectedSurface: expectedSurface,
-    picker: picker,
-  );
   try {
     await captureDiagnostic(diagnosticName);
   } catch (error) {
@@ -353,6 +483,36 @@ Future<void> assertB25CommunityRowSurface({
     'expected community ${target.extensionId};\n'
     'found $foundSurface.',
   );
+}
+
+Future<void> _failB25PickerNeverBecameInteractable({
+  required LoomEvidenceTarget target,
+  required String workflowId,
+  required String role,
+  required String boundary,
+  required Duration waited,
+  required Future<void> Function(String name) captureDiagnostic,
+}) async {
+  const pickerName = 'actor-identity-picker-button';
+  final diagnosticName =
+      '${target.phase}_${target.extensionId}_${workflowId}_${role}_'
+      'PICKER_NOT_INTERACTABLE_${boundary.toUpperCase()}';
+  final message =
+      'B25 actor identity picker never became interactable $boundary '
+      '$workflowId/$role:\n'
+      'community ${target.extensionId} remained current;\n'
+      'picker $pickerName never became tappable.\n'
+      'Waited ${formatWaitDuration(waited)} for the picker to become tappable.';
+  try {
+    await captureDiagnostic(diagnosticName);
+  } catch (error) {
+    fail(
+      '$message\n'
+      'Additionally failed to capture diagnostic frame $diagnosticName: '
+      '$error',
+    );
+  }
+  fail(message);
 }
 
 String _unexpectedCommunitySurfaceDescription({
