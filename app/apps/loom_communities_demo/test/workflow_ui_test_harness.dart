@@ -438,20 +438,65 @@ class CalendarActionSurfacePreparation {
   }
 
   /// A missing Calendar agenda entry is a shipped-surface finding, not an
-  /// invitation to try a generic instance tap.
-  String? get unavailableReason {
+  /// invitation to try a generic instance tap. It is not an unavailable
+  /// action result: action polling has no prepared surface on which to make
+  /// that product determination.
+  String? get preparationFailureDescription {
     if (!isCalendarSurface || isReadyForActionPolling) return null;
     if (!agendaEntryPresent) {
-      return 'primary_action_unavailable: calendar agenda entry is absent or '
+      return 'calendar agenda entry is absent or '
           'ambiguous; action candidates were not polled and no blind instance '
           'tap was attempted. '
           '$diagnosticDescription.';
     }
-    return 'primary_action_unavailable: tapping the calendar agenda entry did '
+    return 'tapping the calendar agenda entry did '
         'not produce its selected detail, so action candidates were not '
         'polled. $diagnosticDescription.';
   }
 }
+
+/// The explicit conclusion of a prepared action poll.
+///
+/// A preparation or action-load failure means the walkthrough did not receive
+/// a product answer. Only a prepared surface whose action load finished
+/// without an exception can establish that every declared action is absent.
+enum PreparedActionPollingDecision { keepWaiting, unavailable, stall }
+
+/// Makes the narrow product-answer distinction used by shipped walkthroughs.
+///
+/// Disabled controls and a ready supplementary action remain direct evidence
+/// of a product answer. A wholly absent action set needs the stronger proof
+/// that its surface was prepared and that the action request completed
+/// successfully; without that proof, absence could simply be a loading or
+/// surface failure.
+PreparedActionPollingDecision classifyPreparedActionPolling({
+  required bool surfacePrepared,
+  required bool actionLoadSucceeded,
+  required bool actionLoadFailed,
+  required bool allPrimaryCandidatesPresentAndDisabled,
+  required bool allActionCandidatesAbsent,
+  required bool anyOtherTappable,
+}) {
+  if (!surfacePrepared || actionLoadFailed) {
+    return PreparedActionPollingDecision.stall;
+  }
+  if (allPrimaryCandidatesPresentAndDisabled || anyOtherTappable) {
+    return PreparedActionPollingDecision.unavailable;
+  }
+  if (actionLoadSucceeded && allActionCandidatesAbsent) {
+    return PreparedActionPollingDecision.unavailable;
+  }
+  return PreparedActionPollingDecision.keepWaiting;
+}
+
+/// Whether every declared action finder is currently absent.
+///
+/// The caller supplies every transition in the action machine, not merely the
+/// required primary. This makes an actionless result a fact about a completed
+/// load rather than an inference from one missing button.
+bool actionFindersAreAllAbsent(Iterable<Finder> actionFinders) =>
+    actionFinders.isNotEmpty &&
+    actionFinders.every((finder) => finder.evaluate().isEmpty);
 
 /// Returns the Calendar agenda entry whose key is emitted by
 /// `part28_engine_native_calendar_surface.dart`.
@@ -480,7 +525,7 @@ Finder calendarSelectedDetailFinder(String instanceId) =>
 /// preparation states for the eventual action diagnostic.
 ///
 /// Selection is intentionally limited to the Calendar tab. A missing agenda
-/// entry returns an explicit unavailable finding without touching any other
+/// entry returns an explicit preparation finding without touching any other
 /// instance-shaped widget. A present agenda entry is tapped through
 /// [tapWhenVisible], then its selected detail is asserted by its own rendered
 /// key before candidates are allowed to be inspected.
@@ -552,15 +597,68 @@ class MarketplaceActionSurfacePreparation {
   const MarketplaceActionSurfacePreparation._({
     required this.instanceId,
     required this.isMarketplaceSurface,
+    required this.listingTapMatchCount,
+    required this.detailDialogMatchCount,
     required this.actionSurface,
   });
 
   final String instanceId;
   final bool isMarketplaceSurface;
+  final int listingTapMatchCount;
+  final int detailDialogMatchCount;
 
   /// The marketplace dialog for this instance, or the unchanged caller
   /// surface when this is not a Marketplace tab.
   final Finder actionSurface;
+
+  bool get listingTapPresent => listingTapMatchCount == 1;
+
+  bool get detailDialogPresent => detailDialogMatchCount == 1;
+
+  bool get isReadyForActionPolling =>
+      !isMarketplaceSurface || (listingTapPresent && detailDialogPresent);
+
+  /// Per-instance Marketplace preparation evidence. The action poll appends
+  /// its per-candidate readiness to this exact prefix so a stall report can
+  /// distinguish unopened detail from a genuinely actionless detail.
+  String get diagnosticDescription {
+    if (!isMarketplaceSurface) return 'not a Marketplace surface';
+    return 'marketplace instance $instanceId: listing tap present? '
+        '${listingTapPresent ? 'yes' : 'no (matches: $listingTapMatchCount)'}; '
+        'detail dialog present? '
+        '${detailDialogPresent ? 'yes' : 'no (matches: $detailDialogMatchCount)'}';
+  }
+
+  /// A failed Marketplace preparation is a surface finding, never permission
+  /// to poll the tile behind it or classify a missing action as unavailable.
+  String? get preparationFailureDescription {
+    if (!isMarketplaceSurface || isReadyForActionPolling) return null;
+    if (!listingTapPresent) {
+      return 'marketplace listing tap is absent or ambiguous; action '
+          'candidates were not polled and no blind instance tap was '
+          'attempted. $diagnosticDescription.';
+    }
+    return 'tapping the marketplace listing did not produce its detail '
+        'dialog, so action candidates were not polled. '
+        '$diagnosticDescription.';
+  }
+}
+
+/// The observed state of a Marketplace detail's action request.
+enum MarketplaceActionLoadState { notApplicable, loading, succeeded, failed }
+
+class MarketplaceActionLoadInspection {
+  const MarketplaceActionLoadInspection._({
+    required this.state,
+    this.diagnostic,
+  });
+
+  final MarketplaceActionLoadState state;
+  final String? diagnostic;
+
+  bool get hasSucceeded => state == MarketplaceActionLoadState.succeeded;
+
+  bool get hasFailed => state == MarketplaceActionLoadState.failed;
 }
 
 /// The exact instance-qualified listing control emitted by the native
@@ -592,6 +690,86 @@ Finder marketplaceDetailActionFinder(String transitionId) =>
                   key.value == 'marketplace-transition-fab-borrow'));
     }, description: 'marketplace detail action $transitionId');
 
+/// Returns a rendered action-load exception without changing the surface.
+///
+/// Calendar, Marketplace, and generic cards use existing visible error copy
+/// rather than a harness-only key. Retaining the actual message in a stall
+/// distinguishes a failed request from an empty successful action response.
+String? visibleActionLoadDiagnostic(Finder surface) {
+  final errors = find.descendant(
+    of: surface,
+    matching: find.byWidgetPredicate(
+      (widget) =>
+          widget is Text &&
+          (widget.data?.trim().startsWith('Could not load ') ?? false),
+      description: 'rendered action-load diagnostic',
+    ),
+  );
+  for (final element in errors.evaluate()) {
+    final text = (element.widget as Text).data?.trim();
+    if (text != null && text.isNotEmpty) return text;
+  }
+  return null;
+}
+
+/// Inspects the action request inside an exact Marketplace detail without
+/// changing the surface. The rendered progress and error states are the
+/// platform contract: a missing action means "guarded off" only after neither
+/// state is present.
+MarketplaceActionLoadInspection inspectMarketplaceActionLoad({
+  required MarketplaceActionSurfacePreparation preparation,
+}) {
+  if (!preparation.isMarketplaceSurface ||
+      !preparation.isReadyForActionPolling) {
+    return const MarketplaceActionLoadInspection._(
+      state: MarketplaceActionLoadState.notApplicable,
+    );
+  }
+  final detail = preparation.actionSurface;
+  final diagnostic = visibleActionLoadDiagnostic(detail);
+  if (diagnostic != null) {
+    return MarketplaceActionLoadInspection._(
+      state: MarketplaceActionLoadState.failed,
+      diagnostic: diagnostic,
+    );
+  }
+  final progress = find.descendant(
+    of: detail,
+    matching: find.byKey(
+      ValueKey('equipment-loan-progress-${preparation.instanceId}'),
+    ),
+  );
+  if (progress.evaluate().isNotEmpty) {
+    return const MarketplaceActionLoadInspection._(
+      state: MarketplaceActionLoadState.loading,
+    );
+  }
+  return const MarketplaceActionLoadInspection._(
+    state: MarketplaceActionLoadState.succeeded,
+  );
+}
+
+/// Explains the particular Giveaway denial whose formula says a member cannot
+/// claim their own listing. The test harness has the package transition and
+/// seeded identity in hand, so this is factual evidence rather than a guess
+/// based on an absent button.
+String? describeOwnedGiveawayFormulaDenial({
+  required String transitionId,
+  required Map<String, dynamic> instanceData,
+  required String actorId,
+  required String? guardFormula,
+}) {
+  final normalizedFormula = guardFormula?.replaceAll(RegExp(r'\s+'), '');
+  if (transitionId != 'claim-giveaway' ||
+      instanceData['ownerFanId']?.toString() != actorId ||
+      normalizedFormula?.contains(r'ownerFanId==$actor') != true) {
+    return null;
+  }
+  return 'claim-giveaway unavailable: the actor owns this giveaway '
+      '(ownerFanId == \$actor), so the transition\'s guard formula denies it. '
+      'Surface prepared, actions loaded.';
+}
+
 /// Opens the exact Marketplace listing before action polling.
 ///
 /// This is deliberately narrower than Calendar selection: only the
@@ -610,6 +788,8 @@ prepareMarketplaceActionSurfaceForActionPolling({
     return MarketplaceActionSurfacePreparation._(
       instanceId: instanceId,
       isMarketplaceSurface: false,
+      listingTapMatchCount: 0,
+      detailDialogMatchCount: 0,
       actionSurface: surface,
     );
   }
@@ -618,13 +798,18 @@ prepareMarketplaceActionSurfaceForActionPolling({
     of: surface,
     matching: marketplaceListingTapFinder(instanceId),
   );
-  expect(
-    listing,
-    findsOneWidget,
-    reason:
-        'Marketplace action polling for $instanceId requires exactly one '
-        'marketplace-listing-tap-$instanceId control.',
-  );
+  final listingTapMatchCount = listing.evaluate().length;
+  if (listingTapMatchCount != 1) {
+    return MarketplaceActionSurfacePreparation._(
+      instanceId: instanceId,
+      isMarketplaceSurface: true,
+      listingTapMatchCount: listingTapMatchCount,
+      detailDialogMatchCount: marketplaceDetailDialogFinder(
+        instanceId,
+      ).evaluate().length,
+      actionSurface: marketplaceDetailDialogFinder(instanceId),
+    );
+  }
   await tapWhenVisible(
     tester,
     listing,
@@ -633,16 +818,11 @@ prepareMarketplaceActionSurfaceForActionPolling({
   await tester.pump();
 
   final dialog = marketplaceDetailDialogFinder(instanceId);
-  expect(
-    dialog,
-    findsOneWidget,
-    reason:
-        'Marketplace listing $instanceId was opened for action polling, but '
-        'its exact marketplace-detail-dialog-$instanceId did not appear.',
-  );
   return MarketplaceActionSurfacePreparation._(
     instanceId: instanceId,
     isMarketplaceSurface: true,
+    listingTapMatchCount: listingTapMatchCount,
+    detailDialogMatchCount: dialog.evaluate().length,
     actionSurface: dialog,
   );
 }
@@ -730,6 +910,7 @@ Future<PrimaryActionAvailability<T>> waitForPrimaryActionAvailability<T>({
   Duration? timeout,
   DateTime Function()? now,
   void Function(PrimaryActionAvailability<T> availability)? onPoll,
+  bool Function(PrimaryActionAvailability<T> availability)? shouldStopWaiting,
 }) async {
   final budget = WalkthroughWaitBudget(timeout: timeout, now: now);
   late PrimaryActionAvailability<T> availability;
@@ -757,6 +938,9 @@ Future<PrimaryActionAvailability<T>> waitForPrimaryActionAvailability<T>({
     onPoll?.call(availability);
     if (availability.hasReadyAction ||
         availability.allCandidatesPresentAndDisabled) {
+      return availability;
+    }
+    if (shouldStopWaiting?.call(availability) ?? false) {
       return availability;
     }
 

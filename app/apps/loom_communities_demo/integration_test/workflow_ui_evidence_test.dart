@@ -1472,23 +1472,39 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
           'selected for this workflow row.',
     );
   }
-  final marketplacePreparation =
-      await prepareMarketplaceActionSurfaceForActionPolling(
-        tester: tester,
-        surface: communitySurface,
-        tabId: selector.binding.tabId,
-        instanceId: selector.instance.instanceId,
-      );
+  MarketplaceActionSurfacePreparation? marketplacePreparation;
   Object? originalFailure;
   try {
+    final preparedMarketplace =
+        await prepareMarketplaceActionSurfaceForActionPolling(
+          tester: tester,
+          surface: communitySurface,
+          tabId: selector.binding.tabId,
+          instanceId: selector.instance.instanceId,
+        );
+    marketplacePreparation = preparedMarketplace;
+    if (!preparedMarketplace.isReadyForActionPolling) {
+      return _throwShippedWorkflowActionStall(
+        bodyWatch: bodyWatch,
+        lastCompletedStep: lastCompletedStep,
+        attemptedStep: attemptedStep,
+        waitingFor:
+            'Marketplace action surface preparation did not complete: '
+            '${preparedMarketplace.preparationFailureDescription}',
+        budget: WalkthroughWaitBudget(),
+        diagnosticFrameName: stallDiagnosticName,
+        captureDiagnostic: capture,
+      );
+    }
     final actionWait = await _waitForShippedWorkflowAction(
       tester: tester,
       bodyWatch: bodyWatch,
       selector: selector,
       surface: communitySurface,
-      actionSurface: marketplacePreparation.actionSurface,
+      actionSurface: preparedMarketplace.actionSurface,
+      marketplacePreparation: preparedMarketplace,
       useMarketplaceDetailActionFinder:
-          marketplacePreparation.isMarketplaceSurface,
+          preparedMarketplace.isMarketplaceSurface,
       candidates: primaryCandidates,
       b25Model: b25Model,
       lastCompletedStep: lastCompletedStep,
@@ -1706,11 +1722,13 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
     rethrow;
   } finally {
     try {
-      await closeMarketplaceActionSurfaceAfterActionPolling(
-        tester: tester,
-        preparation: marketplacePreparation,
-        expectedSurface: communitySurface,
-      );
+      if (marketplacePreparation?.isReadyForActionPolling ?? false) {
+        await closeMarketplaceActionSurfaceAfterActionPolling(
+          tester: tester,
+          preparation: marketplacePreparation!,
+          expectedSurface: communitySurface,
+        );
+      }
     } catch (cleanupError, cleanupStackTrace) {
       // Cleanup must never replace the failure that made the walkthrough
       // leave its owned dialog early. The original error is the useful
@@ -3326,6 +3344,7 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
   required _ShippedWorkflowSelector selector,
   required Finder surface,
   required Finder actionSurface,
+  required MarketplaceActionSurfacePreparation marketplacePreparation,
   required bool useMarketplaceDetailActionFinder,
   required List<_ShippedTransitionCandidate> candidates,
   required B25ProductDocInteractionModel b25Model,
@@ -3342,23 +3361,54 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
         instanceId: selector.instance.instanceId,
       );
   if (!calendarPreparation.isReadyForActionPolling) {
-    return _ShippedWorkflowActionWait._(
-      unavailableReason: calendarPreparation.unavailableReason,
+    return _throwShippedWorkflowActionStall(
+      bodyWatch: bodyWatch,
+      lastCompletedStep: lastCompletedStep,
+      attemptedStep: attemptedStep,
+      waitingFor:
+          'Calendar action surface preparation did not complete: '
+          '${calendarPreparation.preparationFailureDescription}',
+      budget: WalkthroughWaitBudget(),
+      diagnosticFrameName: diagnosticFrameName,
+      captureDiagnostic: captureDiagnostic,
     );
   }
   final calendarDiagnostic = calendarPreparation.isCalendarSurface
       ? '${calendarPreparation.diagnosticDescription}. '
       : '';
+  final marketplaceDiagnostic = marketplacePreparation.isMarketplaceSurface
+      ? '${marketplacePreparation.diagnosticDescription}. '
+      : '';
+  final allActionFinders = <Finder>[
+    for (final candidate in selector.transitions)
+      find.descendant(
+        of: actionSurface,
+        matching: _shippedWorkflowActionFinder(
+          selector: selector,
+          transitionId: candidate.transition.id,
+          useMarketplaceDetailActionFinder: useMarketplaceDetailActionFinder,
+        ),
+      ),
+  ];
+  var marketplaceActionLoad = inspectMarketplaceActionLoad(
+    preparation: marketplacePreparation,
+  );
 
   String pollingWaitingFor(
     PrimaryActionAvailability<_ShippedTransitionCandidate> availability,
   ) {
-    final actionLoadDiagnostic = _visibleActionLoadDiagnostic(actionSurface);
+    marketplaceActionLoad = inspectMarketplaceActionLoad(
+      preparation: marketplacePreparation,
+    );
+    final actionLoadDiagnostic =
+        marketplaceActionLoad.diagnostic ??
+        visibleActionLoadDiagnostic(actionSurface);
     return 'a tappable shipped workflow action on the '
         '${selector.binding.tabId} tab for ${selector.roleId}. '
         '$calendarDiagnostic'
+        '$marketplaceDiagnostic'
         '${actionLoadDiagnostic == null ? '' : 'Action load diagnostic: $actionLoadDiagnostic. '}'
-        'Polled action widgets: [${availability.candidateDescriptions}].';
+        'per-candidate readiness: [${availability.candidateDescriptions}].';
   }
 
   final actionAvailability = await waitForPrimaryActionAvailability(
@@ -3391,6 +3441,23 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
         waitingFor: pollingWaitingFor(availability),
       );
     },
+    shouldStopWaiting: (availability) {
+      marketplaceActionLoad = inspectMarketplaceActionLoad(
+        preparation: marketplacePreparation,
+      );
+      return classifyPreparedActionPolling(
+            surfacePrepared: marketplacePreparation.isReadyForActionPolling,
+            actionLoadSucceeded: marketplaceActionLoad.hasSucceeded,
+            actionLoadFailed: marketplaceActionLoad.hasFailed,
+            allPrimaryCandidatesPresentAndDisabled:
+                availability.allCandidatesPresentAndDisabled,
+            allActionCandidatesAbsent: actionFindersAreAllAbsent(
+              allActionFinders,
+            ),
+            anyOtherTappable: false,
+          ) !=
+          PreparedActionPollingDecision.keepWaiting;
+    },
   );
   final latestPollingWaitingFor = pollingWaitingFor(actionAvailability);
   if (actionAvailability.hasReadyAction) {
@@ -3408,6 +3475,45 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
       unavailableReason:
           'primary_action_unavailable: every primary candidate is present '
           'but disabled. $latestPollingWaitingFor',
+    );
+  }
+  marketplaceActionLoad = inspectMarketplaceActionLoad(
+    preparation: marketplacePreparation,
+  );
+  final allActionCandidatesAbsent = actionFindersAreAllAbsent(allActionFinders);
+  final primaryPollingDecision = classifyPreparedActionPolling(
+    surfacePrepared: marketplacePreparation.isReadyForActionPolling,
+    actionLoadSucceeded: marketplaceActionLoad.hasSucceeded,
+    actionLoadFailed: marketplaceActionLoad.hasFailed,
+    allPrimaryCandidatesPresentAndDisabled:
+        actionAvailability.allCandidatesPresentAndDisabled,
+    allActionCandidatesAbsent: allActionCandidatesAbsent,
+    anyOtherTappable: false,
+  );
+  if (primaryPollingDecision == PreparedActionPollingDecision.unavailable) {
+    if (!allActionCandidatesAbsent) {
+      throw StateError(
+        'Unavailable primary-action decision for '
+        '${selector.instance.instanceId} had neither disabled primary '
+        'actions nor a fully absent action set.',
+      );
+    }
+    return _ShippedWorkflowActionWait._(
+      unavailableReason:
+          'primary_action_unavailable: '
+          '${_describePrimaryUnavailability(selector: selector, availability: actionAvailability, surface: actionSurface, surfacePrepared: marketplacePreparation.isReadyForActionPolling, actionLoadSucceeded: marketplaceActionLoad.hasSucceeded)} '
+          '$latestPollingWaitingFor',
+    );
+  }
+  if (primaryPollingDecision == PreparedActionPollingDecision.stall) {
+    return _throwShippedWorkflowActionStall(
+      bodyWatch: bodyWatch,
+      lastCompletedStep: lastCompletedStep,
+      attemptedStep: attemptedStep,
+      waitingFor: latestPollingWaitingFor,
+      budget: actionAvailability.budget,
+      diagnosticFrameName: diagnosticFrameName,
+      captureDiagnostic: captureDiagnostic,
     );
   }
   final preparedOtherActions = await findReadyActionCandidatesOnSurface(
@@ -3456,6 +3562,8 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
         selector: selector,
         availability: actionAvailability,
         surface: actionSurface,
+        surfacePrepared: marketplacePreparation.isReadyForActionPolling,
+        actionLoadSucceeded: marketplaceActionLoad.hasSucceeded,
       ),
       preparedActionDescriptions: namedOtherActions.map(
         (candidate) => candidate.label,
@@ -3483,18 +3591,38 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
       otherAvailableActions: namedOtherActions,
     );
   }
+  return _throwShippedWorkflowActionStall(
+    bodyWatch: bodyWatch,
+    lastCompletedStep: lastCompletedStep,
+    attemptedStep: attemptedStep,
+    waitingFor: latestPollingWaitingFor,
+    budget: actionAvailability.budget,
+    diagnosticFrameName: diagnosticFrameName,
+    captureDiagnostic: captureDiagnostic,
+  );
+}
+
+Future<Never> _throwShippedWorkflowActionStall({
+  required WalkthroughBodyWatch bodyWatch,
+  required String lastCompletedStep,
+  required String attemptedStep,
+  required String waitingFor,
+  required WalkthroughWaitBudget budget,
+  required String diagnosticFrameName,
+  required Future<void> Function(String name) captureDiagnostic,
+}) async {
   bodyWatch.beat(
     lastCompletedStep: lastCompletedStep,
     attemptedStep: attemptedStep,
-    waitingFor: 'capturing $diagnosticFrameName after $latestPollingWaitingFor',
+    waitingFor: 'capturing $diagnosticFrameName after $waitingFor',
   );
   await captureDiagnostic(diagnosticFrameName);
   throw WalkthroughStallFailure(
     buildWalkthroughStallMessage(
       lastCompletedStep: lastCompletedStep,
       attemptedStep: attemptedStep,
-      waitingFor: latestPollingWaitingFor,
-      budget: actionAvailability.budget,
+      waitingFor: waitingFor,
+      budget: budget,
       diagnosticFrameName: diagnosticFrameName,
     ),
   );
@@ -3522,7 +3650,23 @@ String _describePrimaryUnavailability({
   required _ShippedWorkflowSelector selector,
   required PrimaryActionAvailability<_ShippedTransitionCandidate> availability,
   required Finder surface,
+  required bool surfacePrepared,
+  required bool actionLoadSucceeded,
 }) {
+  if (surfacePrepared && actionLoadSucceeded) {
+    for (final candidate in availability.candidateReadiness) {
+      if (candidate.readiness.state != FinderTapReadinessState.absent) {
+        continue;
+      }
+      final denial = describeOwnedGiveawayFormulaDenial(
+        transitionId: candidate.candidate.value.transition.id,
+        instanceData: selector.instance.instanceData,
+        actorId: selector.accountId ?? selector.roleId,
+        guardFormula: candidate.candidate.value.transition.guard.formula,
+      );
+      if (denial != null) return denial;
+    }
+  }
   final goingIsAbsent = availability.candidateReadiness.any(
     (candidate) =>
         candidate.readiness.state == FinderTapReadinessState.absent &&
@@ -3572,27 +3716,6 @@ Finder _engineInstanceFinder(String instanceId) {
     final key = widget.key;
     return key is ValueKey<String> && key.value.contains(instanceId);
   }, description: 'engine-native widget for $instanceId');
-}
-
-/// Returns a rendered action-load failure from the current surface without
-/// changing it. The Calendar card owns this text rather than an App Shell key;
-/// retaining it in a stall diagnostic distinguishes a failed lookup from an
-/// engine that truthfully offered no transitions.
-String? _visibleActionLoadDiagnostic(Finder surface) {
-  final errors = find.descendant(
-    of: surface,
-    matching: find.byWidgetPredicate(
-      (widget) =>
-          widget is Text &&
-          (widget.data?.trim().startsWith('Could not load ') ?? false),
-      description: 'rendered action-load diagnostic',
-    ),
-  );
-  for (final element in errors.evaluate()) {
-    final text = (element.widget as Text).data?.trim();
-    if (text != null && text.isNotEmpty) return text;
-  }
-  return null;
 }
 
 Finder _engineActionFinder(String instanceId, String transitionId) {

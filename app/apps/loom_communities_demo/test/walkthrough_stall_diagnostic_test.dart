@@ -728,7 +728,7 @@ void main() {
       expect(preparation.agendaEntryPresent, isFalse);
       expect(preparation.selectedDetailPresent, isFalse);
       expect(
-        preparation.unavailableReason,
+        preparation.preparationFailureDescription,
         allOf(
           contains('calendar agenda entry is absent or ambiguous'),
           contains('no blind instance tap was attempted'),
@@ -736,9 +736,227 @@ void main() {
           contains('selected detail present? no'),
         ),
       );
+      expect(
+        classifyPreparedActionPolling(
+          surfacePrepared: preparation.isReadyForActionPolling,
+          actionLoadSucceeded: false,
+          actionLoadFailed: false,
+          allPrimaryCandidatesPresentAndDisabled: false,
+          allActionCandidatesAbsent: true,
+          anyOtherTappable: false,
+        ),
+        PreparedActionPollingDecision.stall,
+      );
       expect(blindInstanceTapCount, 0);
     },
   );
+
+  testWidgets('a prepared, loaded Marketplace detail with a guarded-off primary '
+      'becomes unavailable immediately', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: _MarketplaceDetailFixture(
+            actionBelowFold: false,
+            showAction: false,
+          ),
+        ),
+      ),
+    );
+
+    const instanceId = 'terracotta-pots-giveaway';
+    final surface = find.byKey(
+      const ValueKey('marketplace-detail-test-surface'),
+    );
+    final preparation = await prepareMarketplaceActionSurfaceForActionPolling(
+      tester: tester,
+      surface: surface,
+      tabId: 'marketplace',
+      instanceId: instanceId,
+    );
+    final primary = find.descendant(
+      of: preparation.actionSurface,
+      matching: marketplaceDetailActionFinder('claim-giveaway'),
+    );
+
+    expect(preparation.isReadyForActionPolling, isTrue);
+    expect(
+      inspectMarketplaceActionLoad(preparation: preparation).state,
+      MarketplaceActionLoadState.succeeded,
+    );
+    expect(actionFindersAreAllAbsent([primary]), isTrue);
+
+    final stopwatch = Stopwatch()..start();
+    final availability = await waitForPrimaryActionAvailability(
+      tester: tester,
+      // The device walkthrough uses its normal 2m45s inner wait. This short
+      // test-only bound makes a neutralized early-return branch fail quickly,
+      // while the passing branch returns on its first poll.
+      timeout: const Duration(milliseconds: 10),
+      candidates: [
+        PrimaryActionCandidate(
+          value: 'claim-giveaway',
+          finder: primary,
+          description: 'claim-giveaway (Claim giveaway)',
+        ),
+      ],
+      shouldStopWaiting: (availability) {
+        final actionLoad = inspectMarketplaceActionLoad(
+          preparation: preparation,
+        );
+        return classifyPreparedActionPolling(
+              surfacePrepared: preparation.isReadyForActionPolling,
+              actionLoadSucceeded: actionLoad.hasSucceeded,
+              actionLoadFailed: actionLoad.hasFailed,
+              allPrimaryCandidatesPresentAndDisabled:
+                  availability.allCandidatesPresentAndDisabled,
+              allActionCandidatesAbsent: actionFindersAreAllAbsent([primary]),
+              anyOtherTappable: false,
+            ) ==
+            PreparedActionPollingDecision.unavailable;
+      },
+    );
+    stopwatch.stop();
+    final actionLoad = inspectMarketplaceActionLoad(preparation: preparation);
+    final decision = classifyPreparedActionPolling(
+      surfacePrepared: preparation.isReadyForActionPolling,
+      actionLoadSucceeded: actionLoad.hasSucceeded,
+      actionLoadFailed: actionLoad.hasFailed,
+      allPrimaryCandidatesPresentAndDisabled:
+          availability.allCandidatesPresentAndDisabled,
+      allActionCandidatesAbsent: actionFindersAreAllAbsent([primary]),
+      anyOtherTappable: false,
+    );
+
+    expect(availability.hasReadyAction, isFalse);
+    expect(decision, PreparedActionPollingDecision.unavailable);
+    expect(
+      '${preparation.diagnosticDescription}; per-candidate readiness: '
+      '[${availability.candidateDescriptions}]',
+      allOf(
+        contains('listing tap present? yes'),
+        contains('detail dialog present? yes'),
+        contains('claim-giveaway (Claim giveaway): absent'),
+      ),
+    );
+    expect(
+      describeOwnedGiveawayFormulaDenial(
+        transitionId: 'claim-giveaway',
+        instanceData: const {'ownerFanId': 'garden-member'},
+        actorId: 'garden-member',
+        guardFormula: 'if(ownerFanId == \$actor, false, true)',
+      ),
+      'claim-giveaway unavailable: the actor owns this giveaway '
+      '(ownerFanId == \$actor), so the transition\'s guard formula denies it. '
+      'Surface prepared, actions loaded.',
+    );
+    // The checked decision is load-bearing: a guard denial must not consume
+    // the device walkthrough's 2m45s polling budget.
+    expect(availability.budget.elapsed, lessThan(const Duration(seconds: 1)));
+    expect(stopwatch.elapsed, lessThan(const Duration(seconds: 1)));
+    await closeMarketplaceActionSurfaceAfterActionPolling(
+      tester: tester,
+      preparation: preparation,
+      expectedSurface: surface,
+    );
+  });
+
+  testWidgets(
+    'a Marketplace listing without its detail dialog remains a stall',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: _MarketplaceDetailFixture(
+              actionBelowFold: false,
+              showDetailDialog: false,
+            ),
+          ),
+        ),
+      );
+
+      final preparation = await prepareMarketplaceActionSurfaceForActionPolling(
+        tester: tester,
+        surface: find.byKey(const ValueKey('marketplace-detail-test-surface')),
+        tabId: 'marketplace',
+        instanceId: 'terracotta-pots-giveaway',
+      );
+      final actionLoad = inspectMarketplaceActionLoad(preparation: preparation);
+
+      expect(preparation.listingTapPresent, isTrue);
+      expect(preparation.detailDialogPresent, isFalse);
+      expect(
+        preparation.preparationFailureDescription,
+        allOf(
+          contains('detail dialog'),
+          contains('listing tap present? yes'),
+          contains('detail dialog present? no'),
+        ),
+      );
+      expect(
+        classifyPreparedActionPolling(
+          surfacePrepared: preparation.isReadyForActionPolling,
+          actionLoadSucceeded: actionLoad.hasSucceeded,
+          actionLoadFailed: actionLoad.hasFailed,
+          allPrimaryCandidatesPresentAndDisabled: false,
+          allActionCandidatesAbsent: true,
+          anyOtherTappable: false,
+        ),
+        PreparedActionPollingDecision.stall,
+      );
+    },
+  );
+
+  testWidgets('a Marketplace action-load exception remains a named stall', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: _MarketplaceDetailFixture(
+            actionBelowFold: false,
+            showAction: false,
+            actionLoadError:
+                'Could not load listing actions: StateError: controlled '
+                'action load failure.',
+          ),
+        ),
+      ),
+    );
+
+    final surface = find.byKey(
+      const ValueKey('marketplace-detail-test-surface'),
+    );
+    final preparation = await prepareMarketplaceActionSurfaceForActionPolling(
+      tester: tester,
+      surface: surface,
+      tabId: 'marketplace',
+      instanceId: 'terracotta-pots-giveaway',
+    );
+    final actionLoad = inspectMarketplaceActionLoad(preparation: preparation);
+
+    expect(actionLoad.state, MarketplaceActionLoadState.failed);
+    expect(
+      actionLoad.diagnostic,
+      contains('StateError: controlled action load failure'),
+    );
+    expect(
+      classifyPreparedActionPolling(
+        surfacePrepared: preparation.isReadyForActionPolling,
+        actionLoadSucceeded: actionLoad.hasSucceeded,
+        actionLoadFailed: actionLoad.hasFailed,
+        allPrimaryCandidatesPresentAndDisabled: false,
+        allActionCandidatesAbsent: true,
+        anyOtherTappable: false,
+      ),
+      PreparedActionPollingDecision.stall,
+    );
+    await closeMarketplaceActionSurfaceAfterActionPolling(
+      tester: tester,
+      preparation: preparation,
+      expectedSurface: surface,
+    );
+  });
 
   testWidgets(
     'Marketplace action polling owns its exact detail dialog through cleanup',
@@ -1508,11 +1726,17 @@ class _MarketplaceDetailFixture extends StatefulWidget {
   const _MarketplaceDetailFixture({
     required this.actionBelowFold,
     this.tileAlsoHasAction = false,
+    this.showDetailDialog = true,
+    this.showAction = true,
+    this.actionLoadError,
     this.onAction,
   });
 
   final bool actionBelowFold;
   final bool tileAlsoHasAction;
+  final bool showDetailDialog;
+  final bool showAction;
+  final String? actionLoadError;
   final VoidCallback? onAction;
 
   @override
@@ -1526,6 +1750,7 @@ class _MarketplaceDetailFixtureState extends State<_MarketplaceDetailFixture> {
   static void _noop() {}
 
   void _showDetail() {
+    if (!widget.showDetailDialog) return;
     showDialog<void>(
       context: context,
       builder: (dialogContext) => Dialog(
@@ -1545,7 +1770,12 @@ class _MarketplaceDetailFixtureState extends State<_MarketplaceDetailFixture> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (widget.actionBelowFold) const SizedBox(height: 1800),
-                      if (!widget.tileAlsoHasAction)
+                      if (widget.actionLoadError != null)
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Text(widget.actionLoadError!),
+                        ),
+                      if (widget.showAction && !widget.tileAlsoHasAction)
                         FilledButton(
                           key: const ValueKey(
                             'marketplace-action-claim-giveaway',
