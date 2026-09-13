@@ -1472,115 +1472,220 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
           'selected for this workflow row.',
     );
   }
-  final actionWait = await _waitForShippedWorkflowAction(
-    tester: tester,
-    bodyWatch: bodyWatch,
-    selector: selector,
-    surface: communitySurface,
-    candidates: primaryCandidates,
-    b25Model: b25Model,
-    lastCompletedStep: lastCompletedStep,
-    attemptedStep: attemptedStep,
-    diagnosticFrameName: stallDiagnosticName,
-    captureDiagnostic: capture,
-  );
-  if (actionWait.action == null) {
-    final primaryUnavailable = _b25ScreenshotName(
-      target,
-      b25Model,
-      'primary_action_unavailable',
-    );
-    final resultUnavailable = _b25ScreenshotName(
-      target,
-      b25Model,
-      'result_receiver_unavailable',
-    );
-    await capture(primaryUnavailable);
-    await capture(resultUnavailable);
-    return _b25WalkthroughResult(
-      model: b25Model,
+  final marketplacePreparation =
+      await prepareMarketplaceActionSurfaceForActionPolling(
+        tester: tester,
+        surface: communitySurface,
+        tabId: selector.binding.tabId,
+        instanceId: selector.instance.instanceId,
+      );
+  Object? originalFailure;
+  try {
+    final actionWait = await _waitForShippedWorkflowAction(
+      tester: tester,
+      bodyWatch: bodyWatch,
       selector: selector,
-      screenshotNames: [start, primaryUnavailable, resultUnavailable],
-      primaryUnavailableReason: actionWait.unavailableReason,
-      availableSupplementaryActions: actionWait.otherAvailableActions,
+      surface: communitySurface,
+      actionSurface: marketplacePreparation.actionSurface,
+      useMarketplaceDetailActionFinder:
+          marketplacePreparation.isMarketplaceSurface,
+      candidates: primaryCandidates,
+      b25Model: b25Model,
+      lastCompletedStep: lastCompletedStep,
+      attemptedStep: attemptedStep,
+      diagnosticFrameName: stallDiagnosticName,
+      captureDiagnostic: capture,
     );
-  }
-  final visibleAction = actionWait.action!;
-  final sourceInstance = identical(selector.actionMachine, selector.machine)
-      ? await _readShippedInstance(
-          tester: tester,
-          target: target,
-          package: package,
-          selector: selector,
-        )
-      : null;
-  await tester.ensureVisible(visibleAction.finder.first);
-  await _pumpB25Frames(tester);
-  await capture(action);
+    if (actionWait.action == null) {
+      final primaryUnavailable = _b25ScreenshotName(
+        target,
+        b25Model,
+        'primary_action_unavailable',
+      );
+      final resultUnavailable = _b25ScreenshotName(
+        target,
+        b25Model,
+        'result_receiver_unavailable',
+      );
+      await capture(primaryUnavailable);
+      await capture(resultUnavailable);
+      return _b25WalkthroughResult(
+        model: b25Model,
+        selector: selector,
+        screenshotNames: [start, primaryUnavailable, resultUnavailable],
+        primaryUnavailableReason: actionWait.unavailableReason,
+        availableSupplementaryActions: actionWait.otherAvailableActions,
+      );
+    }
+    final visibleAction = actionWait.action!;
+    final sourceInstance = identical(selector.actionMachine, selector.machine)
+        ? await _readShippedInstance(
+            tester: tester,
+            target: target,
+            package: package,
+            selector: selector,
+          )
+        : null;
+    await tester.ensureVisible(visibleAction.finder.first);
+    await _pumpB25Frames(tester);
+    await capture(action);
 
-  await tester.tap(visibleAction.finder.first, warnIfMissed: false);
-  await tester.pump();
-  await _completeShippedTransitionInputs(
-    tester: tester,
-    transition: visibleAction.candidate.transition,
-    roleId: selector.roleId,
-  );
-  for (var attempt = 0; attempt < 8; attempt += 1) {
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    await tester.tap(visibleAction.finder.first, warnIfMissed: false);
+    await tester.pump();
+    await _completeShippedTransitionInputs(
+      tester: tester,
+      transition: visibleAction.candidate.transition,
+      roleId: selector.roleId,
     );
-    await tester.pump(const Duration(milliseconds: 150));
-  }
+    for (var attempt = 0; attempt < 8; attempt += 1) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 5)),
+      );
+      await tester.pump(const Duration(milliseconds: 150));
+    }
 
-  final transition = visibleAction.candidate.transition;
-  final transitionCategory = identical(selector.actionMachine, selector.machine)
-      ? _classifyShippedTransition(
-          transition: transition,
-          sourceState: selector.actionSourceState,
-          archetypeFamily: selector.actionArchetypeFamily,
-          instanceData:
-              sourceInstance?.instanceData ?? selector.instance.instanceData,
-          actorId: selector.accountId ?? selector.roleId,
-          roleId: selector.roleId,
-        )
-      : visibleAction.candidate.category;
-  if (identical(selector.actionMachine, selector.machine) &&
-      transitionCategory == _ShippedTransitionCategory.stateChanging) {
+    final transition = visibleAction.candidate.transition;
+    final transitionCategory =
+        identical(selector.actionMachine, selector.machine)
+        ? _classifyShippedTransition(
+            transition: transition,
+            sourceState: selector.actionSourceState,
+            archetypeFamily: selector.actionArchetypeFamily,
+            instanceData:
+                sourceInstance?.instanceData ?? selector.instance.instanceData,
+            actorId: selector.accountId ?? selector.roleId,
+            roleId: selector.roleId,
+          )
+        : visibleAction.candidate.category;
+    if (identical(selector.actionMachine, selector.machine) &&
+        transitionCategory == _ShippedTransitionCategory.stateChanging) {
+      expect(
+        visibleAction.finder,
+        findsNothing,
+        reason:
+            'Shipped workflow ${selector.machine.workflowType} exposed '
+            '${transition.id} for ${selector.roleId}, but the '
+            'action did not leave its package-declared source state '
+            '${selector.actionSourceState}.',
+      );
+    }
+    final targetState = transition.to ?? selector.actionSourceState;
+    final targetStateLabel = selector.actionMachine.states[targetState]?.label;
+    if (identical(selector.actionMachine, selector.machine) &&
+        transitionCategory.requiresSourceInstanceDataChange &&
+        sourceInstance != null) {
+      final persisted = await _expectShippedInstanceDataChanged(
+        tester: tester,
+        target: target,
+        package: package,
+        selector: selector,
+        sourceInstance: sourceInstance,
+      );
+      await _positionShippedResultForCapture(
+        tester: tester,
+        selector: selector,
+        transition: transition,
+        sourceInstance: sourceInstance,
+        persistedInstance: persisted,
+      );
+      await _expectVisibleShippedAlternateDataPostcondition(
+        tester: tester,
+        selector: selector,
+        transition: transition,
+        sourceInstance: sourceInstance,
+        persistedInstance: persisted,
+      );
+      await capture(primaryResult);
+      return _finishB25WalkthroughAfterPrimary(
+        tester: tester,
+        target: target,
+        package: package,
+        model: b25Model,
+        selector: selector,
+        executedPrimary: visibleAction.candidate.transition,
+        screenshotNames: [start, action, primaryResult],
+        capture: capture,
+        actionSurface: marketplacePreparation.actionSurface,
+        useMarketplaceDetailActionFinder:
+            marketplacePreparation.isMarketplaceSurface,
+      );
+    }
+    if (identical(selector.actionMachine, selector.machine) &&
+        transitionCategory == _ShippedTransitionCategory.stateChanging) {
+      await _expectShippedInstanceState(
+        tester: tester,
+        target: target,
+        package: package,
+        selector: selector,
+        targetState: targetState,
+      );
+      await _positionShippedResultForCapture(
+        tester: tester,
+        selector: selector,
+        transition: transition,
+        targetState: targetState,
+      );
+      await _expectVisibleShippedAlternateStatePostcondition(
+        tester: tester,
+        selector: selector,
+        transition: transition,
+        targetState: targetState,
+      );
+      await capture(primaryResult);
+      return _finishB25WalkthroughAfterPrimary(
+        tester: tester,
+        target: target,
+        package: package,
+        model: b25Model,
+        selector: selector,
+        executedPrimary: visibleAction.candidate.transition,
+        screenshotNames: [start, action, primaryResult],
+        capture: capture,
+        actionSurface: marketplacePreparation.actionSurface,
+        useMarketplaceDetailActionFinder:
+            marketplacePreparation.isMarketplaceSurface,
+      );
+    }
+
+    bool resultIsVisible() {
+      final sourceActionIsUnavailable = visibleAction.finder.evaluate().isEmpty;
+      final nextActionVisible = selector.actionMachine
+          .transitionsFrom(targetState)
+          .any(
+            (transition) =>
+                transition.id != visibleAction.candidate.transition.id &&
+                _engineActionFinder(
+                  selector.instance.instanceId,
+                  transition.id,
+                ).evaluate().isNotEmpty,
+          );
+      return sourceActionIsUnavailable ||
+          (targetStateLabel != null &&
+              find.text(targetStateLabel).evaluate().isNotEmpty) ||
+          nextActionVisible ||
+          instance.evaluate().isEmpty;
+    }
+
+    for (var attempt = 0; attempt < 80 && !resultIsVisible(); attempt += 1) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 5)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     expect(
-      visibleAction.finder,
-      findsNothing,
+      resultIsVisible(),
+      isTrue,
       reason:
-          'Shipped workflow ${selector.machine.workflowType} exposed '
-          '${transition.id} for ${selector.roleId}, but the '
-          'action did not leave its package-declared source state '
-          '${selector.actionSourceState}.',
+          'Shipped workflow ${selector.machine.workflowType} ran '
+          '${visibleAction.candidate.transition.id}, but the UI showed neither target '
+          'state "$targetStateLabel", a target-state action, nor removal from '
+          'the source-state surface.',
     );
-  }
-  final targetState = transition.to ?? selector.actionSourceState;
-  final targetStateLabel = selector.actionMachine.states[targetState]?.label;
-  if (identical(selector.actionMachine, selector.machine) &&
-      transitionCategory.requiresSourceInstanceDataChange &&
-      sourceInstance != null) {
-    final persisted = await _expectShippedInstanceDataChanged(
-      tester: tester,
-      target: target,
-      package: package,
-      selector: selector,
-      sourceInstance: sourceInstance,
-    );
-    await _positionShippedResultForCapture(
+    await _positionShippedFallbackResultForCapture(
       tester: tester,
       selector: selector,
       transition: transition,
-      sourceInstance: sourceInstance,
-      persistedInstance: persisted,
-    );
-    await _expectVisibleShippedAlternateDataPostcondition(
-      tester: tester,
-      selector: selector,
-      transition: transition,
-      sourceInstance: sourceInstance,
-      persistedInstance: persisted,
+      targetStateLabel: targetStateLabel,
     );
     await capture(primaryResult);
     return _finishB25WalkthroughAfterPrimary(
@@ -1592,93 +1697,29 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       executedPrimary: visibleAction.candidate.transition,
       screenshotNames: [start, action, primaryResult],
       capture: capture,
+      actionSurface: marketplacePreparation.actionSurface,
+      useMarketplaceDetailActionFinder:
+          marketplacePreparation.isMarketplaceSurface,
     );
+  } catch (error) {
+    originalFailure = error;
+    rethrow;
+  } finally {
+    try {
+      await closeMarketplaceActionSurfaceAfterActionPolling(
+        tester: tester,
+        preparation: marketplacePreparation,
+        expectedSurface: communitySurface,
+      );
+    } catch (cleanupError, cleanupStackTrace) {
+      // Cleanup must never replace the failure that made the walkthrough
+      // leave its owned dialog early. The original error is the useful
+      // work.
+      if (originalFailure == null) {
+        Error.throwWithStackTrace(cleanupError, cleanupStackTrace);
+      }
+    }
   }
-  if (identical(selector.actionMachine, selector.machine) &&
-      transitionCategory == _ShippedTransitionCategory.stateChanging) {
-    await _expectShippedInstanceState(
-      tester: tester,
-      target: target,
-      package: package,
-      selector: selector,
-      targetState: targetState,
-    );
-    await _positionShippedResultForCapture(
-      tester: tester,
-      selector: selector,
-      transition: transition,
-      targetState: targetState,
-    );
-    await _expectVisibleShippedAlternateStatePostcondition(
-      tester: tester,
-      selector: selector,
-      transition: transition,
-      targetState: targetState,
-    );
-    await capture(primaryResult);
-    return _finishB25WalkthroughAfterPrimary(
-      tester: tester,
-      target: target,
-      package: package,
-      model: b25Model,
-      selector: selector,
-      executedPrimary: visibleAction.candidate.transition,
-      screenshotNames: [start, action, primaryResult],
-      capture: capture,
-    );
-  }
-
-  bool resultIsVisible() {
-    final sourceActionIsUnavailable = visibleAction.finder.evaluate().isEmpty;
-    final nextActionVisible = selector.actionMachine
-        .transitionsFrom(targetState)
-        .any(
-          (transition) =>
-              transition.id != visibleAction.candidate.transition.id &&
-              _engineActionFinder(
-                selector.instance.instanceId,
-                transition.id,
-              ).evaluate().isNotEmpty,
-        );
-    return sourceActionIsUnavailable ||
-        (targetStateLabel != null &&
-            find.text(targetStateLabel).evaluate().isNotEmpty) ||
-        nextActionVisible ||
-        instance.evaluate().isEmpty;
-  }
-
-  for (var attempt = 0; attempt < 80 && !resultIsVisible(); attempt += 1) {
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 5)),
-    );
-    await tester.pump(const Duration(milliseconds: 50));
-  }
-  expect(
-    resultIsVisible(),
-    isTrue,
-    reason:
-        'Shipped workflow ${selector.machine.workflowType} ran '
-        '${visibleAction.candidate.transition.id}, but the UI showed neither target '
-        'state "$targetStateLabel", a target-state action, nor removal from '
-        'the source-state surface.',
-  );
-  await _positionShippedFallbackResultForCapture(
-    tester: tester,
-    selector: selector,
-    transition: transition,
-    targetStateLabel: targetStateLabel,
-  );
-  await capture(primaryResult);
-  return _finishB25WalkthroughAfterPrimary(
-    tester: tester,
-    target: target,
-    package: package,
-    model: b25Model,
-    selector: selector,
-    executedPrimary: visibleAction.candidate.transition,
-    screenshotNames: [start, action, primaryResult],
-    capture: capture,
-  );
 }
 
 Future<void> _pumpB25Frames(WidgetTester tester) async {
@@ -2135,11 +2176,14 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
   required LoomWorkflowTransition executedPrimary,
   required List<String> screenshotNames,
   required Future<void> Function(String name) capture,
+  required Finder actionSurface,
+  required bool useMarketplaceDetailActionFinder,
 }) async {
   final alternate = await _waitForB25AlternateAction(
     tester: tester,
     selector: selector,
-    surface: evidenceTargetRoute(target),
+    surface: actionSurface,
+    useMarketplaceDetailActionFinder: useMarketplaceDetailActionFinder,
     primaryTerms: model.requiredPrimaryActions,
     alternateTerms: model.requiredAlternateActions,
     excludedTransitionId: executedPrimary.id,
@@ -2272,6 +2316,7 @@ _waitForB25AlternateAction({
   required WidgetTester tester,
   required _ShippedWorkflowSelector selector,
   required Finder surface,
+  required bool useMarketplaceDetailActionFinder,
   required List<String> primaryTerms,
   required List<String> alternateTerms,
   required String excludedTransitionId,
@@ -2290,9 +2335,10 @@ _waitForB25AlternateAction({
       .toList(growable: false);
   for (var attempt = 0; attempt < 80; attempt += 1) {
     for (final transition in candidates) {
-      final finder = _engineActionFinder(
-        selector.instance.instanceId,
-        transition.id,
+      final finder = _shippedWorkflowActionFinder(
+        selector: selector,
+        transitionId: transition.id,
+        useMarketplaceDetailActionFinder: useMarketplaceDetailActionFinder,
       );
       final readyFinder = await firstReadyActionOnSurface(
         tester: tester,
@@ -3279,6 +3325,8 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
   required WalkthroughBodyWatch bodyWatch,
   required _ShippedWorkflowSelector selector,
   required Finder surface,
+  required Finder actionSurface,
+  required bool useMarketplaceDetailActionFinder,
   required List<_ShippedTransitionCandidate> candidates,
   required B25ProductDocInteractionModel b25Model,
   required String lastCompletedStep,
@@ -3305,7 +3353,7 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
   String pollingWaitingFor(
     PrimaryActionAvailability<_ShippedTransitionCandidate> availability,
   ) {
-    final actionLoadDiagnostic = _visibleActionLoadDiagnostic(surface);
+    final actionLoadDiagnostic = _visibleActionLoadDiagnostic(actionSurface);
     return 'a tappable shipped workflow action on the '
         '${selector.binding.tabId} tab for ${selector.roleId}. '
         '$calendarDiagnostic'
@@ -3320,10 +3368,12 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
         PrimaryActionCandidate(
           value: candidate,
           finder: find.descendant(
-            of: surface,
-            matching: _engineActionFinder(
-              selector.instance.instanceId,
-              candidate.transition.id,
+            of: actionSurface,
+            matching: _shippedWorkflowActionFinder(
+              selector: selector,
+              transitionId: candidate.transition.id,
+              useMarketplaceDetailActionFinder:
+                  useMarketplaceDetailActionFinder,
             ),
           ),
           description:
@@ -3362,7 +3412,7 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
   }
   final preparedOtherActions = await findReadyActionCandidatesOnSurface(
     tester: tester,
-    surface: surface,
+    surface: actionSurface,
     candidates: [
       for (final candidate in selector.transitions)
         if (!candidates.any(
@@ -3371,9 +3421,11 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
         ))
           PrimaryActionCandidate(
             value: candidate,
-            finder: _engineActionFinder(
-              selector.instance.instanceId,
-              candidate.transition.id,
+            finder: _shippedWorkflowActionFinder(
+              selector: selector,
+              transitionId: candidate.transition.id,
+              useMarketplaceDetailActionFinder:
+                  useMarketplaceDetailActionFinder,
             ),
             description: candidate.transition.label,
           ),
@@ -3403,7 +3455,7 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
       primaryUnavailableDescription: _describePrimaryUnavailability(
         selector: selector,
         availability: actionAvailability,
-        surface: surface,
+        surface: actionSurface,
       ),
       preparedActionDescriptions: namedOtherActions.map(
         (candidate) => candidate.label,
@@ -3552,6 +3604,18 @@ Finder _engineActionFinder(String instanceId, String transitionId) {
             key.value.endsWith('-$transitionId-$instanceId'));
   }, description: '$instanceId action $transitionId');
 }
+
+/// Marketplace detail controls intentionally omit their listing instance id.
+/// Their caller supplies the exact opened dialog as the surrounding finder so
+/// a same-shaped tile action behind the modal barrier can never satisfy this
+/// lookup.
+Finder _shippedWorkflowActionFinder({
+  required _ShippedWorkflowSelector selector,
+  required String transitionId,
+  required bool useMarketplaceDetailActionFinder,
+}) => useMarketplaceDetailActionFinder
+    ? marketplaceDetailActionFinder(transitionId)
+    : _engineActionFinder(selector.instance.instanceId, transitionId);
 
 class _ShippedWorkflowSelector {
   const _ShippedWorkflowSelector({

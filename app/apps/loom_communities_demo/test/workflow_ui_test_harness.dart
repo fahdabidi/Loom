@@ -542,6 +542,182 @@ prepareCalendarActionSurfaceForActionPolling({
   );
 }
 
+/// The explicit Marketplace detail route owned by one action-polling pass.
+///
+/// Marketplace action controls live in an instance-qualified detail dialog,
+/// while the controls inside that dialog intentionally omit the instance id.
+/// Keeping the exact dialog finder here gives the caller a single surface to
+/// poll and a matching close control to own during cleanup.
+class MarketplaceActionSurfacePreparation {
+  const MarketplaceActionSurfacePreparation._({
+    required this.instanceId,
+    required this.isMarketplaceSurface,
+    required this.actionSurface,
+  });
+
+  final String instanceId;
+  final bool isMarketplaceSurface;
+
+  /// The marketplace dialog for this instance, or the unchanged caller
+  /// surface when this is not a Marketplace tab.
+  final Finder actionSurface;
+}
+
+/// The exact instance-qualified listing control emitted by the native
+/// Marketplace surface.
+Finder marketplaceListingTapFinder(String instanceId) =>
+    find.byKey(ValueKey('marketplace-listing-tap-$instanceId'));
+
+/// The exact instance-qualified Marketplace dialog emitted after its listing
+/// control is tapped.
+Finder marketplaceDetailDialogFinder(String instanceId) =>
+    find.byKey(ValueKey('marketplace-detail-dialog-$instanceId'));
+
+/// The dialog-owned close control emitted by the native Marketplace surface.
+Finder marketplaceDetailCloseFinder(String instanceId) =>
+    find.byKey(ValueKey('marketplace-detail-close-$instanceId'));
+
+/// Finds a detail action by its Marketplace key shape, never by the instance
+/// id that only exists on the tile beneath the modal barrier.
+///
+/// Equipment-loan's contextual borrow control is intentionally distinct from
+/// the normal `marketplace-action-<transition>` row key. Both forms are read
+/// from `part36_engine_native_marketplace_surface.dart`.
+Finder marketplaceDetailActionFinder(String transitionId) =>
+    find.byWidgetPredicate((widget) {
+      final key = widget.key;
+      return key is ValueKey<String> &&
+          (key.value == 'marketplace-action-$transitionId' ||
+              (transitionId == 'borrow' &&
+                  key.value == 'marketplace-transition-fab-borrow'));
+    }, description: 'marketplace detail action $transitionId');
+
+/// Opens the exact Marketplace listing before action polling.
+///
+/// This is deliberately narrower than Calendar selection: only the
+/// Marketplace tab is allowed to use the listing's named detail affordance.
+/// A missing listing or a listing that does not produce its exact dialog is a
+/// loud shipped-surface failure, never permission to tap an arbitrary widget
+/// that happens to contain an instance id.
+Future<MarketplaceActionSurfacePreparation>
+prepareMarketplaceActionSurfaceForActionPolling({
+  required WidgetTester tester,
+  required Finder surface,
+  required String tabId,
+  required String instanceId,
+}) async {
+  if (tabId != 'marketplace') {
+    return MarketplaceActionSurfacePreparation._(
+      instanceId: instanceId,
+      isMarketplaceSurface: false,
+      actionSurface: surface,
+    );
+  }
+
+  final listing = find.descendant(
+    of: surface,
+    matching: marketplaceListingTapFinder(instanceId),
+  );
+  expect(
+    listing,
+    findsOneWidget,
+    reason:
+        'Marketplace action polling for $instanceId requires exactly one '
+        'marketplace-listing-tap-$instanceId control.',
+  );
+  await tapWhenVisible(
+    tester,
+    listing,
+    description: 'marketplace listing $instanceId before action polling',
+  );
+  await tester.pump();
+
+  final dialog = marketplaceDetailDialogFinder(instanceId);
+  expect(
+    dialog,
+    findsOneWidget,
+    reason:
+        'Marketplace listing $instanceId was opened for action polling, but '
+        'its exact marketplace-detail-dialog-$instanceId did not appear.',
+  );
+  return MarketplaceActionSurfacePreparation._(
+    instanceId: instanceId,
+    isMarketplaceSurface: true,
+    actionSurface: dialog,
+  );
+}
+
+/// Closes a detail dialog opened by
+/// [prepareMarketplaceActionSurfaceForActionPolling] and proves that its
+/// original community surface is current again.
+///
+/// A state-changing listing action may itself remove the detail route (for
+/// example, a giveaway removed from the tile grid). That is not silently
+/// recovered: the method still proves the dialog is gone and the original
+/// surface is current. When the dialog remains, this walkthrough always uses
+/// its own instance-qualified Close control rather than a generic back action.
+Future<bool> closeMarketplaceActionSurfaceAfterActionPolling({
+  required WidgetTester tester,
+  required MarketplaceActionSurfacePreparation preparation,
+  required Finder expectedSurface,
+}) async {
+  if (!preparation.isMarketplaceSurface) return false;
+
+  final dialog = marketplaceDetailDialogFinder(preparation.instanceId);
+  var closedWithOwnedControl = false;
+  if (dialog.evaluate().isNotEmpty) {
+    expect(
+      dialog,
+      findsOneWidget,
+      reason:
+          'Marketplace action polling for ${preparation.instanceId} left an '
+          'ambiguous detail dialog before cleanup.',
+    );
+    final close = find.descendant(
+      of: dialog,
+      matching: marketplaceDetailCloseFinder(preparation.instanceId),
+    );
+    expect(
+      close,
+      findsOneWidget,
+      reason:
+          'Marketplace detail dialog ${preparation.instanceId} must expose '
+          'its own marketplace-detail-close-${preparation.instanceId} '
+          'control for walkthrough cleanup.',
+    );
+    await tapWhenVisible(
+      tester,
+      close,
+      description:
+          'marketplace detail close for ${preparation.instanceId} after '
+          'action polling',
+    );
+    closedWithOwnedControl = true;
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+  }
+
+  expect(
+    dialog,
+    findsNothing,
+    reason:
+        'Marketplace detail dialog ${preparation.instanceId} remained open '
+        'after its owned cleanup.',
+  );
+  final currentExpectedSurfaces = expectedSurface
+      .evaluate()
+      .where((element) => ModalRoute.of(element)?.isCurrent ?? false)
+      .toList(growable: false);
+  expect(
+    currentExpectedSurfaces,
+    hasLength(1),
+    reason:
+        'Marketplace detail cleanup for ${preparation.instanceId} did not '
+        'restore the expected community surface before its row returned.',
+  );
+  return closedWithOwnedControl;
+}
+
 /// Polls primary action candidates without turning a disabled product answer
 /// into a three-minute stall.
 ///

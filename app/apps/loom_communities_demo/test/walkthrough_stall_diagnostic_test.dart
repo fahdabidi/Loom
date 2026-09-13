@@ -741,6 +741,224 @@ void main() {
   );
 
   testWidgets(
+    'Marketplace action polling owns its exact detail dialog through cleanup',
+    (WidgetTester tester) async {
+      var actionTapCount = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: _MarketplaceDetailFixture(
+              actionBelowFold: false,
+              onAction: () => actionTapCount += 1,
+            ),
+          ),
+        ),
+      );
+
+      const instanceId = 'terracotta-pots-giveaway';
+      final surface = find.byKey(
+        const ValueKey('marketplace-detail-test-surface'),
+      );
+      final preparation = await prepareMarketplaceActionSurfaceForActionPolling(
+        tester: tester,
+        surface: surface,
+        tabId: 'marketplace',
+        instanceId: instanceId,
+      );
+      expect(preparation.isMarketplaceSurface, isTrue);
+      expect(
+        preparation.actionSurface,
+        findsOneWidget,
+        reason: 'The exact opened detail dialog is the polling surface.',
+      );
+
+      final action = find.descendant(
+        of: preparation.actionSurface,
+        matching: marketplaceDetailActionFinder('claim-giveaway'),
+      );
+      final availability = await waitForPrimaryActionAvailability(
+        tester: tester,
+        timeout: const Duration(milliseconds: 10),
+        candidates: [
+          PrimaryActionCandidate(
+            value: 'claim-giveaway',
+            finder: action,
+            description: 'claim-giveaway (Claim giveaway)',
+          ),
+        ],
+      );
+      expect(availability.hasReadyAction, isTrue);
+      expect(actionTapCount, 0, reason: 'Preparation must not fire actions.');
+
+      final closedWithOwnedControl =
+          await closeMarketplaceActionSurfaceAfterActionPolling(
+            tester: tester,
+            preparation: preparation,
+            expectedSurface: surface,
+          );
+      expect(closedWithOwnedControl, isTrue);
+      expect(
+        marketplaceDetailDialogFinder(instanceId),
+        findsNothing,
+        reason: 'The dialog opened for this row must not leak to the next one.',
+      );
+    },
+  );
+
+  testWidgets(
+    'Marketplace detail polling does not count a matching tile action behind '
+    'its modal barrier',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: _MarketplaceDetailFixture(
+              actionBelowFold: false,
+              tileAlsoHasAction: true,
+            ),
+          ),
+        ),
+      );
+
+      const instanceId = 'terracotta-pots-giveaway';
+      final preparation = await prepareMarketplaceActionSurfaceForActionPolling(
+        tester: tester,
+        surface: find.byKey(const ValueKey('marketplace-detail-test-surface')),
+        tabId: 'marketplace',
+        instanceId: instanceId,
+      );
+      expect(
+        find.byKey(const ValueKey('marketplace-action-claim-giveaway')),
+        findsOneWidget,
+        reason: 'The matching control exists only on the covered tile.',
+      );
+
+      final detailCandidates = await findReadyActionCandidatesOnSurface(
+        tester: tester,
+        surface: preparation.actionSurface,
+        candidates: [
+          PrimaryActionCandidate(
+            value: 'claim-giveaway',
+            finder: marketplaceDetailActionFinder('claim-giveaway'),
+            description: 'claim-giveaway (Claim giveaway)',
+          ),
+        ],
+      );
+      expect(detailCandidates, isEmpty);
+      await closeMarketplaceActionSurfaceAfterActionPolling(
+        tester: tester,
+        preparation: preparation,
+        expectedSurface: find.byKey(
+          const ValueKey('marketplace-detail-test-surface'),
+        ),
+      );
+    },
+  );
+
+  testWidgets(
+    'Marketplace primary polling prepares an action below the detail fold',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: _MarketplaceDetailFixture(actionBelowFold: true),
+          ),
+        ),
+      );
+
+      const instanceId = 'terracotta-pots-giveaway';
+      final surface = find.byKey(
+        const ValueKey('marketplace-detail-test-surface'),
+      );
+      final preparation = await prepareMarketplaceActionSurfaceForActionPolling(
+        tester: tester,
+        surface: surface,
+        tabId: 'marketplace',
+        instanceId: instanceId,
+      );
+      final action = find.descendant(
+        of: preparation.actionSurface,
+        matching: marketplaceDetailActionFinder('claim-giveaway'),
+      );
+      expect(
+        inspectFinderTapReadiness(tester, action).state,
+        FinderTapReadinessState.notHittable,
+      );
+
+      final availability = await waitForPrimaryActionAvailability(
+        tester: tester,
+        timeout: const Duration(milliseconds: 10),
+        candidates: [
+          PrimaryActionCandidate(
+            value: 'claim-giveaway',
+            finder: action,
+            description: 'claim-giveaway (Claim giveaway)',
+          ),
+        ],
+      );
+      expect(availability.hasReadyAction, isTrue);
+      await closeMarketplaceActionSurfaceAfterActionPolling(
+        tester: tester,
+        preparation: preparation,
+        expectedSurface: surface,
+      );
+    },
+  );
+
+  testWidgets(
+    'Marketplace fallback polling prepares an action below the detail fold',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: _MarketplaceDetailFixture(actionBelowFold: true),
+          ),
+        ),
+      );
+
+      const instanceId = 'terracotta-pots-giveaway';
+      final surface = find.byKey(
+        const ValueKey('marketplace-detail-test-surface'),
+      );
+      final preparation = await prepareMarketplaceActionSurfaceForActionPolling(
+        tester: tester,
+        surface: surface,
+        tabId: 'marketplace',
+        instanceId: instanceId,
+      );
+      final action = find.descendant(
+        of: preparation.actionSurface,
+        matching: marketplaceDetailActionFinder('claim-giveaway'),
+      );
+      expect(
+        inspectFinderTapReadiness(tester, action).state,
+        FinderTapReadinessState.notHittable,
+      );
+
+      final fallbackCandidates = await findReadyActionCandidatesOnSurface(
+        tester: tester,
+        surface: preparation.actionSurface,
+        candidates: [
+          PrimaryActionCandidate(
+            value: 'claim-giveaway',
+            finder: marketplaceDetailActionFinder('claim-giveaway'),
+            description: 'Claim giveaway',
+          ),
+        ],
+      );
+      expect(
+        fallbackCandidates.map((candidate) => candidate.value),
+        equals(const ['claim-giveaway']),
+      );
+      await closeMarketplaceActionSurfaceAfterActionPolling(
+        tester: tester,
+        preparation: preparation,
+        expectedSurface: surface,
+      );
+    },
+  );
+
+  testWidgets(
     'an enabled off-viewport candidate becomes ready after every poll scrolls it',
     (WidgetTester tester) async {
       var actionTapCount = 0;
@@ -1281,6 +1499,97 @@ class _SelectionRequiredCalendarState
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MarketplaceDetailFixture extends StatefulWidget {
+  const _MarketplaceDetailFixture({
+    required this.actionBelowFold,
+    this.tileAlsoHasAction = false,
+    this.onAction,
+  });
+
+  final bool actionBelowFold;
+  final bool tileAlsoHasAction;
+  final VoidCallback? onAction;
+
+  @override
+  State<_MarketplaceDetailFixture> createState() =>
+      _MarketplaceDetailFixtureState();
+}
+
+class _MarketplaceDetailFixtureState extends State<_MarketplaceDetailFixture> {
+  static const _instanceId = 'terracotta-pots-giveaway';
+
+  static void _noop() {}
+
+  void _showDetail() {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        key: const ValueKey('marketplace-detail-dialog-$_instanceId'),
+        child: SizedBox(
+          height: 280,
+          width: 320,
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Text('Terracotta pots'),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (widget.actionBelowFold) const SizedBox(height: 1800),
+                      if (!widget.tileAlsoHasAction)
+                        FilledButton(
+                          key: const ValueKey(
+                            'marketplace-action-claim-giveaway',
+                          ),
+                          onPressed: widget.onAction ?? _noop,
+                          child: const Text('Claim giveaway'),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              TextButton(
+                key: const ValueKey('marketplace-detail-close-$_instanceId'),
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return KeyedSubtree(
+      key: const ValueKey('marketplace-detail-test-surface'),
+      child: Column(
+        children: [
+          InkWell(
+            key: const ValueKey('marketplace-listing-tap-$_instanceId'),
+            onTap: _showDetail,
+            child: const SizedBox(
+              height: 80,
+              child: Center(child: Text('Terracotta pots listing')),
+            ),
+          ),
+          if (widget.tileAlsoHasAction)
+            FilledButton(
+              key: const ValueKey('marketplace-action-claim-giveaway'),
+              onPressed: widget.onAction ?? _noop,
+              child: const Text('Claim giveaway on covered tile'),
+            ),
+        ],
       ),
     );
   }
