@@ -174,6 +174,10 @@ Future<void> installMetadataEvidenceTarget(
 /// Flutter's [WidgetTester.tap] reports a missed hit test only as a warning.
 /// Walkthroughs need the failure at the action that missed, rather than at the
 /// unrelated postcondition which would otherwise fail afterwards.
+///
+/// [isFinderReadyForTap] shares the non-mutating part of this check with
+/// walkthrough action discovery. Discovery must not tap or scroll a candidate
+/// merely to learn whether it is available.
 Future<void> tapWhenVisible(
   WidgetTester tester,
   Finder finder, {
@@ -238,30 +242,17 @@ Future<void> tapWhenVisible(
       );
     }
 
-    final location = tester.getCenter(finder, warnIfMissed: false);
-    final hitTestResult = HitTestResult();
-    tester.binding.hitTestInView(
-      hitTestResult,
-      location,
-      targetView.view.viewId,
+    final hitTest = _tapTargetHitTest(
+      tester: tester,
+      finder: finder,
+      targetElement: targetElement,
     );
-    final targetWasHit = hitTestResult.path.any(
-      (entry) => entry.target == targetRenderObject,
-    );
-    if (targetWasHit) {
+    if (hitTest.targetWasHit) {
       await tester.tap(finder, warnIfMissed: false);
       return;
     }
 
-    final renderView = tester.binding.renderViews.firstWhere(
-      (view) => view.flutterView.viewId == targetView.view.viewId,
-    );
-    lastMiss = _MissedTapHitTest(
-      location: location,
-      rootRenderViewSize: renderView.size,
-      isOutOfBounds: !(Offset.zero & renderView.size).contains(location),
-      hitTestPath: hitTestResult.path.map((entry) => entry.target).join(' -> '),
-    );
+    lastMiss = hitTest.miss;
   } while (!budget.expired);
 
   final outcome = lastMiss.isOutOfBounds
@@ -274,6 +265,206 @@ Future<void> tapWhenVisible(
     'Waited ${formatWaitDuration(budget.elapsed)} for the target to become '
     'tappable. $outcome Hit-test path: ${lastMiss.hitTestPath}.',
   );
+}
+
+/// Returns whether [finder] resolves to one enabled control that can receive
+/// a pointer at its current location. This only inspects the rendered tree; it
+/// never scrolls, pumps, taps, or otherwise changes the current UI surface.
+bool isFinderReadyForTap(WidgetTester tester, Finder finder) {
+  final matches = finder.evaluate();
+  if (matches.length != 1 || !_finderHasEnabledTapHandler(finder)) {
+    return false;
+  }
+  final targetElement = matches.single;
+  if (targetElement.renderObject is! RenderBox ||
+      targetElement.findAncestorWidgetOfExactType<View>() == null) {
+    return false;
+  }
+  return _tapTargetHitTest(
+    tester: tester,
+    finder: finder,
+    targetElement: targetElement,
+  ).targetWasHit;
+}
+
+/// Finds the first action candidate that is both inside [surface] and ready to
+/// receive a pointer. In particular, controls remaining in the tree behind a
+/// modal route do not count as available actions.
+Finder? firstReadyActionOnSurface({
+  required WidgetTester tester,
+  required Finder surface,
+  required Iterable<Finder> candidates,
+}) {
+  for (final candidate in candidates) {
+    final onSurface = find.descendant(of: surface, matching: candidate);
+    if (isFinderReadyForTap(tester, onSurface)) {
+      return onSurface;
+    }
+  }
+  return null;
+}
+
+/// Requires the expected community route and its actor picker at a B25 row
+/// boundary. A dialog or a different route is a failed row, never something
+/// the walkthrough silently dismisses.
+Future<void> assertB25CommunityRowSurface({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required String workflowId,
+  required String role,
+  required String boundary,
+  required Future<void> Function(String name) captureDiagnostic,
+}) async {
+  final expectedSurface = _evidenceTargetRoute(target);
+  final currentExpectedSurfaces = expectedSurface
+      .evaluate()
+      .where((element) => ModalRoute.of(element)?.isCurrent ?? false)
+      .toList(growable: false);
+  final picker = find.descendant(
+    of: expectedSurface,
+    matching: find.byKey(const ValueKey('actor-identity-picker-button')),
+  );
+  if (currentExpectedSurfaces.length == 1 &&
+      isFinderReadyForTap(tester, picker)) {
+    return;
+  }
+
+  final diagnosticName =
+      '${target.phase}_${target.extensionId}_${workflowId}_${role}_'
+      'SURFACE_MISMATCH_${boundary.toUpperCase()}';
+  final foundSurface = _unexpectedCommunitySurfaceDescription(
+    expectedExtensionId: target.extensionId,
+    expectedSurface: expectedSurface,
+    picker: picker,
+  );
+  try {
+    await captureDiagnostic(diagnosticName);
+  } catch (error) {
+    fail(
+      'B25 surface mismatch $boundary $workflowId/$role:\n'
+      'expected community ${target.extensionId};\n'
+      'found $foundSurface.\n'
+      'Additionally failed to capture diagnostic frame $diagnosticName: '
+      '$error',
+    );
+  }
+  fail(
+    'B25 surface mismatch $boundary $workflowId/$role:\n'
+    'expected community ${target.extensionId};\n'
+    'found $foundSurface.',
+  );
+}
+
+String _unexpectedCommunitySurfaceDescription({
+  required String expectedExtensionId,
+  required Finder expectedSurface,
+  required Finder picker,
+}) {
+  final currentDialogKeys = find
+      .byWidgetPredicate((widget) {
+        final key = widget.key;
+        return key is ValueKey<String> && key.value.contains('dialog');
+      }, description: 'current dialog surface')
+      .evaluate()
+      .where((element) => ModalRoute.of(element)?.isCurrent ?? false)
+      .map((element) => (element.widget.key! as ValueKey<String>).value)
+      .toList(growable: false);
+  if (currentDialogKeys.isNotEmpty) return currentDialogKeys.first;
+
+  final currentCommunitySurfaces = find
+      .byType(LocalExtensionScreen)
+      .evaluate()
+      .where((element) => ModalRoute.of(element)?.isCurrent ?? false)
+      .map(
+        (element) =>
+            'local-extension-${(element.widget as LocalExtensionScreen).community.extensionId}',
+      )
+      .toList(growable: false);
+  if (currentCommunitySurfaces.isNotEmpty) {
+    return currentCommunitySurfaces.first;
+  }
+  if (find.byType(ModalBarrier).evaluate().isNotEmpty) {
+    return 'modal-barrier';
+  }
+  if (expectedSurface.evaluate().isEmpty) {
+    return 'no-local-extension-$expectedExtensionId';
+  }
+  if (picker.evaluate().isEmpty) {
+    return 'actor-identity-picker-missing';
+  }
+  return 'unexpected-route-or-overlay';
+}
+
+bool _finderHasEnabledTapHandler(Finder finder) {
+  if (finder.evaluate().any((element) => _isEnabledTapWidget(element.widget))) {
+    return true;
+  }
+  return find
+      .descendant(
+        of: finder,
+        matching: find.byWidgetPredicate(_isEnabledTapWidget),
+      )
+      .evaluate()
+      .isNotEmpty;
+}
+
+bool _isEnabledTapWidget(Widget widget) {
+  if (widget is ButtonStyleButton) return widget.onPressed != null;
+  if (widget is IconButton) return widget.onPressed != null;
+  if (widget is InputChip) return widget.onPressed != null;
+  if (widget is RawMaterialButton) return widget.onPressed != null;
+  if (widget is InkWell) {
+    return widget.onTap != null || widget.onDoubleTap != null;
+  }
+  if (widget is GestureDetector) {
+    return widget.onTap != null || widget.onDoubleTap != null;
+  }
+  if (widget is ListTile) return widget.onTap != null;
+  return false;
+}
+
+_TapTargetHitTest _tapTargetHitTest({
+  required WidgetTester tester,
+  required Finder finder,
+  required Element targetElement,
+}) {
+  final targetRenderObject = targetElement.renderObject;
+  final targetView = targetElement.findAncestorWidgetOfExactType<View>();
+  if (targetRenderObject is! RenderBox || targetView == null) {
+    return const _TapTargetHitTest(
+      targetWasHit: false,
+      miss: _MissedTapHitTest(
+        location: Offset.zero,
+        rootRenderViewSize: Size.zero,
+        isOutOfBounds: true,
+        hitTestPath: 'target has no RenderBox or Flutter view',
+      ),
+    );
+  }
+  final location = tester.getCenter(finder, warnIfMissed: false);
+  final hitTestResult = HitTestResult();
+  tester.binding.hitTestInView(hitTestResult, location, targetView.view.viewId);
+  final renderView = tester.binding.renderViews.firstWhere(
+    (view) => view.flutterView.viewId == targetView.view.viewId,
+  );
+  return _TapTargetHitTest(
+    targetWasHit: hitTestResult.path.any(
+      (entry) => entry.target == targetRenderObject,
+    ),
+    miss: _MissedTapHitTest(
+      location: location,
+      rootRenderViewSize: renderView.size,
+      isOutOfBounds: !(Offset.zero & renderView.size).contains(location),
+      hitTestPath: hitTestResult.path.map((entry) => entry.target).join(' -> '),
+    ),
+  );
+}
+
+class _TapTargetHitTest {
+  const _TapTargetHitTest({required this.targetWasHit, required this.miss});
+
+  final bool targetWasHit;
+  final _MissedTapHitTest miss;
 }
 
 class _MissedTapHitTest {
@@ -386,6 +577,12 @@ Finder _evidenceTargetRoute(LoomEvidenceTarget target) {
         '(${target.extensionId})',
   );
 }
+
+/// The exact installed community screen expected for [target]. Callers still
+/// need [assertB25CommunityRowSurface] to prove that this finder is on the
+/// current route rather than merely retained below an overlay.
+Finder evidenceTargetRoute(LoomEvidenceTarget target) =>
+    _evidenceTargetRoute(target);
 
 Future<void> _returnToCommunityList(WidgetTester tester) async {
   for (var attempt = 0; attempt < 8; attempt += 1) {
@@ -2584,7 +2781,8 @@ List<_B25TermMatch> _b25TermMatches(
       if (index < 0) break;
       final start = index;
       final end = index + needle.length;
-      final boundaryOk = _b25IsWordBoundaryStart(lower, start) &&
+      final boundaryOk =
+          _b25IsWordBoundaryStart(lower, start) &&
           _b25IsWordBoundaryEnd(lower, end);
       final span = _B25TextSpan(start, end);
       if (boundaryOk &&

@@ -342,6 +342,14 @@ void main() {
                   b25Model: productDocRow,
                   capture: capture,
                 );
+          await assertB25CommunityRowSurface(
+            tester: tester,
+            target: target,
+            workflowId: productDocRow.workflowId,
+            role: productDocRow.role,
+            boundary: 'after',
+            captureDiagnostic: capture,
+          );
           recordEvidenceEntry({
             'phase': target.phase,
             'appId': target.extensionId,
@@ -1321,6 +1329,15 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
   required B25ProductDocInteractionModel b25Model,
   required Future<void> Function(String name) capture,
 }) async {
+  await assertB25CommunityRowSurface(
+    tester: tester,
+    target: target,
+    workflowId: b25Model.workflowId,
+    role: b25Model.role,
+    boundary: 'before',
+    captureDiagnostic: capture,
+  );
+  final communitySurface = evidenceTargetRoute(target);
   void beatSubstep(
     WalkthroughSubstep substep, {
     String? account,
@@ -1424,12 +1441,11 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
 
   final primaryCandidates = selector.transitions
       .where(
-        (candidate) =>
-            matchB25TransitionAgainstTerms(
-              candidate.transition,
-              primaryTerms: b25Model.requiredPrimaryActions,
-              alternateTerms: b25Model.requiredAlternateActions,
-            ).primary,
+        (candidate) => matchB25TransitionAgainstTerms(
+          candidate.transition,
+          primaryTerms: b25Model.requiredPrimaryActions,
+          alternateTerms: b25Model.requiredAlternateActions,
+        ).primary,
       )
       .toList(growable: false);
   if (primaryCandidates.isEmpty) {
@@ -1455,6 +1471,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
     tester: tester,
     bodyWatch: bodyWatch,
     selector: selector,
+    surface: communitySurface,
     candidates: primaryCandidates,
     lastCompletedStep: lastCompletedStep,
     attemptedStep: attemptedStep,
@@ -2113,6 +2130,7 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
   final alternate = await _waitForB25AlternateAction(
     tester: tester,
     selector: selector,
+    surface: evidenceTargetRoute(target),
     primaryTerms: model.requiredPrimaryActions,
     alternateTerms: model.requiredAlternateActions,
     excludedTransitionId: executedPrimary.id,
@@ -2244,6 +2262,7 @@ Future<({LoomWorkflowTransition transition, Finder finder})?>
 _waitForB25AlternateAction({
   required WidgetTester tester,
   required _ShippedWorkflowSelector selector,
+  required Finder surface,
   required List<String> primaryTerms,
   required List<String> alternateTerms,
   required String excludedTransitionId,
@@ -2266,16 +2285,13 @@ _waitForB25AlternateAction({
         selector.instance.instanceId,
         transition.id,
       );
-      if (finder.evaluate().isNotEmpty) {
-        return (transition: transition, finder: finder);
-      }
-    }
-    if (attempt == 20) {
-      final instance = _engineInstanceFinder(selector.instance.instanceId);
-      if (instance.evaluate().isNotEmpty) {
-        await tester.ensureVisible(instance.first);
-        await tester.tap(instance.first, warnIfMissed: false);
-        await _pumpB25Frames(tester);
+      final readyFinder = firstReadyActionOnSurface(
+        tester: tester,
+        surface: surface,
+        candidates: [finder],
+      );
+      if (readyFinder != null) {
+        return (transition: transition, finder: readyFinder);
       }
     }
     await tester.runAsync(
@@ -2325,11 +2341,12 @@ _B25WalkthroughResult _b25WalkthroughResult({
         );
   final visiblePrimary = primaryTermMatch.primary;
   final visibleAlternate = alternateTermMatch.alternate;
-  final offeredActions = selector.transitions
-      .map((candidate) => candidate.transition.id)
-      .toSet()
-      .toList()
-    ..sort();
+  final offeredActions =
+      selector.transitions
+          .map((candidate) => candidate.transition.id)
+          .toSet()
+          .toList()
+        ..sort();
   final findings = <String>[
     if (visiblePrimary.isEmpty)
       '${model.communityName} / ${model.workflowId} / ${model.role}: '
@@ -2358,11 +2375,15 @@ Future<_B25WalkthroughResult> _captureMissingB25PackageWorkflow({
   required B25ProductDocInteractionModel b25Model,
   required Future<void> Function(String name) capture,
 }) async {
-  void beatSubstep(
-    WalkthroughSubstep substep, {
-    String? role,
-    String? tabId,
-  }) {
+  await assertB25CommunityRowSurface(
+    tester: tester,
+    target: target,
+    workflowId: b25Model.workflowId,
+    role: b25Model.role,
+    boundary: 'before',
+    captureDiagnostic: capture,
+  );
+  void beatSubstep(WalkthroughSubstep substep, {String? role, String? tabId}) {
     final progress = buildWalkthroughSubstepProgress(
       substep,
       role: role,
@@ -2388,7 +2409,10 @@ Future<_B25WalkthroughResult> _captureMissingB25PackageWorkflow({
       appShellConfiguration: package.appShellConfiguration,
     );
     if (tabs.any((tab) => tab.tabId == preferredTab)) {
-      beatSubstep(WalkthroughSubstep.selectingCommunityTab, tabId: preferredTab);
+      beatSubstep(
+        WalkthroughSubstep.selectingCommunityTab,
+        tabId: preferredTab,
+      );
       await _selectCommunityTab(tester, preferredTab);
     }
   }
@@ -3216,6 +3240,7 @@ _waitForShippedWorkflowAction({
   required WidgetTester tester,
   required WalkthroughBodyWatch bodyWatch,
   required _ShippedWorkflowSelector selector,
+  required Finder surface,
   required List<_ShippedTransitionCandidate> candidates,
   required String lastCompletedStep,
   required String attemptedStep,
@@ -3233,7 +3258,6 @@ _waitForShippedWorkflowAction({
       'a tappable shipped workflow action on the '
       '${selector.binding.tabId} tab for ${selector.roleId}. '
       'Polled action widgets: [$actionDescriptions].';
-  var attemptedExpansion = false;
   while (!budget.expired) {
     // A 50ms poll is active work, not a stopped walkthrough. Beat before each
     // awaited poll operation so the body watchdog still catches a genuinely
@@ -3249,17 +3273,13 @@ _waitForShippedWorkflowAction({
         selector.instance.instanceId,
         candidate.transition.id,
       );
-      if (finder.evaluate().isNotEmpty) {
-        return (candidate: candidate, finder: finder);
-      }
-    }
-    if (!attemptedExpansion && budget.elapsed >= const Duration(seconds: 1)) {
-      attemptedExpansion = true;
-      final instance = _engineInstanceFinder(selector.instance.instanceId);
-      if (instance.evaluate().isNotEmpty) {
-        await tester.ensureVisible(instance.first);
-        await tester.tap(instance.first, warnIfMissed: false);
-        await tester.pumpAndSettle();
+      final readyFinder = firstReadyActionOnSurface(
+        tester: tester,
+        surface: surface,
+        candidates: [finder],
+      );
+      if (readyFinder != null) {
+        return (candidate: candidate, finder: readyFinder);
       }
     }
     await tester.runAsync(
@@ -3274,10 +3294,17 @@ _waitForShippedWorkflowAction({
     )) {
       return false;
     }
-    return _engineActionFinder(
-      selector.instance.instanceId,
-      candidate.transition.id,
-    ).evaluate().isNotEmpty;
+    return firstReadyActionOnSurface(
+          tester: tester,
+          surface: surface,
+          candidates: [
+            _engineActionFinder(
+              selector.instance.instanceId,
+              candidate.transition.id,
+            ),
+          ],
+        ) !=
+        null;
   });
   if (anyOtherTappable) {
     // The instance is live and offers other actions, but none of the

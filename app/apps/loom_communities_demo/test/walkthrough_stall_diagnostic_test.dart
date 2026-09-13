@@ -164,9 +164,7 @@ void main() {
               contains(targetDescription),
               contains('Walkthrough tap missed'),
               contains(
-                'Waited ${formatWaitDuration(
-                  WalkthroughWaitBudget.defaultInnerWaitTimeout,
-                )}',
+                'Waited ${formatWaitDuration(WalkthroughWaitBudget.defaultInnerWaitTimeout)}',
               ),
               contains('Hit-test path:'),
               isNot(contains('later widget not found')),
@@ -174,6 +172,116 @@ void main() {
           ),
         ),
       );
+    },
+  );
+
+  testWidgets(
+    'a B25 row boundary fails loudly when a blocking dialog covers its '
+    'community surface',
+    (WidgetTester tester) async {
+      final target = loomEvidenceTargets.firstWhere(
+        (target) => target.extensionId == 'ext_garden_club',
+      );
+      final capturedDiagnostics = <String>[];
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await installMetadataEvidenceTarget(tester, target);
+      await openEvidenceTarget(tester, target);
+      await assertB25CommunityRowSurface(
+        tester: tester,
+        target: target,
+        workflowId: 'garden-tool-loan',
+        role: 'member',
+        boundary: 'before',
+        captureDiagnostic: (name) async => capturedDiagnostics.add(name),
+      );
+
+      unawaited(
+        showDialog<void>(
+          context: tester.element(evidenceTargetRoute(target)),
+          builder: (context) => const AlertDialog(
+            key: ValueKey('marketplace-detail-dialog-steel-wheelbarrow'),
+            title: Text('Steel wheelbarrow'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await expectLater(
+        assertB25CommunityRowSurface(
+          tester: tester,
+          target: target,
+          workflowId: 'garden-tool-loan',
+          role: 'member',
+          boundary: 'after',
+          captureDiagnostic: (name) async => capturedDiagnostics.add(name),
+        ),
+        throwsA(
+          isA<Object>().having(
+            (error) => error.toString(),
+            'surface mismatch',
+            allOf(
+              contains('B25 surface mismatch after garden-tool-loan/member'),
+              contains('expected community ext_garden_club'),
+              contains('marketplace-detail-dialog-steel-wheelbarrow'),
+            ),
+          ),
+        ),
+      );
+      expect(
+        capturedDiagnostics,
+        contains(
+          '${target.phase}_${target.extensionId}_garden-tool-loan_member_'
+          'SURFACE_MISMATCH_AFTER',
+        ),
+      );
+    },
+  );
+
+  testWidgets(
+    'a legitimately unavailable action remains unavailable without tapping '
+    'its listing instance',
+    (WidgetTester tester) async {
+      var listingTapCount = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: KeyedSubtree(
+              key: const ValueKey('expected-community-surface'),
+              child: InkWell(
+                key: const ValueKey(
+                  'marketplace-listing-tap-steel-wheelbarrow',
+                ),
+                onTap: () => listingTapCount += 1,
+                child: const Center(
+                  child: FilledButton(
+                    key: ValueKey(
+                      'equipment-loan-action-borrow-steel-wheelbarrow',
+                    ),
+                    onPressed: null,
+                    child: Text('Borrow'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final action = firstReadyActionOnSurface(
+        tester: tester,
+        surface: find.byKey(const ValueKey('expected-community-surface')),
+        candidates: [
+          find.byKey(
+            const ValueKey('equipment-loan-action-borrow-steel-wheelbarrow'),
+          ),
+        ],
+      );
+      final outcome = action == null
+          ? 'primary_action_unavailable'
+          : 'primary_action_fired';
+
+      expect(outcome, 'primary_action_unavailable');
+      expect(listingTapCount, 0);
     },
   );
 
@@ -274,8 +382,7 @@ void main() {
     });
   });
 
-  test('whole-body watchdog reports the real stalled duration, not 0m 0s',
-      () {
+  test('whole-body watchdog reports the real stalled duration, not 0m 0s', () {
     fakeAsync((async) {
       // The injected clock and the injected timer advance together, so the
       // watchdog fires after a real `timeout` of quiet and the diagnostic must
@@ -346,22 +453,12 @@ void main() {
         contains(phase),
         contains(community),
         ...switch (substep) {
-          WalkthroughSubstep.seedingEvidenceAccounts => [
-            contains(account),
-          ],
-          WalkthroughSubstep.signingInEvidenceAccount => [
-            contains(account),
-          ],
-          WalkthroughSubstep.selectingActorIdentity => [
-            contains(role),
-          ],
+          WalkthroughSubstep.seedingEvidenceAccounts => [contains(account)],
+          WalkthroughSubstep.signingInEvidenceAccount => [contains(account)],
+          WalkthroughSubstep.selectingActorIdentity => [contains(role)],
           WalkthroughSubstep.verifyingExperienceTagline => const <Matcher>[],
-          WalkthroughSubstep.selectingCommunityTab => [
-            contains(tabId),
-          ],
-          WalkthroughSubstep.waitingForEngineNativeWidget => [
-            contains(tabId),
-          ],
+          WalkthroughSubstep.selectingCommunityTab => [contains(tabId)],
+          WalkthroughSubstep.waitingForEngineNativeWidget => [contains(tabId)],
         },
       ];
       return allOf(<Matcher>[
