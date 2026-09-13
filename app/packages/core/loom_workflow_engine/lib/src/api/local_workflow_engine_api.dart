@@ -147,6 +147,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   bool _failClosedOnMissingDefinition;
   ActiveMembershipLookup? _activeMembershipLookup;
   WorkflowSurfacePermissionLookup? _surfacePermissionLookup;
+  final trans_eval.GuardEvaluationFailureReporter? onGuardEvaluationFailure;
 
   /// Registry of loaded workflow definitions, keyed by definition ID
   /// (`"communityId_workflowType"`).
@@ -190,6 +191,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     NotificationDeliveryService? notificationDeliveryService,
     ActiveMembershipLookup? activeMembershipLookup,
     WorkflowSurfacePermissionLookup? surfacePermissionLookup,
+    this.onGuardEvaluationFailure,
     bool failClosedOnMissingDefinition = false,
   }) : _db = db,
        _communityId = communityId,
@@ -969,6 +971,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         resolvedData,
         fanId,
       ),
+      instanceId: instanceId,
+      onGuardEvaluationFailure: onGuardEvaluationFailure,
     );
   }
 
@@ -1006,6 +1010,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         computedForFan,
         fanId,
       ),
+      instanceId: instanceId,
+      onGuardEvaluationFailure: onGuardEvaluationFailure,
     );
     final result = <LoomWorkflowTransition>[];
     for (final transition in candidates) {
@@ -1216,6 +1222,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         computedData,
         fanId,
       ),
+      instanceId: instanceId,
+      onGuardEvaluationFailure: onGuardEvaluationFailure,
     );
 
     final declaredTransition = machine.transitions.firstWhere(

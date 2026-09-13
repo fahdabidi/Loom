@@ -986,6 +986,91 @@ void main() {
   );
 
   test(
+    'availableTransitions excludes one throwing guard, returns its sibling, and logs the fault',
+    () async {
+      const workflowType = 'guard-failure-isolation';
+      const instanceId = 'guard-failure-isolation-1';
+      final logRecords = <String>[];
+      final loggingService = WorkflowService(
+        database: database,
+        identityExtractor: const HeaderWorkflowIdentityExtractor(),
+        appAccessClient: appAccessClient,
+        communityGroupIdResolver: MapCommunityGroupIdResolver({
+          _communityId: 'loom_communities_service_unit',
+        }),
+        unexpectedErrorLogSink: logRecords.add,
+      );
+      await database.upsertDefinition(
+        definitionId: '${_communityId}_$workflowType',
+        workflowType: workflowType,
+        definitionJson: jsonEncode({
+          'initialState': 'unreviewed',
+          'states': {
+            'unreviewed': {'label': 'Unreviewed'},
+            'acknowledged': {'label': 'Acknowledged'},
+          },
+          'transitions': [
+            {
+              'id': 'request-restoration',
+              'label': 'Request restoration',
+              'from': ['unreviewed'],
+              'to': 'acknowledged',
+              'guard': {'formula': '!isSuppressionActive'},
+            },
+            {
+              'id': 'acknowledge-proof',
+              'label': 'Acknowledge proof',
+              'from': ['unreviewed'],
+              'to': 'acknowledged',
+              'guard': {
+                'actorEqualsField': {'key': 'memberFanId'},
+              },
+            },
+          ],
+          'instanceDataSchema': {
+            'memberFanId': {'type': 'fanId'},
+          },
+        }),
+        version: 1,
+      );
+      await database.insertInstance(
+        instanceId: instanceId,
+        communityId: _communityId,
+        workflowType: workflowType,
+        currentState: 'unreviewed',
+        instanceData: {'memberFanId': 'fan-1'},
+        createdByFanId: 'fan-1',
+      );
+
+      final response = await loggingService.handler(
+        _getRequest(
+          '/v1/communities/$_communityId/instances/$instanceId/'
+              'available-transitions',
+          'fan-1',
+        ),
+      );
+
+      expect(response.statusCode, 200);
+      expect(
+        jsonDecode(await response.readAsString()),
+        containsPair('transitions', [
+          containsPair('transitionId', 'acknowledge-proof'),
+        ]),
+      );
+      expect(logRecords, hasLength(1));
+      final record = jsonDecode(logRecords.single) as Map<String, dynamic>;
+      expect(record['event'], 'workflow_guard_evaluation_failure');
+      expect(record['communityId'], _communityId);
+      expect(record['workflowType'], workflowType);
+      expect(record['instanceId'], instanceId);
+      expect(record['transitionId'], 'request-restoration');
+      expect(record['errorType'], 'FormulaEvaluationException');
+      expect(record['error'], contains('Expected bool, got null'));
+      expect(record['stackTrace'], contains('evaluateGuard'));
+    },
+  );
+
+  test(
     'updateInstanceFields allows an engine-authorized edit and returns it',
     () async {
       await _seedEditableInstance(database);

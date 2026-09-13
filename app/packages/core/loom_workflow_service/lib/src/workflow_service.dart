@@ -1466,8 +1466,9 @@ class WorkflowService {
           instance.workflowType,
         );
         const resolver = ArchetypeResolver();
-        final archetype = resolver
-            .resolveAll(definitions)[instance.workflowType];
+        final archetype = resolver.resolveAll(
+          definitions,
+        )[instance.workflowType];
 
         // The engine's own resolution of what is firable right now. This is
         // the guard layer, and it is the *same* call `applyTransition` makes,
@@ -4003,10 +4004,33 @@ class WorkflowService {
   LocalWorkflowEngineApi _authoritativeEngine(String communityId) {
     final engine = _engines.putIfAbsent(
       communityId,
-      () => LocalWorkflowEngineApi(db: _database, communityId: communityId),
+      () => LocalWorkflowEngineApi(
+        db: _database,
+        communityId: communityId,
+        onGuardEvaluationFailure: (failure) =>
+            _logGuardEvaluationFailure(communityId, failure),
+      ),
     );
     engine.setFailClosedOnMissingDefinition(true);
     return engine;
+  }
+
+  void _logGuardEvaluationFailure(
+    String communityId,
+    GuardEvaluationFailure failure,
+  ) {
+    _unexpectedErrorLogSink(
+      jsonEncode({
+        'event': 'workflow_guard_evaluation_failure',
+        'communityId': communityId,
+        'workflowType': failure.workflowType,
+        'instanceId': failure.instanceId,
+        'transitionId': failure.transitionId,
+        'errorType': failure.error.runtimeType.toString(),
+        'error': failure.error.toString(),
+        'stackTrace': failure.stackTrace.toString(),
+      }),
+    );
   }
 
   Future<Response?> _resolveRolesForRequest({
@@ -4315,10 +4339,7 @@ class WorkflowService {
           );
         }
 
-        final engine = _engines.putIfAbsent(
-          communityId,
-          () => LocalWorkflowEngineApi(db: _database, communityId: communityId),
-        );
+        final engine = _authoritativeEngine(communityId);
         final roleResolutionError = await _resolveRolesForRequest(
           request: request,
           communityId: communityId,
@@ -4478,10 +4499,7 @@ class WorkflowService {
           );
         }
 
-        final engine = _engines.putIfAbsent(
-          communityId,
-          () => LocalWorkflowEngineApi(db: _database, communityId: communityId),
-        );
+        final engine = _authoritativeEngine(communityId);
         final roleResolutionError = await _resolveRolesForRequest(
           request: request,
           communityId: communityId,
