@@ -89,6 +89,58 @@ void main() {
     },
   );
 
+  test(
+    'an inner wait exhausts its default budget before the watchdog fires',
+    () {
+      fakeAsync((async) {
+        final clock = async.getClock(DateTime.utc(2026, 1, 1));
+        final watch = WalkthroughBodyWatch(
+          timeout: WalkthroughWaitBudget.defaultTimeout,
+          now: clock.now,
+          lastCompletedStep: 'start screenshot captured',
+          attemptedStep: 'waiting for the primary action to render',
+          waitingFor: 'a tappable primary action',
+        );
+        var polls = 0;
+        Duration? exhaustedBudget;
+
+        Future<String> waitForPrimaryActionOutcome() async {
+          // The body watchdog starts first, as it does after the start
+          // screenshot. This setup gap is what exposed the old equal-deadline
+          // race.
+          await Future<void>.delayed(const Duration(seconds: 1));
+          final budget = WalkthroughWaitBudget(now: clock.now);
+          while (!budget.expired) {
+            polls += 1;
+            await Future<void>.delayed(const Duration(seconds: 1));
+          }
+          exhaustedBudget = budget.elapsed;
+          return 'primary_action_unavailable';
+        }
+
+        final result = watchWalkthroughBodyWith<String>(
+          waitForPrimaryActionOutcome(),
+          watch,
+        );
+        String? outcome;
+        Object? failure;
+        result.then<void>(
+          (value) => outcome = value,
+          onError: (Object error, StackTrace _) => failure = error,
+        );
+
+        async.elapse(WalkthroughWaitBudget.defaultTimeout);
+
+        // This also proves the result came after a real exhausted polling wait,
+        // rather than a body that returned an unavailable outcome immediately.
+        expect(polls, greaterThan(0));
+        expect(exhaustedBudget, WalkthroughWaitBudget.defaultInnerWaitTimeout);
+        expect(outcome, 'primary_action_unavailable');
+        expect(failure, isNull);
+      });
+    },
+  );
+
   test('whole-body bound fails a never-completing await before the first '
       'screenshot and names the setup phase plus what was awaited', () {
     fakeAsync((async) {

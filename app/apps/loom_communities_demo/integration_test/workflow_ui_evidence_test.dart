@@ -1453,6 +1453,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
   }
   final visibleAction = await _waitForShippedWorkflowAction(
     tester: tester,
+    bodyWatch: bodyWatch,
     selector: selector,
     candidates: primaryCandidates,
     lastCompletedStep: lastCompletedStep,
@@ -3213,6 +3214,7 @@ String _shippedTransitionInputValue(String key, String type, String roleId) {
 Future<({_ShippedTransitionCandidate candidate, Finder finder})?>
 _waitForShippedWorkflowAction({
   required WidgetTester tester,
+  required WalkthroughBodyWatch bodyWatch,
   required _ShippedWorkflowSelector selector,
   required List<_ShippedTransitionCandidate> candidates,
   required String lastCompletedStep,
@@ -3227,8 +3229,21 @@ _waitForShippedWorkflowAction({
             '${candidate.transition.id} (${candidate.transition.label})',
       )
       .join(', ');
+  final pollingWaitingFor =
+      'a tappable shipped workflow action on the '
+      '${selector.binding.tabId} tab for ${selector.roleId}. '
+      'Polled action widgets: [$actionDescriptions].';
   var attemptedExpansion = false;
   while (!budget.expired) {
+    // A 50ms poll is active work, not a stopped walkthrough. Beat before each
+    // awaited poll operation so the body watchdog still catches a genuinely
+    // hung pump or platform call, while the bounded inner wait owns its
+    // defined unavailable outcome.
+    bodyWatch.beat(
+      lastCompletedStep: lastCompletedStep,
+      attemptedStep: attemptedStep,
+      waitingFor: pollingWaitingFor,
+    );
     for (final candidate in candidates) {
       final finder = _engineActionFinder(
         selector.instance.instanceId,
@@ -3270,15 +3285,17 @@ _waitForShippedWorkflowAction({
     // is a product finding, not a stall.
     return null;
   }
+  bodyWatch.beat(
+    lastCompletedStep: lastCompletedStep,
+    attemptedStep: attemptedStep,
+    waitingFor: 'capturing $diagnosticFrameName after $pollingWaitingFor',
+  );
   await captureDiagnostic(diagnosticFrameName);
   throw WalkthroughStallFailure(
     buildWalkthroughStallMessage(
       lastCompletedStep: lastCompletedStep,
       attemptedStep: attemptedStep,
-      waitingFor:
-          'a tappable shipped workflow action on the '
-          '${selector.binding.tabId} tab for ${selector.roleId}. '
-          'Polled action widgets: [$actionDescriptions].',
+      waitingFor: pollingWaitingFor,
       budget: budget,
       diagnosticFrameName: diagnosticFrameName,
     ),

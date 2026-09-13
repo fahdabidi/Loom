@@ -14,10 +14,10 @@ import 'dart:async';
 /// waited on instead of failing silently or hanging forever.
 class WalkthroughWaitBudget {
   WalkthroughWaitBudget({
-    Duration timeout = const Duration(minutes: 3),
+    Duration? timeout,
     DateTime Function()? now,
     DateTime? startedAt,
-  }) : timeout = timeout,
+  }) : timeout = timeout ?? defaultInnerWaitTimeout,
        now = now ?? _systemNow,
        _startedAt = (startedAt ?? (now ?? _systemNow)()).toUtc();
 
@@ -27,6 +27,18 @@ class WalkthroughWaitBudget {
   /// produced this ticket. A step that has not found its target in three
   /// minutes of real time is a stall, not a slow render.
   static const Duration defaultTimeout = Duration(minutes: 3);
+
+  /// Keeps a bounded inner wait from racing the enclosing three-minute body
+  /// watchdog. The watchdog is deliberately the longer deadline: it remains
+  /// available to diagnose a real hang while an inner poll can report its
+  /// defined outcome first.
+  static const Duration innerWaitSafetyMargin = Duration(seconds: 15);
+
+  /// The default deadline for an individual polling wait:
+  /// [defaultTimeout] minus [innerWaitSafetyMargin]. Keep this explicit rather
+  /// than allowing inner waits to inherit the watchdog's own timeout.
+  static final Duration defaultInnerWaitTimeout =
+      defaultTimeout - innerWaitSafetyMargin;
 
   final Duration timeout;
   final DateTime Function() now;

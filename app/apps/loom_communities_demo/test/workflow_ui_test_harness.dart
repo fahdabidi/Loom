@@ -528,7 +528,7 @@ Future<void> _waitForCommunityEntryResolution(
   DateTime Function()? now,
 }) async {
   final budget = WalkthroughWaitBudget(
-    timeout: timeout ?? WalkthroughWaitBudget.defaultTimeout,
+    timeout: timeout ?? WalkthroughWaitBudget.defaultInnerWaitTimeout,
     now: now,
   );
   final finder = find.byKey(const ValueKey('community-entry-checking'));
@@ -597,7 +597,7 @@ Future<void> _waitForEvidenceFinder(
   DateTime Function()? now,
 }) async {
   final budget = WalkthroughWaitBudget(
-    timeout: timeout ?? WalkthroughWaitBudget.defaultTimeout,
+    timeout: timeout ?? WalkthroughWaitBudget.defaultInnerWaitTimeout,
     now: now,
   );
   while (!budget.expired) {
@@ -627,7 +627,7 @@ Future<void> waitForEngineNativeWidget(
   DateTime Function()? now,
 }) async {
   final budget = WalkthroughWaitBudget(
-    timeout: timeout ?? WalkthroughWaitBudget.defaultTimeout,
+    timeout: timeout ?? WalkthroughWaitBudget.defaultInnerWaitTimeout,
     now: now,
   );
   while (!budget.expired) {
