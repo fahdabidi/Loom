@@ -12,7 +12,7 @@ void main() {
   });
 
   test('loads all 77 B25 rows from the ten owning product docs', () {
-    expect(catalog.models, hasLength(77));
+    expect(catalog.models, hasLength(kB25ProductDocInteractionRowCount));
     expect(
       {
         for (final model in catalog.models)

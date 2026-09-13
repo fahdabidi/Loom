@@ -1241,7 +1241,7 @@ void _assertB25AssetCoversTargets({
   required B25ProductDocInteractionCatalog catalog,
   required List<LoomEvidenceTarget> evidenceTargets,
 }) {
-  expect(catalog.models, hasLength(79));
+  expect(catalog.models, hasLength(kB25ProductDocInteractionRowCount));
   final rowCommunityIds = {for (final row in catalog.models) row.communityId};
   for (final target in evidenceTargets) {
     expect(

@@ -14,6 +14,16 @@ const b25InteractionModelFlutterAssetPath =
     'packages/loom_communities_app_shell/assets/'
     'b25_semantic_interaction_models.json';
 
+/// The bundled B25 interaction-model asset's total row count.
+///
+/// Five rows use `wf_`-prefixed IDs (`wf_demo-app-persona-picker`,
+/// `wf_community-persona-aware-ux`, and
+/// `wf_multi-persona-workflow-evidence`); two of those IDs occur twice under
+/// different personas. They are literal `testWidgets` names with no
+/// [LoomWorkflowDefinition] behind them, so the real B25 production bar is
+/// 77 - 5 = 72 rows. This constant is the asset row count, not that bar.
+const kB25ProductDocInteractionRowCount = 77;
+
 const b25DisallowedGenericSubstitutes = <String>[
   'accept',
   'cancel',
