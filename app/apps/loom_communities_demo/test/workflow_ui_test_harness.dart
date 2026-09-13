@@ -357,6 +357,10 @@ Future<void> assertB25CommunityRowSurface({
     of: expectedSurface,
     matching: find.byKey(const ValueKey('actor-identity-picker-button')),
   );
+  final entryGate = find.descendant(
+    of: expectedSurface,
+    matching: find.byKey(const ValueKey('community-entry-gate')),
+  );
   final initialUnexpectedSurface = _currentUnexpectedB25SurfaceDescription(
     expectedExtensionId: target.extensionId,
   );
@@ -369,6 +373,16 @@ Future<void> assertB25CommunityRowSurface({
       foundSurface: initialUnexpectedSurface,
       captureDiagnostic: captureDiagnostic,
     );
+  }
+
+  // An engine-native community's known entry gate intentionally comes before
+  // its actor picker. selectActorIdentity handles that state by creating the
+  // evidence account, so a current expected route containing this scoped gate
+  // is already a valid row-entry surface. This does not accept an unexpected
+  // dialog or another community: those are rejected above before this return.
+  if (_isExpectedB25CommunitySurfaceCurrent(expectedSurface) &&
+      entryGate.evaluate().isNotEmpty) {
+    return;
   }
 
   // The expected route is correct while a transition's IgnorePointer or
@@ -412,6 +426,7 @@ Future<void> assertB25CommunityRowSurface({
     role: role,
     boundary: boundary,
     waited: pickerReadiness.elapsed,
+    hitTestPath: _hitTestPathForFinder(tester, picker),
     captureDiagnostic: captureDiagnostic,
   );
 }
@@ -491,6 +506,7 @@ Future<void> _failB25PickerNeverBecameInteractable({
   required String role,
   required String boundary,
   required Duration waited,
+  required String hitTestPath,
   required Future<void> Function(String name) captureDiagnostic,
 }) async {
   const pickerName = 'actor-identity-picker-button';
@@ -502,7 +518,8 @@ Future<void> _failB25PickerNeverBecameInteractable({
       '$workflowId/$role:\n'
       'community ${target.extensionId} remained current;\n'
       'picker $pickerName never became tappable.\n'
-      'Waited ${formatWaitDuration(waited)} for the picker to become tappable.';
+      'Waited ${formatWaitDuration(waited)} for the picker to become tappable.\n'
+      'Hit-test path: $hitTestPath.';
   try {
     await captureDiagnostic(diagnosticName);
   } catch (error) {
@@ -513,6 +530,24 @@ Future<void> _failB25PickerNeverBecameInteractable({
     );
   }
   fail(message);
+}
+
+/// Returns the final rendered hit-test path for a non-interactable finder.
+///
+/// The B25 picker diagnostic uses this after its bounded readiness poll has
+/// expired, matching [tapWhenVisible]'s failure evidence. It deliberately
+/// remains diagnostic-only: this inspection neither taps nor dismisses a
+/// surface.
+String _hitTestPathForFinder(WidgetTester tester, Finder finder) {
+  final matches = finder.evaluate();
+  if (matches.length != 1) {
+    return 'picker resolved to ${matches.length} widgets';
+  }
+  return _tapTargetHitTest(
+    tester: tester,
+    finder: finder,
+    targetElement: matches.single,
+  ).miss.hitTestPath;
 }
 
 String _unexpectedCommunitySurfaceDescription({

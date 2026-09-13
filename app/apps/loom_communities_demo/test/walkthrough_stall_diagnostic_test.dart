@@ -176,6 +176,56 @@ void main() {
   );
 
   testWidgets(
+    'a B25 row boundary accepts its expected entry gate without requiring a '
+    'tappable picker',
+    (WidgetTester tester) async {
+      final target = loomEvidenceTargets.firstWhere(
+        (target) => target.extensionId == 'ext_garden_club',
+      );
+      final capturedDiagnostics = <String>[];
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await installShippedEvidenceTarget(tester, target);
+      await openEvidenceTarget(tester, target);
+
+      final expectedSurface = evidenceTargetRoute(target);
+      final entryGate = find.descendant(
+        of: expectedSurface,
+        matching: find.byKey(const ValueKey('community-entry-gate')),
+      );
+      final picker = find.descendant(
+        of: expectedSurface,
+        matching: find.byKey(const ValueKey('actor-identity-picker-button')),
+      );
+      expect(entryGate, findsOneWidget);
+      expect(isFinderReadyForTap(tester, picker), isFalse);
+
+      final start = DateTime.utc(2026, 1, 1);
+      var nowCalls = 0;
+      DateTime expireAfterFirstReadinessCheck() {
+        nowCalls += 1;
+        return nowCalls == 1
+            ? start
+            : start.add(WalkthroughWaitBudget.defaultInnerWaitTimeout);
+      }
+
+      var readinessPolls = 0;
+      await assertB25CommunityRowSurface(
+        tester: tester,
+        target: target,
+        workflowId: 'garden-event-rsvp',
+        role: 'member',
+        boundary: 'before',
+        captureDiagnostic: (name) async => capturedDiagnostics.add(name),
+        now: expireAfterFirstReadinessCheck,
+        onReadinessPoll: () => readinessPolls += 1,
+      );
+
+      expect(readinessPolls, 0);
+      expect(capturedDiagnostics, isEmpty);
+    },
+  );
+
+  testWidgets(
     'a B25 row boundary waits for its expected picker to become tappable',
     (WidgetTester tester) async {
       final target = loomEvidenceTargets.firstWhere(
@@ -279,6 +329,8 @@ void main() {
               contains(
                 'Waited ${formatWaitDuration(WalkthroughWaitBudget.defaultInnerWaitTimeout)}',
               ),
+              contains('Hit-test path:'),
+              contains('RenderAbsorbPointer'),
               isNot(contains('B25 surface mismatch')),
             ),
           ),
