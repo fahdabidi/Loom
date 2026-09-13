@@ -178,6 +178,7 @@ Future<void> tapWhenVisible(
   WidgetTester tester,
   Finder finder, {
   required String description,
+  DateTime Function()? now,
 }) async {
   final initialMatches = finder.evaluate();
   if (initialMatches.length != 1) {
@@ -190,49 +191,103 @@ Future<void> tapWhenVisible(
 
   await tester.ensureVisible(finder);
 
-  final targetElement = finder.evaluate().single;
-  final targetRenderObject = targetElement.renderObject;
-  if (targetRenderObject is! RenderBox) {
-    fail(
-      'Walkthrough tap target "$description" has no RenderBox after '
-      'ensureVisible; finder "$finder" resolved to $targetRenderObject.',
-    );
-  }
+  final budget = WalkthroughWaitBudget(now: now);
+  late _MissedTapHitTest lastMiss;
+  do {
+    // A route's transition IgnorePointer clears on a later frame. Pump in
+    // bounded increments rather than using pumpAndSettle: some walkthrough
+    // screens deliberately keep an animation running.
+    await tester.pump(const Duration(milliseconds: 50));
 
-  final targetView = targetElement.findAncestorWidgetOfExactType<View>();
-  if (targetView == null) {
-    fail(
-      'Walkthrough tap target "$description" has no Flutter view for hit '
-      'testing; finder "$finder" resolved to $targetRenderObject.',
-    );
-  }
+    final matches = finder.evaluate();
+    if (matches.length != 1) {
+      fail(
+        'Walkthrough tap target "$description" must continue to resolve to '
+        'exactly one widget while waiting to tap; finder "$finder" found '
+        '${matches.length}.',
+      );
+    }
 
-  final location = tester.getCenter(finder, warnIfMissed: false);
-  final hitTestResult = HitTestResult();
-  tester.binding.hitTestInView(hitTestResult, location, targetView.view.viewId);
-  final targetWasHit = hitTestResult.path.any(
-    (entry) => entry.target == targetRenderObject,
-  );
-  if (!targetWasHit) {
+    // The transition frame can also change a scrollable's layout. Re-apply
+    // visibility after the frame so the subsequent hit test does not retain a
+    // coordinate that was visible before the transition but is now off-screen.
+    await tester.ensureVisible(finder);
+    final visibleMatches = finder.evaluate();
+    if (visibleMatches.length != 1) {
+      fail(
+        'Walkthrough tap target "$description" must continue to resolve to '
+        'exactly one widget after it is made visible; finder "$finder" found '
+        '${visibleMatches.length}.',
+      );
+    }
+
+    final targetElement = visibleMatches.single;
+    final targetRenderObject = targetElement.renderObject;
+    if (targetRenderObject is! RenderBox) {
+      fail(
+        'Walkthrough tap target "$description" has no RenderBox while '
+        'waiting to tap; finder "$finder" resolved to $targetRenderObject.',
+      );
+    }
+
+    final targetView = targetElement.findAncestorWidgetOfExactType<View>();
+    if (targetView == null) {
+      fail(
+        'Walkthrough tap target "$description" has no Flutter view for hit '
+        'testing; finder "$finder" resolved to $targetRenderObject.',
+      );
+    }
+
+    final location = tester.getCenter(finder, warnIfMissed: false);
+    final hitTestResult = HitTestResult();
+    tester.binding.hitTestInView(
+      hitTestResult,
+      location,
+      targetView.view.viewId,
+    );
+    final targetWasHit = hitTestResult.path.any(
+      (entry) => entry.target == targetRenderObject,
+    );
+    if (targetWasHit) {
+      await tester.tap(finder, warnIfMissed: false);
+      return;
+    }
+
     final renderView = tester.binding.renderViews.firstWhere(
       (view) => view.flutterView.viewId == targetView.view.viewId,
     );
-    final outOfBounds = !(Offset.zero & renderView.size).contains(location);
-    final hitPath = hitTestResult.path
-        .map((entry) => entry.target)
-        .join(' -> ');
-    final outcome = outOfBounds
-        ? 'The target is off-screen: $location is outside the root render '
-              'bounds ${renderView.size} after ensureVisible.'
-        : 'The target is inside the root render bounds but did not receive '
-              'the pointer. It is obscured or cannot receive pointer events.';
-    fail(
-      'Walkthrough tap missed "$description" at $location. $outcome '
-      'Hit-test path: $hitPath.',
+    lastMiss = _MissedTapHitTest(
+      location: location,
+      rootRenderViewSize: renderView.size,
+      isOutOfBounds: !(Offset.zero & renderView.size).contains(location),
+      hitTestPath: hitTestResult.path.map((entry) => entry.target).join(' -> '),
     );
-  }
+  } while (!budget.expired);
 
-  await tester.tap(finder, warnIfMissed: false);
+  final outcome = lastMiss.isOutOfBounds
+      ? 'The target is off-screen: ${lastMiss.location} is outside the root '
+            'render bounds ${lastMiss.rootRenderViewSize} after ensureVisible.'
+      : 'The target is inside the root render bounds but did not receive the '
+            'pointer. It is obscured or cannot receive pointer events.';
+  fail(
+    'Walkthrough tap missed "$description" at ${lastMiss.location}. '
+    'Waited ${formatWaitDuration(budget.elapsed)} for the target to become '
+    'tappable. $outcome Hit-test path: ${lastMiss.hitTestPath}.',
+  );
+}
+
+class _MissedTapHitTest {
+  const _MissedTapHitTest({
+    required this.location,
+    required this.rootRenderViewSize,
+    required this.isOutOfBounds,
+    required this.hitTestPath,
+  });
+
+  final Offset location;
+  final Size rootRenderViewSize;
+  final bool isOutOfBounds;
+  final String hitTestPath;
 }
 
 Future<void> _installEvidencePackagePair(

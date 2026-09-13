@@ -89,8 +89,30 @@ void main() {
     },
   );
 
+  testWidgets('a walkthrough tap retries through a transient IgnorePointer', (
+    WidgetTester tester,
+  ) async {
+    var tapCount = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: _TemporarilyIgnoredWalkthroughTarget(
+          onPressed: () => tapCount += 1,
+        ),
+      ),
+    );
+
+    await tapWhenVisible(
+      tester,
+      find.byKey(const ValueKey('temporarily-ignored-walkthrough-action')),
+      description: 'temporarily ignored walkthrough action',
+    );
+
+    expect(tapCount, 1);
+  });
+
   testWidgets(
-    'a missed walkthrough tap fails at the named target with its hit-test path',
+    'a permanently missed walkthrough tap fails at the named target with its '
+    'hit-test path and wait',
     (WidgetTester tester) async {
       const targetDescription = 'deliberately obscured walkthrough action';
       await tester.pumpWidget(
@@ -116,6 +138,15 @@ void main() {
         ),
       );
 
+      final start = DateTime.utc(2026, 1, 1);
+      var nowCalls = 0;
+      DateTime expireAfterFirstMiss() {
+        nowCalls += 1;
+        return nowCalls <= 2
+            ? start
+            : start.add(WalkthroughWaitBudget.defaultInnerWaitTimeout);
+      }
+
       await expectLater(
         tapWhenVisible(
           tester,
@@ -123,6 +154,7 @@ void main() {
             const ValueKey('deliberately-obscured-walkthrough-action'),
           ),
           description: targetDescription,
+          now: expireAfterFirstMiss,
         ),
         throwsA(
           isA<Object>().having(
@@ -131,6 +163,11 @@ void main() {
             allOf(
               contains(targetDescription),
               contains('Walkthrough tap missed'),
+              contains(
+                'Waited ${formatWaitDuration(
+                  WalkthroughWaitBudget.defaultInnerWaitTimeout,
+                )}',
+              ),
               contains('Hit-test path:'),
               isNot(contains('later widget not found')),
             ),
@@ -371,4 +408,52 @@ void main() {
       );
     }
   });
+}
+
+class _TemporarilyIgnoredWalkthroughTarget extends StatefulWidget {
+  const _TemporarilyIgnoredWalkthroughTarget({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  State<_TemporarilyIgnoredWalkthroughTarget> createState() =>
+      _TemporarilyIgnoredWalkthroughTargetState();
+}
+
+class _TemporarilyIgnoredWalkthroughTargetState
+    extends State<_TemporarilyIgnoredWalkthroughTarget> {
+  Timer? _clearIgnorePointer;
+  var _ignoring = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _clearIgnorePointer = Timer(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        setState(() => _ignoring = false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _clearIgnorePointer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: IgnorePointer(
+          ignoring: _ignoring,
+          child: TextButton(
+            key: const ValueKey('temporarily-ignored-walkthrough-action'),
+            onPressed: widget.onPressed,
+            child: const Text('Target action'),
+          ),
+        ),
+      ),
+    );
+  }
 }
