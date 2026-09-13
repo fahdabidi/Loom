@@ -1807,6 +1807,37 @@ start; I spent two passes reasoning from filenames instead.
 `communityId` field holds an extensionId, and to a manifest filename that is a slug of a workflow
 type. Find the writer, read what it puts there, then join.
 
+### Stop using `pgrep -f` for liveness when you already have a pid — the bracket trick does not save you
+
+This file already records the `pgrep -f` self-match twice. It bit me **three more times in a single
+session** on 2026-09-12, which is evidence that remembering the trap is not a working mitigation.
+
+The bracket trick (`[r]sync`, `[c]odex`) protects the **pattern**. It does nothing about the rest of
+the command line, and a monitor that greps for a phase necessarily *contains* that phase's name. So:
+
+- a health loop reporting `phase=$(pgrep -f "[r]sync" && echo staging)` reported **staging forever**,
+  because it matched its own shell;
+- an ad-hoc check for the same thing matched *itself* too, so two independent probes agreed — and
+  both were wrong;
+- and `pkill -f "port-forward …"` killed the ssh session issuing it, because the pattern appeared in
+  its own command line.
+
+Two agreeing checks felt like confirmation. They were the same bug twice.
+
+**The fix is structural, not vigilance.** When you launch something you intend to watch, capture its
+pid and use `kill -0 "$PID"`. A pid cannot match itself. Where a pid is unavailable, prefer a signal
+the *watched process writes* — a log marker, a progress file, a directory size — over anything that
+inspects the process table.
+
+**And derive phase from the artifact, not the process list.** A build's own log emitting `Step 3/11`
+is unambiguous; "is rsync running" is both self-matching and wrong at the boundaries, because the
+staging phase precedes `docker build` entirely — a liveness check written as "is `docker build`
+running" reports death during perfectly normal work.
+
+Same family as every other measurement trap here: **a check whose signal can be produced by something
+other than the thing it claims to detect.** The cure is to pick a signal only the real thing can
+produce.
+
 ### An unknown boolean defaulted to `false` can AUTHORIZE the thing it was meant to deny
 
 Root Cause Agent, 2026-09-12, correcting a fix I was about to propose. The sentence worth keeping is
