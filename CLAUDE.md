@@ -1824,8 +1824,12 @@ transient."*
 means capturing everything twice — by the time the second pass begins, the pixels are gone. Capture
 and judge **in the same sitting**, one row at a time, and commit the verdict, which is the durable
 artifact and the thing the bar counts. The capture pipeline already exists
-(`loom_ux_judges/bin/b25_capture_workflow_screenshots.dart`) and `--phases` is not optional: each
-community has exactly one phase it has coverage in, and asking for another is a hard failure.
+(`loom_ux_judges/bin/b25_capture_workflow_screenshots.dart`), and **its two modes are not interchangeable — this is the part to get right before planning any capture work.**
+
+- **`--mode full-b25` is the ONLY mode that produces canonical, bar-eligible evidence.** The tool refuses to narrow it: all nine phases `B12-B20` are required, `--communities` is rejected outright, and `--shards`/`--only-shard` are rejected too, with the stated reason that *"canonical B25 sharding is fixed by phase so a caller cannot weaken capture reliability"*. So **there is no such thing as a cheap single-community canonical capture.**
+- **`--mode targeted-precheck` is for diagnostics**, and the tool says in its own error text that such output *"must not be committed as canonical B25 evidence"*. It is the mode that accepts `--phases` and `--communities`.
+
+**So the `--phases B12,<community's own phase>` form belongs to the DIAGNOSTIC mode only.** Using it and then committing the result as B25 evidence would produce artifacts the tool itself disclaims. Read the guards at the top of that file before planning a capture: they are deliberate, and they exist so nobody can quietly weaken the evidence standard by narrowing a run.
 
 The general form, worth applying past B25: **before planning a two-pass workflow, ask what the first
 pass leaves behind.** If its output is gitignored, written to `/tmp`, or otherwise transient, the two
