@@ -561,16 +561,12 @@ Future<PrimaryActionAvailability<T>> waitForPrimaryActionAvailability<T>({
     final candidateReadiness = <PrimaryActionCandidateReadiness<T>>[];
     PrimaryActionCandidate<T>? readyCandidate;
     for (final candidate in candidates) {
-      // A transition can move as its enclosing surface changes. Keep the
-      // readiness inspection non-mutating (it never taps or dismisses), but
-      // scroll every uniquely rendered candidate into the viewport before its
-      // current coordinates are hit-tested on this poll.
-      if (candidate.finder.evaluate().length == 1) {
-        await tester.ensureVisible(candidate.finder);
-      }
       final readiness = PrimaryActionCandidateReadiness(
         candidate: candidate,
-        readiness: inspectFinderTapReadiness(tester, candidate.finder),
+        readiness: await prepareFinderForTapReadiness(
+          tester: tester,
+          finder: candidate.finder,
+        ),
       );
       candidateReadiness.add(readiness);
       if (readyCandidate == null && readiness.readiness.isReady) {
@@ -594,6 +590,83 @@ Future<PrimaryActionAvailability<T>> waitForPrimaryActionAvailability<T>({
     await tester.pump(const Duration(milliseconds: 50));
   } while (!budget.expired);
   return availability;
+}
+
+/// Prepares one uniquely rendered candidate for a non-mutating readiness
+/// inspection.
+///
+/// A hit test uses the target's current screen coordinates. A control below a
+/// scrollable's fold is therefore preparable rather than unreachable. Both the
+/// bounded primary poll and the one-shot fallback probe use this helper so a
+/// missing primary does not skip viewport preparation for the actions that
+/// remain. Callers deliberately invoke it inside their candidate loops: route
+/// and scroll layout can move a control between inspections.
+Future<FinderTapReadiness> prepareFinderForTapReadiness({
+  required WidgetTester tester,
+  required Finder finder,
+}) async {
+  if (finder.evaluate().length == 1) {
+    await tester.ensureVisible(finder);
+  }
+  return inspectFinderTapReadiness(tester, finder);
+}
+
+/// Finds every candidate on [surface] that is enabled and can receive a
+/// pointer after its viewport has been prepared.
+///
+/// This is deliberately not an existence check and it never taps or dismisses
+/// anything. An empty result says no candidate was prepared and hittable; the
+/// B25 caller must retain its explicit stall outcome rather than silently
+/// classifying that fact as an actionless product state.
+Future<List<PrimaryActionCandidate<T>>> findReadyActionCandidatesOnSurface<T>({
+  required WidgetTester tester,
+  required Finder surface,
+  required Iterable<PrimaryActionCandidate<T>> candidates,
+}) async {
+  final readyCandidates = <PrimaryActionCandidate<T>>[];
+  for (final candidate in candidates) {
+    final onSurface = find.descendant(of: surface, matching: candidate.finder);
+    final readiness = await prepareFinderForTapReadiness(
+      tester: tester,
+      finder: onSurface,
+    );
+    if (readiness.isReady) {
+      readyCandidates.add(
+        PrimaryActionCandidate(
+          value: candidate.value,
+          finder: onSurface,
+          description: candidate.description,
+        ),
+      );
+    }
+  }
+  return readyCandidates;
+}
+
+/// States the prepared fallback result without promoting it to semantic proof.
+///
+/// A non-empty result lets the caller report the action that was truly found.
+/// An empty result deliberately returns null, leaving the caller to preserve
+/// its bounded stall failure for the distinct "nothing was tappable" case.
+String? describePreparedFallbackAvailability({
+  required String primaryUnavailableDescription,
+  required Iterable<String> preparedActionDescriptions,
+  required String documentedPrimaryRequirementDescription,
+}) {
+  final actions = preparedActionDescriptions
+      .map((description) => description.trim())
+      .where((description) => description.isNotEmpty)
+      .toSet()
+      .toList(growable: false);
+  if (actions.isEmpty) return null;
+  final actionList = switch (actions.length) {
+    1 => actions.single,
+    2 => '${actions.first} and ${actions.last}',
+    _ => '${actions.take(actions.length - 1).join(', ')} and ${actions.last}',
+  };
+  return '$primaryUnavailableDescription Other available actions include '
+      '$actionList. The $documentedPrimaryRequirementDescription was not '
+      'exercised.';
 }
 
 /// Waits for [finder] to resolve to one enabled control that can receive a
@@ -634,18 +707,24 @@ Future<({bool isReady, Duration elapsed})> waitForFinderReadyForTap(
 /// Finds the first action candidate that is both inside [surface] and ready to
 /// receive a pointer. In particular, controls remaining in the tree behind a
 /// modal route do not count as available actions.
-Finder? firstReadyActionOnSurface({
+Future<Finder?> firstReadyActionOnSurface({
   required WidgetTester tester,
   required Finder surface,
   required Iterable<Finder> candidates,
-}) {
-  for (final candidate in candidates) {
-    final onSurface = find.descendant(of: surface, matching: candidate);
-    if (isFinderReadyForTap(tester, onSurface)) {
-      return onSurface;
-    }
-  }
-  return null;
+}) async {
+  final readyCandidates = await findReadyActionCandidatesOnSurface(
+    tester: tester,
+    surface: surface,
+    candidates: [
+      for (final candidate in candidates)
+        PrimaryActionCandidate(
+          value: candidate,
+          finder: candidate,
+          description: candidate.describeMatch(Plurality.one),
+        ),
+    ],
+  );
+  return readyCandidates.isEmpty ? null : readyCandidates.first.finder;
 }
 
 /// Requires the expected community route and its actor picker at a B25 row

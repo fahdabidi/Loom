@@ -444,7 +444,7 @@ void main() {
         ),
       );
 
-      final action = firstReadyActionOnSurface(
+      final action = await firstReadyActionOnSurface(
         tester: tester,
         surface: find.byKey(const ValueKey('expected-community-surface')),
         candidates: [
@@ -792,6 +792,145 @@ void main() {
   );
 
   testWidgets(
+    'a primary-absent fallback prepares off-viewport actions and names them '
+    'without claiming primary proof',
+    (WidgetTester tester) async {
+      var actionTapCount = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: KeyedSubtree(
+              key: const ValueKey('expected-community-surface'),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 1800),
+                    FilledButton(
+                      key: const ValueKey('fallback-join-waitlist-action'),
+                      onPressed: () => actionTapCount += 1,
+                      child: const Text('Join waitlist'),
+                    ),
+                    FilledButton(
+                      key: const ValueKey('fallback-maybe-action'),
+                      onPressed: () => actionTapCount += 1,
+                      child: const Text('Maybe'),
+                    ),
+                    FilledButton(
+                      key: const ValueKey('fallback-decline-action'),
+                      onPressed: () => actionTapCount += 1,
+                      child: const Text('Not attending'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final primary = find.byKey(
+        const ValueKey('fallback-going-action-that-is-absent'),
+      );
+      expect(
+        inspectFinderTapReadiness(tester, primary).state,
+        FinderTapReadinessState.absent,
+      );
+
+      final preparedAlternatives = await findReadyActionCandidatesOnSurface(
+        tester: tester,
+        surface: find.byKey(const ValueKey('expected-community-surface')),
+        candidates: [
+          PrimaryActionCandidate(
+            value: 'respond-waitlist',
+            finder: find.byKey(const ValueKey('fallback-join-waitlist-action')),
+            description: 'Join waitlist',
+          ),
+          PrimaryActionCandidate(
+            value: 'respond-maybe',
+            finder: find.byKey(const ValueKey('fallback-maybe-action')),
+            description: 'Maybe',
+          ),
+          PrimaryActionCandidate(
+            value: 'respond-declined',
+            finder: find.byKey(const ValueKey('fallback-decline-action')),
+            description: 'Not attending',
+          ),
+        ],
+      );
+
+      expect(
+        preparedAlternatives.map((candidate) => candidate.value),
+        equals(const ['respond-waitlist', 'respond-maybe', 'respond-declined']),
+      );
+      final outcome = describePreparedFallbackAvailability(
+        primaryUnavailableDescription:
+            'Going unavailable: Spring Workshop is full, 2/2.',
+        preparedActionDescriptions: preparedAlternatives.map(
+          (candidate) => candidate.description,
+        ),
+        documentedPrimaryRequirementDescription:
+            'documented primary attendance action',
+      );
+      expect(
+        outcome,
+        'Going unavailable: Spring Workshop is full, 2/2. Other available '
+        'actions include Join waitlist, Maybe and Not attending. The '
+        'documented primary attendance action was not exercised.',
+      );
+      expect(actionTapCount, 0, reason: 'Fallback preparation must not tap.');
+    },
+  );
+
+  testWidgets(
+    'a primary-absent fallback with no prepared action retains the stall path',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: KeyedSubtree(
+              key: ValueKey('expected-community-surface'),
+              child: Center(child: Text('No actions are rendered')),
+            ),
+          ),
+        ),
+      );
+
+      final preparedAlternatives = await findReadyActionCandidatesOnSurface(
+        tester: tester,
+        surface: find.byKey(const ValueKey('expected-community-surface')),
+        candidates: [
+          PrimaryActionCandidate(
+            value: 'respond-waitlist',
+            finder: find.byKey(
+              const ValueKey('fallback-join-waitlist-action-that-is-absent'),
+            ),
+            description: 'Join waitlist',
+          ),
+        ],
+      );
+      final fallbackOutcome = describePreparedFallbackAvailability(
+        primaryUnavailableDescription: 'Going unavailable.',
+        preparedActionDescriptions: preparedAlternatives.map(
+          (candidate) => candidate.description,
+        ),
+        documentedPrimaryRequirementDescription:
+            'documented primary attendance action',
+      );
+
+      expect(preparedAlternatives, isEmpty);
+      expect(fallbackOutcome, isNull);
+      final outcome = fallbackOutcome == null
+          ? 'walkthrough_stalled'
+          : 'primary_action_unavailable';
+      expect(
+        outcome,
+        'walkthrough_stalled',
+        reason: 'No prepared action must not silently become unavailable.',
+      );
+    },
+  );
+
+  testWidgets(
     'no primary candidates preserves the unavailable outcome without a '
     'speculative listing tap',
     (WidgetTester tester) async {
@@ -810,7 +949,7 @@ void main() {
       final primaryCandidates = <Finder>[];
       final action = primaryCandidates.isEmpty
           ? null
-          : firstReadyActionOnSurface(
+          : await firstReadyActionOnSurface(
               tester: tester,
               surface: find.byType(Scaffold),
               candidates: primaryCandidates,

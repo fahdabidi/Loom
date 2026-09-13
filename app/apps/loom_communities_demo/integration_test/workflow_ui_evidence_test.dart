@@ -371,6 +371,8 @@ void main() {
             'visiblePrimaryActions': walkthroughResult.visiblePrimaryActions,
             'visibleAlternateActions':
                 walkthroughResult.visibleAlternateActions,
+            'availableSupplementaryActions':
+                walkthroughResult.availableSupplementaryActions,
             'productFindings': walkthroughResult.productFindings,
             'status': 'pass',
           });
@@ -1476,6 +1478,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
     selector: selector,
     surface: communitySurface,
     candidates: primaryCandidates,
+    b25Model: b25Model,
     lastCompletedStep: lastCompletedStep,
     attemptedStep: attemptedStep,
     diagnosticFrameName: stallDiagnosticName,
@@ -1499,6 +1502,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       selector: selector,
       screenshotNames: [start, primaryUnavailable, resultUnavailable],
       primaryUnavailableReason: actionWait.unavailableReason,
+      availableSupplementaryActions: actionWait.otherAvailableActions,
     );
   }
   final visibleAction = actionWait.action!;
@@ -2290,7 +2294,7 @@ _waitForB25AlternateAction({
         selector.instance.instanceId,
         transition.id,
       );
-      final readyFinder = firstReadyActionOnSurface(
+      final readyFinder = await firstReadyActionOnSurface(
         tester: tester,
         surface: surface,
         candidates: [finder],
@@ -2313,6 +2317,7 @@ class _B25WalkthroughResult {
     required this.actionProofStatus,
     required this.visiblePrimaryActions,
     required this.visibleAlternateActions,
+    required this.availableSupplementaryActions,
     required this.productFindings,
   });
 
@@ -2320,6 +2325,7 @@ class _B25WalkthroughResult {
   final String actionProofStatus;
   final List<String> visiblePrimaryActions;
   final List<String> visibleAlternateActions;
+  final List<String> availableSupplementaryActions;
   final List<String> productFindings;
 }
 
@@ -2328,6 +2334,8 @@ _B25WalkthroughResult _b25WalkthroughResult({
   required _ShippedWorkflowSelector selector,
   LoomWorkflowTransition? executedPrimary,
   LoomWorkflowTransition? executedAlternate,
+  Iterable<LoomWorkflowTransition> availableSupplementaryActions =
+      const <LoomWorkflowTransition>[],
   required List<String> screenshotNames,
   String? primaryUnavailableReason,
 }) {
@@ -2347,6 +2355,11 @@ _B25WalkthroughResult _b25WalkthroughResult({
         );
   final visiblePrimary = primaryTermMatch.primary;
   final visibleAlternate = alternateTermMatch.alternate;
+  final supplementaryActions = availableSupplementaryActions
+      .map((transition) => transition.label.trim())
+      .where((label) => label.isNotEmpty)
+      .toSet()
+      .toList(growable: false);
   final offeredActions =
       selector.transitions
           .map((candidate) => candidate.transition.id)
@@ -2355,6 +2368,11 @@ _B25WalkthroughResult _b25WalkthroughResult({
         ..sort();
   final findings = <String>[
     if (primaryUnavailableReason != null) primaryUnavailableReason,
+    if (supplementaryActions.isNotEmpty)
+      '${model.communityName} / ${model.workflowId} / ${model.role}: '
+          'prepared but unexercised supplementary actions '
+          '[${supplementaryActions.join(', ')}] are recorded separately from '
+          'documented primary and alternate action proof.',
     if (visiblePrimary.isEmpty)
       '${model.communityName} / ${model.workflowId} / ${model.role}: '
           '${executedPrimary == null ? 'no documented primary package action was exercised' : 'the exercised package action `${executedPrimary.label}` does not match any documented primary action'} '
@@ -2370,6 +2388,7 @@ _B25WalkthroughResult _b25WalkthroughResult({
     actionProofStatus: findings.isEmpty ? 'pass' : 'fail',
     visiblePrimaryActions: visiblePrimary,
     visibleAlternateActions: visibleAlternate,
+    availableSupplementaryActions: supplementaryActions,
     productFindings: findings,
   );
 }
@@ -2440,6 +2459,7 @@ Future<_B25WalkthroughResult> _captureMissingB25PackageWorkflow({
     actionProofStatus: 'fail',
     visiblePrimaryActions: const <String>[],
     visibleAlternateActions: const <String>[],
+    availableSupplementaryActions: const <String>[],
     productFindings: <String>[
       '${target.communityName} / ${b25Model.workflowId} / '
           '${b25Model.role}: the shipped package has no workflow '
@@ -3243,10 +3263,15 @@ String _shippedTransitionInputValue(String key, String type, String roleId) {
 }
 
 class _ShippedWorkflowActionWait {
-  const _ShippedWorkflowActionWait._({this.action, this.unavailableReason});
+  const _ShippedWorkflowActionWait._({
+    this.action,
+    this.unavailableReason,
+    this.otherAvailableActions = const <LoomWorkflowTransition>[],
+  });
 
   final ({_ShippedTransitionCandidate candidate, Finder finder})? action;
   final String? unavailableReason;
+  final List<LoomWorkflowTransition> otherAvailableActions;
 }
 
 Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
@@ -3255,6 +3280,7 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
   required _ShippedWorkflowSelector selector,
   required Finder surface,
   required List<_ShippedTransitionCandidate> candidates,
+  required B25ProductDocInteractionModel b25Model,
   required String lastCompletedStep,
   required String attemptedStep,
   required String diagnosticFrameName,
@@ -3334,34 +3360,75 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
           'but disabled. $latestPollingWaitingFor',
     );
   }
-  final anyOtherTappable = selector.transitions.any((candidate) {
-    if (candidates.any(
-      (primaryCandidate) =>
-          primaryCandidate.transition.id == candidate.transition.id,
-    )) {
-      return false;
-    }
-    return firstReadyActionOnSurface(
-          tester: tester,
-          surface: surface,
-          candidates: [
-            _engineActionFinder(
+  final preparedOtherActions = await findReadyActionCandidatesOnSurface(
+    tester: tester,
+    surface: surface,
+    candidates: [
+      for (final candidate in selector.transitions)
+        if (!candidates.any(
+          (primaryCandidate) =>
+              primaryCandidate.transition.id == candidate.transition.id,
+        ))
+          PrimaryActionCandidate(
+            value: candidate,
+            finder: _engineActionFinder(
               selector.instance.instanceId,
               candidate.transition.id,
             ),
-          ],
-        ) !=
-        null;
-  });
-  if (anyOtherTappable) {
+            description: candidate.transition.label,
+          ),
+    ],
+  );
+  if (preparedOtherActions.isNotEmpty) {
+    final namedOtherActions =
+        preparedOtherActions
+            .map((candidate) => candidate.value.transition)
+            .toList(growable: false)
+          ..sort((left, right) {
+            int priority(LoomWorkflowTransition transition) {
+              final match = matchB25TransitionAgainstTerms(
+                transition,
+                primaryTerms: b25Model.requiredPrimaryActions,
+                alternateTerms: b25Model.requiredAlternateActions,
+              );
+              // A real action outside the documented primary/alternate terms is
+              // supplementary evidence. Lead with it rather than silently
+              // presenting it as the documented alternate path.
+              return match.alternate ? 1 : 0;
+            }
+
+            return priority(left).compareTo(priority(right));
+          });
+    final fallbackOutcome = describePreparedFallbackAvailability(
+      primaryUnavailableDescription: _describePrimaryUnavailability(
+        selector: selector,
+        availability: actionAvailability,
+        surface: surface,
+      ),
+      preparedActionDescriptions: namedOtherActions.map(
+        (candidate) => candidate.label,
+      ),
+      documentedPrimaryRequirementDescription:
+          _documentedPrimaryRequirementDescription(b25Model),
+    );
+    // A non-empty prepared-action result always has a diagnostic. Keep the
+    // guard explicit so an accidental helper regression cannot turn a real
+    // alternative into an unnamed unavailable outcome.
+    if (fallbackOutcome == null) {
+      throw StateError(
+        'Prepared fallback actions for ${selector.instance.instanceId} were '
+        'non-empty but had no diagnostic description.',
+      );
+    }
     // The instance is live and offers other actions, but none of the
-    // required primary actions is offered to this role in this state. That
-    // is a product finding, not a stall.
+    // required primary actions is offered to this role in this state. The
+    // prepared alternatives are evidence of that state, never a substitute
+    // for the required primary proof.
     return _ShippedWorkflowActionWait._(
       unavailableReason:
-          'primary_action_unavailable: the instance offered another '
-          'tappable transition, but no required primary transition. '
+          'primary_action_unavailable: $fallbackOutcome '
           '$latestPollingWaitingFor',
+      otherAvailableActions: namedOtherActions,
     );
   }
   bodyWatch.beat(
@@ -3379,6 +3446,73 @@ Future<_ShippedWorkflowActionWait> _waitForShippedWorkflowAction({
       diagnosticFrameName: diagnosticFrameName,
     ),
   );
+}
+
+String _documentedPrimaryRequirementDescription(
+  B25ProductDocInteractionModel model,
+) {
+  final primaryTerms = model.requiredPrimaryActions
+      .map(b25NormalizeActionText)
+      .toSet();
+  final isAttendanceRequirement = primaryTerms.any(
+    (term) =>
+        term.contains('rsvp') ||
+        term.contains('attend') ||
+        term.contains('going') ||
+        term.contains('reserve spot'),
+  );
+  return isAttendanceRequirement
+      ? 'documented primary attendance action'
+      : 'documented primary action';
+}
+
+String _describePrimaryUnavailability({
+  required _ShippedWorkflowSelector selector,
+  required PrimaryActionAvailability<_ShippedTransitionCandidate> availability,
+  required Finder surface,
+}) {
+  final goingIsAbsent = availability.candidateReadiness.any(
+    (candidate) =>
+        candidate.readiness.state == FinderTapReadinessState.absent &&
+        b25NormalizeActionText(candidate.candidate.value.transition.label) ==
+            'going',
+  );
+  final capacityText = find
+      .descendant(of: surface, matching: find.byType(Text))
+      .evaluate()
+      .map((element) {
+        final text = element.widget as Text;
+        return text.data ?? text.textSpan?.toPlainText() ?? '';
+      })
+      .map((text) => text.trim())
+      .firstWhere(
+        (text) => RegExp(r'^\d+\s*/\s*\d+\s+going$').hasMatch(text),
+        orElse: () => '',
+      );
+  final capacity = RegExp(
+    r'^(\d+)\s*/\s*(\d+)\s+going$',
+  ).firstMatch(capacityText);
+  if (goingIsAbsent &&
+      capacity != null &&
+      capacity.group(1) == capacity.group(2)) {
+    final title = selector.instance.instanceData['title']?.toString().trim();
+    final eventName = title == null || title.isEmpty
+        ? selector.instance.instanceId
+        : title;
+    return 'Going unavailable: $eventName is full, '
+        '${capacity.group(1)}/${capacity.group(2)}.';
+  }
+  final absentPrimaryLabels = availability.candidateReadiness
+      .where(
+        (candidate) =>
+            candidate.readiness.state == FinderTapReadinessState.absent,
+      )
+      .map((candidate) => candidate.candidate.value.transition.label)
+      .toSet()
+      .toList(growable: false);
+  return absentPrimaryLabels.isEmpty
+      ? 'The required primary action was not tappable.'
+      : '${absentPrimaryLabels.join(' and ')} unavailable.';
 }
 
 Finder _engineInstanceFinder(String instanceId) {
