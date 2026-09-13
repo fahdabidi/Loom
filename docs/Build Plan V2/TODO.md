@@ -111,6 +111,28 @@ be batched rather than rediscovered one at a time.
 
 **Still to prove after that lands:** that the walkthrough proceeds past this assertion and actually banks frames. Driving it is my own job, from Windows — the agent is explicitly told not to attempt it.
 
+**✅ THE FIX LANDED (`e2eca4ee`) AND THE WALKTHROUGH NOW RUNS — and it exposed a THIRD blocker underneath the first two.** Rebuilt the instrumented APK (233,785,725 bytes, exit 0) and drove it from Windows. It **passed the row-count assertion**, signed in, captured `B13_ext_garden_club_garden-event-rsvp_member_start`, and reported `completedWorkflows: 1, totalWorkflows: 80` before stalling. So the capture path works and the assertion is genuinely fixed; what remains is a different problem.
+
+**The stall, verbatim:**
+
+    WalkthroughStallFailure: a step could not proceed within its bounded wait (3m 0s elapsed, limit 3m 0s).
+      Last completed step: screenshot B13_ext_garden_club_garden-event-rsvp_member_start captured
+      Attempted step: continuing the walkthrough after B13_ext_garden_club_garden-event-rsvp_member_start
+
+Reading the code: `primaryCandidates` was **non-empty**, so the walkthrough called `_waitForShippedWorkflowAction`. The transition is therefore **enumerated but never rendered** — the button does not appear within three minutes.
+
+**TWO CHECKS THAT STOPPED ME SHIPPING A WRONG DIAGNOSIS, both worth recording because each nearly went the other way.**
+
+*First, I nearly re-fixed something already fixed.* The stall matches the defect recorded in `CLAUDE.md` today — the calendar RSVP card asking the remote engine about a response row that cannot exist — and Garden is exactly the shape that triggers it (Garden stores RSVPs as a **separate `garden-event-rsvp-response` workflow**, Masjid uses in-instance lists). I was about to file a row and dispatch a fix. **`58e9e122` already fixes it**, and `git merge-base --is-ancestor 58e9e122 HEAD` confirms it is in the very build I drove. Not the cause. The lesson this repo already carries — *search the captured knowledge before presenting a finding as new* — applies to **fixes**, not only to findings.
+
+*Second, an empty log nearly read as evidence.* I checked workflow-service logs for the predicted `workflow_instance_not_found` 404s and found none — then ran the control in the same breath: **0 log lines of any kind in the window**, because the service has no request-level logging. Without that control, "no 404s" would have counted as evidence *against* the hypothesis rather than as a query that cannot answer the question.
+
+**THE ACTUAL FINDING: the capture harness selects an identity, it does not authenticate — and the app it drives is server-authoritative.** `workflow_ui_test_harness.dart:477`'s `signInEvidenceAccount` taps `actor-identity-picker-button` → `actor-identity-sign-in-specific-person` → a `ListTile` matching the display name. No browser, no Keycloak, no token. Meanwhile the APK's own telemetry says `LOOM_BINDING service=workflow-engine mode=remote endpoint=http://192.168.56.10:30083/ … error=authentication_required`, and *"A bearer session is required before calling the workflow service."* So guarded actions cannot render and the walkthrough waits for a button that cannot appear.
+
+**The timeline is the damning part.** The remote-engine default shipped **2026-09-03**; every successful full-b25 artifact is dated **2026-07-01..03**, from the local-engine era whose identity model the picker *does* match; and captures have been networking-blocked since the VM migration. So if this broke on 2026-09-03, **no run could have revealed it** — which is the same shape as the stale `79`: a thing that breaks silently in the one place nobody can execute.
+
+**🔍 Root Cause Agent dispatched** (session key `b25-capture-auth`, `gpt-6-astra`/high, read-only). Briefed with the device telemetry, the stall text and the harness source, and asked to answer **Question 0 — is this chain even right?** before proposing a fix. The reason for scoping rather than ticketing: the cheap fix is `--dart-define=LOOM_ENV=local`, which would make the walkthrough pass by measuring the **local** engine — and the production bar would then prove nothing about the shipped remote path. That is a worse outcome than the current honest failure, so the decision needs to be made deliberately rather than discovered after 72 rows are banked against the wrong adapter.
+
 **SUPERSEDED — the paragraph below proposed `--host-vmservice-port` + a reverse tunnel. Disproven 2026-09-12 (pinning does not pin), and now moot: driving from Windows removes the problem entirely. Kept only so the reasoning is not re-derived.**
 
 **A fix is identifiable and I stopped short of building it deliberately:** `flutter drive` accepts `--host-vmservice-port`, which pins the host-side port instead of choosing a random one. With it pinned, a reverse tunnel from Windows (`ssh -N -R <port>:localhost:<port> loom-vm`) would make the VM's `localhost:<port>` reach the Windows listener, completing the chain. **But the capture tool builds its `flutter drive` command line internally and passes no such flag**, so this needs a change to `b25_capture_workflow_screenshots.dart` — application code, and therefore an implementation dispatch rather than a hand-edit. **Worth confirming the intended host before building that:** captures may simply be meant to run from a machine that shares the emulator's network, in which case the answer is operational rather than a code change. **Do not work around this by using `--mode targeted-precheck`** — its own error text says that output must not be committed as canonical B25 evidence, and canonical mode refuses to filter communities, phases or shards by design.

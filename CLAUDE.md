@@ -703,6 +703,67 @@ Three things generalize:
   actions you already hold because a *different* request failed converts a partial degradation into a
   dead end.
 
+### An APK containing the production app does not necessarily run the production app
+
+Found 2026-09-12 by a root cause agent, correcting a premise I had already built a whole diagnosis
+on. `integration_test/workflow_ui_evidence_test.dart:190` does
+`await tester.pumpWidget(const LoomCommunitiesDemoApp())` — it constructs the widget directly and
+**never calls the demo app's `main()`**. All of the production wiring lives in that `main()`:
+`configureLoomRemoteServicesFromEnvironment()` and
+`configureEngineNativeCommunityEngineFactoryForProduction(...)`. So the shell keeps its **local**
+engine factory, remote auth configuration is never installed, and the B25 walkthrough runs entirely
+on the local engine.
+
+**Two things follow, and they point in opposite directions — keep both.**
+
+- *The harness is not broken and needs no token.* I was about to file "the capture harness cannot
+  authenticate" as a blocker and ticket a fix. The demo identity picker (`signInEvidenceAccount`,
+  selection rather than authentication) is exactly the right identity model for the local engine.
+  Adding a real bearer token would have fixed nothing, because nothing was going remote.
+- *But the screenshots depict an engine the product does not ship.* The bar's **walkthrough** half is
+  safe — `check_b25_status.sh` counts *live-write* manifests, produced by the live-verification agent
+  driving a real device against the real backend. The **judge** half is not: its frames come from
+  this local-engine harness, and this file already records cards that render differently on the
+  remote path (the Publish button hidden only there). A UX judge over local frames can pass a screen
+  that is broken in the shipped app.
+
+**The error that produced the wrong premise is the reusable part: I carried telemetry across two
+different runs.** The `mode=remote … authentication_required` lines were real — they came from the
+**plain debug APK**, which does run `main()`. The instrumented capture APK is a different build with
+a different entrypoint. Log lines are evidence about *the process that emitted them*, and two builds
+of "the same app" can differ in the one way that matters. **Before attributing a log line to a run,
+confirm which binary and which entrypoint produced it** — and note that the cheap check I reached
+for first (comparing grep counts across the two outputs) was invalid anyway, because one output was
+a `tail -45` and startup lines are exactly what truncation removes.
+
+### Two deadlines with the same value are a race, and the outer one always wins
+
+The B25 walkthrough's inner action wait opened `WalkthroughWaitBudget()` with no argument, whose
+default was `Duration(minutes: 3)`. The enclosing stall watchdog defaulted to the **same**
+`WalkthroughWaitBudget.defaultTimeout`. The watchdog's clock starts earlier — at the last *beat*,
+when the previous screenshot completed — and nothing beat it during the poll loop, so it expired
+first by exactly the setup gap. Observed verbatim: `3m 0s elapsed, limit 3m 0s`.
+
+**The cost was not a slow run; it was a designed outcome made unreachable.** When that wait returns
+`null` the walkthrough captures `primary_action_unavailable` + `result_receiver_unavailable` and
+returns a **valid result** for the row — the deliberate encoding of "this row's primary action
+legitimately does not render". That branch could never execute, so one such workflow aborted all 80
+and with them any chance of the ≥180 screenshots `full-b25` mode requires.
+
+Three things generalize:
+
+- **A watchdog exists to catch a process that has stopped; a wait polling every 50 ms has not
+  stopped.** Conflating "taking a while" with "hung" is the bug. Either beat the watchdog while
+  polling, or give the inner wait a strictly shorter budget — fixed here as a *named relationship*
+  (`innerWaitSafetyMargin`, `defaultInnerWaitTimeout = defaultTimeout - margin`) rather than by
+  nudging a number, because two constants that must differ should say so in code.
+- **Scope by the population.** One site passed no timeout; three more defaulted to the watchdog's
+  own constant and had the identical latent race. Fixing only the one that fired would have left the
+  class.
+- **An unreachable error branch is invisible to every test that does not take it.** Nothing failed,
+  because nothing ever ran it. Same family as the always-quiet guard: code that looks like handling
+  and never executes is not handling.
+
 ## Evidence rules
 
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A
@@ -1147,7 +1208,7 @@ the single test in isolation before calling it a regression; a failed `expect` i
 matter"). Do not file an RLS defect, and do not weaken the test's timeout, without an isolated run
 first. Equally, do not record a service baseline from a run where it timed out — the pass count is
 one short.
-| Demo app | `app/apps/loom_communities_demo` | **160** (0 skipped) — confirmed unchanged again 2026-09-12 |
+| Demo app | `app/apps/loom_communities_demo` | **161** (0 skipped) — re-measured 2026-09-12. Moved 160 → 161 for one reason, verified rather than assumed: the watchdog-race fix (`9c25054f`) added exactly one regression test. A total that moves **up** still needs its reason named, the same as one that moves down |
 
 **On the engine's −2, recorded rather than waved away.** The suite is green (exit 0, skips unchanged
 at 5), so this is not a failure — but a total moving *down* is the shape that can hide a deletion, so
