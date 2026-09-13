@@ -87,6 +87,7 @@ class WorkflowUiEvidenceWriter {
     final b25BlockedSelectorSetupReasonGroups =
         _formatB25BlockedSelectorSetupReasonGroups(b25RowSummary);
     final b25BlockedRows = _formatB25BlockedRows(b25RowSummary);
+    final b25NonProvenRows = _formatB25NonProvenRows(b25RowSummary);
     final requestedPhases = _stringList(data?['requestedPhases']);
     final phases = <String>{
       ...requestedPhases,
@@ -366,6 +367,10 @@ class WorkflowUiEvidenceWriter {
       'b25BlockedBySelectorSetupReasonGroups='
       '$b25BlockedSelectorSetupReasonGroups '
       'b25BlockedRows=$b25BlockedRows '
+      'b25ActionSucceededResultUnverified='
+      '${b25RowSummary['actionSucceededResultUnverifiedRows']} '
+      'b25RowExecutionFailed=${b25RowSummary['rowExecutionFailedRows']} '
+      'b25NonProvenRows=$b25NonProvenRows '
       'screenshots=${_screenshotPaths.length}/${expectedScreenshotNames.length} '
       'completionGateEligible=${runStatus == 'pass'}',
     );
@@ -416,6 +421,9 @@ String _formatB25BlockedSelectorSetupReasonGroups(
 String _formatB25BlockedRows(Map<String, Object?> summary) =>
     jsonEncode(summary['blockedRows']);
 
+String _formatB25NonProvenRows(Map<String, Object?> summary) =>
+    jsonEncode(summary['nonProvenRows']);
+
 Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
   const blockedOutcomes = <String>{
     'blocked_by_audience',
@@ -436,10 +444,19 @@ Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
   final primaryUnavailableRows = rows
       .where((entry) => entry['b25RowOutcome'] == 'primary_action_unavailable')
       .toList(growable: false);
+  final actionSucceededResultUnverifiedRows = rows
+      .where(
+        (entry) =>
+            entry['b25RowOutcome'] == 'action_succeeded_result_unverified',
+      )
+      .toList(growable: false);
+  final rowExecutionFailedRows = rows
+      .where((entry) => entry['b25RowOutcome'] == 'row_execution_failed')
+      .toList(growable: false);
   final provenRows = rows
       .where(
         (entry) =>
-            !blockedOutcomes.contains(entry['b25RowOutcome']) &&
+            entry['b25RowOutcome'] == 'attempted' &&
             entry['b25ActionProofStatus'] == 'pass',
       )
       .toList(growable: false);
@@ -487,6 +504,37 @@ Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
     ];
   }
 
+  String nonProvenReason(Map<String, dynamic> row) {
+    String? reason;
+    switch (row['b25RowOutcome']) {
+      case 'blocked_by_audience':
+        reason = row['blockedByAudienceReason'] as String?;
+        break;
+      case 'blocked_by_selector_setup':
+        reason = row['blockedBySelectorSetupReason'] as String?;
+        break;
+      case 'action_succeeded_result_unverified':
+        reason = row['actionSucceededResultUnverifiedReason'] as String?;
+        break;
+      case 'row_execution_failed':
+        reason = row['rowExecutionFailureReason'] as String?;
+        break;
+    }
+    if (reason == null) {
+      final findings = row['productFindings'];
+      if (findings is Iterable) {
+        reason = findings.whereType<String>().firstOrNull;
+      }
+    }
+    if (reason == null || reason.isEmpty) {
+      throw StateError(
+        'B25 non-proven row ${row['workflowId']}/${row['role']} has no '
+        'verbatim recorded reason.',
+      );
+    }
+    return reason;
+  }
+
   final explicitBlockedRows =
       <Map<String, Object?>>[
         for (final row in blockedRows)
@@ -508,12 +556,33 @@ Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
               '${right['outcome']}/${right['communityName']}/${right['workflowId']}/${right['role']}',
             ),
       );
+  final explicitNonProvenRows =
+      <Map<String, Object?>>[
+        for (final row in rows)
+          if (row['b25ActionProofStatus'] != 'pass')
+            <String, Object?>{
+              'outcome': row['b25RowOutcome'],
+              'communityName': row['communityName'],
+              'workflowId': row['workflowId'],
+              'role': row['role'],
+              'reason': nonProvenReason(row),
+            },
+      ]..sort(
+        (
+          left,
+          right,
+        ) => '${left['outcome']}/${left['communityName']}/${left['workflowId']}/${left['role']}'
+            .compareTo(
+              '${right['outcome']}/${right['communityName']}/${right['workflowId']}/${right['role']}',
+            ),
+      );
   return <String, Object?>{
     'recordedRows': rows.length,
     'provenRows': provenRows.length,
     'completedRows': completedRows.length,
     'primaryActionUnavailableRows': primaryUnavailableRows.length,
     'blockedRows': explicitBlockedRows,
+    'nonProvenRows': explicitNonProvenRows,
     'blockedByAudienceRows': blockedByAudienceRows.length,
     'blockedByAudienceRowsByCommunity': countByCommunity(blockedByAudienceRows),
     'blockedByAudienceReasonGroups': reasonGroups(
@@ -529,6 +598,15 @@ Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
       blockedBySelectorSetupRows,
       causeField: 'blockedBySelectorSetupCause',
       reasonField: 'blockedBySelectorSetupReason',
+    ),
+    'actionSucceededResultUnverifiedRows':
+        actionSucceededResultUnverifiedRows.length,
+    'actionSucceededResultUnverifiedRowsByCommunity': countByCommunity(
+      actionSucceededResultUnverifiedRows,
+    ),
+    'rowExecutionFailedRows': rowExecutionFailedRows.length,
+    'rowExecutionFailedRowsByCommunity': countByCommunity(
+      rowExecutionFailedRows,
     ),
   };
 }

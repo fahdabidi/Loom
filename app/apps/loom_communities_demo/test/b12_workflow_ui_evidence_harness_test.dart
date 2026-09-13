@@ -256,7 +256,7 @@ void main() {
       }
       final responseData = _responseData(screenshotCaptureStatus: 'complete')
         ..['expectedWorkflowCountByPhase'] = <String, int>{
-          'B12': 3 + blockedAudienceRows.length,
+          'B12': 4 + blockedAudienceRows.length,
         }
         ..['workflowEvidence'] = <Map<String, Object?>>[
           <String, Object?>{
@@ -279,6 +279,10 @@ void main() {
             'screenshotNames': _harnessScreenshotNames,
             'b25RowOutcome': 'primary_action_unavailable',
             'b25ActionProofStatus': 'fail',
+            'productFindings': [
+              'primary_action_unavailable: no primary action candidates were '
+                  'selected for this workflow row.',
+            ],
             'status': 'pass',
           },
           <String, Object?>{
@@ -300,6 +304,23 @@ void main() {
                 'product-doc role `member` from '
                 '`docs/references/communities/neighborhood-book-club-product-experience.md`.',
             'status': 'blocked_by_selector_setup',
+          },
+          <String, Object?>{
+            'phase': 'B12',
+            'appId': 'ext_book_club',
+            'communityName': 'Book Club',
+            'workflowId': 'book-reading-material',
+            'role': 'book-member',
+            'screenshotNames': const <String>[],
+            'b25RowOutcome': 'action_succeeded_result_unverified',
+            'b25ActionProofStatus': 'action_succeeded_result_unverified',
+            'actionSucceededResultUnverifiedReason':
+                'Shipped workflow book-reading-material changed source '
+                'instance data after acknowledge-material, but B25 could not '
+                'locate a changed rendered value or explicit success '
+                'acknowledgement for material-public to position the result '
+                'frame.',
+            'status': 'action_succeeded_result_unverified',
           },
           for (final blocked in blockedAudienceRows)
             <String, Object?>{
@@ -329,10 +350,14 @@ void main() {
       final aggregate = await _readAggregate(temporaryRoot);
       final summary = aggregate['b25RowSummary'] as Map<String, dynamic>;
       expect(aggregate['status'], 'fail');
-      expect(summary['recordedRows'], 7);
+      expect(summary['recordedRows'], 8);
       expect(summary['provenRows'], 1);
-      expect(summary['completedRows'], 2);
+      expect(summary['completedRows'], 3);
       expect(summary['primaryActionUnavailableRows'], 1);
+      expect(summary['actionSucceededResultUnverifiedRows'], 1);
+      expect(summary['actionSucceededResultUnverifiedRowsByCommunity'], {
+        'Book Club': 1,
+      });
       expect(summary['blockedByAudienceRows'], 4);
       expect(summary['blockedByAudienceRowsByCommunity'], {'Book Club': 4});
       expect(summary['blockedBySelectorSetupRows'], 1);
@@ -392,6 +417,23 @@ void main() {
         (selectorSetupReasonGroups.single as Map<String, dynamic>)['count'],
         1,
       );
+      final nonProvenRows = summary['nonProvenRows'] as List<dynamic>;
+      expect(nonProvenRows, hasLength(7));
+      final unverifiedRow = nonProvenRows
+          .cast<Map<String, dynamic>>()
+          .singleWhere(
+            (row) => row['outcome'] == 'action_succeeded_result_unverified',
+          );
+      expect(unverifiedRow['communityName'], 'Book Club');
+      expect(unverifiedRow['workflowId'], 'book-reading-material');
+      expect(unverifiedRow['role'], 'book-member');
+      expect(
+        unverifiedRow['reason'],
+        'Shipped workflow book-reading-material changed source instance data '
+        'after acknowledge-material, but B25 could not locate a changed '
+        'rendered value or explicit success acknowledgement for '
+        'material-public to position the result frame.',
+      );
 
       final phaseManifest =
           jsonDecode(
@@ -414,6 +456,22 @@ void main() {
       expect(
         blockedSetupRow['b25ActionProofStatus'],
         'blocked_by_selector_setup',
+      );
+      final actionSucceededResultUnverifiedRow =
+          (phaseManifest['workflows'] as List<dynamic>)
+              .cast<Map<String, dynamic>>()
+              .firstWhere(
+                (row) =>
+                    row['b25RowOutcome'] ==
+                    'action_succeeded_result_unverified',
+              );
+      expect(
+        actionSucceededResultUnverifiedRow['recordedRowStatus'],
+        'action_succeeded_result_unverified',
+      );
+      expect(
+        actionSucceededResultUnverifiedRow['b25ActionProofStatus'],
+        'action_succeeded_result_unverified',
       );
     } finally {
       await temporaryRoot.delete(recursive: true);

@@ -125,6 +125,8 @@ void main() {
       var completedWorkflowEvidenceEntries = 0;
       var blockedByAudienceWorkflowEvidenceEntries = 0;
       var blockedBySelectorSetupWorkflowEvidenceEntries = 0;
+      var actionSucceededResultUnverifiedWorkflowEvidenceEntries = 0;
+      var rowExecutionFailedWorkflowEvidenceEntries = 0;
 
       void recordEvidenceEntry(Map<String, Object?> entry) {
         entries.add(entry);
@@ -147,6 +149,10 @@ void main() {
               blockedByAudienceWorkflowEvidenceEntries += 1;
             case 'blocked_by_selector_setup':
               blockedBySelectorSetupWorkflowEvidenceEntries += 1;
+            case 'action_succeeded_result_unverified':
+              actionSucceededResultUnverifiedWorkflowEvidenceEntries += 1;
+            case 'row_execution_failed':
+              rowExecutionFailedWorkflowEvidenceEntries += 1;
             case null:
               completedWorkflowEvidenceEntries += 1;
             default:
@@ -182,6 +188,10 @@ void main() {
               blockedByAudienceWorkflowEvidenceEntries,
           'blockedBySelectorSetupWorkflows':
               blockedBySelectorSetupWorkflowEvidenceEntries,
+          'actionSucceededResultUnverifiedWorkflows':
+              actionSucceededResultUnverifiedWorkflowEvidenceEntries,
+          'rowExecutionFailedWorkflows':
+              rowExecutionFailedWorkflowEvidenceEntries,
           'totalWorkflows': totalWorkflowEvidenceEntries,
         });
       }
@@ -196,6 +206,10 @@ void main() {
               blockedByAudienceWorkflowEvidenceEntries,
           'blockedBySelectorSetupWorkflows':
               blockedBySelectorSetupWorkflowEvidenceEntries,
+          'actionSucceededResultUnverifiedWorkflows':
+              actionSucceededResultUnverifiedWorkflowEvidenceEntries,
+          'rowExecutionFailedWorkflows':
+              rowExecutionFailedWorkflowEvidenceEntries,
           'totalWorkflows': totalWorkflowEvidenceEntries,
         });
         return _capture(
@@ -341,64 +355,69 @@ void main() {
             workflowId: productDocRow.workflowId,
             communityName: target.communityName,
           );
-          late final _B25WalkthroughResult walkthroughResult;
-          if (!shippedPackage.experience.workflowDefinitions!.containsKey(
-            productDocRow.workflowId,
-          )) {
-            walkthroughResult = await _captureMissingB25PackageWorkflow(
-              tester: tester,
-              target: target,
-              package: shippedPackage,
-              bodyWatch: bodyWatch,
-              b25Model: productDocRow,
-              capture: capture,
-            );
-          } else {
-            final rowSelection = selectB25WorkflowRow(
-              () => _shippedWorkflowSelector(
+          final rowScope = await runB25WorkflowRowScope(() async {
+            late final _B25WalkthroughResult walkthroughResult;
+            if (!shippedPackage.experience.workflowDefinitions!.containsKey(
+              productDocRow.workflowId,
+            )) {
+              walkthroughResult = await _captureMissingB25PackageWorkflow(
+                tester: tester,
                 target: target,
                 package: shippedPackage,
-                workflowType: productDocRow.workflowId,
+                bodyWatch: bodyWatch,
                 b25Model: productDocRow,
-              ),
+                capture: capture,
+              );
+            } else {
+              final rowSelection = selectB25WorkflowRow(
+                () => _shippedWorkflowSelector(
+                  target: target,
+                  package: shippedPackage,
+                  workflowType: productDocRow.workflowId,
+                  b25Model: productDocRow,
+                ),
+              );
+              final selector = rowSelection.selector;
+              walkthroughResult = selector == null
+                  ? rowSelection.isBlockedByAudience
+                        ? await _recordB25AudienceBlockedWorkflow(
+                            tester: tester,
+                            target: target,
+                            b25Model: productDocRow,
+                            reason: rowSelection.blockedReason!,
+                            cause: rowSelection.blockedCause!,
+                            capture: capture,
+                          )
+                        : await _recordB25SelectorSetupBlockedWorkflow(
+                            tester: tester,
+                            target: target,
+                            b25Model: productDocRow,
+                            reason: rowSelection.blockedReason!,
+                            cause: rowSelection.blockedCause!,
+                            capture: capture,
+                          )
+                  : await _runB25ShippedWorkflowWalkthrough(
+                      tester: tester,
+                      target: target,
+                      package: shippedPackage,
+                      bodyWatch: bodyWatch,
+                      selector: selector,
+                      b25Model: productDocRow,
+                      capture: capture,
+                    );
+            }
+            await assertB25CommunityRowSurface(
+              tester: tester,
+              target: target,
+              workflowId: productDocRow.workflowId,
+              role: productDocRow.role,
+              boundary: 'after',
+              captureDiagnostic: capture,
             );
-            final selector = rowSelection.selector;
-            walkthroughResult = selector == null
-                ? rowSelection.isBlockedByAudience
-                      ? await _recordB25AudienceBlockedWorkflow(
-                          tester: tester,
-                          target: target,
-                          b25Model: productDocRow,
-                          reason: rowSelection.blockedReason!,
-                          cause: rowSelection.blockedCause!,
-                          capture: capture,
-                        )
-                      : await _recordB25SelectorSetupBlockedWorkflow(
-                          tester: tester,
-                          target: target,
-                          b25Model: productDocRow,
-                          reason: rowSelection.blockedReason!,
-                          cause: rowSelection.blockedCause!,
-                          capture: capture,
-                        )
-                : await _runB25ShippedWorkflowWalkthrough(
-                    tester: tester,
-                    target: target,
-                    package: shippedPackage,
-                    bodyWatch: bodyWatch,
-                    selector: selector,
-                    b25Model: productDocRow,
-                    capture: capture,
-                  );
-          }
-          await assertB25CommunityRowSurface(
-            tester: tester,
-            target: target,
-            workflowId: productDocRow.workflowId,
-            role: productDocRow.role,
-            boundary: 'after',
-            captureDiagnostic: capture,
-          );
+            return walkthroughResult;
+          });
+          final walkthroughResult =
+              rowScope.value ?? _recordB25RowScopedFailure(rowScope.failure!);
           recordEvidenceEntry({
             'phase': target.phase,
             'appId': target.extensionId,
@@ -429,6 +448,12 @@ void main() {
             if (walkthroughResult.blockedBySelectorSetupCause != null)
               'blockedBySelectorSetupCause':
                   walkthroughResult.blockedBySelectorSetupCause,
+            if (walkthroughResult.actionSucceededResultUnverifiedReason != null)
+              'actionSucceededResultUnverifiedReason':
+                  walkthroughResult.actionSucceededResultUnverifiedReason,
+            if (walkthroughResult.rowExecutionFailureReason != null)
+              'rowExecutionFailureReason':
+                  walkthroughResult.rowExecutionFailureReason,
             'b25ActionProofStatus': walkthroughResult.actionProofStatus,
             'visiblePrimaryActions': walkthroughResult.visiblePrimaryActions,
             'visibleAlternateActions':
@@ -436,7 +461,7 @@ void main() {
             'availableSupplementaryActions':
                 walkthroughResult.availableSupplementaryActions,
             'productFindings': walkthroughResult.productFindings,
-            'status': walkthroughResult.isBlocked
+            'status': walkthroughResult.isRecordedFailure
                 ? walkthroughResult.rowOutcome
                 : 'pass',
           });
@@ -445,7 +470,7 @@ void main() {
             phase: target.phase,
             workflowId: productDocRow.workflowId,
             communityName: target.communityName,
-            blockedRowOutcome: walkthroughResult.isBlocked
+            blockedRowOutcome: walkthroughResult.isRecordedFailure
                 ? walkthroughResult.rowOutcome
                 : null,
           );
@@ -1059,6 +1084,10 @@ void main() {
         'blockedByAudienceWorkflows': blockedByAudienceWorkflowEvidenceEntries,
         'blockedBySelectorSetupWorkflows':
             blockedBySelectorSetupWorkflowEvidenceEntries,
+        'actionSucceededResultUnverifiedWorkflows':
+            actionSucceededResultUnverifiedWorkflowEvidenceEntries,
+        'rowExecutionFailedWorkflows':
+            rowExecutionFailedWorkflowEvidenceEntries,
         'totalWorkflows': totalWorkflowEvidenceEntries,
       });
     }
@@ -1416,10 +1445,19 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
   final primaryUnavailableRows = rows
       .where((entry) => entry['b25RowOutcome'] == 'primary_action_unavailable')
       .toList(growable: false);
+  final actionSucceededResultUnverifiedRows = rows
+      .where(
+        (entry) =>
+            entry['b25RowOutcome'] == 'action_succeeded_result_unverified',
+      )
+      .toList(growable: false);
+  final rowExecutionFailedRows = rows
+      .where((entry) => entry['b25RowOutcome'] == 'row_execution_failed')
+      .toList(growable: false);
   final provenRows = rows
       .where(
         (entry) =>
-            !blockedOutcomes.contains(entry['b25RowOutcome']) &&
+            entry['b25RowOutcome'] == 'attempted' &&
             entry['b25ActionProofStatus'] == 'pass',
       )
       .toList(growable: false);
@@ -1467,6 +1505,37 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
     ];
   }
 
+  String nonProvenReason(Map<String, Object?> row) {
+    String? reason;
+    switch (row['b25RowOutcome']) {
+      case 'blocked_by_audience':
+        reason = row['blockedByAudienceReason'] as String?;
+        break;
+      case 'blocked_by_selector_setup':
+        reason = row['blockedBySelectorSetupReason'] as String?;
+        break;
+      case 'action_succeeded_result_unverified':
+        reason = row['actionSucceededResultUnverifiedReason'] as String?;
+        break;
+      case 'row_execution_failed':
+        reason = row['rowExecutionFailureReason'] as String?;
+        break;
+    }
+    if (reason == null) {
+      final findings = row['productFindings'];
+      if (findings is Iterable) {
+        reason = findings.whereType<String>().firstOrNull;
+      }
+    }
+    if (reason == null || reason.isEmpty) {
+      throw StateError(
+        'B25 non-proven row ${row['workflowId']}/${row['role']} has no '
+        'verbatim recorded reason.',
+      );
+    }
+    return reason;
+  }
+
   final explicitBlockedRows =
       <Map<String, Object?>>[
         for (final row in blockedRows)
@@ -1488,12 +1557,33 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
               '${right['outcome']}/${right['communityName']}/${right['workflowId']}/${right['role']}',
             ),
       );
+  final explicitNonProvenRows =
+      <Map<String, Object?>>[
+        for (final row in rows)
+          if (row['b25ActionProofStatus'] != 'pass')
+            <String, Object?>{
+              'outcome': row['b25RowOutcome'],
+              'communityName': row['communityName'],
+              'workflowId': row['workflowId'],
+              'role': row['role'],
+              'reason': nonProvenReason(row),
+            },
+      ]..sort(
+        (
+          left,
+          right,
+        ) => '${left['outcome']}/${left['communityName']}/${left['workflowId']}/${left['role']}'
+            .compareTo(
+              '${right['outcome']}/${right['communityName']}/${right['workflowId']}/${right['role']}',
+            ),
+      );
   return <String, Object?>{
     'recordedRows': rows.length,
     'provenRows': provenRows.length,
     'completedRows': completedRows.length,
     'primaryActionUnavailableRows': primaryUnavailableRows.length,
     'blockedRows': explicitBlockedRows,
+    'nonProvenRows': explicitNonProvenRows,
     'blockedByAudienceRows': blockedByAudienceRows.length,
     'blockedByAudienceRowsByCommunity': countByCommunity(blockedByAudienceRows),
     'blockedByAudienceReasonGroups': reasonGroups(
@@ -1509,6 +1599,15 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
       blockedBySelectorSetupRows,
       causeField: 'blockedBySelectorSetupCause',
       reasonField: 'blockedBySelectorSetupReason',
+    ),
+    'actionSucceededResultUnverifiedRows':
+        actionSucceededResultUnverifiedRows.length,
+    'actionSucceededResultUnverifiedRowsByCommunity': countByCommunity(
+      actionSucceededResultUnverifiedRows,
+    ),
+    'rowExecutionFailedRows': rowExecutionFailedRows.length,
+    'rowExecutionFailedRowsByCommunity': countByCommunity(
+      rowExecutionFailedRows,
     ),
   };
 }
@@ -1853,7 +1952,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         selector: selector,
         sourceInstance: sourceInstance,
       );
-      await _positionShippedResultForCapture(
+      await _positionConfirmedShippedResultForCapture(
         tester: tester,
         selector: selector,
         transition: transition,
@@ -1891,7 +1990,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         selector: selector,
         targetState: targetState,
       );
-      await _positionShippedResultForCapture(
+      await _positionConfirmedShippedResultForCapture(
         tester: tester,
         selector: selector,
         transition: transition,
@@ -2009,6 +2108,32 @@ Future<void> _pumpB25Frames(WidgetTester tester) async {
 /// prove. This deliberately does not scroll an entire instance card: a tall
 /// card can be technically visible while its state badge or changed value is
 /// still outside the viewport.
+Future<void> _positionConfirmedShippedResultForCapture({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+  required LoomWorkflowTransition transition,
+  String? targetState,
+  WorkflowInstance? sourceInstance,
+  WorkflowInstance? persistedInstance,
+}) async {
+  try {
+    await _positionShippedResultForCapture(
+      tester: tester,
+      selector: selector,
+      transition: transition,
+      targetState: targetState,
+      sourceInstance: sourceInstance,
+      persistedInstance: persistedInstance,
+    );
+  } on B25ResultFramePositioningFailure {
+    rethrow;
+  } catch (error) {
+    throw B25ResultFramePositioningFailure(
+      error is StateError ? error.message.toString() : error.toString(),
+    );
+  }
+}
+
 Future<void> _positionShippedResultForCapture({
   required WidgetTester tester,
   required _ShippedWorkflowSelector selector,
@@ -2036,7 +2161,7 @@ Future<void> _positionShippedResultForCapture({
     );
     return;
   }
-  fail(
+  throw B25ResultFramePositioningFailure(
     'Shipped workflow ${selector.machine.workflowType} ran '
     '${transition.id}, but B25 has no persisted semantic postcondition to '
     'position before its result frame.',
@@ -2051,7 +2176,7 @@ Future<void> _positionShippedStateResultForCapture({
 }) async {
   final stateLabel = selector.machine.states[targetState]?.label;
   if (stateLabel == null) {
-    fail(
+    throw B25ResultFramePositioningFailure(
       'Shipped workflow ${selector.machine.workflowType} transitioned '
       '${selector.instance.instanceId} with ${transition.id} to undeclared '
       'state $targetState, so B25 cannot position its visible result.',
@@ -2081,7 +2206,7 @@ Future<void> _positionShippedStateResultForCapture({
     );
     await tester.pump(const Duration(milliseconds: 50));
   }
-  fail(
+  throw B25ResultFramePositioningFailure(
     'Shipped workflow ${selector.machine.workflowType} persisted target '
     'state $targetState after ${transition.id}, but B25 could not locate its '
     'declared state label "$stateLabel" on source instance '
@@ -2138,7 +2263,7 @@ Future<void> _positionShippedDataResultForCapture({
     );
     await tester.pump(const Duration(milliseconds: 50));
   }
-  fail(
+  throw B25ResultFramePositioningFailure(
     'Shipped workflow ${selector.machine.workflowType} changed source '
     'instance data after ${transition.id}, but B25 could not locate a changed '
     'rendered value or explicit success acknowledgement for '
@@ -2526,7 +2651,7 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
         selector: selector,
         targetState: targetState,
       );
-      await _positionShippedResultForCapture(
+      await _positionConfirmedShippedResultForCapture(
         tester: tester,
         selector: selector,
         transition: alternate.transition,
@@ -2547,7 +2672,7 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
         selector: selector,
         sourceInstance: sourceInstance,
       );
-      await _positionShippedResultForCapture(
+      await _positionConfirmedShippedResultForCapture(
         tester: tester,
         selector: selector,
         transition: alternate.transition,
@@ -2644,6 +2769,8 @@ class _B25WalkthroughResult {
     this.blockedByAudienceCause,
     this.blockedBySelectorSetupReason,
     this.blockedBySelectorSetupCause,
+    this.actionSucceededResultUnverifiedReason,
+    this.rowExecutionFailureReason,
   });
 
   final List<String> screenshotNames;
@@ -2657,11 +2784,48 @@ class _B25WalkthroughResult {
   final String? blockedByAudienceCause;
   final String? blockedBySelectorSetupReason;
   final String? blockedBySelectorSetupCause;
+  final String? actionSucceededResultUnverifiedReason;
+  final String? rowExecutionFailureReason;
 
   bool get isBlockedByAudience => rowOutcome == 'blocked_by_audience';
   bool get isBlockedBySelectorSetup =>
       rowOutcome == 'blocked_by_selector_setup';
   bool get isBlocked => isBlockedByAudience || isBlockedBySelectorSetup;
+  bool get isRecordedFailure =>
+      isBlocked ||
+      rowOutcome == 'action_succeeded_result_unverified' ||
+      rowOutcome == 'row_execution_failed';
+}
+
+_B25WalkthroughResult _recordB25RowScopedFailure(B25RowScopedFailure failure) {
+  return _B25WalkthroughResult(
+    screenshotNames: const <String>[],
+    actionProofStatus: failure.actionProofStatus,
+    visiblePrimaryActions: const <String>[],
+    visibleAlternateActions: const <String>[],
+    availableSupplementaryActions: const <String>[],
+    productFindings: <String>[failure.reason],
+    rowOutcome: failure.rowOutcome,
+    blockedByAudienceReason: failure.rowOutcome == 'blocked_by_audience'
+        ? failure.reason
+        : null,
+    blockedByAudienceCause: failure.rowOutcome == 'blocked_by_audience'
+        ? B25ActorAudienceResolutionFailure.absentActorEqualsFieldCause
+        : null,
+    blockedBySelectorSetupReason:
+        failure.rowOutcome == 'blocked_by_selector_setup'
+        ? failure.reason
+        : null,
+    blockedBySelectorSetupCause:
+        failure.rowOutcome == 'blocked_by_selector_setup'
+        ? B25SelectorSetupFailure.cause
+        : null,
+    actionSucceededResultUnverifiedReason:
+        failure.actionSucceededButResultUnverified ? failure.reason : null,
+    rowExecutionFailureReason: failure.rowOutcome == 'row_execution_failed'
+        ? failure.reason
+        : null,
+  );
 }
 
 _B25WalkthroughResult _b25WalkthroughResult({
