@@ -155,6 +155,26 @@ Reading the code: `primaryCandidates` was **non-empty**, so the walkthrough call
 
 **A DESIGN QUESTION FOR THE CAPTURE-TOOL CHANGE, NOW SETTLED BY MEASUREMENT — 2026-09-13.** The tool passes `LOOM_EVIDENCE_PHASE_FILTER` as a `--dart-define`, read via `String.fromEnvironment`, i.e. **compile-time**, and it runs **one `flutter drive` per phase**. That appeared to force a choice for the `--use-application-binary` path: either build **nine** phase-specific APKs (~8 min each) or change the tool's structure. **Neither is needed.** An unfiltered drive walks the whole range — its test is literally named `wf_full-ui-screenshot-evidence-b12-b20` — and a run today produced evidence directories for **all nine phases, B12 through B20**, from a single APK and a single drive. So the tool needs a prebuilt-binary passthrough and one drive, not nine builds. **This was checked rather than reasoned about**, which is the only reason it can be relied on: the compile-time-define argument was sound and led to the wrong conclusion, because it assumed the phase filter was *required* rather than *optional*.
 
+**THE FULL CHAIN AS OF 2026-09-13 — seven `fix(b25)` commits, and the shape of it is the lesson.** Each defect was invisible until the previous one was fixed, because each was downstream of a failure that stopped the run earlier:
+
+| # | Defect | Commit | Why it was invisible before |
+|---|---|---|---|
+| 1 | `hasLength(79)` against a 77-row asset — the walkthrough's **first** assertion | `e2eca4ee` | died before any screenshot; and the one file the five suites never run |
+| 2 | inner wait and stall watchdog sharing one 3m deadline, watchdog's clock starting earlier | `9c25054f` | made `primary_action_unavailable` **unreachable**, so one row aborted all 80 |
+| 3 | `tester.tap` reporting a missed hit test only as a warning | `7ba98707` | reported a *healthy* widget key as missing, three lines later |
+| 4 | hit-testing once, immediately, during a route transition | `43168718` | `IgnorePointer`/`AnimatedOpacity`/`Offstage` made a healthy control briefly un-hittable |
+| 5 | probing for actions **by tapping**, with no surface assertion | `51bb1cb3` | the probe opened a dialog, then the finder matched controls behind its barrier |
+| 6 | the new surface assertion sampling readiness **once** | `b5bc8880` | same bug as #4, in code written one commit later |
+| 7 | that assertion demanding a tappable picker the entry-gate path never uses | `e5c26a57` | failed a precondition `selectActorIdentity` does not have |
+
+**Measured progress:** `completedWorkflows` 1 → 4 → (1, from #6's regression) → 1 **with the row now actually starting**; `stalls` and `tap-missed` both reached 0; `never-interactable` and `mismatch` both 0 after #7.
+
+**Two of those seven were regressions I introduced myself** (#6 and #7, both from `51bb1cb3`), and both were caught within one device run because the fixes were built to **fail loudly and name what they found**. That is the argument for spending effort on diagnostics rather than on the fix alone: #3's message identified #4, #4's identified #5, and #6's elapsed-time field is the only reason #7 could be distinguished from "we never waited".
+
+**The current failure is the most interesting and is NOT a harness bug.** Garden's `spring-workshop` event is **at capacity**, so `respond-going` renders **disabled** — the engine correctly withholds the transition (`goingCount >= capacity`) and the UI correctly greys the control. The harness polled it for 2m45s and called it a stall. **A disabled control is a product answer, not a hang**, and the walkthrough already has the right branch for it (`primary_action_unavailable`). Dispatched 2026-09-13 to split "not tappable" into *present-but-disabled* (record immediately — waiting cannot help, and 2m45s per such row would add hours to a full run) versus *enabled-but-covered* (keep polling; stall only if it never clears).
+
+**This also confirms a root cause agent prediction made two dispatches earlier**: the selector enumerates `respond-going` because it checks `instanceDataEquals` and **does not evaluate the formula guard**, so an enumerated candidate can be one the engine legitimately withholds. That selector-fidelity gap is real and is deliberately **out of scope** for the harness fix — the harness should *handle* the condition; changing what the selector enumerates is a separate question.
+
 **Still true and still the reason the tool must change at all:** every direct `flutter drive` reports `screenshots=0/N`. The frames are captured by the **tool**, which shells out to `adb` in response to the test's `B25_CAPTURE_PROGRESS` events. Driving `flutter drive` by hand — which is how all of today's debugging was done — can never produce evidence frames, only walkthrough outcomes. So the tool change is required before any of this becomes bankable B25 evidence, and the walkthrough must be completing first for that change to be worth making.
 
 **SUPERSEDED — the paragraph below proposed `--host-vmservice-port` + a reverse tunnel. Disproven 2026-09-12 (pinning does not pin), and now moot: driving from Windows removes the problem entirely. Kept only so the reasoning is not re-derived.**
