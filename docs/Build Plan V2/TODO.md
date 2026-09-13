@@ -193,6 +193,22 @@ None was killed by more reasoning. Each was killed by a diagnostic built one com
 
 **Now blocked on the marketplace analogue of the same class**, dispatched 2026-09-13: `garden-tool-giveaway` / `terracotta-pots-giveaway` reports `claim-giveaway: absent`, because marketplace actions live in a **detail dialog** (`marketplace-listing-tap-<id>` → `marketplace-detail-dialog-<id>`) whose **controls omit the instance id**, so the instance-qualified finder structurally cannot see them. `ec3a7f0c` scoped preparation to `tabId == 'calendar'` deliberately; this is the other half, with owned open/close and the primary/fallback symmetry applied up front rather than rediscovered.
 
+**⛔ A PART OF THE B25 BAR IS GATED ON A HELD PACKAGE REGENERATION, WHICH IS ITSELF GATED ON A BACKEND THAT DOES NOT EXIST — found 2026-09-13 when the walkthrough reached Book Club.** This is worth stating plainly because it bounds what the campaign can reach at all, and no amount of harness work changes it.
+
+The walkthrough now clears Garden and stalls on Book Club's `book-nomination` / `nom-draft-1`, waiting for a card that will never render. The cause is **already documented** — `solved-patterns.md` states it outright: *"any `renderBindings` entry whose `states` include the pre-stamp state must not use `audience: \"actor\"` … a creator can be fully permitted to read their own draft and still never be shown it"*, because `role_resolver.dart` takes the **first** `actorEqualsField` guard and `break`s, and its `createdByFanId` fallback runs **only when no such guard exists at all**. `nominatorFanId` is stamped only on submission, so a `draft` has no rendering identity.
+
+**The chain that makes this immovable right now:**
+
+1. The B25 row for `book-nomination` needs the draft to render for its creator.
+2. That needs **create-time identity in the PACKAGE** — scoped 2026-09-08 (`draft-binding-invisibility`), which explicitly rejected the engine-side `createdByFanId` fallback as the wrong fix.
+3. Community JSON is Skill-authored only, so that is a Skill regeneration.
+4. **Book Club's regeneration is HELD by user decision** (row-247): `c0e0355b` removed its per-member `send-reminder`, shared-library queue/custody fields and reading-material access lists; a verified restore sits uninstalled, held **until the listing/loan backend exists** so the community is regenerated ONCE against the new API.
+5. Dispatching now would regenerate from the damaged HEAD and **bake that loss in permanently** — and any diff against HEAD would report the loss as faithfully preserved, which is why the tracker says to verify Book Club output against `c0e0355b^`, never HEAD.
+
+**So: I did not dispatch a Skill fix, and no future tick should without the user lifting that hold.** The same Sept 8 review list names `book-vote-response`, `book-shared-library-item` and `book-search-ai-digest` as the same family, so this is plausibly **four Book Club rows** blocked behind one held regeneration, not one.
+
+**What is still worth doing, and was dispatched:** the harness's own actor selection disagrees with the renderer — B25 falls back to a seed's creator when actor fields are absent, while `deriveInstanceRoles` does not. That is a harness defect independent of the package, and fixing it converts a 2m45s wait-for-a-card-that-cannot-exist into an immediate, explicit audience diagnostic naming the missing `actorEqualsField`. **It does not make the row provable** — only the package fix can — but it stops one blocked row from costing the run three minutes and hiding its own cause.
+
 **Still true and still the reason the tool must change at all:** every direct `flutter drive` reports `screenshots=0/N`. The frames are captured by the **tool**, which shells out to `adb` in response to the test's `B25_CAPTURE_PROGRESS` events. Driving `flutter drive` by hand — which is how all of today's debugging was done — can never produce evidence frames, only walkthrough outcomes. So the tool change is required before any of this becomes bankable B25 evidence, and the walkthrough must be completing first for that change to be worth making.
 
 **SUPERSEDED — the paragraph below proposed `--host-vmservice-port` + a reverse tunnel. Disproven 2026-09-12 (pinning does not pin), and now moot: driving from Windows removes the problem entirely. Kept only so the reasoning is not re-derived.**
