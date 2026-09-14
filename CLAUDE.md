@@ -797,6 +797,48 @@ The general shape: **when you ask for a failure to become louder or faster, say 
 take down with it.** Diagnosis and throughput are independent properties, and improving one at the
 cost of the other reads as progress right up until you look at the totals.
 
+### A tap that returned is not a transition that happened — and the gap between them gets written up as an engine defect
+
+Found 2026-09-14, and it is the closest this project has come to publishing a false claim about its
+own engine. A capture run emitted, into committed-shaped evidence:
+
+    Shipped workflow mosque-announcement ran visible package action for <id>, but the shared
+    engine did not persist package target state sent (actual: previewed).
+
+Everything about that reads like a serious engine bug, and the package supported it: the instance's
+state was in the transition's `from` list, the guard required only a role the actor held, and a
+guarded-off action would not have rendered at all. **None of it was established.** The harness
+performs a **raw tap** and then attributes a failed state check to **persistence** — with no evidence
+the action ever reached the engine. Meanwhile the card can swallow it entirely: it can suppress an
+in-flight mutation, it **catches mutation exceptions** behind a generic save error, and it **disables
+retained action controls while mutating**.
+
+**Four states were collapsed into one conclusion**, and they need separating whenever a UI-driven
+check reports a backend outcome:
+
+    tap attempted → action handler entered → engine call completed → postcondition observed
+
+Only the first was measured. The supported statement is the modest one — *"the state check did not
+observe target state `sent`; the last observed state was `previewed`; dispatch and completion were
+not verified"* — which still records a failed postcondition and still leaves the row unproven. It
+simply stops inventing a cause.
+
+Three things to carry:
+
+- **Reserve a mechanism claim for a trace that establishes the mechanism.** "The engine returned
+  success but the committed state was wrong" requires observing both facts. Wording that names a
+  component as the culprit will be believed, quoted, and turned into a ticket aimed at the wrong
+  layer — and nobody re-derives it, because it sounds specific.
+- **A verification loop must retry on the condition it is verifying.** The same investigation found a
+  state check that **stops retrying once the instance is found, even if its state is still wrong** —
+  so it can conclude while the transition is still in flight, manufacturing exactly the false
+  negative above. Retry until the *target state* appears, not until the *object* appears.
+- **The alarming reading deserves more scrutiny than the mundane one, not less.** The instinct is to
+  escalate a scary finding quickly. Here the scary reading was wrong and the mundane one ("we never
+  showed it reached the engine") was right, and the only reason that surfaced is that the framing was
+  handed to a second reader with the explicit question *"is this an engine defect or did the
+  transition never fire?"*
+
 ### Pre-grant `POST_NOTIFICATIONS` before a capture run, or every frame is refused
 
 Found 2026-09-13, on the first capture run that reached the screenshot stage. The tool completed the
