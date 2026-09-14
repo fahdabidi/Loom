@@ -797,6 +797,34 @@ The general shape: **when you ask for a failure to become louder or faster, say 
 take down with it.** Diagnosis and throughput are independent properties, and improving one at the
 cost of the other reads as progress right up until you look at the totals.
 
+### Pre-grant `POST_NOTIFICATIONS` before a capture run, or every frame is refused
+
+Found 2026-09-13, on the first capture run that reached the screenshot stage. The tool completed the
+whole walkthrough and then wrote **nothing**:
+
+    DEVICE SYSTEM DIALOG DETECTED. 88 frame(s) were refused and not written,
+    so no screenshot count includes them: kind=foreign-focused-window
+    detail="the focused window belongs to com.google.android.permissioncontroller,
+    not the app under test com.example.loom_communities_demo"
+
+**The guard was right and the run was correct to fail.** `android.permission.POST_NOTIFICATIONS` is
+requested on first launch, and `flutter drive --use-application-binary` installs the APK fresh every
+run while teardown uninstalls it — so the Android 13+ prompt reappears each time and steals focus.
+
+    "C:\Android\Sdk\platform-tools\adb.exe" install -r -g <instrumented.apk>   # -g grants at install
+    adb shell dumpsys package com.example.loom_communities_demo | grep -A3 "runtime permissions"
+
+With it pre-granted: **88 PNGs, 0 refusals, `screenshotStatus=complete`**, 17.8 MB, no zero-byte
+files.
+
+**Two things generalize beyond this permission.** First, **the dialog was almost certainly present in
+every earlier run and nobody could see it** — hand-driven `flutter drive` never captures, so nothing
+checked for a foreign focused window. The tool did not create the problem; it revealed one that had
+been invisible, which is the same shape as the stale `79` assert and the equal-deadline race. Second,
+**a count of files is not a count of evidence**: verify size and non-zero-ness, because 88 empty
+files and 88 real ones are indistinguishable in `wc -l`. Here the check was
+`find … -printf "%s\n"` plus `-size 0`, and it mattered enough to run.
+
 ### A fallback path is where a new capability silently fails to exist
 
 Found 2026-09-13. A fix added `ensureVisible` inside the readiness poll for **primary** action
