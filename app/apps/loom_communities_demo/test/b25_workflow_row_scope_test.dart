@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'b25_actor_audience_resolution.dart';
+import 'b25_shipped_state_postcondition.dart';
 import 'b25_workflow_row_selection.dart';
 
 void main() {
@@ -102,7 +103,7 @@ void main() {
     );
 
     test(
-      'a result-unverified row is distinct from blocked rows and proof',
+      'unproven target-state checks stay distinct from blocked rows, proof, and result positioning',
       () async {
         final proven = await runB25WorkflowRowScope<String>(
           () async => 'proven',
@@ -128,6 +129,53 @@ void main() {
             'publish-announcement persisted sent but remained offered.',
           );
         });
+        var neverReachedElapsed = Duration.zero;
+        var neverReachedReads = 0;
+        final neverReached = await waitForB25ShippedTargetState(
+          targetState: 'sent',
+          readCurrentState: () async {
+            neverReachedReads += 1;
+            return 'previewed';
+          },
+          waitForRetry: () async {
+            neverReachedElapsed += const Duration(seconds: 1);
+          },
+          elapsed: () => neverReachedElapsed,
+          maximumAttempts: 3,
+        );
+        final targetStateUnproven = await runB25WorkflowRowScope<String>(
+          () async {
+            throw B25PostconditionNotObservedFailure(
+              neverReached.failureReason(
+                workflowType: 'mosque-announcement',
+                transitionId: 'publish-announcement',
+                instanceId: 'announcement-42',
+              ),
+              actionExecutionEvidence: const [
+                B25ActionExecutionEvidence(
+                  transitionId: 'publish-announcement',
+                  tapReturned: 'returned',
+                  handlerEntry: 'not_observable',
+                  engineCallCompletion: 'not_observable',
+                  errorSurface: 'not_observed',
+                  postcondition: 'target_state_not_observed',
+                ),
+              ],
+            );
+          },
+        );
+        var delayedElapsed = Duration.zero;
+        var delayedReads = 0;
+        final delayedStates = <String>['previewed', 'previewed', 'sent'];
+        final delayedTarget = await waitForB25ShippedTargetState(
+          targetState: 'sent',
+          readCurrentState: () async => delayedStates[delayedReads++],
+          waitForRetry: () async {
+            delayedElapsed += const Duration(seconds: 1);
+          },
+          elapsed: () => delayedElapsed,
+          maximumAttempts: 5,
+        );
 
         expect(proven.completed, isTrue);
         expect(proven.value, 'proven');
@@ -143,12 +191,51 @@ void main() {
           productFinding.failure!.reason,
           'publish-announcement persisted sent but remained offered.',
         );
+        expect(neverReached.targetStateObserved, isFalse);
+        expect(neverReached.lastObservedState, 'previewed');
+        expect(neverReached.readAttempts, 3);
+        expect(neverReachedReads, 3);
+        final targetStateReason = neverReached.failureReason(
+          workflowType: 'mosque-announcement',
+          transitionId: 'publish-announcement',
+          instanceId: 'announcement-42',
+        );
+        expect(
+          targetStateReason,
+          'After the walkthrough attempted publish-announcement for '
+          'mosque-announcement instance announcement-42, the state check did '
+          'not observe target state sent; the last observed state was '
+          'previewed. Waited 0m 2s. Transition dispatch and successful '
+          'completion were not verified.',
+        );
+        expect(targetStateReason, isNot(contains('persist')));
+        expect(targetStateReason, isNot(contains('engine returned success')));
+        expect(targetStateUnproven.completed, isFalse);
+        expect(targetStateUnproven.failure!.rowOutcome, 'row_execution_failed');
+        expect(
+          targetStateUnproven.failure!.actionProofStatus,
+          'row_execution_failed',
+        );
+        expect(
+          targetStateUnproven
+              .failure!
+              .actionExecutionEvidence
+              .single
+              .postcondition,
+          'target_state_not_observed',
+        );
+        expect(delayedTarget.targetStateObserved, isTrue);
+        expect(delayedTarget.lastObservedState, 'sent');
+        expect(delayedTarget.readAttempts, 3);
+        expect(delayedReads, 3);
+        expect(delayedElapsed, const Duration(seconds: 2));
         expect({
           audience.failure!.rowOutcome,
           setup.failure!.rowOutcome,
           unverified.failure!.rowOutcome,
           productFinding.failure!.rowOutcome,
-        }, hasLength(4));
+          targetStateUnproven.failure!.rowOutcome,
+        }, hasLength(5));
       },
     );
 

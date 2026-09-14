@@ -1,5 +1,60 @@
 import 'b25_actor_audience_resolution.dart';
 
+/// What the walkthrough actually observed around one visible action attempt.
+///
+/// These are intentionally independent facts. A returned tap is not a claim
+/// that the handler ran, the engine call completed, or a target state was
+/// persisted.
+class B25ActionExecutionEvidence {
+  const B25ActionExecutionEvidence({
+    required this.transitionId,
+    required this.tapReturned,
+    required this.handlerEntry,
+    required this.engineCallCompletion,
+    required this.errorSurface,
+    required this.postcondition,
+  });
+
+  final String transitionId;
+  final String tapReturned;
+  final String handlerEntry;
+  final String engineCallCompletion;
+  final String errorSurface;
+  final String postcondition;
+
+  B25ActionExecutionEvidence withPostcondition(String value) =>
+      B25ActionExecutionEvidence(
+        transitionId: transitionId,
+        tapReturned: tapReturned,
+        handlerEntry: handlerEntry,
+        engineCallCompletion: engineCallCompletion,
+        errorSurface: errorSurface,
+        postcondition: value,
+      );
+
+  Map<String, String> toReportData() => <String, String>{
+    'transitionId': transitionId,
+    'tapReturned': tapReturned,
+    'handlerEntry': handlerEntry,
+    'engineCallCompletion': engineCallCompletion,
+    'errorSurface': errorSurface,
+    'postcondition': postcondition,
+  };
+}
+
+/// A target-state check exhausted its polling budget without proving the
+/// target state. The row remains unproven, while retaining the separate
+/// action-stage observations that were available to the harness.
+class B25PostconditionNotObservedFailure extends StateError {
+  B25PostconditionNotObservedFailure(
+    this.reason, {
+    required this.actionExecutionEvidence,
+  }) : super(reason);
+
+  final String reason;
+  final List<B25ActionExecutionEvidence> actionExecutionEvidence;
+}
+
 /// A primary action reached its persisted semantic postcondition, but B25
 /// could not position the visual result frame that would verify it.
 ///
@@ -43,11 +98,13 @@ class B25RowScopedFailure {
     required this.rowOutcome,
     required this.actionProofStatus,
     required this.reason,
+    this.actionExecutionEvidence = const <B25ActionExecutionEvidence>[],
   });
 
   final String rowOutcome;
   final String actionProofStatus;
   final String reason;
+  final List<B25ActionExecutionEvidence> actionExecutionEvidence;
 
   bool get actionSucceededButResultUnverified =>
       rowOutcome == 'action_succeeded_result_unverified';
@@ -226,6 +283,14 @@ String buildB25CommunityTeardownFailureMessage({
 }
 
 B25RowScopedFailure _b25RowScopedFailureFor(Object error) {
+  if (error is B25PostconditionNotObservedFailure) {
+    return B25RowScopedFailure(
+      rowOutcome: 'row_execution_failed',
+      actionProofStatus: 'row_execution_failed',
+      reason: error.reason,
+      actionExecutionEvidence: error.actionExecutionEvidence,
+    );
+  }
   if (error is B25ActorAudienceResolutionFailure) {
     return B25RowScopedFailure(
       rowOutcome: 'blocked_by_audience',

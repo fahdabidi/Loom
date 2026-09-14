@@ -30,6 +30,7 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart'
 import '../test/b25_visible_postcondition.dart';
 import '../test/b25_actor_audience_resolution.dart';
 import '../test/b25_created_instance_identity.dart';
+import '../test/b25_shipped_state_postcondition.dart';
 import '../test/b25_workflow_row_selection.dart';
 import '../test/workflow_ui_test_harness.dart';
 import '../test/walkthrough_wait.dart';
@@ -452,6 +453,12 @@ void main() {
               if (walkthroughResult.rowExecutionFailureReason != null)
                 'rowExecutionFailureReason':
                     walkthroughResult.rowExecutionFailureReason,
+              if (walkthroughResult.actionExecutionEvidence.isNotEmpty)
+                'b25ActionExecutionEvidence': [
+                  for (final evidence
+                      in walkthroughResult.actionExecutionEvidence)
+                    evidence.toReportData(),
+                ],
               'b25ActionProofStatus': walkthroughResult.actionProofStatus,
               'visiblePrimaryActions': walkthroughResult.visiblePrimaryActions,
               'visibleAlternateActions':
@@ -509,6 +516,8 @@ void main() {
         List<String> visiblePrimaryActions = const <String>[],
         List<String> visibleAlternateActions = const <String>[],
         List<String> productFindings = const <String>[],
+        List<B25ActionExecutionEvidence> actionExecutionEvidence =
+            const <B25ActionExecutionEvidence>[],
       }) {
         if (actionProofStatus != 'pass' && productFindings.isEmpty) {
           throw StateError(
@@ -526,6 +535,7 @@ void main() {
           rowOutcome: actionProofStatus == 'pass'
               ? 'attempted'
               : 'product_finding',
+          actionExecutionEvidence: actionExecutionEvidence,
         );
       }
 
@@ -549,6 +559,11 @@ void main() {
               result.actionSucceededResultUnverifiedReason,
         if (result.rowExecutionFailureReason != null)
           'rowExecutionFailureReason': result.rowExecutionFailureReason,
+        if (result.actionExecutionEvidence.isNotEmpty)
+          'b25ActionExecutionEvidence': [
+            for (final evidence in result.actionExecutionEvidence)
+              evidence.toReportData(),
+          ],
         'b25ActionProofStatus': result.actionProofStatus,
         'visiblePrimaryActions': result.visiblePrimaryActions,
         'visibleAlternateActions': result.visibleAlternateActions,
@@ -819,6 +834,9 @@ void main() {
                   productFindings: publication.productFinding == null
                       ? const <String>[]
                       : [publication.productFinding!],
+                  actionExecutionEvidence: [
+                    publication.actionExecutionEvidence,
+                  ],
                 );
               },
             );
@@ -869,6 +887,9 @@ void main() {
                   productFindings: publication.productFinding == null
                       ? const <String>[]
                       : [publication.productFinding!],
+                  actionExecutionEvidence: [
+                    publication.actionExecutionEvidence,
+                  ],
                 );
               },
             );
@@ -2149,6 +2170,10 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
     }
 
     final transition = visibleAction.candidate.transition;
+    final primaryActionExecutionEvidence = _observeB25ActionExecutionAfterTap(
+      action: visibleAction.finder,
+      transitionId: transition.id,
+    );
     final transitionCategory =
         identical(selector.actionMachine, selector.machine)
         ? _classifyShippedTransition(
@@ -2161,18 +2186,6 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
             roleId: selector.roleId,
           )
         : visibleAction.candidate.category;
-    if (identical(selector.actionMachine, selector.machine) &&
-        transitionCategory == _ShippedTransitionCategory.stateChanging) {
-      expect(
-        visibleAction.finder,
-        findsNothing,
-        reason:
-            'Shipped workflow ${selector.machine.workflowType} exposed '
-            '${transition.id} for ${selector.roleId}, but the '
-            'action did not leave its package-declared source state '
-            '${selector.actionSourceState}.',
-      );
-    }
     final targetState = transition.to ?? selector.actionSourceState;
     final targetStateLabel = selector.actionMachine.states[targetState]?.label;
     if (identical(selector.actionMachine, selector.machine) &&
@@ -2185,6 +2198,8 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         selector: selector,
         sourceInstance: sourceInstance,
       );
+      final confirmedPrimaryAction = primaryActionExecutionEvidence
+          .withPostcondition('instance_data_changed');
       await _positionConfirmedShippedResultForCapture(
         tester: tester,
         selector: selector,
@@ -2212,16 +2227,29 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         actionSurface: marketplacePreparation.actionSurface,
         useMarketplaceDetailActionFinder:
             marketplacePreparation.isMarketplaceSurface,
+        actionExecutionEvidence: [confirmedPrimaryAction],
       );
     }
     if (identical(selector.actionMachine, selector.machine) &&
         transitionCategory == _ShippedTransitionCategory.stateChanging) {
-      await _expectShippedInstanceState(
+      final confirmedPrimaryAction = await _expectShippedInstanceState(
         tester: tester,
         target: target,
         package: package,
         selector: selector,
         targetState: targetState,
+        transitionId: transition.id,
+        actionExecutionEvidence: [primaryActionExecutionEvidence],
+      );
+      expect(
+        visibleAction.finder,
+        findsNothing,
+        reason:
+            'After the state check observed target state $targetState for '
+            '${selector.instance.instanceId}, the shipped '
+            '${selector.machine.workflowType} surface still offered source '
+            'action ${transition.id} from '
+            '${selector.actionSourceState}.',
       );
       await _positionConfirmedShippedResultForCapture(
         tester: tester,
@@ -2248,6 +2276,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         actionSurface: marketplacePreparation.actionSurface,
         useMarketplaceDetailActionFinder:
             marketplacePreparation.isMarketplaceSurface,
+        actionExecutionEvidence: [confirmedPrimaryAction],
       );
     }
 
@@ -2304,6 +2333,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       actionSurface: marketplacePreparation.actionSurface,
       useMarketplaceDetailActionFinder:
           marketplacePreparation.isMarketplaceSurface,
+      actionExecutionEvidence: [primaryActionExecutionEvidence],
     );
   } catch (error) {
     originalFailure = error;
@@ -2810,6 +2840,7 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
   required Future<void> Function(String name) capture,
   required Finder actionSurface,
   required bool useMarketplaceDetailActionFinder,
+  required List<B25ActionExecutionEvidence> actionExecutionEvidence,
 }) async {
   final alternate = await _waitForB25AlternateAction(
     tester: tester,
@@ -2834,6 +2865,7 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
       selector: selector,
       executedPrimary: executedPrimary,
       screenshotNames: [...screenshotNames, unavailable, result],
+      actionExecutionEvidence: actionExecutionEvidence,
     );
   }
 
@@ -2862,6 +2894,10 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
     );
     await tester.pump(const Duration(milliseconds: 150));
   }
+  var observedAlternateAction = _observeB25ActionExecutionAfterTap(
+    action: alternate.finder,
+    transitionId: alternate.transition.id,
+  );
 
   var resultPositioned = false;
   if (identical(selector.actionMachine, selector.machine) &&
@@ -2877,12 +2913,17 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
     final targetState = alternate.transition.to;
     if (category == _ShippedTransitionCategory.stateChanging &&
         targetState != null) {
-      await _expectShippedInstanceState(
+      observedAlternateAction = await _expectShippedInstanceState(
         tester: tester,
         target: target,
         package: package,
         selector: selector,
         targetState: targetState,
+        transitionId: alternate.transition.id,
+        actionExecutionEvidence: [
+          ...actionExecutionEvidence,
+          observedAlternateAction,
+        ],
       );
       await _positionConfirmedShippedResultForCapture(
         tester: tester,
@@ -2904,6 +2945,9 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
         package: package,
         selector: selector,
         sourceInstance: sourceInstance,
+      );
+      observedAlternateAction = observedAlternateAction.withPostcondition(
+        'instance_data_changed',
       );
       await _positionConfirmedShippedResultForCapture(
         tester: tester,
@@ -2940,6 +2984,10 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
     executedPrimary: executedPrimary,
     executedAlternate: alternate.transition,
     screenshotNames: [...screenshotNames, alternateAction, result],
+    actionExecutionEvidence: [
+      ...actionExecutionEvidence,
+      observedAlternateAction,
+    ],
   );
 }
 
@@ -3005,6 +3053,7 @@ class _B25WalkthroughResult {
     this.blockedByPrerequisiteReason,
     this.actionSucceededResultUnverifiedReason,
     this.rowExecutionFailureReason,
+    this.actionExecutionEvidence = const <B25ActionExecutionEvidence>[],
   });
 
   final List<String> screenshotNames;
@@ -3021,6 +3070,7 @@ class _B25WalkthroughResult {
   final String? blockedByPrerequisiteReason;
   final String? actionSucceededResultUnverifiedReason;
   final String? rowExecutionFailureReason;
+  final List<B25ActionExecutionEvidence> actionExecutionEvidence;
 
   bool get isBlockedByAudience => rowOutcome == 'blocked_by_audience';
   bool get isBlockedBySelectorSetup =>
@@ -3068,6 +3118,7 @@ _B25WalkthroughResult _recordB25RowScopedFailure(B25RowScopedFailure failure) {
     rowExecutionFailureReason: failure.rowOutcome == 'row_execution_failed'
         ? failure.reason
         : null,
+    actionExecutionEvidence: failure.actionExecutionEvidence,
   );
 }
 
@@ -3080,6 +3131,8 @@ _B25WalkthroughResult _b25WalkthroughResult({
       const <LoomWorkflowTransition>[],
   required List<String> screenshotNames,
   String? primaryUnavailableReason,
+  List<B25ActionExecutionEvidence> actionExecutionEvidence =
+      const <B25ActionExecutionEvidence>[],
 }) {
   final primaryTermMatch = executedPrimary == null
       ? const (primary: <String>[], alternate: <String>[])
@@ -3136,6 +3189,7 @@ _B25WalkthroughResult _b25WalkthroughResult({
     availableSupplementaryActions: supplementaryActions,
     productFindings: findings,
     rowOutcome: rowOutcome,
+    actionExecutionEvidence: actionExecutionEvidence,
   );
 }
 
@@ -3260,36 +3314,87 @@ Future<WorkflowInstance?> _readShippedInstance({
   return null;
 }
 
+/// Captures only action-stage signals the rendered surface already exposes.
+///
+/// A disabled action control reflects the mutation-in-flight state used by
+/// engine-native cards. The harness has no completion trace from the engine,
+/// so it records that gap explicitly instead of treating a returned tap as a
+/// successful dispatch or call.
+B25ActionExecutionEvidence _observeB25ActionExecutionAfterTap({
+  required Finder action,
+  required String transitionId,
+}) {
+  final actionControls = action
+      .evaluate()
+      .map((element) => element.widget)
+      .whereType<ButtonStyleButton>();
+  final handlerEntry =
+      actionControls.any((control) => control.onPressed == null)
+      ? 'action_control_disabled_after_tap'
+      : 'not_observable';
+  final errorSurface =
+      find
+          .text('Could not save this change. Please try again.')
+          .evaluate()
+          .isNotEmpty
+      ? 'generic_save_error_visible'
+      : 'not_observed';
+  return B25ActionExecutionEvidence(
+    transitionId: transitionId,
+    tapReturned: 'returned',
+    handlerEntry: handlerEntry,
+    engineCallCompletion: 'not_observable',
+    errorSurface: errorSurface,
+    postcondition: 'not_checked',
+  );
+}
+
 /// Confirms the engine-native postcondition before classifying a surface that
 /// still shows a completed action. This keeps a failed transition distinct
 /// from a shipped UI that failed to retire an action after the transition.
-Future<void> _expectShippedInstanceIdState({
+Future<B25ActionExecutionEvidence> _expectShippedInstanceIdState({
   required WidgetTester tester,
   required LoomEvidenceTarget target,
   required ShippedEvidencePackage package,
   required _ShippedWorkflowSelector selector,
   required String instanceId,
   required String targetState,
+  required String transitionId,
+  required B25ActionExecutionEvidence actionExecutionEvidence,
 }) async {
-  WorkflowInstance? persisted;
-  for (var attempt = 0; attempt < 80; attempt += 1) {
-    persisted = await _readShippedInstance(
+  final stopwatch = Stopwatch()..start();
+  final postcondition = await waitForB25ShippedTargetState(
+    targetState: targetState,
+    readCurrentState: () async => (await _readShippedInstance(
       tester: tester,
       target: target,
       package: package,
       selector: selector,
       instanceId: instanceId,
-    );
-    if (persisted?.currentState == targetState) return;
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 5)),
-    );
-    await tester.pump(const Duration(milliseconds: 50));
-  }
-  fail(
-    'Shipped workflow ${selector.machine.workflowType} ran visible package '
-    'action for $instanceId, but the shared engine did not persist package '
-    'target state $targetState (actual: ${persisted?.currentState ?? 'instance not found'}).',
+    ))?.currentState,
+    waitForRetry: () async {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 5)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+    },
+    elapsed: () => stopwatch.elapsed,
+    maximumAttempts: 80,
+  );
+  stopwatch.stop();
+  final settledAction = actionExecutionEvidence.withPostcondition(
+    postcondition.targetStateObserved
+        ? 'target_state_observed'
+        : 'target_state_not_observed',
+  );
+  if (postcondition.targetStateObserved) return settledAction;
+  throw B25PostconditionNotObservedFailure(
+    postcondition.failureReason(
+      workflowType: selector.machine.workflowType,
+      transitionId: transitionId,
+      instanceId: instanceId,
+    ),
+    actionExecutionEvidence: [settledAction],
   );
 }
 
@@ -3325,12 +3430,14 @@ Future<WorkflowInstance> _expectShippedInstanceDataChanged({
   );
 }
 
-Future<void> _expectShippedInstanceState({
+Future<B25ActionExecutionEvidence> _expectShippedInstanceState({
   required WidgetTester tester,
   required LoomEvidenceTarget target,
   required ShippedEvidencePackage package,
   required _ShippedWorkflowSelector selector,
   required String targetState,
+  required String transitionId,
+  required List<B25ActionExecutionEvidence> actionExecutionEvidence,
 }) async {
   final screen = tester.widget<LocalExtensionScreen>(
     find.byType(LocalExtensionScreen),
@@ -3359,34 +3466,48 @@ Future<void> _expectShippedInstanceState({
     );
   }
 
-  WorkflowInstance? persisted;
-  for (var attempt = 0; attempt < 80 && persisted == null; attempt += 1) {
-    for (final tabId in tabs) {
-      final page = (await tester.runAsync(
-        () => engine.queryInstances(tabId: tabId, fanId: fanId, limit: 100),
-      ))!;
-      for (final instance in page.items) {
-        if (instance.instanceId == selector.instance.instanceId) {
-          persisted = instance;
-          break;
+  final stopwatch = Stopwatch()..start();
+  final postcondition = await waitForB25ShippedTargetState(
+    targetState: targetState,
+    readCurrentState: () async {
+      for (final tabId in tabs) {
+        final page = (await tester.runAsync(
+          () => engine.queryInstances(tabId: tabId, fanId: fanId, limit: 100),
+        ))!;
+        for (final instance in page.items) {
+          if (instance.instanceId == selector.instance.instanceId) {
+            return instance.currentState;
+          }
         }
       }
-      if (persisted != null) break;
-    }
-    if (persisted == null) {
+      return null;
+    },
+    waitForRetry: () async {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 5)),
       );
       await tester.pump(const Duration(milliseconds: 50));
-    }
-  }
-  expect(
-    persisted?.currentState,
-    targetState,
-    reason:
-        'Shipped workflow ${selector.machine.workflowType} ran a visible '
-        'package action for ${selector.instance.instanceId}, but the shared '
-        'engine did not persist package target state $targetState.',
+    },
+    elapsed: () => stopwatch.elapsed,
+    maximumAttempts: 80,
+  );
+  stopwatch.stop();
+  final settledAction = actionExecutionEvidence.last.withPostcondition(
+    postcondition.targetStateObserved
+        ? 'target_state_observed'
+        : 'target_state_not_observed',
+  );
+  if (postcondition.targetStateObserved) return settledAction;
+  throw B25PostconditionNotObservedFailure(
+    postcondition.failureReason(
+      workflowType: selector.machine.workflowType,
+      transitionId: transitionId,
+      instanceId: selector.instance.instanceId,
+    ),
+    actionExecutionEvidence: [
+      ...actionExecutionEvidence.take(actionExecutionEvidence.length - 1),
+      settledAction,
+    ],
   );
 }
 
@@ -4575,10 +4696,12 @@ class _PublishedShippedAnnouncement {
   const _PublishedShippedAnnouncement({
     required this.instanceId,
     required this.productFinding,
+    required this.actionExecutionEvidence,
   });
 
   final String instanceId;
   final String? productFinding;
+  final B25ActionExecutionEvidence actionExecutionEvidence;
 }
 
 Future<_PublishedShippedAnnouncement> _createAndPublishShippedAnnouncement({
@@ -4754,6 +4877,10 @@ Future<_PublishedShippedAnnouncement> _createAndPublishShippedAnnouncement({
     );
     await tester.pump(const Duration(milliseconds: 100));
   }
+  final publishActionExecutionEvidence = _observeB25ActionExecutionAfterTap(
+    action: publishAction,
+    transitionId: publish.id,
+  );
   final publishTargetState = publish.to;
   if (publishTargetState == null) {
     fail(
@@ -4761,13 +4888,15 @@ Future<_PublishedShippedAnnouncement> _createAndPublishShippedAnnouncement({
       'publish transition ${publish.id} has no target state.',
     );
   }
-  await _expectShippedInstanceIdState(
+  final confirmedPublishAction = await _expectShippedInstanceIdState(
     tester: tester,
     target: target,
     package: package,
     selector: selector,
     instanceId: instanceId,
     targetState: publishTargetState,
+    transitionId: publish.id,
+    actionExecutionEvidence: publishActionExecutionEvidence,
   );
   final productFinding = publishAction.evaluate().isNotEmpty
       ? '${target.communityName} / ${selector.machine.workflowType} / '
@@ -4793,6 +4922,7 @@ Future<_PublishedShippedAnnouncement> _createAndPublishShippedAnnouncement({
   return _PublishedShippedAnnouncement(
     instanceId: instanceId,
     productFinding: productFinding,
+    actionExecutionEvidence: confirmedPublishAction,
   );
 }
 
