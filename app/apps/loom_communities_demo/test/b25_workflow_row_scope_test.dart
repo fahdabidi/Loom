@@ -123,6 +123,11 @@ void main() {
             'result frame was unavailable',
           );
         });
+        final productFinding = await runB25WorkflowRowScope<String>(() async {
+          throw B25ProductFindingFailure(
+            'publish-announcement persisted sent but remained offered.',
+          );
+        });
 
         expect(proven.completed, isTrue);
         expect(proven.value, 'proven');
@@ -132,11 +137,18 @@ void main() {
           unverified.failure!.rowOutcome,
           'action_succeeded_result_unverified',
         );
+        expect(productFinding.failure!.rowOutcome, 'product_finding');
+        expect(productFinding.failure!.actionProofStatus, 'product_finding');
+        expect(
+          productFinding.failure!.reason,
+          'publish-announcement persisted sent but remained offered.',
+        );
         expect({
           audience.failure!.rowOutcome,
           setup.failure!.rowOutcome,
           unverified.failure!.rowOutcome,
-        }, hasLength(3));
+          productFinding.failure!.rowOutcome,
+        }, hasLength(4));
       },
     );
 

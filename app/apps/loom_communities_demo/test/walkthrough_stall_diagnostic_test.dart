@@ -721,10 +721,9 @@ void main() {
       );
       expect(action, findsNothing);
 
-      final preparation = await prepareCalendarActionSurfaceForActionPolling(
+      final preparation = await prepareCalendarExpandedDetailForEvidence(
         tester: tester,
         surface: surface,
-        tabId: 'calendar',
         instanceId: instanceId,
       );
       expect(preparation.agendaEntryPresent, isTrue);

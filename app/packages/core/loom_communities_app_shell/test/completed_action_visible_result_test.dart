@@ -64,6 +64,51 @@ Future<(LocalWorkflowEngineApi, WorkflowInstance)> _seedCritique() async {
   return (engine, await _instance(engine, instanceId));
 }
 
+LoomWorkflowStateMachine _announcementMachine() =>
+    LoomWorkflowStateMachine.fromJson({
+      'initialState': 'previewed',
+      'states': {
+        'draft': {'label': 'Draft', 'tone': 'neutral'},
+        'previewed': {'label': 'Previewed', 'tone': 'info'},
+        'scheduled': {'label': 'Scheduled', 'tone': 'info'},
+        'sent': {'label': 'Sent', 'tone': 'positive'},
+      },
+      'transitions': [
+        {
+          'id': 'publish-announcement',
+          'label': 'Publish announcement',
+          'from': ['draft', 'previewed', 'scheduled'],
+          'to': 'sent',
+          'guard': {
+            'allowedRoleIds': ['owner'],
+          },
+        },
+      ],
+      'instanceDataSchema': {
+        'title': {
+          'type': 'text',
+          'labelTemplate': '{value}',
+          'displayContexts': ['tile'],
+        },
+      },
+    }, 'mosque-announcement');
+
+Future<(LocalWorkflowEngineApi, WorkflowInstance)> _seedAnnouncement() async {
+  final engine = LocalWorkflowEngineApi(
+    db: WorkflowDatabase.memory(),
+    communityId: 'completed-action-announcement',
+  );
+  engine
+    ..registerDefinition(_announcementMachine())
+    ..setRoleForFan('mosque-owner', 'owner');
+  final instanceId = await engine.createInstance(
+    workflowType: 'mosque-announcement',
+    fanId: 'mosque-owner',
+    initialInstanceData: {'title': 'Prayer schedule update'},
+  );
+  return (engine, await _instance(engine, instanceId));
+}
+
 Future<(LocalWorkflowEngineApi, EngineNativeResolvedBinding)>
 _seedDamageReport() async {
   const workflowType = 'gear-loan-request';
@@ -216,4 +261,60 @@ void main() {
     );
     expect(find.text('1 reported issues'), findsOneWidget);
   });
+
+  testWidgets('publishing an announcement renders its persisted sent state', (
+    tester,
+  ) async {
+    final (engine, instance) = await _seedAnnouncement();
+    final publish = ValueKey(
+      'generic-instance-${instance.instanceId}-action-publish-announcement',
+    );
+
+    await tester.pumpWidget(
+      _host(
+        GenericWorkflowInstanceCard(
+          instance: instance,
+          machine: _announcementMachine(),
+          engine: engine,
+          fanId: 'mosque-owner',
+          roleId: 'owner',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(publish), findsOneWidget);
+    await tester.tap(find.byKey(publish));
+    await tester.pumpAndSettle();
+
+    expect((await _instance(engine, instance.instanceId)).currentState, 'sent');
+    expect(find.text('Sent'), findsOneWidget);
+  });
+
+  test(
+    'a sent announcement does not offer publish-announcement to its owner',
+    () async {
+      final (engine, instance) = await _seedAnnouncement();
+      await engine.applyTransition(
+        workflowType: instance.workflowType,
+        instanceId: instance.instanceId,
+        transitionId: 'publish-announcement',
+        fanId: 'mosque-owner',
+      );
+      final persisted = await _instance(engine, instance.instanceId);
+      final available = await engine.availableTransitionsAsync(
+        workflowType: persisted.workflowType,
+        instanceId: persisted.instanceId,
+        currentState: persisted.currentState,
+        instanceData: persisted.instanceData,
+        fanId: 'mosque-owner',
+      );
+
+      expect(persisted.currentState, 'sent');
+      expect(
+        available.map((transition) => transition.id),
+        isNot(contains('publish-announcement')),
+      );
+    },
+  );
 }

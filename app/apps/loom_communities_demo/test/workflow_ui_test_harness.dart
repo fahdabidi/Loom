@@ -632,6 +632,46 @@ prepareCalendarActionSurfaceForActionPolling({
   );
 }
 
+/// Prepares and verifies the Calendar's inline detail used as the expanded
+/// workflow surface in evidence capture.
+///
+/// Calendar does not expose a second expandable Home-card surface: selecting
+/// the agenda entry is the shipped detail affordance. Keeping this assertion
+/// beside preparation prevents a caller from mistaking an inline list card
+/// for an expandable detail route.
+Future<CalendarActionSurfacePreparation>
+prepareCalendarExpandedDetailForEvidence({
+  required WidgetTester tester,
+  required Finder surface,
+  required String instanceId,
+}) async {
+  final preparation = await prepareCalendarActionSurfaceForActionPolling(
+    tester: tester,
+    surface: surface,
+    tabId: 'calendar',
+    instanceId: instanceId,
+  );
+  expect(
+    preparation.isReadyForActionPolling,
+    isTrue,
+    reason:
+        'Shipped Calendar workflow $instanceId could not prepare its inline '
+        'expanded detail: ${preparation.preparationFailureDescription ?? preparation.diagnosticDescription}',
+  );
+  final detail = find.descendant(
+    of: surface,
+    matching: calendarSelectedDetailFinder(instanceId),
+  );
+  expect(
+    detail,
+    findsOneWidget,
+    reason:
+        'Shipped Calendar workflow $instanceId did not render its selected '
+        'inline detail after its agenda entry was selected.',
+  );
+  return preparation;
+}
+
 /// The explicit Marketplace detail route owned by one action-polling pass.
 ///
 /// Marketplace action controls live in an instance-qualified detail dialog,

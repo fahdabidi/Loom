@@ -23,6 +23,16 @@ class B25DependentReceiverBlockedFailure extends StateError {
   final String reason;
 }
 
+/// A user-visible workflow defect that was observed after the requested
+/// action completed.  This is neither a blocked prerequisite nor an
+/// unverifiable result: the action and its persisted postcondition are known,
+/// but the shipped surface still offers an action that is no longer legal.
+class B25ProductFindingFailure extends StateError {
+  B25ProductFindingFailure(this.reason) : super(reason);
+
+  final String reason;
+}
+
 /// The recorded, row-local result of an exception thrown while walking one
 /// B25 workflow/role row.
 ///
@@ -241,6 +251,13 @@ B25RowScopedFailure _b25RowScopedFailureFor(Object error) {
     return B25RowScopedFailure(
       rowOutcome: 'blocked_by_prerequisite',
       actionProofStatus: 'blocked_by_prerequisite',
+      reason: error.reason,
+    );
+  }
+  if (error is B25ProductFindingFailure) {
+    return B25RowScopedFailure(
+      rowOutcome: 'product_finding',
+      actionProofStatus: 'product_finding',
       reason: error.reason,
     );
   }

@@ -123,6 +123,7 @@ void main() {
       var blockedBySelectorSetupWorkflowEvidenceEntries = 0;
       var blockedByPrerequisiteWorkflowEvidenceEntries = 0;
       var actionSucceededResultUnverifiedWorkflowEvidenceEntries = 0;
+      var productFindingWorkflowEvidenceEntries = 0;
       var rowExecutionFailedWorkflowEvidenceEntries = 0;
 
       void recordEvidenceEntry(Map<String, Object?> entry) {
@@ -158,6 +159,8 @@ void main() {
               blockedByPrerequisiteWorkflowEvidenceEntries += 1;
             case 'action_succeeded_result_unverified':
               actionSucceededResultUnverifiedWorkflowEvidenceEntries += 1;
+            case 'product_finding':
+              productFindingWorkflowEvidenceEntries += 1;
             case 'row_execution_failed':
               rowExecutionFailedWorkflowEvidenceEntries += 1;
             case null:
@@ -199,6 +202,7 @@ void main() {
               blockedByPrerequisiteWorkflowEvidenceEntries,
           'actionSucceededResultUnverifiedWorkflows':
               actionSucceededResultUnverifiedWorkflowEvidenceEntries,
+          'productFindingWorkflows': productFindingWorkflowEvidenceEntries,
           'rowExecutionFailedWorkflows':
               rowExecutionFailedWorkflowEvidenceEntries,
           'totalWorkflows': totalWorkflowEvidenceEntries,
@@ -219,6 +223,7 @@ void main() {
               blockedByPrerequisiteWorkflowEvidenceEntries,
           'actionSucceededResultUnverifiedWorkflows':
               actionSucceededResultUnverifiedWorkflowEvidenceEntries,
+          'productFindingWorkflows': productFindingWorkflowEvidenceEntries,
           'rowExecutionFailedWorkflows':
               rowExecutionFailedWorkflowEvidenceEntries,
           'totalWorkflows': totalWorkflowEvidenceEntries,
@@ -504,14 +509,25 @@ void main() {
         List<String> visiblePrimaryActions = const <String>[],
         List<String> visibleAlternateActions = const <String>[],
         List<String> productFindings = const <String>[],
-      }) => _B25WalkthroughResult(
-        screenshotNames: screenshotNames,
-        actionProofStatus: actionProofStatus,
-        visiblePrimaryActions: visiblePrimaryActions,
-        visibleAlternateActions: visibleAlternateActions,
-        availableSupplementaryActions: const <String>[],
-        productFindings: productFindings,
-      );
+      }) {
+        if (actionProofStatus != 'pass' && productFindings.isEmpty) {
+          throw StateError(
+            'A dedicated B25 row cannot report $actionProofStatus without a '
+            'verbatim product finding.',
+          );
+        }
+        return _B25WalkthroughResult(
+          screenshotNames: screenshotNames,
+          actionProofStatus: actionProofStatus,
+          visiblePrimaryActions: visiblePrimaryActions,
+          visibleAlternateActions: visibleAlternateActions,
+          availableSupplementaryActions: const <String>[],
+          productFindings: productFindings,
+          rowOutcome: actionProofStatus == 'pass'
+              ? 'attempted'
+              : 'product_finding',
+        );
+      }
 
       Map<String, Object?> dedicatedResultFields(
         _B25WalkthroughResult result,
@@ -776,7 +792,7 @@ void main() {
               entry: productDocEntry(adminRow),
               walk: () async {
                 await ensureTargetOpen(mosqueTarget);
-                await _createAndPublishShippedAnnouncement(
+                final publication = await _createAndPublishShippedAnnouncement(
                   tester: tester,
                   target: mosqueTarget,
                   package: mosquePackage,
@@ -795,8 +811,14 @@ void main() {
                     'B19_role_aware_admin_primary_action',
                     'B19_role_aware_admin_complete',
                   ],
+                  actionProofStatus: publication.productFinding == null
+                      ? 'pass'
+                      : 'fail',
                   visiblePrimaryActions: const ['publish/update'],
                   visibleAlternateActions: const ['save draft'],
+                  productFindings: publication.productFinding == null
+                      ? const <String>[]
+                      : [publication.productFinding!],
                 );
               },
             );
@@ -819,17 +841,17 @@ void main() {
               entry: productDocEntry(adminRow),
               walk: () async {
                 await ensureTargetOpen(mosqueTarget);
-                publishedAnnouncementId =
-                    await _createAndPublishShippedAnnouncement(
-                      tester: tester,
-                      target: mosqueTarget,
-                      package: mosquePackage,
-                      selector: announcement,
-                      adminRoleId: mosqueAdminRoleId,
-                      capture: capture,
-                      screenshotPrefix: 'B20_announcement',
-                      announcementTitle: 'Walkthrough community announcement',
-                    );
+                final publication = await _createAndPublishShippedAnnouncement(
+                  tester: tester,
+                  target: mosqueTarget,
+                  package: mosquePackage,
+                  selector: announcement,
+                  adminRoleId: mosqueAdminRoleId,
+                  capture: capture,
+                  screenshotPrefix: 'B20_announcement',
+                  announcementTitle: 'Walkthrough community announcement',
+                );
+                publishedAnnouncementId = publication.instanceId;
                 return dedicatedPass(
                   screenshotNames: const [
                     'B20_announcement_admin_start',
@@ -839,8 +861,14 @@ void main() {
                     'B20_announcement_admin_primary_action',
                     'B20_announcement_admin_complete',
                   ],
+                  actionProofStatus: publication.productFinding == null
+                      ? 'pass'
+                      : 'fail',
                   visiblePrimaryActions: const ['publish announcement'],
                   visibleAlternateActions: const ['save draft'],
+                  productFindings: publication.productFinding == null
+                      ? const <String>[]
+                      : [publication.productFinding!],
                 );
               },
             );
@@ -1118,7 +1146,17 @@ void main() {
             );
             await tester.ensureVisible(instance.first);
             await capture('B20_app_shell_garden_home_medium_minimized_stack');
-            await _expandShippedWorkflowSurface(tester: tester, selector: rsvp);
+            await _selectPackageTab(
+              tester: tester,
+              target: target,
+              package: package,
+              roleId: memberRoleId,
+              tabId: 'calendar',
+            );
+            await _prepareCalendarExpandedShippedWorkflowDetail(
+              tester: tester,
+              selector: rsvp,
+            );
             await capture('B20_app_shell_garden_home_expanded_surface');
             return dedicatedPass(
               screenshotNames: const [
@@ -1256,6 +1294,7 @@ void main() {
             blockedByPrerequisiteWorkflowEvidenceEntries,
         'actionSucceededResultUnverifiedWorkflows':
             actionSucceededResultUnverifiedWorkflowEvidenceEntries,
+        'productFindingWorkflows': productFindingWorkflowEvidenceEntries,
         'rowExecutionFailedWorkflows':
             rowExecutionFailedWorkflowEvidenceEntries,
         'totalWorkflows': totalWorkflowEvidenceEntries,
@@ -1626,6 +1665,9 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
             entry['b25RowOutcome'] == 'action_succeeded_result_unverified',
       )
       .toList(growable: false);
+  final productFindingRows = rows
+      .where((entry) => entry['b25RowOutcome'] == 'product_finding')
+      .toList(growable: false);
   final rowExecutionFailedRows = rows
       .where((entry) => entry['b25RowOutcome'] == 'row_execution_failed')
       .toList(growable: false);
@@ -1794,6 +1836,8 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
     'actionSucceededResultUnverifiedRowsByCommunity': countByCommunity(
       actionSucceededResultUnverifiedRows,
     ),
+    'productFindingRows': productFindingRows.length,
+    'productFindingRowsByCommunity': countByCommunity(productFindingRows),
     'rowExecutionFailedRows': rowExecutionFailedRows.length,
     'rowExecutionFailedRowsByCommunity': countByCommunity(
       rowExecutionFailedRows,
@@ -2989,6 +3033,7 @@ class _B25WalkthroughResult {
   bool get isRecordedFailure =>
       isBlocked ||
       rowOutcome == 'action_succeeded_result_unverified' ||
+      rowOutcome == 'product_finding' ||
       rowOutcome == 'row_execution_failed';
 }
 
@@ -3184,6 +3229,7 @@ Future<WorkflowInstance?> _readShippedInstance({
   required LoomEvidenceTarget target,
   required ShippedEvidencePackage package,
   required _ShippedWorkflowSelector selector,
+  String? instanceId,
 }) async {
   final screen = tester.widget<LocalExtensionScreen>(
     find.byType(LocalExtensionScreen),
@@ -3206,10 +3252,45 @@ Future<WorkflowInstance?> _readShippedInstance({
       () => engine.queryInstances(tabId: tabId, fanId: fanId, limit: 100),
     ))!;
     for (final instance in page.items) {
-      if (instance.instanceId == selector.instance.instanceId) return instance;
+      if (instance.instanceId == (instanceId ?? selector.instance.instanceId)) {
+        return instance;
+      }
     }
   }
   return null;
+}
+
+/// Confirms the engine-native postcondition before classifying a surface that
+/// still shows a completed action. This keeps a failed transition distinct
+/// from a shipped UI that failed to retire an action after the transition.
+Future<void> _expectShippedInstanceIdState({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required _ShippedWorkflowSelector selector,
+  required String instanceId,
+  required String targetState,
+}) async {
+  WorkflowInstance? persisted;
+  for (var attempt = 0; attempt < 80; attempt += 1) {
+    persisted = await _readShippedInstance(
+      tester: tester,
+      target: target,
+      package: package,
+      selector: selector,
+      instanceId: instanceId,
+    );
+    if (persisted?.currentState == targetState) return;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  fail(
+    'Shipped workflow ${selector.machine.workflowType} ran visible package '
+    'action for $instanceId, but the shared engine did not persist package '
+    'target state $targetState (actual: ${persisted?.currentState ?? 'instance not found'}).',
+  );
 }
 
 Future<WorkflowInstance> _expectShippedInstanceDataChanged({
@@ -4490,7 +4571,17 @@ Future<void> _selectPackageTab({
   await _selectCommunityTab(tester, tabId);
 }
 
-Future<String> _createAndPublishShippedAnnouncement({
+class _PublishedShippedAnnouncement {
+  const _PublishedShippedAnnouncement({
+    required this.instanceId,
+    required this.productFinding,
+  });
+
+  final String instanceId;
+  final String? productFinding;
+}
+
+Future<_PublishedShippedAnnouncement> _createAndPublishShippedAnnouncement({
   required WidgetTester tester,
   required LoomEvidenceTarget target,
   required ShippedEvidencePackage package,
@@ -4663,11 +4754,29 @@ Future<String> _createAndPublishShippedAnnouncement({
     );
     await tester.pump(const Duration(milliseconds: 100));
   }
-  expect(
-    publishAction,
-    findsNothing,
-    reason: 'The shipped publish action did not leave the previewed state.',
+  final publishTargetState = publish.to;
+  if (publishTargetState == null) {
+    fail(
+      'Shipped ${target.extensionId} ${selector.machine.workflowType} '
+      'publish transition ${publish.id} has no target state.',
+    );
+  }
+  await _expectShippedInstanceIdState(
+    tester: tester,
+    target: target,
+    package: package,
+    selector: selector,
+    instanceId: instanceId,
+    targetState: publishTargetState,
   );
+  final productFinding = publishAction.evaluate().isNotEmpty
+      ? '${target.communityName} / ${selector.machine.workflowType} / '
+            '$adminRoleId: ${publish.id} persisted ${publishTargetState} for '
+            '$instanceId, but the shipped Admin surface still offers that '
+            'completed action. The package declares ${publish.id} only from '
+            '${publish.from.join(', ')}; it must not remain executable from '
+            '$publishTargetState.'
+      : null;
   await _selectPackageTab(
     tester: tester,
     target: target,
@@ -4681,7 +4790,10 @@ Future<String> _createAndPublishShippedAnnouncement({
     description: 'published announcement on shipped Home surface',
   );
   await capture('${screenshotPrefix}_admin_complete');
-  return instanceId;
+  return _PublishedShippedAnnouncement(
+    instanceId: instanceId,
+    productFinding: productFinding,
+  );
 }
 
 LoomWorkflowTransition _packageTransitionByLabel({
@@ -4700,6 +4812,25 @@ LoomWorkflowTransition _packageTransitionByLabel({
     );
   }
   return matches.single;
+}
+
+Future<void> _prepareCalendarExpandedShippedWorkflowDetail({
+  required WidgetTester tester,
+  required _ShippedWorkflowSelector selector,
+}) async {
+  final calendarSurface = find.byKey(
+    const ValueKey('engine-native-calendar-root'),
+  );
+  await waitForEngineNativeWidget(
+    tester,
+    calendarSurface,
+    description: 'shipped Calendar surface for ${selector.instance.instanceId}',
+  );
+  await prepareCalendarExpandedDetailForEvidence(
+    tester: tester,
+    surface: calendarSurface,
+    instanceId: selector.instance.instanceId,
+  );
 }
 
 Future<void> _expandShippedWorkflowSurface({

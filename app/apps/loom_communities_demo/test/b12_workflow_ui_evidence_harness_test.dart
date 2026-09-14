@@ -317,7 +317,7 @@ void main() {
       }
       final responseData = _responseData(screenshotCaptureStatus: 'complete')
         ..['expectedWorkflowCountByPhase'] = <String, int>{
-          'B12': 4 + blockedAudienceRows.length,
+          'B12': 5 + blockedAudienceRows.length,
         }
         ..['workflowEvidence'] = <Map<String, Object?>>[
           <String, Object?>{
@@ -383,6 +383,21 @@ void main() {
                 'frame.',
             'status': 'action_succeeded_result_unverified',
           },
+          <String, Object?>{
+            'phase': 'B12',
+            'appId': 'ext_mosque',
+            'communityName': 'Masjid Nur',
+            'workflowId': 'mosque-announcement',
+            'role': 'masjid-admin',
+            'screenshotNames': const <String>[],
+            'b25RowOutcome': 'product_finding',
+            'b25ActionProofStatus': 'product_finding',
+            'productFindings': const <String>[
+              'publish-announcement persisted sent but the shipped Admin '
+                  'surface still offered the completed action.',
+            ],
+            'status': 'product_finding',
+          },
           for (final blocked in blockedAudienceRows)
             <String, Object?>{
               'phase': 'B12',
@@ -411,14 +426,16 @@ void main() {
       final aggregate = await _readAggregate(temporaryRoot);
       final summary = aggregate['b25RowSummary'] as Map<String, dynamic>;
       expect(aggregate['status'], 'fail');
-      expect(summary['recordedRows'], 8);
+      expect(summary['recordedRows'], 9);
       expect(summary['provenRows'], 1);
-      expect(summary['completedRows'], 3);
+      expect(summary['completedRows'], 4);
       expect(summary['primaryActionUnavailableRows'], 1);
       expect(summary['actionSucceededResultUnverifiedRows'], 1);
       expect(summary['actionSucceededResultUnverifiedRowsByCommunity'], {
         'Book Club': 1,
       });
+      expect(summary['productFindingRows'], 1);
+      expect(summary['productFindingRowsByCommunity'], {'Masjid Nur': 1});
       expect(summary['blockedByAudienceRows'], 4);
       expect(summary['blockedByAudienceRowsByCommunity'], {'Book Club': 4});
       expect(summary['blockedBySelectorSetupRows'], 1);
@@ -479,7 +496,7 @@ void main() {
         1,
       );
       final nonProvenRows = summary['nonProvenRows'] as List<dynamic>;
-      expect(nonProvenRows, hasLength(7));
+      expect(nonProvenRows, hasLength(8));
       final unverifiedRow = nonProvenRows
           .cast<Map<String, dynamic>>()
           .singleWhere(
@@ -494,6 +511,17 @@ void main() {
         'after acknowledge-material, but B25 could not locate a changed '
         'rendered value or explicit success acknowledgement for '
         'material-public to position the result frame.',
+      );
+      final productFindingRow = nonProvenRows
+          .cast<Map<String, dynamic>>()
+          .singleWhere((row) => row['outcome'] == 'product_finding');
+      expect(productFindingRow['communityName'], 'Masjid Nur');
+      expect(productFindingRow['workflowId'], 'mosque-announcement');
+      expect(productFindingRow['role'], 'masjid-admin');
+      expect(
+        productFindingRow['reason'],
+        'publish-announcement persisted sent but the shipped Admin surface '
+        'still offered the completed action.',
       );
 
       final phaseManifest =
@@ -533,6 +561,18 @@ void main() {
       expect(
         actionSucceededResultUnverifiedRow['b25ActionProofStatus'],
         'action_succeeded_result_unverified',
+      );
+      final persistedProductFindingRow =
+          (phaseManifest['workflows'] as List<dynamic>)
+              .cast<Map<String, dynamic>>()
+              .singleWhere((row) => row['b25RowOutcome'] == 'product_finding');
+      expect(
+        persistedProductFindingRow['recordedRowStatus'],
+        'product_finding',
+      );
+      expect(
+        persistedProductFindingRow['b25ActionProofStatus'],
+        'product_finding',
       );
     } finally {
       await temporaryRoot.delete(recursive: true);
@@ -786,8 +826,8 @@ void main() {
       expect(started['completionGateEligible'], isFalse);
       await failedWriter.writeEvidence(<String, dynamic>{
         'walkthroughStatus': 'running',
-        'requestedPhases': <String>['B12', 'B20'],
-        'expectedWorkflowCountByPhase': <String, int>{'B12': 1, 'B20': 2},
+        'requestedPhases': <String>['B12', 'B15'],
+        'expectedWorkflowCountByPhase': <String, int>{'B12': 1, 'B15': 2},
         'workflowEvidence': _responseData(
           screenshotCaptureStatus: 'unavailable',
         )['workflowEvidence'],
@@ -796,7 +836,7 @@ void main() {
           'reason': 'MissingPluginException(captureScreenshot)',
           'requestedScreenshotNames': <String>[
             ..._harnessScreenshotNames,
-            'B20_announcement_admin_start',
+            'B15_expected_workflow_action',
           ],
         },
       });
@@ -813,6 +853,21 @@ void main() {
         ),
         <String>['walkthrough-only', 'fail'],
       );
+      final emptyB15Phase =
+          jsonDecode(
+                await File(
+                  '${failedRoot.path}/B15/workflow-ui-evidence.json',
+                ).readAsString(),
+              )
+              as Map<String, dynamic>;
+      expect(emptyB15Phase['workflowCount'], 0);
+      expect(emptyB15Phase['phaseOutcome'], 'no_workflows_recorded');
+      expect(
+        emptyB15Phase['phaseOutcomeReason'],
+        'No workflow evidence rows were recorded for phase B15 '
+        '(expected workflow count: 2).',
+      );
+      expect(emptyB15Phase['completionGateEligible'], isFalse);
     } finally {
       await temporaryRoot.delete(recursive: true);
     }
