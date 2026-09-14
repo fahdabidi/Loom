@@ -42,12 +42,19 @@ class B25ProductDocRoleResolutionFailure extends B25SelectorSetupFailure {
     required String role,
     required List<LoomActorIdentity> availableIdentities,
     String? detail,
+    String cause = B25SelectorSetupFailure.unresolvableRoleCause,
   }) : super(
          'Shipped package $extensionId has no actor identity that can '
          'represent B25 product-doc role `$role`. Available identities: '
          '${availableIdentities.map((identity) => '${identity.roleId} (${identity.label})').join(', ')}.'
          '${detail == null ? '' : ' $detail'}',
+         cause: cause,
        );
+
+  /// A tier matched more than one shipped identity. That is a different
+  /// defect from a role nothing can represent, and the summary must say so.
+  static const ambiguousRoleCause =
+      'a resolution tier matched more than one shipped actor identity';
 }
 
 /// A row-local, named refusal for a two-actor product-doc row when the
@@ -72,11 +79,23 @@ class B25CompoundRoleWalkthroughFailure extends B25SelectorSetupFailure {
 
 /// Resolves a B25 product-doc role conservatively.
 ///
-/// Every single role term is matched in this order: exact role id, exact
-/// case-insensitive identity label, then the closed qualifier list above.
+/// Every single role term is matched in this ordered list of exact tiers, and
+/// stops at the first tier that yields exactly one identity:
+///
+///  1. exact role id
+///  2. exact case-insensitive identity label
+///  3. exact case-insensitive identity role label
+///  4. role-id suffix: the identity's role id equals or ends with `-<term>`
+///  5. the closed qualifier phrase list above
+///
+/// Only declared, deterministic fields are consulted: a role id, a label, a
+/// role label, or a documented qualifier phrase. At no stage can a term choose
+/// from multiple identities or fall back to a closest/default actor identity:
+/// a tier matching more than one identity fails loudly without falling through
+/// to a later tier, and a run with no match fails loudly too.
+///
 /// A slash pair is the one explicit two-actor form: both terms are
-/// resolved independently by those same rules. At no stage can a term choose
-/// from multiple identities or fall back to a closest/default actor identity.
+/// resolved independently by these same tiers.
 B25ProductDocRoleResolution resolveB25ProductDocRole({
   required String extensionId,
   required String role,
@@ -164,6 +183,42 @@ String _resolveB25RolePart({
     ).roleId;
   }
 
+  final exactRoleLabels = identities
+      .where(
+        (identity) =>
+            identity.roleLabel.toLowerCase() == rolePart.toLowerCase(),
+      )
+      .toList(growable: false);
+  if (exactRoleLabels.isNotEmpty) {
+    return _requireSingleB25RoleMatch(
+      extensionId: extensionId,
+      fullRole: fullRole,
+      rolePart: rolePart,
+      stage: 'case-insensitive roleLabel',
+      matches: exactRoleLabels,
+      identities: identities,
+    ).roleId;
+  }
+
+  final roleIdSuffixMatches = identities
+      .where(
+        (identity) => _b25RoleIdMatchesSuffix(
+          roleId: identity.roleId,
+          rolePart: rolePart,
+        ),
+      )
+      .toList(growable: false);
+  if (roleIdSuffixMatches.isNotEmpty) {
+    return _requireSingleB25RoleMatch(
+      extensionId: extensionId,
+      fullRole: fullRole,
+      rolePart: rolePart,
+      stage: 'case-insensitive roleId suffix `-${rolePart.trim()}`',
+      matches: roleIdSuffixMatches,
+      identities: identities,
+    ).roleId;
+  }
+
   final normalizedRolePart =
       _b25NarrativeQualifierBaseRoles[rolePart.toLowerCase()];
   if (normalizedRolePart != null) {
@@ -181,6 +236,23 @@ String _resolveB25RolePart({
     role: fullRole,
     availableIdentities: identities,
   );
+}
+
+/// Whether [roleId] is the bare [rolePart] or ends with `-<rolePart>`.
+///
+/// This is an exact suffix test against the whole hyphen-delimited final
+/// segment of the declared role id. It deliberately never matches a role id
+/// that merely contains the term, so `owner` cannot resolve an id such as
+/// `hoa-board` and `member` cannot resolve `moderator`.
+bool _b25RoleIdMatchesSuffix({
+  required String roleId,
+  required String rolePart,
+}) {
+  final normalizedRoleId = roleId.toLowerCase();
+  final normalizedRolePart = rolePart.trim().toLowerCase();
+  if (normalizedRolePart.isEmpty) return false;
+  return normalizedRoleId == normalizedRolePart ||
+      normalizedRoleId.endsWith('-${normalizedRolePart}');
 }
 
 LoomActorIdentity _resolveNormalizedB25RolePart({
@@ -245,6 +317,7 @@ LoomActorIdentity _requireSingleB25RoleMatch({
     extensionId: extensionId,
     role: fullRole,
     availableIdentities: identities,
+    cause: B25ProductDocRoleResolutionFailure.ambiguousRoleCause,
     detail:
         'Resolution is ambiguous: role term `$rolePart` matched '
         '${matches.map((identity) => identity.roleId).join(', ')} at $stage.',

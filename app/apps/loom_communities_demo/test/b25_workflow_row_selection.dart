@@ -342,10 +342,38 @@ B25RowScopedFailure _b25RowScopedFailureFor(Object error) {
 /// record and skip only failures the shipped-workflow selector explicitly
 /// identifies as an inability to derive an instance, actor identity, or tab.
 /// Every unrelated exception still propagates and aborts the run.
+///
+/// The [cause] is a distinct, machine-readable label for WHY the row could not
+/// be set up. It is deliberately not one shared label: a role the package
+/// cannot represent, a workflow with no instance to select from, and a
+/// selector that offered no actionable transition are different defects, and a
+/// summary that aggregates them under one line is misleading. Grouping is on
+/// [cause]; the per-row [reason] stays verbatim.
 class B25SelectorSetupFailure extends StateError {
   B25SelectorSetupFailure(this.reason, {this.cause = defaultCause})
     : super(reason);
 
+  /// No shipped actor identity can represent the product-doc role this row
+  /// names. This is a product-doc versus package mismatch, not a selector
+  /// defect to work around.
+  static const unresolvableRoleCause =
+      'no shipped actor identity can represent the product-doc role';
+
+  /// The workflow exists in `experience.workflowDefinitions` but the shipped
+  /// package declares no instance of it, so there is nothing to select from.
+  static const noSelectorSourceCause =
+      'workflow has no selector source in experience.workflowInstances';
+
+  /// The workflow is absent from the shipped package entirely.
+  static const missingWorkflowDefinitionCause =
+      'workflow is absent from experience.workflowDefinitions';
+
+  /// A render binding names a response workflow the package does not declare.
+  static const missingResponseWorkflowCause =
+      'render binding names a missing response workflow definition';
+
+  /// The catch-all: an instance, actor identity, and tab were all derivable in
+  /// principle, but this selector still found no actionable combination.
   static const defaultCause =
       'selector setup could not derive an actionable instance, actorIdentity, and tab';
 

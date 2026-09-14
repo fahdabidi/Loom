@@ -194,11 +194,73 @@ final _bookClubIdentities = <LoomActorIdentity>[
   _identity(roleId: 'book-organizer', label: 'Organizer'),
 ];
 
-LoomActorIdentity _identity({required String roleId, required String label}) =>
-    LoomActorIdentity(
-      fanId: '$roleId-fan',
-      roleId: roleId,
-      label: label,
-      roleLabel: label,
-      description: '$label description',
-    );
+LoomActorIdentity _identity({
+  required String roleId,
+  required String label,
+  String? roleLabel,
+}) => LoomActorIdentity(
+  fanId: '$roleId-fan',
+  roleId: roleId,
+  label: label,
+  roleLabel: roleLabel ?? label,
+  description: '$label description',
+);
+
+/// The declared `(roleId, label, roleLabel)` triples shipped by each of the
+/// ten communities as of 2026-09-14, read from the packages' `experience.roles`
+/// declarations. Tests below resolve against these triples rather than against
+/// convenient stand-ins, so a tier that only works for a fabricated fixture
+/// cannot pass.
+final _shippedIdentities = <String, List<LoomActorIdentity>>{
+  'ext_ad_off': [
+    _identity(roleId: 'ad-off-member', label: 'Member'),
+    _identity(roleId: 'ad-off-owner', label: 'Owner'),
+  ],
+  'ext_neighborhood_book_club': [
+    _identity(roleId: 'book-member', label: 'Member'),
+    _identity(roleId: 'book-organizer', label: 'Organizer'),
+  ],
+  'ext_camera_club': [
+    _identity(roleId: 'camera-club-organizer', label: 'Organizer'),
+    _identity(roleId: 'camera-club-member', label: 'Member'),
+  ],
+  'ext_cedar_commons_hoa': [
+    _identity(roleId: 'hoa-member', label: 'Homeowner'),
+    _identity(roleId: 'hoa-board', label: 'Board', roleLabel: 'Board reviewer'),
+  ],
+  'ext_chess_club': [
+    _identity(roleId: 'chess-organizer', label: 'Organizer'),
+    _identity(roleId: 'chess-member', label: 'Player', roleLabel: 'Member'),
+    _identity(roleId: 'chess-owner', label: 'Owner'),
+  ],
+  'ext_export_migration': [
+    _identity(roleId: 'portability-owner', label: 'Owner/Admin', roleLabel: 'Owner'),
+    _identity(roleId: 'portability-member', label: 'Member'),
+    _identity(
+      roleId: 'portability-receiving-provider',
+      label: 'Receiving Provider',
+    ),
+  ],
+  'ext_garden_club': [
+    _identity(roleId: 'garden-member', label: 'Member'),
+    _identity(roleId: 'garden-coordinator', label: 'Coordinator'),
+  ],
+  'ext_platform_social': [
+    _identity(roleId: 'member', label: 'Member'),
+    _identity(roleId: 'moderator', label: 'Moderator'),
+  ],
+  'ext_mosque': [
+    _identity(roleId: 'owner', label: 'Masjid Admin', roleLabel: 'Admin'),
+    _identity(roleId: 'community-member', label: 'Community Member'),
+  ],
+  'ext_youth_soccer': [
+    _identity(roleId: 'soccer-guardian', label: 'Guardian'),
+    _identity(roleId: 'soccer-coach', label: 'Coach'),
+    _identity(roleId: 'soccer-owner', label: 'League Owner', roleLabel: 'Owner'),
+  ],
+};
+
+String _availableIdentitiesDiagnostic(String extensionId) =>
+    _shippedIdentities[extensionId]!
+        .map((identity) => '${identity.roleId} (${identity.label})')
+        .join(', ');

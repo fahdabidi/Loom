@@ -3526,6 +3526,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
     throw B25SelectorSetupFailure(
       'Walkthrough workflow $workflowType is absent from the shipped '
       '${target.extensionId} experience.workflowDefinitions.',
+      cause: B25SelectorSetupFailure.missingWorkflowDefinitionCause,
     );
   }
   final instances = package.experience.workflowInstances!
@@ -3535,6 +3536,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
     throw B25SelectorSetupFailure(
       'Walkthrough workflow $workflowType has no selector source in the '
       'shipped ${target.extensionId} experience.workflowInstances.',
+      cause: B25SelectorSetupFailure.noSelectorSourceCause,
     );
   }
   final packageRoleIds = {
@@ -3586,6 +3588,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
         throw B25SelectorSetupFailure(
           'Shipped workflow $workflowType binding on ${binding.tabId} names '
           'missing response workflow $responseWorkflowType.',
+          cause: B25SelectorSetupFailure.missingResponseWorkflowCause,
         );
       }
       final actionSourceState = responseWorkflowType == null
@@ -3728,6 +3731,7 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
     'Walkthrough workflow $workflowType could not derive an actionable '
     'instance, actorIdentity, and tab from the shipped ${target.extensionId} '
     'experience and appShell${b25Model == null ? '.' : ' for B25 product-doc role `${b25Model.role}` from `${b25Model.productDocPath}`.'}',
+    cause: B25SelectorSetupFailure.defaultCause,
   );
 }
 
