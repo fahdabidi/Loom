@@ -247,36 +247,9 @@ void main() {
         installedExtensionIds.add(target.extensionId);
       }
 
-      bool _communityListReady() {
-        return find
-                .byKey(const ValueKey('add-community-button'))
-                .evaluate()
-                .isNotEmpty &&
-            find
-                .byKey(const ValueKey('community-list'))
-                .evaluate()
-                .isNotEmpty &&
-            find.byType(Scrollable).evaluate().isNotEmpty;
-      }
-
       Future<void> returnToCommunityList() async {
-        for (var attempt = 0; attempt < 8; attempt += 1) {
-          await tester.pumpAndSettle();
-          if (_communityListReady()) {
-            return;
-          }
-          final backButton = find.byTooltip('Back');
-          if (backButton.evaluate().isNotEmpty) {
-            await tester.tap(backButton.first, warnIfMissed: false);
-          } else {
-            await tester.pageBack();
-          }
-          await tester.pumpAndSettle();
-        }
-        expect(
-          find.byKey(const ValueKey('add-community-button')),
-          findsOneWidget,
-        );
+        await returnToCommunityListDirectly(tester);
+        expect(find.text('Loom Communities'), findsOneWidget);
         expect(find.byKey(const ValueKey('community-list')), findsOneWidget);
         expect(find.byType(Scrollable), findsWidgets);
       }
@@ -1099,13 +1072,7 @@ void main() {
         );
       }
 
-      if (find
-          .byKey(ValueKey('local-extension-${mosqueTarget.extensionId}'))
-          .evaluate()
-          .isNotEmpty) {
-        await tester.pageBack();
-        await tester.pumpAndSettle();
-      }
+      await returnToCommunityList();
 
       screenshotCapture.finish();
       binding.reportData!['workflowEvidenceSchemaVersion'] = 2;

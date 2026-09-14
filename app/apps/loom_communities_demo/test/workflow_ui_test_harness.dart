@@ -1589,51 +1589,73 @@ Future<void> tearDownB25CommunityWalkthrough({
   }
 }
 
-Future<void> _returnToCommunityList(WidgetTester tester) async {
-  for (var attempt = 0; attempt < 8; attempt += 1) {
-    await tester.pumpAndSettle();
-    if (_communityListIsReady()) {
-      return;
-    }
-    final backButton = find.byTooltip('Back');
-    if (backButton.evaluate().isNotEmpty) {
-      await tester.tap(backButton.first, warnIfMissed: false);
-      await tester.pumpAndSettle();
-      continue;
-    }
+/// Navigates from the current [LocalExtensionScreen] route to the known
+/// community-list route without looking for a Back affordance.
+///
+/// The community entry Scaffold deliberately has no AppBar, and a Back
+/// control retained below a covering surface is not a usable recovery path.
+/// This performs one route pop only, then proves that the community list is
+/// both present and interactable. It never dismisses a covering surface.
+Future<void> returnToCommunityListDirectly(WidgetTester tester) async {
+  await tester.pumpAndSettle();
+  if (_communityListIsReady()) {
+    _expectDirectCommunityListArrival(tester);
+    return;
+  }
 
-    final entryGate = find.byKey(const ValueKey('community-entry-gate'));
-    final entryChecking = find.byKey(
-      const ValueKey('community-entry-checking'),
-    );
-    final entrySurface = entryGate.evaluate().isNotEmpty
-        ? entryGate
-        : entryChecking;
-    if (entrySurface.evaluate().isNotEmpty) {
-      // The engine-native entry Scaffold intentionally has no AppBar. Pop its
-      // known community route directly instead of asking pageBack() to find a
-      // back-button widget that cannot exist on this screen.
-      final didPop = await Navigator.of(
-        tester.element(entrySurface.first),
-      ).maybePop();
-      if (!didPop) {
-        fail(
-          'Could not return to the community list from the engine-native '
-          'community entry route because its Navigator could not pop. '
-          '${_visibleScreenDescription()}',
-        );
-      }
-      await tester.pumpAndSettle();
-      continue;
-    }
-
+  final currentCommunityRoute = find.byElementPredicate(
+    (element) =>
+        element.widget is LocalExtensionScreen &&
+        (ModalRoute.of(element)?.isCurrent ?? false),
+    description: 'current LocalExtensionScreen route',
+  );
+  final currentRouteCount = currentCommunityRoute.evaluate().length;
+  if (currentRouteCount != 1) {
     fail(
-      'Could not return to the community list: the list was not ready and '
-      'the current screen had neither a Back tooltip nor a known '
-      'engine-native entry route to pop. ${_visibleScreenDescription()}',
+      'Could not navigate directly to the community list: expected exactly '
+      'one current LocalExtensionScreen route, found $currentRouteCount. '
+      'Observed surface: ${_visibleScreenDescription()}',
     );
   }
-  _expectCommunityListReady(tester);
+
+  // Pop the known community route directly instead of asking pageBack() to
+  // find a Back button that may be absent or retained below a covering
+  // surface.
+  final didPop = await Navigator.of(
+    tester.element(currentCommunityRoute),
+  ).maybePop();
+  if (!didPop) {
+    fail(
+      'Could not navigate directly to the community list because the known '
+      'LocalExtensionScreen route Navigator could not pop. '
+      'Observed surface: ${_visibleScreenDescription()}',
+    );
+  }
+  await tester.pumpAndSettle();
+  _expectDirectCommunityListArrival(tester);
+}
+
+Future<void> _returnToCommunityList(WidgetTester tester) =>
+    returnToCommunityListDirectly(tester);
+
+void _expectDirectCommunityListArrival(WidgetTester tester) {
+  final communityListTitle = find.text('Loom Communities');
+  if (communityListTitle.evaluate().length != 1 || !_communityListIsReady()) {
+    fail(
+      'Direct navigation did not land on the community list. '
+      'Observed surface: ${_visibleScreenDescription()}',
+    );
+  }
+
+  final addCommunityButton = find.byKey(const ValueKey('add-community-button'));
+  final readiness = inspectFinderTapReadiness(tester, addCommunityButton);
+  if (!readiness.isReady) {
+    fail(
+      'Direct navigation reached the community-list widgets, but the known '
+      'community-list route was not interactable: ${readiness.description}. '
+      'Observed surface: ${_visibleScreenDescription()}',
+    );
+  }
 }
 
 bool _communityListIsReady() {
