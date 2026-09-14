@@ -94,6 +94,8 @@ class WorkflowUiEvidenceWriter {
         _formatB25BlockedAudienceReasonGroups(b25RowSummary);
     final b25BlockedSelectorSetupReasonGroups =
         _formatB25BlockedSelectorSetupReasonGroups(b25RowSummary);
+    final b25BlockedPrerequisiteReasonGroups =
+        _formatB25BlockedPrerequisiteReasonGroups(b25RowSummary);
     final b25BlockedRows = _formatB25BlockedRows(b25RowSummary);
     final b25NonProvenRows = _formatB25NonProvenRows(b25RowSummary);
     final requestedPhases = _stringList(data?['requestedPhases']);
@@ -390,6 +392,10 @@ class WorkflowUiEvidenceWriter {
       '${b25RowSummary['blockedBySelectorSetupRows']} '
       'b25BlockedBySelectorSetupReasonGroups='
       '$b25BlockedSelectorSetupReasonGroups '
+      'b25BlockedByPrerequisite='
+      '${b25RowSummary['blockedByPrerequisiteRows']} '
+      'b25BlockedByPrerequisiteReasonGroups='
+      '$b25BlockedPrerequisiteReasonGroups '
       'b25BlockedRows=$b25BlockedRows '
       'b25ActionSucceededResultUnverified='
       '${b25RowSummary['actionSucceededResultUnverifiedRows']} '
@@ -435,6 +441,21 @@ String _formatB25BlockedSelectorSetupReasonGroups(
 ) {
   final groups =
       summary['blockedBySelectorSetupReasonGroups']
+          as List<Map<String, Object?>>;
+  if (groups.isEmpty) {
+    return 'none';
+  }
+  return groups
+      .map(
+        (group) =>
+            '${(group['cause']! as String).replaceAll(' ', '_')}:${group['count']}',
+      )
+      .join(',');
+}
+
+String _formatB25BlockedPrerequisiteReasonGroups(Map<String, Object?> summary) {
+  final groups =
+      summary['blockedByPrerequisiteReasonGroups']
           as List<Map<String, Object?>>;
   if (groups.isEmpty) {
     return 'none';
@@ -495,6 +516,7 @@ Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
   const blockedOutcomes = <String>{
     'blocked_by_audience',
     'blocked_by_selector_setup',
+    'blocked_by_prerequisite',
   };
   final rows = entries
       .where((entry) => entry['b25RowOutcome'] is String)
@@ -507,6 +529,9 @@ Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
       .toList(growable: false);
   final blockedBySelectorSetupRows = blockedRows
       .where((entry) => entry['b25RowOutcome'] == 'blocked_by_selector_setup')
+      .toList(growable: false);
+  final blockedByPrerequisiteRows = blockedRows
+      .where((entry) => entry['b25RowOutcome'] == 'blocked_by_prerequisite')
       .toList(growable: false);
   final primaryUnavailableRows = rows
       .where((entry) => entry['b25RowOutcome'] == 'primary_action_unavailable')
@@ -580,6 +605,9 @@ Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
       case 'blocked_by_selector_setup':
         reason = row['blockedBySelectorSetupReason'] as String?;
         break;
+      case 'blocked_by_prerequisite':
+        reason = row['blockedByPrerequisiteReason'] as String?;
+        break;
       case 'action_succeeded_result_unverified':
         reason = row['actionSucceededResultUnverifiedReason'] as String?;
         break;
@@ -612,7 +640,9 @@ Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
             'role': row['role'],
             'reason': row['b25RowOutcome'] == 'blocked_by_audience'
                 ? row['blockedByAudienceReason']
-                : row['blockedBySelectorSetupReason'],
+                : row['b25RowOutcome'] == 'blocked_by_selector_setup'
+                ? row['blockedBySelectorSetupReason']
+                : row['blockedByPrerequisiteReason'],
           },
       ]..sort(
         (
@@ -665,6 +695,15 @@ Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
       blockedBySelectorSetupRows,
       causeField: 'blockedBySelectorSetupCause',
       reasonField: 'blockedBySelectorSetupReason',
+    ),
+    'blockedByPrerequisiteRows': blockedByPrerequisiteRows.length,
+    'blockedByPrerequisiteRowsByCommunity': countByCommunity(
+      blockedByPrerequisiteRows,
+    ),
+    'blockedByPrerequisiteReasonGroups': reasonGroups(
+      blockedByPrerequisiteRows,
+      causeField: 'b25RowOutcome',
+      reasonField: 'blockedByPrerequisiteReason',
     ),
     'actionSucceededResultUnverifiedRows':
         actionSucceededResultUnverifiedRows.length,

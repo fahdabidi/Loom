@@ -105,6 +105,67 @@ void main() {
     },
   );
 
+  test(
+    'a named blocked receiver is non-proven in the persisted B25 summary',
+    () async {
+      final temporaryRoot = await Directory.systemTemp.createTemp(
+        'loom-workflow-evidence-blocked-receiver-',
+      );
+      try {
+        final writer = WorkflowUiEvidenceWriter(
+          evidenceRoot: temporaryRoot,
+          commandOutputPath: 'blocked-receiver.log',
+        );
+        for (final name in _harnessScreenshotNames) {
+          await writer.recordScreenshot(name, <int>[1, 2, 3]);
+        }
+        final responseData = _responseData(screenshotCaptureStatus: 'complete')
+          ..['requestedPhases'] = <String>['B12', 'B20']
+          ..['expectedWorkflowCountByPhase'] = <String, int>{'B12': 1, 'B20': 1}
+          ..['workflowEvidence'] = <Map<String, Object?>>[
+            ..._responseData(
+                  screenshotCaptureStatus: 'complete',
+                )['workflowEvidence']
+                as List<Map<String, Object?>>,
+            <String, Object?>{
+              'phase': 'B20',
+              'appId': 'ext_mosque',
+              'communityName': 'Masjid Nur',
+              'workflowId': 'wf_multi-persona-workflow-evidence',
+              'role': 'member',
+              'screenshotNames': const <String>[],
+              'b25RowOutcome': 'blocked_by_prerequisite',
+              'b25ActionProofStatus': 'blocked_by_prerequisite',
+              'blockedByPrerequisiteReason':
+                  'B20 member receiver is blocked by the named prerequisite '
+                  'B20 admin publication: no published announcement id was produced.',
+              'productFindings': const <String>[
+                'B20 member receiver is blocked by the named prerequisite '
+                    'B20 admin publication: no published announcement id was produced.',
+              ],
+              'status': 'blocked_by_prerequisite',
+            },
+          ];
+
+        await writer.writeEvidence(responseData);
+
+        final aggregate = await _readAggregate(temporaryRoot);
+        final summary = aggregate['b25RowSummary'] as Map<String, dynamic>;
+        expect(summary['recordedRows'], 1);
+        expect(summary['provenRows'], 0);
+        expect(summary['completedRows'], 0);
+        expect(summary['blockedByPrerequisiteRows'], 1);
+        expect(
+          (summary['nonProvenRows'] as List<dynamic>).single['reason'],
+          'B20 member receiver is blocked by the named prerequisite B20 admin '
+          'publication: no published announcement id was produced.',
+        );
+      } finally {
+        await temporaryRoot.delete(recursive: true);
+      }
+    },
+  );
+
   // The Flutter-side text guard above cannot see a NATIVE Android dialog: it
   // only reads `Text` widgets, and a system dialog is a window outside the
   // Flutter tree. The capture CLI asks the device directly and records what it

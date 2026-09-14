@@ -140,6 +140,95 @@ void main() {
       },
     );
 
+    test(
+      'dedicated B17-B20 work-item failures are recorded and later items run',
+      () async {
+        const dedicatedItems = <String>[
+          'B17/admin',
+          'B18/member',
+          'B19/member',
+          'B19/admin',
+          'B20/admin',
+          'B20/member',
+          'B20/capability-garden',
+        ];
+        final attempted = <String>[];
+        final outcomes = <String>[];
+
+        for (final item in dedicatedItems) {
+          final scoped = await runB25WorkflowRowScope<String>(() async {
+            attempted.add(item);
+            throw StateError('forced dedicated failure for $item');
+          });
+          outcomes.add(scoped.failure!.rowOutcome);
+        }
+
+        expect(attempted, dedicatedItems);
+        expect(outcomes, everyElement('row_execution_failed'));
+      },
+    );
+
+    test(
+      'a failed B20 publication names its blocked receiver and later work runs',
+      () async {
+        final attempted = <String>[];
+        final admin = await runB25WorkflowRowScope<void>(() async {
+          attempted.add('B20/admin');
+          throw StateError('publication did not produce announcement id');
+        });
+        final receiver = await runB25WorkflowRowScope<void>(() async {
+          attempted.add('B20/member');
+          throw B25DependentReceiverBlockedFailure(
+            'B20 member receiver is blocked by the named prerequisite B20 '
+            'admin publication: no published announcement id was produced. '
+            'Admin outcome ${admin.failure!.rowOutcome}; reason '
+            '${admin.failure!.reason}.',
+          );
+        });
+        final capability = await runB25WorkflowRowScope<String>(() async {
+          attempted.add('B20/capability-soccer');
+          return 'continued';
+        });
+
+        expect(attempted, ['B20/admin', 'B20/member', 'B20/capability-soccer']);
+        expect(admin.failure!.rowOutcome, 'row_execution_failed');
+        expect(receiver.failure!.rowOutcome, 'blocked_by_prerequisite');
+        expect(
+          receiver.failure!.reason,
+          'B20 member receiver is blocked by the named prerequisite B20 '
+          'admin publication: no published announcement id was produced. '
+          'Admin outcome row_execution_failed; reason publication did not '
+          'produce announcement id.',
+        );
+        expect(capability.value, 'continued');
+      },
+    );
+
+    test(
+      'unselected dedicated-community prerequisites are never invoked',
+      () async {
+        const selectedExtensionIds = <String>{'ext_garden_club'};
+        final prerequisiteCalls = <String>[];
+
+        Future<void> runSelectedCommunitySetup(String extensionId) async {
+          if (!isB25DedicatedCommunitySelected(
+            selectedExtensionIds: selectedExtensionIds,
+            extensionId: extensionId,
+            phases: const <String>['B17', 'B18', 'B19', 'B20'],
+            includesPhase: (phase) => phase == 'B20',
+          )) {
+            return;
+          }
+          prerequisiteCalls.add(extensionId);
+        }
+
+        await runSelectedCommunitySetup('ext_mosque');
+        await runSelectedCommunitySetup('ext_garden_club');
+
+        expect(prerequisiteCalls, ['ext_garden_club']);
+      },
+    );
+
     test('a global failure outside the row scope still aborts', () async {
       Future<void> runBatch() async {
         final row = await runB25WorkflowRowScope<String>(() async {
@@ -250,6 +339,29 @@ void main() {
             'capture harness failed globally',
           ),
         ),
+      );
+    });
+
+    test('a final cleanup failure replaces only the last traversal record', () {
+      final completed = B25CommunityTraversalRecord.fromScope(
+        scope: const B25CommunityScopeResult<void>.completed(null),
+        phase: 'B20',
+        communityId: 'community-mosque',
+        communityName: 'Masjid Nur',
+        extensionId: 'ext_mosque',
+        lastRowWalked: 'wf_multi-persona-workflow-evidence/member',
+      );
+
+      final finalised = completed.withFinalCleanupFailure(
+        'Direct navigation did not land on the community list.',
+      );
+
+      expect(completed.isIncomplete, isFalse);
+      expect(finalised.isIncomplete, isTrue);
+      expect(finalised.lastRowWalked, completed.lastRowWalked);
+      expect(
+        finalised.toReportData()['reason'],
+        'Direct navigation did not land on the community list.',
       );
     });
   });

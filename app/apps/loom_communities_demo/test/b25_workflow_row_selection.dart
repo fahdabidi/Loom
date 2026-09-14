@@ -11,6 +11,18 @@ class B25ResultFramePositioningFailure extends StateError {
   final String reason;
 }
 
+/// A receiver row whose named prerequisite row did not produce the persisted
+/// object it needs to observe or act on.
+///
+/// This is not a successful no-op and not a selector problem: recording it
+/// separately preserves the dependency edge in the evidence rather than
+/// making the receiver appear to have attempted an opaque interaction.
+class B25DependentReceiverBlockedFailure extends StateError {
+  B25DependentReceiverBlockedFailure(this.reason) : super(reason);
+
+  final String reason;
+}
+
 /// The recorded, row-local result of an exception thrown while walking one
 /// B25 workflow/role row.
 ///
@@ -42,6 +54,18 @@ class B25WorkflowRowScopeResult<T> {
 
   bool get completed => failure == null;
 }
+
+/// Whether a dedicated B25 community setup may run for this dispatch.
+///
+/// Package reads and role/selector derivation belong behind this predicate.
+/// In particular, an excluded community must not be validated merely because
+/// a different selected community has a B17-B20 work item.
+bool isB25DedicatedCommunitySelected({
+  required Set<String> selectedExtensionIds,
+  required String extensionId,
+  required Iterable<String> phases,
+  required bool Function(String phase) includesPhase,
+}) => selectedExtensionIds.contains(extensionId) && phases.any(includesPhase);
 
 /// The recorded result of work that belongs to one B25 community traversal.
 ///
@@ -112,6 +136,22 @@ class B25CommunityTraversalRecord {
   final String? reason;
 
   bool get isIncomplete => traversalStatus == 'incompletely_traversed';
+
+  /// Replaces a completed traversal with the final, owned cleanup failure.
+  ///
+  /// Report finalisation is deliberately outside that cleanup operation, so a
+  /// failure to return to the community list remains attributable to the last
+  /// traversal without preventing the evidence report from being written.
+  B25CommunityTraversalRecord withFinalCleanupFailure(String failureReason) =>
+      B25CommunityTraversalRecord._(
+        phase: phase,
+        communityId: communityId,
+        communityName: communityName,
+        extensionId: extensionId,
+        traversalStatus: 'incompletely_traversed',
+        lastRowWalked: lastRowWalked,
+        reason: failureReason,
+      );
 
   Map<String, Object?> toReportData() => <String, Object?>{
     'phase': phase,
@@ -194,6 +234,13 @@ B25RowScopedFailure _b25RowScopedFailureFor(Object error) {
     return B25RowScopedFailure(
       rowOutcome: 'action_succeeded_result_unverified',
       actionProofStatus: 'action_succeeded_result_unverified',
+      reason: error.reason,
+    );
+  }
+  if (error is B25DependentReceiverBlockedFailure) {
+    return B25RowScopedFailure(
+      rowOutcome: 'blocked_by_prerequisite',
+      actionProofStatus: 'blocked_by_prerequisite',
       reason: error.reason,
     );
   }

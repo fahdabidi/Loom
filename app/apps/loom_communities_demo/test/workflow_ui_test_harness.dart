@@ -347,6 +347,50 @@ FinderTapReadiness inspectFinderTapReadiness(
 bool isFinderReadyForTap(WidgetTester tester, Finder finder) =>
     inspectFinderTapReadiness(tester, finder).isReady;
 
+/// Makes a speed-dial child creation FAB actionable when it is mounted but
+/// still hidden behind the dial's [IgnorePointer].
+///
+/// A mounted child is deliberately not enough here: a closed dial keeps its
+/// children in the tree at zero opacity, so an existence check would skip the
+/// only required preparation step and the later tap would miss. This performs
+/// at most one explicit opener tap. It does not poll or invent a recovery
+/// path; either the visible opener is tappable and exposes this exact child,
+/// or the caller gets a named failure at the preparation boundary.
+Future<void> prepareCreatableFabForTap({
+  required WidgetTester tester,
+  required Finder createFab,
+  required Finder speedDial,
+  required String workflowType,
+  required String roleId,
+}) async {
+  if (isFinderReadyForTap(tester, createFab)) {
+    return;
+  }
+
+  final openerReadiness = inspectFinderTapReadiness(tester, speedDial);
+  if (!openerReadiness.isReady) {
+    fail(
+      'Shipped $workflowType create FAB preparation failed for $roleId: '
+      'target creatable-fab-$workflowType was not tappable and speed-dial '
+      'opener creatable-fab-speed-dial was not tappable '
+      '(${openerReadiness.hitTestPath}).',
+    );
+  }
+
+  await tester.tap(speedDial, warnIfMissed: false);
+  await tester.pumpAndSettle();
+
+  final targetReadiness = inspectFinderTapReadiness(tester, createFab);
+  if (!targetReadiness.isReady) {
+    fail(
+      'Shipped $workflowType create FAB preparation failed for $roleId: '
+      'speed-dial opener creatable-fab-speed-dial was tapped once, but '
+      'target creatable-fab-$workflowType did not become tappable '
+      '(${targetReadiness.hitTestPath}).',
+    );
+  }
+}
+
 /// A named primary-action candidate and the precise finder scoped to its
 /// current workflow surface.
 class PrimaryActionCandidate<T> {
