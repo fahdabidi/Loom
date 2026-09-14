@@ -390,3 +390,36 @@ Re-measured rather than carried forward, in the sweep that restructured this fil
 Moved verbatim to [TODO-closed.md](TODO-closed.md) — 87 rows, kept rather than deleted. The
 template's rule is that a closed row's rollup line leaves this index once closed; it had never
 been applied, which is why the open queue was buried.
+
+### B25 non-proven rows, by cause — measured 2026-09-14 from a full capture run
+
+**This is the artifact the campaign existed to produce.** 95/95 frames, `b25Proven=10/49`, and every
+non-proven row categorised. The 19 `row_execution_failed` rows are **not** 19 problems:
+
+| cause | rows |
+|---|---:|
+| **no actor identity that can represent the B25 product-doc role** (`ext_mosque` 10, `ext_neighborhood_book_club` 2) | **12** |
+| `mosque-announcement` postcondition not observed (wording corrected in `efd7ae80`) | 2 |
+| walkthrough stalled at its bounded wait | 1 |
+| `hoa-export-evidence` changed source instance data keys | 1 |
+| `book-discussion-message` ran a visible orthogonal package action | 1 |
+| `No element` | 1 |
+| **`Converting object to an encodable object failed: Instance of 'DateTime'`** | 1 |
+
+**Twelve of nineteen share one cause, and it is a SEEDING question, not a harness defect.** The
+shipped package has no actor identity able to represent the role the B25 row requires. That is the
+same class this repo already records — *"Only one holder of role X is a seeding gap, never a package
+defect… Seed more users; never edit the package to route around it"* — and it is now the single
+largest blocker in the campaign, bigger than every harness bug fixed today combined.
+
+**The `DateTime` row independently reproduces a documented defect.** `CLAUDE.md` records Cedar's
+listing failing with `JsonUnsupportedObjectError: Instance of 'DateTime'`, traced to `reminderAt`:
+an unconditional `reminder` block whose read projection inserts `WorkflowReminder.dueAtFor(...)`'s
+raw `DateTime` into `instanceData`. **The walkthrough hit it on a device without being told to look
+for it** — the second unprompted reproduction of a known blocker in one day, after row-259's Garden
+strand.
+
+**What this changes about priorities.** Further harness work has sharply diminishing returns: the
+remaining code-side causes are five distinct one-row issues. The leverage is in **seeding** (12 rows)
+and in the **held Book Club regeneration** (row-247). Neither is fixable by another dispatch, and
+both are decisions rather than defects.
