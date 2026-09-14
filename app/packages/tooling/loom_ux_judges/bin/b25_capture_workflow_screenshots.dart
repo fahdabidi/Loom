@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:loom_ux_judges/b25_capture_drive_plan.dart';
 import 'package:loom_ux_judges/b25_capture_integrity.dart';
 import 'package:loom_ux_judges/b25_capture_package_provenance.dart';
 import 'package:loom_ux_judges/b25_device_dialog_guard.dart';
@@ -27,6 +28,14 @@ void main(List<String> args) async {
   if (mode != 'full-b25' && mode != 'targeted-precheck') {
     stderr.writeln(
       'b25_capture_workflow_screenshots: --mode must be full-b25 or targeted-precheck.',
+    );
+    exit(64);
+  }
+  final applicationBinaryPath = _argValue(args, '--use-application-binary');
+  if (applicationBinaryPath != null &&
+      !File(applicationBinaryPath).existsSync()) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: --use-application-binary path does not exist: $applicationBinaryPath',
     );
     exit(64);
   }
@@ -141,6 +150,9 @@ void main(List<String> args) async {
     ..writeln('b25InteractionModelAsset=${interactionModelAsset.path}')
     ..writeln('progressReport=$progressReportPath')
     ..writeln();
+  if (applicationBinaryPath != null) {
+    output.writeln('applicationBinary=$applicationBinaryPath');
+  }
 
   _writeProgressReport(progressReportPath, {
     'status': 'starting',
@@ -162,10 +174,23 @@ void main(List<String> args) async {
   // frame is not evidence and was never written. Collected across the run and
   // failed loudly below -- never silently dropped.
   final deviceRejectedFrames = <GuardedFrameCapture>[];
+  final drivePhases = b25CaptureDrivePhases(
+    phases: phases,
+    applicationBinaryPath: applicationBinaryPath,
+  );
+  if (applicationBinaryPath != null) {
+    // One unfiltered prebuilt APK emits events for every requested phase, so
+    // remove stale device findings for all of them before its only drive.
+    for (final phase in phases) {
+      clearDeviceDialogFindings(evidenceRoot: evidenceRoot, phase: phase);
+    }
+  }
 
-  for (var phaseIndex = 0; phaseIndex < phases.length; phaseIndex += 1) {
-    final phase = phases[phaseIndex];
-    final shardCount = targetedShardOverride ?? _shardCountForPhase(phase);
+  for (var phaseIndex = 0; phaseIndex < drivePhases.length; phaseIndex += 1) {
+    final phase = drivePhases[phaseIndex];
+    final shardCount = applicationBinaryPath == null
+        ? targetedShardOverride ?? _shardCountForPhase(phase)
+        : 1;
     if (targetedOnlyShard != null && targetedOnlyShard >= shardCount) {
       stderr.writeln(
         'b25_capture_workflow_screenshots: --only-shard '
@@ -198,22 +223,17 @@ void main(List<String> args) async {
       }
       // A findings file left by an earlier shard or run must never be read as
       // this run's result.
-      clearDeviceDialogFindings(evidenceRoot: evidenceRoot, phase: phase);
-      final command = <String>[
-        'drive',
-        '--driver=test_driver/workflow_ui_evidence_test.dart',
-        '--target=integration_test/workflow_ui_evidence_test.dart',
-        '-d',
-        device,
-        '--dart-define=LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS=true',
-        '--dart-define=LOOM_EVIDENCE_PHASE_FILTER=$phase',
-        if (communities.isNotEmpty)
-          '--dart-define=LOOM_EVIDENCE_COMMUNITY_FILTER=${communities.join(',')}',
-        if (shardCount > 1) ...[
-          '--dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=$shardCount',
-          '--dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=$shardIndex',
-        ],
-      ];
+      if (applicationBinaryPath == null) {
+        clearDeviceDialogFindings(evidenceRoot: evidenceRoot, phase: phase);
+      }
+      final command = b25CaptureFlutterDriveCommand(
+        device: device,
+        phase: phase,
+        communities: communities,
+        shardCount: shardCount,
+        shardIndex: shardIndex,
+        applicationBinaryPath: applicationBinaryPath,
+      );
 
       stdout.writeln(
         'b25_capture_workflow_screenshots: [$phase] shard ${shardIndex + 1}/$shardCount running flutter ${command.join(' ')}',
@@ -275,9 +295,15 @@ void main(List<String> args) async {
           }
         },
       );
-      stdout.writeln(
-        'b25_capture_workflow_screenshots: [$phase] shard ${shardIndex + 1}/$shardCount flutter drive teardown uninstalled the app (expected); the next run reinstalls it automatically',
-      );
+      if (applicationBinaryPath == null) {
+        stdout.writeln(
+          'b25_capture_workflow_screenshots: [$phase] shard ${shardIndex + 1}/$shardCount flutter drive teardown uninstalled the app (expected); the next run reinstalls it automatically',
+        );
+      } else {
+        stdout.writeln(
+          'b25_capture_workflow_screenshots: [$phase] prebuilt APK flutter drive teardown uninstalled the app (expected).',
+        );
+      }
 
       output
         ..writeln('--- $phase shard ${shardIndex + 1}/$shardCount ---')
@@ -479,6 +505,7 @@ void main(List<String> args) async {
       'aggregatePath': combinedSummary.aggregatePath,
       'captureIntegrityFindings': combinedSummary.duplicateFrameFindings,
       'commitEligible': false,
+      'completionGateEligible': false,
       'device': device,
       'evidenceRoot': evidenceRoot.path,
       'logPath': logPath,
@@ -489,6 +516,21 @@ void main(List<String> args) async {
     stderr.writeln(
       'b25_capture_workflow_screenshots: expected at least 180 screenshots, found $screenshotCount.',
     );
+    _writeProgressReport(progressReportPath, {
+      'status': 'failed',
+      'failure': 'insufficient-screenshots',
+      'mode': mode,
+      'phases': phases,
+      'phaseCount': phases.length,
+      'completedPhases': phases.length,
+      'screenshotCount': screenshotCount,
+      'aggregatePath': combinedSummary.aggregatePath,
+      'commitEligible': false,
+      'completionGateEligible': false,
+      'device': device,
+      'evidenceRoot': evidenceRoot.path,
+      'logPath': logPath,
+    });
     exit(65);
   }
 
@@ -522,7 +564,8 @@ void main(List<String> args) async {
     'completedPhases': phases.length,
     'screenshotCount': screenshotCount,
     'aggregatePath': combinedSummary.aggregatePath,
-    'commitEligible': true,
+    'commitEligible': combinedSummary.completionGateEligible,
+    'completionGateEligible': combinedSummary.completionGateEligible,
     'device': device,
     'evidenceRoot': evidenceRoot.path,
     'logPath': logPath,
@@ -846,10 +889,19 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
       ? '${finalDirectory.path}/all-workflow-ui-evidence.json'
       : '${finalDirectory.path}/targeted-workflow-ui-evidence-${_slug(phases.join('-'))}.json';
   final hasDuplicateFrames = duplicateFrameFindings.isNotEmpty;
+  final completionGateEligible = isCanonicalB25CaptureEligible(
+    mode: mode,
+    fullB25Coverage: fullCoverage,
+    screenshotCount: screenshotCount,
+    hasDuplicateFrames: hasDuplicateFrames,
+  );
   await File(aggregatePath).writeAsString(
     const JsonEncoder.withIndent('  ').convert({
       'schemaVersion': 1,
-      'status': hasDuplicateFrames ? 'fail' : 'pass',
+      'status':
+          hasDuplicateFrames || (mode == 'full-b25' && !completionGateEligible)
+          ? 'fail'
+          : 'pass',
       'screenshotStatus': hasDuplicateFrames
           ? 'failed-duplicate-frame'
           : 'complete',
@@ -873,8 +925,8 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
       'commandOutputPath': commandOutputPath,
       'captureMode': mode,
       'fullB25Coverage': fullCoverage,
-      'commitEligible':
-          mode == 'full-b25' && fullCoverage && !hasDuplicateFrames,
+      'commitEligible': completionGateEligible,
+      'completionGateEligible': completionGateEligible,
     }),
     flush: true,
   );
@@ -882,6 +934,7 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
     aggregatePath: aggregatePath,
     screenshotCount: screenshotCount,
     duplicateFrameFindings: duplicateFrameFindings,
+    completionGateEligible: completionGateEligible,
   );
 }
 
@@ -932,11 +985,13 @@ class _CombinedManifestSummary {
     required this.aggregatePath,
     required this.screenshotCount,
     required this.duplicateFrameFindings,
+    required this.completionGateEligible,
   });
 
   final String aggregatePath;
   final int screenshotCount;
   final List<Map<String, Object?>> duplicateFrameFindings;
+  final bool completionGateEligible;
 
   bool get hasDuplicateFrames => duplicateFrameFindings.isNotEmpty;
 }
