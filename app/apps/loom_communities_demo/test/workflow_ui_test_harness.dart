@@ -13,6 +13,7 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart'
         LoomWorkflowStateMachine,
         LoomWorkflowTransition;
 
+import 'b25_workflow_row_selection.dart';
 import 'walkthrough_wait.dart';
 
 typedef _ShippedCommunityPackageLocation = ({
@@ -1526,6 +1527,67 @@ Finder _evidenceTargetRoute(LoomEvidenceTarget target) {
 /// current route rather than merely retained below an overlay.
 Finder evidenceTargetRoute(LoomEvidenceTarget target) =>
     _evidenceTargetRoute(target);
+
+/// Names the current B25 surface using the same dialog, community-route, and
+/// overlay inspection used by the row-entry assertion.
+///
+/// This is diagnostic-only. In particular, it does not pop a dialog or try to
+/// recover an unexpected surface.
+String describeB25CommunitySurface(LoomEvidenceTarget target) {
+  final expectedSurface = _evidenceTargetRoute(target);
+  final picker = find.descendant(
+    of: expectedSurface,
+    matching: find.byKey(const ValueKey('actor-identity-picker-button')),
+  );
+  return _currentUnexpectedB25SurfaceDescription(
+        expectedExtensionId: target.extensionId,
+      ) ??
+      _unexpectedCommunitySurfaceDescription(
+        expectedExtensionId: target.extensionId,
+        expectedSurface: expectedSurface,
+        picker: picker,
+      );
+}
+
+/// Leaves one B25 community after its row walkthrough has finished.
+///
+/// This checks the named Back affordance exactly once. An absent Back control
+/// or an unexpected destination is a community finding; this helper never
+/// attempts an unbounded pop sequence or dismisses an unknown overlay.
+Future<void> tearDownB25CommunityWalkthrough({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required String? lastRowWalked,
+  required Future<void> Function() pumpAfterBack,
+}) async {
+  final communityBackButton = find.byTooltip('Back');
+  if (communityBackButton.evaluate().isEmpty) {
+    throw StateError(
+      buildB25CommunityTeardownFailureMessage(
+        communityName: target.communityName,
+        extensionId: target.extensionId,
+        lastRowWalked: lastRowWalked,
+        observedSurface: describeB25CommunitySurface(target),
+      ),
+    );
+  }
+
+  await tester.tap(communityBackButton.first);
+  await pumpAfterBack();
+  if (find.text('Loom Communities').evaluate().isEmpty) {
+    throw StateError(
+      buildB25CommunityTeardownFailureMessage(
+        communityName: target.communityName,
+        extensionId: target.extensionId,
+        lastRowWalked: lastRowWalked,
+        observedSurface: describeB25CommunitySurface(target),
+        detail:
+            'The Back tooltip was tapped, but Loom Communities did not '
+            'become visible.',
+      ),
+    );
+  }
+}
 
 Future<void> _returnToCommunityList(WidgetTester tester) async {
   for (var attempt = 0; attempt < 8; attempt += 1) {

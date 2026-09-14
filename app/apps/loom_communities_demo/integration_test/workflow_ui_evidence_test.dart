@@ -107,6 +107,8 @@ void main() {
       binding.reportData!.addAll(_evidenceDeviceMetadata());
       final entries = <Map<String, Object?>>[];
       binding.reportData!['workflowEvidence'] = entries;
+      final communityTraversals = <B25CommunityTraversalRecord>[];
+      binding.reportData!['b25CommunityTraversals'] = <Map<String, Object?>>[];
       // Preloaded demo-catalog entries are not evidence that a shipped package
       // was installed. Every walkthrough target must be installed from its
       // registered shipped package during this run.
@@ -133,6 +135,14 @@ void main() {
         binding.reportData!['workflowEvidence'] = List<Map<String, Object?>>.of(
           entries,
         );
+      }
+
+      void recordCommunityTraversal(B25CommunityTraversalRecord traversal) {
+        communityTraversals.add(traversal);
+        binding.reportData!['b25CommunityTraversals'] = [
+          for (final recordedTraversal in communityTraversals)
+            recordedTraversal.toReportData(),
+        ];
       }
 
       void emitProgress(
@@ -345,142 +355,169 @@ void main() {
           continue;
         }
 
-        await ensureTargetInstalled(target);
-        await openEvidenceTarget(tester, target);
-        final shippedPackage = await readShippedEvidencePackage(target);
-        for (final productDocRow in selectedProductDocRows) {
-          emitProgress(
-            'workflow-start',
-            phase: target.phase,
-            workflowId: productDocRow.workflowId,
-            communityName: target.communityName,
-          );
-          final rowScope = await runB25WorkflowRowScope(() async {
-            late final _B25WalkthroughResult walkthroughResult;
-            if (!shippedPackage.experience.workflowDefinitions!.containsKey(
-              productDocRow.workflowId,
-            )) {
-              walkthroughResult = await _captureMissingB25PackageWorkflow(
-                tester: tester,
-                target: target,
-                package: shippedPackage,
-                bodyWatch: bodyWatch,
-                b25Model: productDocRow,
-                capture: capture,
-              );
-            } else {
-              final rowSelection = selectB25WorkflowRow(
-                () => _shippedWorkflowSelector(
+        String? lastRowWalked;
+        final communityScope = await runB25CommunityScope(() async {
+          await ensureTargetInstalled(target);
+          await openEvidenceTarget(tester, target);
+          final shippedPackage = await readShippedEvidencePackage(target);
+          for (final productDocRow in selectedProductDocRows) {
+            lastRowWalked = '${productDocRow.workflowId}/${productDocRow.role}';
+            emitProgress(
+              'workflow-start',
+              phase: target.phase,
+              workflowId: productDocRow.workflowId,
+              communityName: target.communityName,
+            );
+            final rowScope = await runB25WorkflowRowScope(() async {
+              late final _B25WalkthroughResult walkthroughResult;
+              if (!shippedPackage.experience.workflowDefinitions!.containsKey(
+                productDocRow.workflowId,
+              )) {
+                walkthroughResult = await _captureMissingB25PackageWorkflow(
+                  tester: tester,
                   target: target,
                   package: shippedPackage,
-                  workflowType: productDocRow.workflowId,
+                  bodyWatch: bodyWatch,
                   b25Model: productDocRow,
-                ),
+                  capture: capture,
+                );
+              } else {
+                final rowSelection = selectB25WorkflowRow(
+                  () => _shippedWorkflowSelector(
+                    target: target,
+                    package: shippedPackage,
+                    workflowType: productDocRow.workflowId,
+                    b25Model: productDocRow,
+                  ),
+                );
+                final selector = rowSelection.selector;
+                walkthroughResult = selector == null
+                    ? rowSelection.isBlockedByAudience
+                          ? await _recordB25AudienceBlockedWorkflow(
+                              tester: tester,
+                              target: target,
+                              b25Model: productDocRow,
+                              reason: rowSelection.blockedReason!,
+                              cause: rowSelection.blockedCause!,
+                              capture: capture,
+                            )
+                          : await _recordB25SelectorSetupBlockedWorkflow(
+                              tester: tester,
+                              target: target,
+                              b25Model: productDocRow,
+                              reason: rowSelection.blockedReason!,
+                              cause: rowSelection.blockedCause!,
+                              capture: capture,
+                            )
+                    : await _runB25ShippedWorkflowWalkthrough(
+                        tester: tester,
+                        target: target,
+                        package: shippedPackage,
+                        bodyWatch: bodyWatch,
+                        selector: selector,
+                        b25Model: productDocRow,
+                        capture: capture,
+                      );
+              }
+              await assertB25CommunityRowSurface(
+                tester: tester,
+                target: target,
+                workflowId: productDocRow.workflowId,
+                role: productDocRow.role,
+                boundary: 'after',
+                captureDiagnostic: capture,
               );
-              final selector = rowSelection.selector;
-              walkthroughResult = selector == null
-                  ? rowSelection.isBlockedByAudience
-                        ? await _recordB25AudienceBlockedWorkflow(
-                            tester: tester,
-                            target: target,
-                            b25Model: productDocRow,
-                            reason: rowSelection.blockedReason!,
-                            cause: rowSelection.blockedCause!,
-                            capture: capture,
-                          )
-                        : await _recordB25SelectorSetupBlockedWorkflow(
-                            tester: tester,
-                            target: target,
-                            b25Model: productDocRow,
-                            reason: rowSelection.blockedReason!,
-                            cause: rowSelection.blockedCause!,
-                            capture: capture,
-                          )
-                  : await _runB25ShippedWorkflowWalkthrough(
-                      tester: tester,
-                      target: target,
-                      package: shippedPackage,
-                      bodyWatch: bodyWatch,
-                      selector: selector,
-                      b25Model: productDocRow,
-                      capture: capture,
-                    );
-            }
-            await assertB25CommunityRowSurface(
-              tester: tester,
-              target: target,
+              return walkthroughResult;
+            });
+            final walkthroughResult =
+                rowScope.value ?? _recordB25RowScopedFailure(rowScope.failure!);
+            recordEvidenceEntry({
+              'phase': target.phase,
+              'appId': target.extensionId,
+              'communityId': target.communityId,
+              'communityName': target.communityName,
+              'workflowId': productDocRow.workflowId,
+              'role': productDocRow.role,
+              'productDocPath': productDocRow.productDocPath,
+              'requiredPrimaryActions': productDocRow.requiredPrimaryActions,
+              'requiredAlternateActions':
+                  productDocRow.requiredAlternateActions,
+              'expectedAssertions': [
+                productDocRow.expectedDecision,
+                productDocRow.requiredPrimaryActions.join(', '),
+                productDocRow.requiredAlternateActions.join(', '),
+                productDocRow.resultAndReceiverState,
+              ],
+              'screenshotNames': walkthroughResult.screenshotNames,
+              'b25RowOutcome': walkthroughResult.rowOutcome,
+              if (walkthroughResult.blockedByAudienceReason != null)
+                'blockedByAudienceReason':
+                    walkthroughResult.blockedByAudienceReason,
+              if (walkthroughResult.blockedByAudienceCause != null)
+                'blockedByAudienceCause':
+                    walkthroughResult.blockedByAudienceCause,
+              if (walkthroughResult.blockedBySelectorSetupReason != null)
+                'blockedBySelectorSetupReason':
+                    walkthroughResult.blockedBySelectorSetupReason,
+              if (walkthroughResult.blockedBySelectorSetupCause != null)
+                'blockedBySelectorSetupCause':
+                    walkthroughResult.blockedBySelectorSetupCause,
+              if (walkthroughResult.actionSucceededResultUnverifiedReason !=
+                  null)
+                'actionSucceededResultUnverifiedReason':
+                    walkthroughResult.actionSucceededResultUnverifiedReason,
+              if (walkthroughResult.rowExecutionFailureReason != null)
+                'rowExecutionFailureReason':
+                    walkthroughResult.rowExecutionFailureReason,
+              'b25ActionProofStatus': walkthroughResult.actionProofStatus,
+              'visiblePrimaryActions': walkthroughResult.visiblePrimaryActions,
+              'visibleAlternateActions':
+                  walkthroughResult.visibleAlternateActions,
+              'availableSupplementaryActions':
+                  walkthroughResult.availableSupplementaryActions,
+              'productFindings': walkthroughResult.productFindings,
+              'status': walkthroughResult.isRecordedFailure
+                  ? walkthroughResult.rowOutcome
+                  : 'pass',
+            });
+            emitProgress(
+              'workflow-complete',
+              phase: target.phase,
               workflowId: productDocRow.workflowId,
-              role: productDocRow.role,
-              boundary: 'after',
-              captureDiagnostic: capture,
+              communityName: target.communityName,
+              blockedRowOutcome: walkthroughResult.isRecordedFailure
+                  ? walkthroughResult.rowOutcome
+                  : null,
             );
-            return walkthroughResult;
-          });
-          final walkthroughResult =
-              rowScope.value ?? _recordB25RowScopedFailure(rowScope.failure!);
-          recordEvidenceEntry({
-            'phase': target.phase,
-            'appId': target.extensionId,
-            'communityId': target.communityId,
-            'communityName': target.communityName,
-            'workflowId': productDocRow.workflowId,
-            'role': productDocRow.role,
-            'productDocPath': productDocRow.productDocPath,
-            'requiredPrimaryActions': productDocRow.requiredPrimaryActions,
-            'requiredAlternateActions': productDocRow.requiredAlternateActions,
-            'expectedAssertions': [
-              productDocRow.expectedDecision,
-              productDocRow.requiredPrimaryActions.join(', '),
-              productDocRow.requiredAlternateActions.join(', '),
-              productDocRow.resultAndReceiverState,
-            ],
-            'screenshotNames': walkthroughResult.screenshotNames,
-            'b25RowOutcome': walkthroughResult.rowOutcome,
-            if (walkthroughResult.blockedByAudienceReason != null)
-              'blockedByAudienceReason':
-                  walkthroughResult.blockedByAudienceReason,
-            if (walkthroughResult.blockedByAudienceCause != null)
-              'blockedByAudienceCause':
-                  walkthroughResult.blockedByAudienceCause,
-            if (walkthroughResult.blockedBySelectorSetupReason != null)
-              'blockedBySelectorSetupReason':
-                  walkthroughResult.blockedBySelectorSetupReason,
-            if (walkthroughResult.blockedBySelectorSetupCause != null)
-              'blockedBySelectorSetupCause':
-                  walkthroughResult.blockedBySelectorSetupCause,
-            if (walkthroughResult.actionSucceededResultUnverifiedReason != null)
-              'actionSucceededResultUnverifiedReason':
-                  walkthroughResult.actionSucceededResultUnverifiedReason,
-            if (walkthroughResult.rowExecutionFailureReason != null)
-              'rowExecutionFailureReason':
-                  walkthroughResult.rowExecutionFailureReason,
-            'b25ActionProofStatus': walkthroughResult.actionProofStatus,
-            'visiblePrimaryActions': walkthroughResult.visiblePrimaryActions,
-            'visibleAlternateActions':
-                walkthroughResult.visibleAlternateActions,
-            'availableSupplementaryActions':
-                walkthroughResult.availableSupplementaryActions,
-            'productFindings': walkthroughResult.productFindings,
-            'status': walkthroughResult.isRecordedFailure
-                ? walkthroughResult.rowOutcome
-                : 'pass',
-          });
-          emitProgress(
-            'workflow-complete',
-            phase: target.phase,
-            workflowId: productDocRow.workflowId,
-            communityName: target.communityName,
-            blockedRowOutcome: walkthroughResult.isRecordedFailure
-                ? walkthroughResult.rowOutcome
-                : null,
+          }
+
+          await tearDownB25CommunityWalkthrough(
+            tester: tester,
+            target: target,
+            lastRowWalked: lastRowWalked,
+            pumpAfterBack: () => _pumpB25Frames(tester),
+          );
+        });
+        final communityTraversal = B25CommunityTraversalRecord.fromScope(
+          scope: communityScope,
+          phase: target.phase,
+          communityId: target.communityId,
+          communityName: target.communityName,
+          extensionId: target.extensionId,
+          lastRowWalked: lastRowWalked,
+        );
+        recordCommunityTraversal(communityTraversal);
+        if (communityTraversal.isIncomplete) {
+          bodyWatch.beat(
+            lastCompletedStep:
+                'community ${target.communityName} ended incompletely after '
+                '${lastRowWalked ?? 'no row'}',
+            attemptedStep:
+                'continuing to the next community after recording '
+                'the community-scoped failure',
+            waitingFor: 'the next community walkthrough to start',
           );
         }
-
-        final communityBackButton = find.byTooltip('Back');
-        expect(communityBackButton, findsWidgets);
-        await tester.tap(communityBackButton.first);
-        await _pumpB25Frames(tester);
-        expect(find.text('Loom Communities'), findsOneWidget);
       }
 
       final mosqueTarget = loomEvidenceTargets.firstWhere(
@@ -1073,11 +1110,17 @@ void main() {
       screenshotCapture.finish();
       binding.reportData!['workflowEvidenceSchemaVersion'] = 2;
       binding.reportData!['workflowEvidence'] = entries;
+      binding.reportData!['b25CommunityTraversals'] = [
+        for (final traversal in communityTraversals) traversal.toReportData(),
+      ];
       binding.reportData!['b25WalkthroughSummary'] =
           _summarizeB25WalkthroughRows(entries);
       binding.reportData!['screenshotVisibleTextByName'] =
           screenshotVisibleTextByName;
-      binding.reportData!['walkthroughStatus'] = 'pass';
+      binding.reportData!['walkthroughStatus'] =
+          communityTraversals.any((traversal) => traversal.isIncomplete)
+          ? 'fail'
+          : 'pass';
       _emitCaptureProgress({
         'status': 'run-complete',
         'completedWorkflows': completedWorkflowEvidenceEntries,

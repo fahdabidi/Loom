@@ -161,5 +161,96 @@ void main() {
         ),
       );
     });
+
+    test(
+      'a community teardown failure is recorded and the next community runs',
+      () async {
+        final attemptedCommunities = <String>[];
+        final provenRows = <String>[];
+        var gardenLastRow = 'garden-tool-loan/member';
+        final garden = await runB25CommunityScope<void>(() async {
+          attemptedCommunities.add('Garden Club');
+          provenRows.add(gardenLastRow);
+          throw StateError(
+            buildB25CommunityTeardownFailureMessage(
+              communityName: 'Garden Club',
+              extensionId: 'ext_garden_club',
+              lastRowWalked: gardenLastRow,
+              observedSurface: 'marketplace-detail-dialog-steel-wheelbarrow',
+            ),
+          );
+        });
+        final gardenRecord = B25CommunityTraversalRecord.fromScope(
+          scope: garden,
+          phase: 'B16',
+          communityId: 'garden-club',
+          communityName: 'Garden Club',
+          extensionId: 'ext_garden_club',
+          lastRowWalked: gardenLastRow,
+        );
+
+        final book = await runB25CommunityScope<void>(() async {
+          attemptedCommunities.add('Book Club');
+          provenRows.add('book-vote/member');
+        });
+        final bookRecord = B25CommunityTraversalRecord.fromScope(
+          scope: book,
+          phase: 'B16',
+          communityId: 'book-club',
+          communityName: 'Book Club',
+          extensionId: 'ext_neighborhood_book_club',
+          lastRowWalked: 'book-vote/member',
+        );
+
+        expect(attemptedCommunities, ['Garden Club', 'Book Club']);
+        expect(provenRows, ['garden-tool-loan/member', 'book-vote/member']);
+        expect(garden.completed, isFalse);
+        expect(gardenRecord.isIncomplete, isTrue);
+        final gardenRecordData = gardenRecord.toReportData();
+        expect(gardenRecordData['phase'], 'B16');
+        expect(gardenRecordData['communityId'], 'garden-club');
+        expect(gardenRecordData['communityName'], 'Garden Club');
+        expect(gardenRecordData['extensionId'], 'ext_garden_club');
+        expect(gardenRecordData['traversalStatus'], 'incompletely_traversed');
+        expect(gardenRecordData['lastRowWalked'], 'garden-tool-loan/member');
+        expect(
+          gardenRecordData['reason'],
+          allOf(
+            contains('Garden Club'),
+            contains('garden-tool-loan/member'),
+            contains('a Back tooltip'),
+            contains('marketplace-detail-dialog-steel-wheelbarrow'),
+          ),
+        );
+        expect(book.completed, isTrue);
+        expect(bookRecord.isIncomplete, isFalse);
+        expect(
+          bookRecord.toReportData()['traversalStatus'],
+          'completely_traversed',
+        );
+      },
+    );
+
+    test('a global failure outside the community scope still aborts', () async {
+      Future<void> runBatch() async {
+        final community = await runB25CommunityScope<void>(() async {
+          throw StateError('community teardown failed');
+        });
+        expect(community.completed, isFalse);
+
+        throw StateError('capture harness failed globally');
+      }
+
+      await expectLater(
+        runBatch,
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            'capture harness failed globally',
+          ),
+        ),
+      );
+    });
   });
 }

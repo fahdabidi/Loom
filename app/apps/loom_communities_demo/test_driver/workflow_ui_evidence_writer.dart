@@ -81,7 +81,15 @@ class WorkflowUiEvidenceWriter {
         .whereType<Map<String, dynamic>>()
         .map((entry) => Map<String, dynamic>.from(entry))
         .toList(growable: false);
+    final b25CommunityTraversals =
+        (data?['b25CommunityTraversals'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map((entry) => Map<String, dynamic>.from(entry))
+            .toList(growable: false);
     final b25RowSummary = _summarizeB25Rows(entries);
+    final b25CommunityTraversalSummary = _summarizeB25CommunityTraversals(
+      b25CommunityTraversals,
+    );
     final b25BlockedAudienceReasonGroups =
         _formatB25BlockedAudienceReasonGroups(b25RowSummary);
     final b25BlockedSelectorSetupReasonGroups =
@@ -93,6 +101,8 @@ class WorkflowUiEvidenceWriter {
       ...requestedPhases,
       for (final entry in entries)
         if (entry['phase'] case final String phase) phase,
+      for (final traversal in b25CommunityTraversals)
+        if (traversal['phase'] case final String phase) phase,
     }.toList()..sort();
     final screenshotVisibleTextByName =
         (data?['screenshotVisibleTextByName'] as Map?)?.map(
@@ -156,7 +166,8 @@ class WorkflowUiEvidenceWriter {
           ..sort();
     final entriesPassed =
         entries.isNotEmpty &&
-        entries.every((entry) => entry['status'] == 'pass');
+        entries.every((entry) => entry['status'] == 'pass') &&
+        b25CommunityTraversalSummary['incompletelyTraversedCommunities'] == 0;
     final walkthroughPassed =
         data?['walkthroughStatus'] == 'pass' && entriesPassed;
     final screenshotsComplete =
@@ -186,6 +197,7 @@ class WorkflowUiEvidenceWriter {
     final failureReason = _failureReason(
       data: data,
       entries: entries,
+      b25CommunityTraversalSummary: b25CommunityTraversalSummary,
       walkthroughPassed: walkthroughPassed,
       screenshotUnavailable: screenshotUnavailable,
       missingScreenshots: missingScreenshots,
@@ -199,6 +211,12 @@ class WorkflowUiEvidenceWriter {
 
     for (final phase in phases) {
       final phaseEntries = grouped[phase] ?? const <Map<String, dynamic>>[];
+      final phaseCommunityTraversals = b25CommunityTraversals
+          .where((traversal) => traversal['phase'] == phase)
+          .toList(growable: false);
+      final phaseCommunityTraversalSummary = _summarizeB25CommunityTraversals(
+        phaseCommunityTraversals,
+      );
       final phaseExpectedNameSet = <String>{
         for (final entry in phaseEntries)
           ..._stringList(entry['screenshotNames']),
@@ -217,7 +235,9 @@ class WorkflowUiEvidenceWriter {
       final phaseAssertionsPassed =
           phaseEntries.isNotEmpty &&
           phaseEntries.length == expectedPhaseWorkflowCount &&
-          phaseEntries.every((entry) => entry['status'] == 'pass');
+          phaseEntries.every((entry) => entry['status'] == 'pass') &&
+          phaseCommunityTraversalSummary['incompletelyTraversedCommunities'] ==
+              0;
       final phaseScreenshotsComplete =
           phaseExpectedNames.isNotEmpty && phaseMissingNames.isEmpty;
       final phaseWalkthroughOnly =
@@ -278,6 +298,8 @@ class WorkflowUiEvidenceWriter {
         'expectedWorkflowCount': expectedPhaseWorkflowCount,
         'workflowCount': phaseEntries.length,
         'b25RowSummary': _summarizeB25Rows(phaseEntries),
+        'b25CommunityTraversals': phaseCommunityTraversals,
+        'b25CommunityTraversalSummary': phaseCommunityTraversalSummary,
         'requestedScreenshotCount': phaseExpectedNames.length,
         'screenshotCount': phaseCapturedCount,
         'missingScreenshotCount': phaseMissingNames.length,
@@ -337,6 +359,8 @@ class WorkflowUiEvidenceWriter {
         ),
         'workflowCount': entries.length,
         'b25RowSummary': b25RowSummary,
+        'b25CommunityTraversals': b25CommunityTraversals,
+        'b25CommunityTraversalSummary': b25CommunityTraversalSummary,
         'requestedScreenshotCount': expectedScreenshotNames.length,
         'screenshotCount': _screenshotPaths.length,
         'missingScreenshotCount': missingScreenshots.length,
@@ -371,6 +395,11 @@ class WorkflowUiEvidenceWriter {
       '${b25RowSummary['actionSucceededResultUnverifiedRows']} '
       'b25RowExecutionFailed=${b25RowSummary['rowExecutionFailedRows']} '
       'b25NonProvenRows=$b25NonProvenRows '
+      'b25Communities='
+      '${b25CommunityTraversalSummary['completelyTraversedCommunities']}/'
+      '${b25CommunityTraversalSummary['recordedCommunities']} '
+      'b25IncompletelyTraversed='
+      '${b25CommunityTraversalSummary['incompletelyTraversedCommunities']} '
       'screenshots=${_screenshotPaths.length}/${expectedScreenshotNames.length} '
       'completionGateEligible=${runStatus == 'pass'}',
     );
@@ -423,6 +452,44 @@ String _formatB25BlockedRows(Map<String, Object?> summary) =>
 
 String _formatB25NonProvenRows(Map<String, Object?> summary) =>
     jsonEncode(summary['nonProvenRows']);
+
+Map<String, Object?> _summarizeB25CommunityTraversals(
+  Iterable<Map<String, dynamic>> traversals,
+) {
+  final records = traversals.toList(growable: false);
+  final incompleteCommunities =
+      records
+          .where(
+            (traversal) =>
+                traversal['traversalStatus'] == 'incompletely_traversed',
+          )
+          .map(
+            (traversal) => <String, Object?>{
+              'phase': traversal['phase'],
+              'communityId': traversal['communityId'],
+              'communityName': traversal['communityName'],
+              'extensionId': traversal['extensionId'],
+              'lastRowWalked': traversal['lastRowWalked'],
+              'reason': traversal['reason'],
+            },
+          )
+          .toList(growable: false)
+        ..sort(
+          (left, right) => '${left['phase']}/${left['communityName']}'
+              .compareTo('${right['phase']}/${right['communityName']}'),
+        );
+  final completelyTraversedCommunities = records
+      .where(
+        (traversal) => traversal['traversalStatus'] == 'completely_traversed',
+      )
+      .length;
+  return <String, Object?>{
+    'recordedCommunities': records.length,
+    'completelyTraversedCommunities': completelyTraversedCommunities,
+    'incompletelyTraversedCommunities': incompleteCommunities.length,
+    'incompleteCommunities': incompleteCommunities,
+  };
+}
 
 Map<String, Object?> _summarizeB25Rows(Iterable<Map<String, dynamic>> entries) {
   const blockedOutcomes = <String>{
@@ -622,6 +689,7 @@ Map<String, Object?> _deviceFields(Map<String, dynamic>? data) => {
 String? _failureReason({
   required Map<String, dynamic>? data,
   required List<Map<String, dynamic>> entries,
+  required Map<String, Object?> b25CommunityTraversalSummary,
   required bool walkthroughPassed,
   required bool screenshotUnavailable,
   required List<String> missingScreenshots,
@@ -631,6 +699,13 @@ String? _failureReason({
     return _systemDialogFailureReason(systemDialogFrames);
   }
   if (!walkthroughPassed) {
+    final incompleteCommunities =
+        b25CommunityTraversalSummary['incompleteCommunities']
+            as List<Map<String, Object?>>;
+    if (incompleteCommunities.isNotEmpty) {
+      return 'One or more communities were incompletely traversed: '
+          '${jsonEncode(incompleteCommunities)}';
+    }
     if (data?['walkthroughStatus'] != 'pass') {
       return 'The walkthrough assertions did not complete successfully; see commandOutputPath.';
     }

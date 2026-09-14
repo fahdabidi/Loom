@@ -504,6 +504,107 @@ void main() {
     );
   });
 
+  test(
+    'an incomplete community traversal retains its proven rows and reason in evidence',
+    () async {
+      final temporaryRoot = await Directory.systemTemp.createTemp(
+        'loom-workflow-evidence-community-scope-',
+      );
+      try {
+        final writer = WorkflowUiEvidenceWriter(
+          evidenceRoot: temporaryRoot,
+          commandOutputPath: 'community-scope.log',
+        );
+        for (final name in _harnessScreenshotNames) {
+          await writer.recordScreenshot(name, <int>[1, 2, 3]);
+        }
+        final responseData = _responseData(screenshotCaptureStatus: 'complete')
+          ..['workflowEvidence'] = <Map<String, Object?>>[
+            <String, Object?>{
+              'phase': 'B12',
+              'appId': 'ext_garden_club',
+              'communityId': 'garden-club',
+              'communityName': 'Garden Club',
+              'workflowId': 'garden-tool-loan',
+              'role': 'member',
+              'screenshotNames': _harnessScreenshotNames,
+              'b25RowOutcome': 'attempted',
+              'b25ActionProofStatus': 'pass',
+              'status': 'pass',
+            },
+          ]
+          ..['b25CommunityTraversals'] = <Map<String, Object?>>[
+            <String, Object?>{
+              'phase': 'B12',
+              'communityId': 'garden-club',
+              'communityName': 'Garden Club',
+              'extensionId': 'ext_garden_club',
+              'traversalStatus': 'incompletely_traversed',
+              'lastRowWalked': 'garden-tool-loan/member',
+              'reason':
+                  'B25 community teardown failed for community Garden '
+                  'Club (ext_garden_club). Last row walked: '
+                  'garden-tool-loan/member. Sought control: a Back tooltip. '
+                  'Observed surface: marketplace-detail-dialog-test-item.',
+            },
+            <String, Object?>{
+              'phase': 'B12',
+              'communityId': 'book-club',
+              'communityName': 'Book Club',
+              'extensionId': 'ext_neighborhood_book_club',
+              'traversalStatus': 'completely_traversed',
+              'lastRowWalked': 'book-vote/member',
+            },
+          ];
+
+        await writer.writeEvidence(responseData);
+
+        final aggregate = await _readAggregate(temporaryRoot);
+        expect(aggregate['status'], 'fail');
+        expect(aggregate['walkthroughStatus'], 'fail');
+        final rowSummary = aggregate['b25RowSummary'] as Map<String, dynamic>;
+        expect(rowSummary['recordedRows'], 1);
+        expect(rowSummary['provenRows'], 1);
+        final traversalSummary =
+            aggregate['b25CommunityTraversalSummary'] as Map<String, dynamic>;
+        expect(traversalSummary['recordedCommunities'], 2);
+        expect(traversalSummary['completelyTraversedCommunities'], 1);
+        expect(traversalSummary['incompletelyTraversedCommunities'], 1);
+        final incompleteCommunities =
+            traversalSummary['incompleteCommunities'] as List<dynamic>;
+        expect(incompleteCommunities, hasLength(1));
+        expect(
+          (incompleteCommunities.single as Map<String, dynamic>)['reason'],
+          allOf(
+            contains('Garden Club'),
+            contains('garden-tool-loan/member'),
+            contains('Back tooltip'),
+            contains('marketplace-detail-dialog-test-item'),
+          ),
+        );
+        expect(aggregate['failureReason'], contains('incompletely traversed'));
+
+        final phaseManifest =
+            jsonDecode(
+                  await File(
+                    '${temporaryRoot.path}/B12/workflow-ui-evidence.json',
+                  ).readAsString(),
+                )
+                as Map<String, dynamic>;
+        expect(phaseManifest['status'], 'fail');
+        final phaseRowSummary =
+            phaseManifest['b25RowSummary'] as Map<String, dynamic>;
+        expect(phaseRowSummary['provenRows'], 1);
+        final phaseTraversalSummary =
+            phaseManifest['b25CommunityTraversalSummary']
+                as Map<String, dynamic>;
+        expect(phaseTraversalSummary['incompletelyTraversedCommunities'], 1);
+      } finally {
+        await temporaryRoot.delete(recursive: true);
+      }
+    },
+  );
+
   test('wf_example-workflow-ux-evidence-harness', () async {
     expect(loomEvidenceTargets, hasLength(10));
     expect(

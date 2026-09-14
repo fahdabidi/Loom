@@ -415,6 +415,65 @@ void main() {
   );
 
   testWidgets(
+    'a B25 community teardown names its last row, Back control, and current '
+    'dialog surface without dismissing it',
+    (WidgetTester tester) async {
+      final target = loomEvidenceTargets.firstWhere(
+        (target) => target.extensionId == 'ext_garden_club',
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: TextButton(
+                  onPressed: () {
+                    showDialog<void>(
+                      context: context,
+                      builder: (context) => const AlertDialog(
+                        key: ValueKey('marketplace-detail-dialog-test-item'),
+                        title: Text('Test item'),
+                      ),
+                    );
+                  },
+                  child: const Text('Open dialog'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open dialog'));
+      await tester.pumpAndSettle();
+
+      await expectLater(
+        tearDownB25CommunityWalkthrough(
+          tester: tester,
+          target: target,
+          lastRowWalked: 'garden-tool-loan/member',
+          pumpAfterBack: () async {},
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            allOf(
+              contains('community Garden Club (ext_garden_club)'),
+              contains('Last row walked: garden-tool-loan/member'),
+              contains('Sought control: a Back tooltip'),
+              contains('Observed surface: marketplace-detail-dialog-test-item'),
+            ),
+          ),
+        ),
+      );
+      expect(
+        find.byKey(const ValueKey('marketplace-detail-dialog-test-item')),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
     'a legitimately unavailable action remains unavailable without tapping '
     'its listing instance',
     (WidgetTester tester) async {

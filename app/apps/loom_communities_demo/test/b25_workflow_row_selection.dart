@@ -43,6 +43,87 @@ class B25WorkflowRowScopeResult<T> {
   bool get completed => failure == null;
 }
 
+/// The recorded result of work that belongs to one B25 community traversal.
+///
+/// A community boundary is deliberately wider than a row boundary: opening a
+/// community and returning from it are owned by that community, while setup
+/// for the whole walkthrough remains outside this scope and still aborts.
+class B25CommunityScopedFailure {
+  const B25CommunityScopedFailure(this.reason);
+
+  final String reason;
+}
+
+/// The completed value or recorded failure from one B25 community scope.
+class B25CommunityScopeResult<T> {
+  const B25CommunityScopeResult.completed(this.value) : failure = null;
+
+  const B25CommunityScopeResult.failed(this.failure) : value = null;
+
+  final T? value;
+  final B25CommunityScopedFailure? failure;
+
+  bool get completed => failure == null;
+}
+
+/// A durable record of whether one community was fully traversed.
+///
+/// Rows write their own evidence before the community teardown runs. This
+/// separate record therefore makes an incomplete teardown visible without
+/// deleting or reclassifying the rows that were already proven.
+class B25CommunityTraversalRecord {
+  const B25CommunityTraversalRecord._({
+    required this.phase,
+    required this.communityId,
+    required this.communityName,
+    required this.extensionId,
+    required this.traversalStatus,
+    required this.lastRowWalked,
+    this.reason,
+  });
+
+  static B25CommunityTraversalRecord fromScope<T>({
+    required B25CommunityScopeResult<T> scope,
+    required String phase,
+    required String communityId,
+    required String communityName,
+    required String extensionId,
+    required String? lastRowWalked,
+  }) {
+    return B25CommunityTraversalRecord._(
+      phase: phase,
+      communityId: communityId,
+      communityName: communityName,
+      extensionId: extensionId,
+      traversalStatus: scope.completed
+          ? 'completely_traversed'
+          : 'incompletely_traversed',
+      lastRowWalked: lastRowWalked,
+      reason: scope.failure?.reason,
+    );
+  }
+
+  final String phase;
+  final String communityId;
+  final String communityName;
+  final String extensionId;
+  final String traversalStatus;
+  final String? lastRowWalked;
+  final String? reason;
+
+  bool get isIncomplete => traversalStatus == 'incompletely_traversed';
+
+  Map<String, Object?> toReportData() => <String, Object?>{
+    'phase': phase,
+    'communityId': communityId,
+    'communityName': communityName,
+    'extensionId': extensionId,
+    'traversalStatus': traversalStatus,
+    'lastRowWalked': lastRowWalked,
+    if (reason != null) 'reason': reason,
+  };
+}
+
 /// Executes all work owned by one B25 workflow/role row.
 ///
 /// The caller defines the structural boundary: exceptions thrown inside
@@ -56,6 +137,42 @@ Future<B25WorkflowRowScopeResult<T>> runB25WorkflowRowScope<T>(
   } catch (error) {
     return B25WorkflowRowScopeResult<T>.failed(_b25RowScopedFailureFor(error));
   }
+}
+
+/// Executes all work owned by one B25 community traversal.
+///
+/// The caller defines the structural boundary: failures thrown while opening,
+/// walking, or tearing down one community are recorded for that community;
+/// failures outside this call remain global and abort the walkthrough.
+Future<B25CommunityScopeResult<T>> runB25CommunityScope<T>(
+  Future<T> Function() run,
+) async {
+  try {
+    return B25CommunityScopeResult<T>.completed(await run());
+  } catch (error) {
+    return B25CommunityScopeResult<T>.failed(
+      B25CommunityScopedFailure(
+        error is StateError ? error.message.toString() : error.toString(),
+      ),
+    );
+  }
+}
+
+/// Builds the teardown diagnostic that identifies the missing control and the
+/// current surface instead of exposing Flutter's generic empty-finder text.
+String buildB25CommunityTeardownFailureMessage({
+  required String communityName,
+  required String extensionId,
+  required String? lastRowWalked,
+  required String observedSurface,
+  String? detail,
+}) {
+  return 'B25 community teardown failed for community $communityName '
+      '($extensionId).\n'
+      'Last row walked: ${lastRowWalked ?? '(none)'}.\n'
+      'Sought control: a Back tooltip.\n'
+      'Observed surface: $observedSurface.'
+      '${detail == null ? '' : '\n$detail'}';
 }
 
 B25RowScopedFailure _b25RowScopedFailureFor(Object error) {
