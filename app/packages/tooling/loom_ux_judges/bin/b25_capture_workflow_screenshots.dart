@@ -806,8 +806,26 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
     }
     final workflows = manifest['workflows'];
     if (workflows is! List || workflows.isEmpty) {
+      const reason = 'no workflows recorded, reason unknown';
+      manifest['status'] = 'fail';
+      manifest['phaseOutcome'] = 'no_workflows_recorded';
+      manifest['phaseOutcomeReason'] = reason;
+      manifest['failureReason'] = reason;
+      manifest['workflowCount'] = 0;
+      manifest['screenshotCount'] = 0;
+      manifest['completionGateEligible'] = false;
+      await manifestFile.writeAsString(
+        const JsonEncoder.withIndent('  ').convert(manifest),
+        flush: true,
+      );
+      await _markPhaseAuditFailedForNoWorkflows(
+        evidenceRoot: evidenceRoot,
+        phase: phase,
+        reason: reason,
+      );
       stderr.writeln(
-        'b25_capture_workflow_screenshots: phase $phase did not record any workflows.',
+        'b25_capture_workflow_screenshots: phase $phase did not record any '
+        'workflows; $reason.',
       );
       exit(65);
     }
@@ -962,6 +980,35 @@ Future<void> _markPhaseAuditFailedForDuplicateFrames({
   decoded['screenshotsAudited'] = screenshotCount;
   decoded['invalidScreenshotCount'] = duplicateFrameFindings.length;
   decoded['captureIntegrityFindings'] = duplicateFrameFindings;
+  await auditFile.writeAsString(
+    const JsonEncoder.withIndent('  ').convert(decoded),
+    flush: true,
+  );
+}
+
+Future<void> _markPhaseAuditFailedForNoWorkflows({
+  required Directory evidenceRoot,
+  required String phase,
+  required String reason,
+}) async {
+  final auditFile = File('${evidenceRoot.path}/$phase/evidence-audit.json');
+  if (!auditFile.existsSync()) {
+    return;
+  }
+  final decoded = jsonDecode(await auditFile.readAsString());
+  if (decoded is! Map<String, dynamic>) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: invalid phase audit ${auditFile.path}; '
+      'the zero-workflow phase outcome is recorded in the phase manifest.',
+    );
+    return;
+  }
+  decoded['status'] = 'fail';
+  decoded['phaseOutcome'] = 'no_workflows_recorded';
+  decoded['phaseOutcomeReason'] = reason;
+  decoded['failureReason'] = reason;
+  decoded['completionGateEligible'] = false;
+  decoded['screenshotsAudited'] = 0;
   await auditFile.writeAsString(
     const JsonEncoder.withIndent('  ').convert(decoded),
     flush: true,

@@ -208,6 +208,39 @@ void main() {
       expect(aggregate['completionGateEligible'], isFalse);
     });
 
+    test(
+      'a phase with zero workflows records its outcome and reason',
+      () async {
+        final harness = await _FakeCaptureHarness.create();
+        addTearDown(harness.dispose);
+        harness.environment['FAKE_EMPTY_PHASE'] = 'B15';
+        final applicationBinary = File('${harness.root.path}/loom.apk')
+          ..writeAsBytesSync(<int>[1, 2, 3]);
+
+        final result = await _runCapture(<String>[
+          '--use-application-binary=${applicationBinary.path}',
+          '--evidence-root=${harness.evidenceRoot.path}',
+        ], environment: harness.environment);
+
+        expect(result.exitCode, 65);
+        expect(
+          result.stderr,
+          contains('phase B15 did not record any workflows'),
+        );
+        final phaseManifest = _jsonFile(
+          File('${harness.evidenceRoot.path}/B15/workflow-ui-evidence.json'),
+        );
+        expect(phaseManifest['status'], 'fail');
+        expect(phaseManifest['workflowCount'], 0);
+        expect(phaseManifest['phaseOutcome'], 'no_workflows_recorded');
+        expect(
+          phaseManifest['phaseOutcomeReason'],
+          'no workflows recorded, reason unknown',
+        );
+        expect(phaseManifest['completionGateEligible'], isFalse);
+      },
+    );
+
     test('canonical eligibility refuses incomplete result guards', () {
       expect(
         isCanonicalB25CaptureEligible(
@@ -325,6 +358,11 @@ root="$WORKFLOW_EVIDENCE_ROOT"
 for phase in B12 B13 B14 B15 B16 B17 B18 B19 B20
 do
   mkdir -p "$root/$phase"
+  if [ "${FAKE_EMPTY_PHASE:-}" = "$phase" ]
+  then
+    printf '{"phase":"%s","workflows":[]}' "$phase" > "$root/$phase/workflow-ui-evidence.json"
+    continue
+  fi
   paths=""
   index=1
   while [ "$index" -le "${FAKE_SCREENSHOT_COUNT:-20}" ]

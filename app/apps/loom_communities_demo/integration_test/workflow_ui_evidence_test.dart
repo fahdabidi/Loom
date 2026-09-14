@@ -29,6 +29,7 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart'
 
 import '../test/b25_visible_postcondition.dart';
 import '../test/b25_actor_audience_resolution.dart';
+import '../test/b25_created_instance_identity.dart';
 import '../test/b25_workflow_row_selection.dart';
 import '../test/workflow_ui_test_harness.dart';
 import '../test/walkthrough_wait.dart';
@@ -4596,31 +4597,17 @@ Future<String> _createAndPublishShippedAnnouncement({
   }
   final submit = find.byKey(ValueKey('$keyPrefix-submit'));
   await tester.ensureVisible(submit);
-  await tester.tap(submit, warnIfMissed: false);
-
-  final createdTitle = find.text(fieldValues['title']!);
-  await waitForEngineNativeWidget(
+  final existingInstanceIds = engineNativeInstanceIdsForTab(
     tester,
-    createdTitle,
-    description: 'newly created shipped $workflowType instance',
+    tabId: creationBinding.tabId,
   );
-  final createdCard = find.ancestor(
-    of: createdTitle,
-    matching: find.byWidgetPredicate((widget) {
-      final key = widget.key;
-      return key is ValueKey<String> &&
-          key.value.startsWith('generic-instance-card-');
-    }),
+  await tester.tap(submit, warnIfMissed: false);
+  final instanceId = await waitForCreatedEngineNativeInstanceId(
+    tester,
+    workflowType: workflowType,
+    tabId: creationBinding.tabId,
+    existingInstanceIds: existingInstanceIds,
   );
-  expect(
-    createdCard,
-    findsOneWidget,
-    reason:
-        'The shipped $workflowType creation completed, but the created '
-        'instance did not expose its engine-native identity key.',
-  );
-  final cardKey = tester.widget(createdCard).key! as ValueKey<String>;
-  final instanceId = cardKey.value.substring('generic-instance-card-'.length);
 
   final preview = _packageTransitionByLabel(
     target: target,
@@ -4690,7 +4677,7 @@ Future<String> _createAndPublishShippedAnnouncement({
   );
   await waitForEngineNativeWidget(
     tester,
-    createdTitle,
+    _engineInstanceFinder(instanceId),
     description: 'published announcement on shipped Home surface',
   );
   await capture('${screenshotPrefix}_admin_complete');

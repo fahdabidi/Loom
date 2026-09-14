@@ -205,6 +205,48 @@ void main() {
     );
 
     test(
+      'a created but unidentified B20 announcement records an unverified action and names that prerequisite outcome',
+      () async {
+        const identityFailure =
+            'The shipped mosque-announcement creation completed, but the '
+            'created instance did not expose its engine-native identity key.\n'
+            'Expected: exactly one newly rendered engine-native list key on '
+            'tab "admin" that was absent before creation.\n'
+            'Actual: 0 matching candidate(s): [].';
+        final attempted = <String>[];
+        final admin = await runB25WorkflowRowScope<void>(() async {
+          attempted.add('B20/admin');
+          throw B25ResultFramePositioningFailure(identityFailure);
+        });
+        final receiver = await runB25WorkflowRowScope<void>(() async {
+          attempted.add('B20/member');
+          throw B25DependentReceiverBlockedFailure(
+            'B20 member receiver is blocked by the named prerequisite B20 '
+            'admin publication: no published announcement id was produced. '
+            'Admin outcome ${admin.failure!.rowOutcome}; reason '
+            '${admin.failure!.reason}.',
+          );
+        });
+
+        expect(attempted, ['B20/admin', 'B20/member']);
+        expect(admin.failure!.rowOutcome, 'action_succeeded_result_unverified');
+        expect(
+          admin.failure!.actionProofStatus,
+          'action_succeeded_result_unverified',
+        );
+        expect(admin.failure!.reason, identityFailure);
+        expect(receiver.failure!.rowOutcome, 'blocked_by_prerequisite');
+        expect(
+          receiver.failure!.reason,
+          'B20 member receiver is blocked by the named prerequisite B20 '
+          'admin publication: no published announcement id was produced. '
+          'Admin outcome action_succeeded_result_unverified; reason '
+          '$identityFailure.',
+        );
+      },
+    );
+
+    test(
       'unselected dedicated-community prerequisites are never invoked',
       () async {
         const selectedExtensionIds = <String>{'ext_garden_club'};
