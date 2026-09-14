@@ -99,12 +99,14 @@ class B25RowScopedFailure {
     required this.actionProofStatus,
     required this.reason,
     this.actionExecutionEvidence = const <B25ActionExecutionEvidence>[],
+    this.selectorSetupCause,
   });
 
   final String rowOutcome;
   final String actionProofStatus;
   final String reason;
   final List<B25ActionExecutionEvidence> actionExecutionEvidence;
+  final String? selectorSetupCause;
 
   bool get actionSucceededButResultUnverified =>
       rowOutcome == 'action_succeeded_result_unverified';
@@ -303,6 +305,7 @@ B25RowScopedFailure _b25RowScopedFailureFor(Object error) {
       rowOutcome: 'blocked_by_selector_setup',
       actionProofStatus: 'blocked_by_selector_setup',
       reason: error.reason,
+      selectorSetupCause: error.cause,
     );
   }
   if (error is B25ResultFramePositioningFailure) {
@@ -340,12 +343,14 @@ B25RowScopedFailure _b25RowScopedFailureFor(Object error) {
 /// identifies as an inability to derive an instance, actor identity, or tab.
 /// Every unrelated exception still propagates and aborts the run.
 class B25SelectorSetupFailure extends StateError {
-  B25SelectorSetupFailure(this.reason) : super(reason);
+  B25SelectorSetupFailure(this.reason, {this.cause = defaultCause})
+    : super(reason);
 
-  static const cause =
+  static const defaultCause =
       'selector setup could not derive an actionable instance, actorIdentity, and tab';
 
   final String reason;
+  final String cause;
 }
 
 /// The selector result for one B25 walkthrough row.
@@ -400,7 +405,7 @@ B25WorkflowRowSelection<T> selectB25WorkflowRow<T>(T Function() select) {
   } on B25SelectorSetupFailure catch (error) {
     return B25WorkflowRowSelection<T>.blockedBySelectorSetup(
       blockedReason: error.reason,
-      blockedCause: B25SelectorSetupFailure.cause,
+      blockedCause: error.cause,
     );
   }
 }

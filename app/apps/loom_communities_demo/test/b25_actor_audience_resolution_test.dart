@@ -90,7 +90,7 @@ void main() {
         expect(blocked.isBlockedBySelectorSetup, isTrue);
         expect(blocked.isBlockedByAudience, isFalse);
         expect(blocked.rowOutcome, 'blocked_by_selector_setup');
-        expect(blocked.blockedCause, B25SelectorSetupFailure.cause);
+        expect(blocked.blockedCause, B25SelectorSetupFailure.defaultCause);
         expect(blocked.blockedReason, reason);
         expect(nextRow.isBlocked, isFalse);
         expect(nextRow.selector, 'book-member');

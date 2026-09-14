@@ -30,6 +30,7 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart'
 import '../test/b25_visible_postcondition.dart';
 import '../test/b25_actor_audience_resolution.dart';
 import '../test/b25_created_instance_identity.dart';
+import '../test/b25_product_doc_role_resolution.dart';
 import '../test/b25_shipped_state_postcondition.dart';
 import '../test/b25_workflow_row_selection.dart';
 import '../test/workflow_ui_test_harness.dart';
@@ -3108,7 +3109,7 @@ _B25WalkthroughResult _recordB25RowScopedFailure(B25RowScopedFailure failure) {
         : null,
     blockedBySelectorSetupCause:
         failure.rowOutcome == 'blocked_by_selector_setup'
-        ? B25SelectorSetupFailure.cause
+        ? failure.selectorSetupCause ?? B25SelectorSetupFailure.defaultCause
         : null,
     blockedByPrerequisiteReason: failure.rowOutcome == 'blocked_by_prerequisite'
         ? failure.reason
@@ -3224,23 +3225,25 @@ Future<_B25WalkthroughResult> _captureMissingB25PackageWorkflow({
     );
   }
 
-  final roleId = _roleIdsForB25Role(package, b25Model.role).firstOrNull;
-  if (roleId != null) {
-    beatSubstep(WalkthroughSubstep.selectingActorIdentity, role: roleId);
-    await selectActorIdentity(tester, roleId);
-    final preferredTab = _tabForMissingB25Workflow(b25Model.workflowId);
-    final tabs = appShellTabsFor(
-      experience: package.experience,
-      roleId: roleId,
-      appShellConfiguration: package.appShellConfiguration,
-    );
-    if (tabs.any((tab) => tab.tabId == preferredTab)) {
-      beatSubstep(
-        WalkthroughSubstep.selectingCommunityTab,
-        tabId: preferredTab,
-      );
-      await _selectCommunityTab(tester, preferredTab);
-    }
+  final roleId = requireSingleActorIdentityB25Walkthrough(
+    extensionId: package.experience.extensionId,
+    resolution: resolveB25ProductDocRole(
+      extensionId: package.experience.extensionId,
+      role: b25Model.role,
+      actorIdentities: package.experience.actorIdentities!,
+    ),
+  );
+  beatSubstep(WalkthroughSubstep.selectingActorIdentity, role: roleId);
+  await selectActorIdentity(tester, roleId);
+  final preferredTab = _tabForMissingB25Workflow(b25Model.workflowId);
+  final tabs = appShellTabsFor(
+    experience: package.experience,
+    roleId: roleId,
+    appShellConfiguration: package.appShellConfiguration,
+  );
+  if (tabs.any((tab) => tab.tabId == preferredTab)) {
+    beatSubstep(WalkthroughSubstep.selectingCommunityTab, tabId: preferredTab);
+    await _selectCommunityTab(tester, preferredTab);
   }
 
   final screenshotNames = <String>[
@@ -3538,9 +3541,21 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
     for (final actorIdentity in package.experience.actorIdentities!)
       actorIdentity.roleId,
   };
-  final preferredRoleIds = b25Model == null
+  final b25RoleResolution = b25Model == null
+      ? null
+      : resolveB25ProductDocRole(
+          extensionId: package.experience.extensionId,
+          role: b25Model.role,
+          actorIdentities: package.experience.actorIdentities!,
+        );
+  final preferredRoleIds = b25RoleResolution == null
       ? packageRoleIds
-      : _roleIdsForB25Role(package, b25Model.role).toSet();
+      : <String>{
+          requireSingleActorIdentityB25Walkthrough(
+            extensionId: package.experience.extensionId,
+            resolution: b25RoleResolution,
+          ),
+        };
   final rawExperience = package.source['experience'] as Map<String, dynamic>;
   final rawWorkflowDefinitions = Map<String, Object?>.from(
     rawExperience['workflowDefinitions'] as Map,
@@ -3714,45 +3729,6 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
     'instance, actorIdentity, and tab from the shipped ${target.extensionId} '
     'experience and appShell${b25Model == null ? '.' : ' for B25 product-doc role `${b25Model.role}` from `${b25Model.productDocPath}`.'}',
   );
-}
-
-List<String> _roleIdsForB25Role(ShippedEvidencePackage package, String role) {
-  final normalizedRole = b25NormalizeActionText(role);
-  bool identityMatches(LoomActorIdentity identity) {
-    final identityText = b25NormalizeActionText(
-      '${identity.roleId} ${identity.label} ${identity.roleLabel}',
-    );
-    if (identityText.contains(normalizedRole)) return true;
-    return switch (normalizedRole) {
-      'donor' => identityText.contains('member'),
-      'owner' =>
-        identityText.contains('owner') ||
-            identityText.contains('admin') ||
-            identityText.contains('board') ||
-            identityText.contains('coordinator'),
-      'admin' =>
-        identityText.contains('admin') || identityText.contains('owner'),
-      'organizer' =>
-        identityText.contains('organizer') ||
-            identityText.contains('coordinator') ||
-            identityText.contains('admin') ||
-            identityText.contains('owner'),
-      _ => false,
-    };
-  }
-
-  final roleIds = package.experience.actorIdentities!
-      .where(identityMatches)
-      .map((identity) => identity.roleId)
-      .toList(growable: false);
-  if (roleIds.isEmpty) {
-    fail(
-      'Shipped package ${package.experience.extensionId} has no actor identity '
-      'that can represent B25 product-doc role `$role`. Available identities: '
-      '${package.experience.actorIdentities!.map((identity) => '${identity.roleId} (${identity.label})').join(', ')}.',
-    );
-  }
-  return roleIds;
 }
 
 int _compareB25TransitionCandidates(
