@@ -240,6 +240,17 @@ The walkthrough now clears Garden and stalls on Book Club's `book-nomination` / 
 2. **The capture tool needs its `--use-application-binary` passthrough** before any of this is bankable. Its one genuine design fork is already settled by measurement: **one unfiltered APK, one drive, all nine phases B12–B20** — verified from the evidence directories, not argued from the compile-time `--dart-define` reasoning that pointed the other way.
 3. **Rows that cannot prove regardless of harness work** — Book Club's four behind a **held** package regeneration (row-247), Garden's two behind seeding (a full event; an owner who cannot claim their own giveaway). These need decisions outside the harness and must never be counted as progress.
 
+**THE RUN PRODUCES PRODUCT FINDINGS, NOT JUST COUNTS — 2026-09-13.** The manifests carry a `productFindings` array per row. **39 distinct findings** from the first complete pass, in plain language, naming the community, the row, the role, the documented actions expected and what was actually offered. Two shapes dominate: **11** rows where *"no documented primary package action was exercised"* (each listing the terms it looked for), and four distinct `primary_action_unavailable` reasons:
+
+- `claim-giveaway unavailable: the actor owns this giveaway (ownerFanId == $actor), so the transition's guard formula denies it`
+- `Going unavailable: Spring Workshop: Pollinator-Friendly Planting is full, 2/2. Other available actions include Add reminder…`
+- `no primary action candidates were selected for this workflow row`
+- `Request loan unavailable. Other available actions include Report issue. The documented primary action was not exercised`
+
+**THE FOURTH INDEPENDENTLY REPRODUCES ROW-259 FROM THE DEVICE.** That row records that a Garden owner cannot withdraw their own listing once it is `onLoan` — `delist` and `pause-listing` both require `availabilityState == "available"`, every transition that clears `onLoan` is borrower-guarded, and the owner's only remaining action is `report-issue`, which declares `"to": null` and changes no state. The walkthrough found precisely that, unprompted: *"Request loan unavailable. Other available actions include Report issue."* A blocker previously established by reading the package is now **confirmed by what the app actually offers a real persona**, which is a materially stronger form of the same claim.
+
+**Note `recordedRowStatus: "pass"` on rows whose primary action was unavailable.** That field means *the row was recorded successfully*, not *the row proved its action* — the same completed-versus-proven distinction as above, in a third place. Anyone computing a bar figure from `recordedRowStatus` would get 21-style numbers rather than the true 9.
+
 **Still true and still the reason the tool must change at all:** every direct `flutter drive` reports `screenshots=0/N`. The frames are captured by the **tool**, which shells out to `adb` in response to the test's `B25_CAPTURE_PROGRESS` events. Driving `flutter drive` by hand — which is how all of today's debugging was done — can never produce evidence frames, only walkthrough outcomes. So the tool change is required before any of this becomes bankable B25 evidence, and the walkthrough must be completing first for that change to be worth making.
 
 **SUPERSEDED — the paragraph below proposed `--host-vmservice-port` + a reverse tunnel. Disproven 2026-09-12 (pinning does not pin), and now moot: driving from Windows removes the problem entirely. Kept only so the reasoning is not re-derived.**
