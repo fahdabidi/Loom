@@ -217,6 +217,29 @@ The walkthrough now clears Garden and stalls on Book Club's `book-nomination` / 
 
 **The risk is explicit and contained, because this is exactly how a harness starts hiding its own defects.** Three properties are mandatory and were written into the ticket as such: a blocked row is **never** counted proven and sits in its own bucket; its reason is captured **verbatim** rather than summarised into a category, so "the package has no seed for this state" stays distinguishable from "the harness could not find a tab"; and the end-of-run summary **lists every blocked row** — workflow, community, role, reason — not merely a count, since a count alone is precisely the artifact that lets blocked work disappear. The ticket also says that if all three cannot hold, report it rather than ship a partial version: **a tolerant run without a legible blocked list is worse than the current abort, because it looks like progress.** Unexpected exceptions from outside the two named paths must still abort.
 
+**✅ THE WALKTHROUGH RAN TO COMPLETION, 2026-09-13 — first full pass since the capture path broke.** After twenty `fix(b25)` commits, a 29-minute drive ended with `run-complete` and `All tests passed!` — no exception, no abort, `stalls: 0`. The structured inventory this campaign was built to produce now exists:
+
+| outcome | count |
+|---|---:|
+| **proven** (`b25Proven`) | **9 / 49** |
+| completed workflows | 21 |
+| **row execution failed** | **20** |
+| blocked by audience | 3 |
+| action succeeded, result unverified | 3 |
+| blocked by selector setup | 2 |
+| blocked by prerequisite | 1 |
+| total workflows in the bar | 82 |
+
+50 of 82 attempted; every non-proven row carries a category and a verbatim reason. **`completed` is not `proven`**: a completed row ran to a recorded outcome, a proven row exercised its required action. Quote the 9, not the 21.
+
+**What this does and does not mean.** It means the harness can finally *measure* the bar instead of dying before it. It does **not** move the bar: `screenshots=0/88` and **0 PNGs written**, because frames are captured by the **tool** via `adb` in response to the test's `B25_CAPTURE_PROGRESS` events, and a hand-driven `flutter drive` emits those events with nobody listening. 19 manifest files were written; not one is evidence.
+
+**The three biggest remaining items, in the order they gate each other:**
+
+1. **`rowExecutionFailed: 20`** — the largest bucket and entirely unexamined. Each carries a recorded reason; reading them is cheap and is the obvious next move.
+2. **The capture tool needs its `--use-application-binary` passthrough** before any of this is bankable. Its one genuine design fork is already settled by measurement: **one unfiltered APK, one drive, all nine phases B12–B20** — verified from the evidence directories, not argued from the compile-time `--dart-define` reasoning that pointed the other way.
+3. **Rows that cannot prove regardless of harness work** — Book Club's four behind a **held** package regeneration (row-247), Garden's two behind seeding (a full event; an owner who cannot claim their own giveaway). These need decisions outside the harness and must never be counted as progress.
+
 **Still true and still the reason the tool must change at all:** every direct `flutter drive` reports `screenshots=0/N`. The frames are captured by the **tool**, which shells out to `adb` in response to the test's `B25_CAPTURE_PROGRESS` events. Driving `flutter drive` by hand — which is how all of today's debugging was done — can never produce evidence frames, only walkthrough outcomes. So the tool change is required before any of this becomes bankable B25 evidence, and the walkthrough must be completing first for that change to be worth making.
 
 **SUPERSEDED — the paragraph below proposed `--host-vmservice-port` + a reverse tunnel. Disproven 2026-09-12 (pinning does not pin), and now moot: driving from Windows removes the problem entirely. Kept only so the reasoning is not re-derived.**
