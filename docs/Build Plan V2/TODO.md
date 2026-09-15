@@ -406,11 +406,14 @@ non-proven row categorised. The 19 `row_execution_failed` rows are **not** 19 pr
 | `No element` | 1 |
 | **`Converting object to an encodable object failed: Instance of 'DateTime'`** | 1 |
 
-**Twelve of nineteen share one cause, and it is a SEEDING question, not a harness defect.** The
-shipped package has no actor identity able to represent the role the B25 row requires. That is the
-same class this repo already records — *"Only one holder of role X is a seeding gap, never a package
-defect… Seed more users; never edit the package to route around it"* — and it is now the single
-largest blocker in the campaign, bigger than every harness bug fixed today combined.
+~~**Twelve of nineteen share one cause, and it is a SEEDING question, not a harness defect.**~~
+**CORRECTED 2026-09-14 — this was wrong, and it is not a seeding gap.** The roles exist; the resolver
+matched only `roleId`, while B25 rows name personas by label or generic term. Fixed in `f22e311d`
+(label + qualifier forms) and `e78ac101` (`roleLabel` + roleId suffix). What remains is a **doc
+defect in three hard-locked product docs**: their B25 persona column says `owner` where each doc's
+own persona table and its package say Board (Cedar, 4 workflows), Organizer (Book Club, 2) and
+Coordinator (Garden, 1). Chess declares both `chess-owner` and `chess-organizer`, which is why
+`owner` cannot be mapped onto those roles by rule. Needs a user decision to edit the docs.
 
 **The `DateTime` row independently reproduces a documented defect.** `CLAUDE.md` records Cedar's
 listing failing with `JsonUnsupportedObjectError: Instance of 'DateTime'`, traced to `reminderAt`:
@@ -420,6 +423,7 @@ for it** — the second unprompted reproduction of a known blocker in one day, a
 strand.
 
 **What this changes about priorities.** Further harness work has sharply diminishing returns: the
-remaining code-side causes are five distinct one-row issues. The leverage is in **seeding** (12 rows)
-and in the **held Book Club regeneration** (row-247). Neither is fixable by another dispatch, and
-both are decisions rather than defects.
+remaining code-side causes are five distinct one-row issues. The leverage is in ~~**seeding** (12 rows)~~
+the **three hard-locked doc corrections** (7 workflows, see the correction above) and in the **held Book
+Club regeneration** (row-247). Neither is fixable by another dispatch, and both are decisions rather than
+defects.
