@@ -1,9 +1,9 @@
 #!/bin/bash
 # data/call_implementation_agent.sh
 #
-# CURRENT DEFAULT (2026-09-14): Muse Code CLI, model muse-spark-1.3 -- see the
-# "Engine selection" block just below `set -euo pipefail`. That block and its
-# ENGINE/MUSE_* variables are the authority. The long Codex/DeepSeek commentary
+# CURRENT DEFAULT (2026-09-14, later the same day): Claude Code CLI, model `sonnet`,
+# effort `xhigh` -- see the "Engine selection" block just below `set -euo pipefail`.
+# That block and its ENGINE/CLAUDE_*/MUSE_* variables are the authority. The long Codex/DeepSeek commentary
 # that follows describes the IMPLEMENTATION_ENGINE=codex path, including a
 # "defaults to DeepSeek V4 Flash" line that was already false before this change
 # (the code defaulted to gpt5_6_terra_xhigh).
@@ -233,14 +233,27 @@ PROMPT_FILE="${1:?usage: call_implementation_agent.sh <prompt-file> [--fresh]}"
 MODE="${2:-}"
 
 # --- Engine selection (2026-09-14, user-directed) ------------------------
-# DEFAULT: Muse Code CLI, model muse-spark-1.3. Chosen because the OpenAI/Codex
-# account is out of usage credits until Sep 19 and the DeepSeek profile stopped
-# mid-ticket three times in one day at ~70-77k tokens, each with exit status 0.
+# DEFAULT: Claude Code CLI, `claude -p --model sonnet --effort xhigh`.
+# History of this default, all on 2026-09-14: Codex gpt5_6_terra_xhigh (OpenAI usage
+# limit until Sep 19) -> DeepSeek V4 Flash via Codex (stopped mid-ticket three times at
+# ~70-77k tokens with exit 0) -> Muse muse-spark-1.3 (API refused 1.3 for this account)
+# -> Claude Code CLI Sonnet at xhigh.
 #
-#   IMPLEMENTATION_ENGINE=muse   (default)  ~/.local/bin/muse exec
+#   IMPLEMENTATION_ENGINE=claude (default)  claude -p
+#   IMPLEMENTATION_ENGINE=muse              ~/.local/bin/muse exec
 #   IMPLEMENTATION_ENGINE=codex             the Codex path below, unchanged
 #                                           (CODEX_IMPLEMENTATION_PROFILE still applies,
 #                                           e.g. =deepseek_v4_flash)
+#
+# Claude knobs: CLAUDE_IMPLEMENTATION_MODEL (default sonnet) and
+# CLAUDE_IMPLEMENTATION_EFFORT (default xhigh; claude --help: low|medium|high|xhigh|max).
+# Claude sessions: --fresh mints a UUID passed as --session-id and saves it to
+# .codex-logs/.last_claude_implementation_session.id; a run without --fresh passes
+# --resume <that id>. Output is stream-json so the log GROWS during a run; the final
+# answer is printed between "=== AGENT REPLY ===" markers. Completion line:
+# "claude exited with status N" (watch_dispatch_log.sh recognises it).
+# --dangerously-skip-permissions: an implementation agent must edit, run flutter/dart
+# and reach pub; the git integrity guard below is the backstop.
 #
 # Muse knobs: MUSE_IMPLEMENTATION_MODEL (default muse-spark-1.3) and
 # MUSE_IMPLEMENTATION_REASONING_EFFORT (default xhigh; the model catalog at
@@ -274,11 +287,14 @@ MODE="${2:-}"
 #
 # Completion line for this engine: "muse exec exited with status N" --
 # watch_dispatch_log.sh and recover_loom_vm.sh already recognise it.
-ENGINE="${IMPLEMENTATION_ENGINE:-muse}"
+ENGINE="${IMPLEMENTATION_ENGINE:-claude}"
+CLAUDE_MODEL="${CLAUDE_IMPLEMENTATION_MODEL:-sonnet}"
+CLAUDE_EFFORT="${CLAUDE_IMPLEMENTATION_EFFORT:-xhigh}"
 MUSE_BIN="${MUSE_BIN:-$HOME/.local/bin/muse}"
 MUSE_MODEL="${MUSE_IMPLEMENTATION_MODEL:-muse-spark-1.3}"
 MUSE_EFFORT="${MUSE_IMPLEMENTATION_REASONING_EFFORT:-xhigh}"
 case "$ENGINE" in
+  claude) ;;
   muse)
     if [ ! -x "$MUSE_BIN" ]; then
       echo "ERROR: Muse CLI not found at $MUSE_BIN." >&2
@@ -288,7 +304,7 @@ case "$ENGINE" in
     fi
     ;;
   codex) ;;
-  *) echo "ERROR: IMPLEMENTATION_ENGINE must be 'muse' or 'codex', got '$ENGINE'" >&2; exit 2 ;;
+  *) echo "ERROR: IMPLEMENTATION_ENGINE must be 'claude', 'muse' or 'codex', got '$ENGINE'" >&2; exit 2 ;;
 esac
 
 SANDBOX_MODE="${CODEX_IMPLEMENTATION_SANDBOX:-workspace-write}"
@@ -380,12 +396,17 @@ PRE_HEAD="$(git rev-parse HEAD)"
 echo "=== Invoking Implementation Agent ($ENGINE exec) ==="
 echo "Repo: $REPO_ROOT"
 echo "Prompt file: $PROMPT_FILE ($(wc -l < "$PROMPT_FILE") lines)"
-if [ "$ENGINE" = "muse" ]; then
-  echo "Mode: $([ "$MODE" = "--fresh" ] && echo "fresh session" || echo "resume (same Muse session id as last dispatch)")"
+if [ "$ENGINE" = "muse" ] || [ "$ENGINE" = "claude" ]; then
+  echo "Mode: $([ "$MODE" = "--fresh" ] && echo "fresh session" || echo "resume (same $ENGINE session id as last dispatch)")"
 else
   echo "Mode: $([ "$MODE" = "--fresh" ] && echo "fresh session" || echo "resume --last")"
 fi
-if [ "$ENGINE" = "muse" ]; then
+if [ "$ENGINE" = "claude" ]; then
+  echo "Engine: claude ($(command -v claude || echo 'NOT ON PATH'))"
+  echo "Model: $CLAUDE_MODEL"
+  echo "Effort: $CLAUDE_EFFORT"
+  echo "Permissions: skipped (--dangerously-skip-permissions) -- git integrity guard is the backstop"
+elif [ "$ENGINE" = "muse" ]; then
   echo "Engine: muse ($MUSE_BIN)"
   echo "Model: $MUSE_MODEL"
   echo "Reasoning effort: $MUSE_EFFORT"
@@ -488,7 +509,41 @@ CODEX_OUTPUT_CAPTURE="$(mktemp)"
 # right here, before STATUS is even captured -- silently skipping the git-
 # integrity guard below exactly when it matters most.
 set +e
-if [ "$ENGINE" = "muse" ]; then
+if [ "$ENGINE" = "claude" ]; then
+  CLAUDE_SESSION_FILE="$REPO_ROOT/.codex-logs/.last_claude_implementation_session.id"
+  CLAUDE_SESSION_ARGS=()
+  if [ "$MODE" = "--fresh" ] || [ ! -s "$CLAUDE_SESSION_FILE" ]; then
+    [ "$MODE" = "--fresh" ] || echo "NOTE: no saved Claude session to resume -- starting fresh." >&2
+    CLAUDE_SESSION_ID="$(cat /proc/sys/kernel/random/uuid)"
+    printf '%s\n' "$CLAUDE_SESSION_ID" > "$CLAUDE_SESSION_FILE"
+    CLAUDE_SESSION_ARGS=(--session-id "$CLAUDE_SESSION_ID")
+  else
+    CLAUDE_SESSION_ID="$(tr -d '[:space:]' < "$CLAUDE_SESSION_FILE")"
+    CLAUDE_SESSION_ARGS=(--resume "$CLAUDE_SESSION_ID")
+  fi
+  echo "Claude session: $CLAUDE_SESSION_ID"
+  # Prompt on stdin, not argv: keeps ticket text out of the process command line.
+  printf '%s' "$PROMPT" | claude -p \
+    "${CLAUDE_SESSION_ARGS[@]}" \
+    --model "$CLAUDE_MODEL" \
+    --effort "$CLAUDE_EFFORT" \
+    --output-format stream-json \
+    --verbose \
+    --add-dir "$REPO_ROOT" \
+    --add-dir "$PUB_CACHE_DIR" \
+    --add-dir "$FLUTTER_CONFIG_DIR" \
+    --add-dir "$FLUTTER_SDK_DIR" \
+    --dangerously-skip-permissions \
+    2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
+  STATUS="${PIPESTATUS[1]}"
+  CLAUDE_REPLY="$(grep '^{' "$CODEX_OUTPUT_CAPTURE" | jq -rs '[.[] | select(.type=="result") | .result // ""] | last // ""' 2>/dev/null || true)"
+  echo "=== AGENT REPLY ==="
+  printf '%s\n' "$CLAUDE_REPLY"
+  echo "=== END AGENT REPLY ==="
+  if [ -z "$(printf '%s' "$CLAUDE_REPLY" | tr -d '[:space:]')" ]; then
+    echo "WARNING: no final reply extracted -- treat this dispatch as FAILED, not as an empty answer." >&2
+  fi
+elif [ "$ENGINE" = "muse" ]; then
   # Headless resume is `muse exec --session-id <same uuid>`. NOT `muse resume`:
   # that is the interactive TUI session picker (confirmed via `muse resume --help`,
   # 2026-09-14), so the form commit 16150863 guessed would open a UI with no TTY.
@@ -553,13 +608,18 @@ fi
 # The muse branch captured its own STATUS right after its pipeline, because the
 # commands that follow it inside that branch replace PIPESTATUS too.
 LAST_PIPE_STATUS="${PIPESTATUS[0]}"
-if [ "$ENGINE" != "muse" ]; then
+if [ "$ENGINE" = "codex" ]; then
   STATUS="$LAST_PIPE_STATUS"
 fi
 set -e
 
 echo "===================================================="
-echo "$ENGINE exec exited with status $STATUS"
+# Exact sentinel spellings are matched by watch_dispatch_log.sh -- do not reword.
+if [ "$ENGINE" = "claude" ]; then
+  echo "claude exited with status $STATUS"
+else
+  echo "$ENGINE exec exited with status $STATUS"
+fi
 
 rm -f "$CODEX_OUTPUT_CAPTURE"
 
