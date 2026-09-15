@@ -1234,7 +1234,14 @@ where it matters (a follow-up remembers the work it follows up on), at roughly 1
 cost — because cached input is not free (~10% of uncached), so a large accumulated prefix is a
 recurring tax on every resume, not a one-time investment.
 
-Model `gpt-6-astra` at reasoning effort `high` — this required upgrading the VM's Codex CLI itself
+**Since 2026-09-14 it runs on the Claude Code CLI — `claude -p --model fable --effort medium` —
+not Codex** (user-directed, after the OpenAI account hit its usage limit until Sep 19). Session ids
+are stored as `<key>.claude.id`; the older `<key>.id` files hold Codex thread ids that `claude
+--resume` cannot open, so every key effectively starts fresh on the new engine. A smoke-test scoping
+dispatch cost **$1.66** for a ~270k-token cached prefix, which is worth knowing before dispatching
+casually. The Codex-era figures below (`gpt-6-astra`, token counts, cache-hit rates) are history,
+not the current engine. Previously: `gpt-6-astra` at reasoning effort `high` — this required
+upgrading the VM's Codex CLI itself
 (0.147.0 rejected that model outright; `npm install -g @openai/codex@0.153.4` fixed it). Dispatch
 it not only when something is already broken, but *before* writing an implementation ticket for
 anything non-trivial, to trace the real mechanism first rather than write a ticket from an assumed
@@ -1310,11 +1317,18 @@ the stuck-debugging case was the weaker one. **State your premise explicitly in 
 to attack that first**; "I would rather learn my framing is wrong than get a fix for the wrong
 problem" produced both corrections. And credit the right guard: on the credential reset it was the
 **permission classifier** that stopped the action, and the agent that explained why afterwards.
-**It runs `--sandbox read-only`, genuinely zero write and zero network access — enforced, not just
-asked for** (tightened same day, after the earlier `workspace-write`/prompt-only design). Confirmed
-live: a write attempt gets `Read-only file system` even to an `--add-dir`-named path (that flag only
-does anything under `workspace-write`), and a `curl` to a live local service fails outright with no
-override available. **This means it cannot fetch its own live evidence** — a DB query, a `kubectl`,
+**It is read-only through a tool allowlist, which is a weaker guarantee than the old Codex
+sandbox, so read the audit lines.** The Codex version ran `--sandbox read-only`, a real OS-level
+boundary. The Claude version passes `--allowedTools` (Read, Grep, Glob, and non-mutating Bash
+prefixes such as `cat`, `rg`, `sed -n`, `git show`) plus `--disallowedTools` for Edit/Write/web;
+`claude -p` never prompts, so anything else is denied. Verified live 2026-09-14 **by checking the
+files did not exist afterwards**, not by the agent's own account: `echo >`, `tee`, `touch`, `curl`,
+and redirects *into the repo through allowed commands* (`cat README.md > ~/Loom/x`,
+`git grep … > ~/Loom/y`) were all refused. That last case was worth testing specifically — the
+denial message says writes are allowed in "working directories: /home/fahd/Loom", which reads as
+a hole and is not one. `sed` without `-n`, `find`, `awk` and `tee` are deliberately left off the
+allowlist because each can write. The script's HEAD-moved and dirty-tree audit is the backstop.
+**This means it cannot fetch its own live evidence** — a DB query, a `kubectl`,
 a log tail — the dispatching session must gather that beforehand and paste it into the brief. It
 reads code and reasons; it proposes a diagnosis, a fix, or test code as *text* in its reply for
 someone else to apply — never a file it writes or a command it runs. There is no report file either
