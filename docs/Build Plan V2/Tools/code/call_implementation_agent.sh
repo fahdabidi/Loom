@@ -248,9 +248,25 @@ MODE="${2:-}"
 #
 # Invocation recovered from commit 16150863 (2026-09-06), which ran the ROOT CAUSE
 # agent on `muse exec --model muse-spark-1.3 --reasoning-effort xhigh --yolo`. That
-# commit confirmed the model id against the live API. It did NOT verify the resume
-# form (`muse resume --last`), and neither has this change -- prefer --fresh until a
-# resumed run has been observed to carry context.
+# commit confirmed the model id against the live API ON THAT DATE. On 2026-09-14 the
+# same account's API refused both `muse-spark-1.3` and `muse-spark-1.3-contributor`
+# ("does not exist or you lack access"), and the refreshed catalog listed only
+# muse-spark-1.2 and muse-spark-1.2-contributor (the account default). Access to a
+# model id is a property of the account on the day, not of this script.
+# Resume is `muse exec --session-id <uuid>`, see the invocation below.
+#
+# VERIFIED LIVE 2026-09-14 through this script, on MUSE_IMPLEMENTATION_MODEL=muse-spark-1.2
+# (the only family the account could reach that day):
+#   * refused model -> exit 1 with the MUSE MODEL NOT ACCESSIBLE banner listing reachable ids;
+#   * --fresh multi-step ticket: read a file, ran git, wrote /tmp, read it back as
+#     separate tool calls; correct values, working tree clean, exit 0;
+#   * resume (no --fresh): same session id recalled a codeword and a value from the
+#     previous turn without any tool call.
+# Muse's text output prints only the final answer, not a running transcript, so a log
+# that stays small during a run is NORMAL for this engine -- judge liveness by the
+# process (pid in .codex-logs/.last_dispatch.pid), not by log growth.
+# `muse-spark-1.2-contributor` is the account default; its catalog description concerns
+# use of your content. The plain `muse-spark-1.2` id worked and was used for testing.
 #
 # `--yolo` disables Muse's sandbox and approvals. An implementation agent has to
 # write, run flutter/dart, and use the network for pub, so that is intended here;
@@ -364,7 +380,11 @@ PRE_HEAD="$(git rev-parse HEAD)"
 echo "=== Invoking Implementation Agent ($ENGINE exec) ==="
 echo "Repo: $REPO_ROOT"
 echo "Prompt file: $PROMPT_FILE ($(wc -l < "$PROMPT_FILE") lines)"
-echo "Mode: $([ "$MODE" = "--fresh" ] && echo "fresh session" || echo "resume --last")"
+if [ "$ENGINE" = "muse" ]; then
+  echo "Mode: $([ "$MODE" = "--fresh" ] && echo "fresh session" || echo "resume (same Muse session id as last dispatch)")"
+else
+  echo "Mode: $([ "$MODE" = "--fresh" ] && echo "fresh session" || echo "resume --last")"
+fi
 if [ "$ENGINE" = "muse" ]; then
   echo "Engine: muse ($MUSE_BIN)"
   echo "Model: $MUSE_MODEL"
@@ -469,19 +489,44 @@ CODEX_OUTPUT_CAPTURE="$(mktemp)"
 # integrity guard below exactly when it matters most.
 set +e
 if [ "$ENGINE" = "muse" ]; then
-  if [ "$MODE" = "--fresh" ]; then
-    "$MUSE_BIN" exec \
-      --model "$MUSE_MODEL" \
-      --reasoning-effort "$MUSE_EFFORT" \
-      --yolo \
-      "$PROMPT" < /dev/null 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
+  # Headless resume is `muse exec --session-id <same uuid>`. NOT `muse resume`:
+  # that is the interactive TUI session picker (confirmed via `muse resume --help`,
+  # 2026-09-14), so the form commit 16150863 guessed would open a UI with no TTY.
+  # The id is minted here on --fresh and persisted, so a resume addresses exactly
+  # the session this script last started rather than "whatever ran last".
+  MUSE_SESSION_FILE="$REPO_ROOT/.codex-logs/.last_muse_implementation_session.id"
+  if [ "$MODE" = "--fresh" ] || [ ! -s "$MUSE_SESSION_FILE" ]; then
+    [ "$MODE" = "--fresh" ] || echo "NOTE: no saved Muse session to resume -- starting fresh." >&2
+    MUSE_SESSION_ID="$(cat /proc/sys/kernel/random/uuid)"
+    printf '%s\n' "$MUSE_SESSION_ID" > "$MUSE_SESSION_FILE"
   else
-    # UNVERIFIED resume form -- see the engine-selection header note.
-    "$MUSE_BIN" resume --last \
-      --model "$MUSE_MODEL" \
-      --reasoning-effort "$MUSE_EFFORT" \
-      --yolo \
-      "$PROMPT" < /dev/null 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
+    MUSE_SESSION_ID="$(tr -d '[:space:]' < "$MUSE_SESSION_FILE")"
+  fi
+  echo "Muse session: $MUSE_SESSION_ID"
+  # --prompt-file, not an argv prompt: keeps the ticket text out of the process
+  # command line, so `pgrep -f <phrase from the ticket>` cannot match the agent.
+  MUSE_PROMPT_FILE="$(mktemp)"
+  printf '%s' "$PROMPT" > "$MUSE_PROMPT_FILE"
+  "$MUSE_BIN" exec \
+    --prompt-file "$MUSE_PROMPT_FILE" \
+    --session-id "$MUSE_SESSION_ID" \
+    --workspace "$REPO_ROOT" \
+    --model "$MUSE_MODEL" \
+    --reasoning-effort "$MUSE_EFFORT" \
+    --yolo \
+    --user-input-auto-resolve \
+    < /dev/null 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
+  STATUS="${PIPESTATUS[0]}"
+  rm -f "$MUSE_PROMPT_FILE"
+  # An inaccessible model is a loud, specific failure -- never fall back to another
+  # model silently. Name what the account can reach instead.
+  if grep -q "does not exist or you lack access" "$CODEX_OUTPUT_CAPTURE"; then
+    echo "##################################################################" >&2
+    echo "# MUSE MODEL NOT ACCESSIBLE: '$MUSE_MODEL' was refused by the Meta API." >&2
+    echo "# Models in the local catalog (refreshed by the CLI on use):" >&2
+    grep -hoE '"model_id": "[^"]+"' "$HOME/.local/share/muse/model-catalog/"*.json 2>/dev/null | sed 's/^/#   /' >&2 || true
+    echo "# Override for one dispatch: MUSE_IMPLEMENTATION_MODEL=<id>, or IMPLEMENTATION_ENGINE=codex" >&2
+    echo "##################################################################" >&2
   fi
 elif [ "$MODE" = "--fresh" ]; then
   npx --yes @openai/codex exec \
@@ -504,7 +549,13 @@ else
     -c "$CODEX_SANDBOX_NETWORK_CONFIG" \
     resume --last "$PROMPT" 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
 fi
-STATUS="${PIPESTATUS[0]}"
+# Read PIPESTATUS on the very next line -- even the `[` test below would replace it.
+# The muse branch captured its own STATUS right after its pipeline, because the
+# commands that follow it inside that branch replace PIPESTATUS too.
+LAST_PIPE_STATUS="${PIPESTATUS[0]}"
+if [ "$ENGINE" != "muse" ]; then
+  STATUS="$LAST_PIPE_STATUS"
+fi
 set -e
 
 echo "===================================================="
