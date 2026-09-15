@@ -1,6 +1,13 @@
 #!/bin/bash
 # data/call_implementation_agent.sh
 #
+# CURRENT DEFAULT (2026-09-14): Muse Code CLI, model muse-spark-1.3 -- see the
+# "Engine selection" block just below `set -euo pipefail`. That block and its
+# ENGINE/MUSE_* variables are the authority. The long Codex/DeepSeek commentary
+# that follows describes the IMPLEMENTATION_ENGINE=codex path, including a
+# "defaults to DeepSeek V4 Flash" line that was already false before this change
+# (the code defaulted to gpt5_6_terra_xhigh).
+#
 # Direct invocation of the Implementation Agent (Codex CLI, VirtualBox VM) from
 # the Verification Agent's own session -- replaces the old mailbox+manually-
 # resumed-session handoff. Adapted from the "Running an unattended
@@ -224,6 +231,50 @@ set -euo pipefail
 
 PROMPT_FILE="${1:?usage: call_implementation_agent.sh <prompt-file> [--fresh]}"
 MODE="${2:-}"
+
+# --- Engine selection (2026-09-14, user-directed) ------------------------
+# DEFAULT: Muse Code CLI, model muse-spark-1.3. Chosen because the OpenAI/Codex
+# account is out of usage credits until Sep 19 and the DeepSeek profile stopped
+# mid-ticket three times in one day at ~70-77k tokens, each with exit status 0.
+#
+#   IMPLEMENTATION_ENGINE=muse   (default)  ~/.local/bin/muse exec
+#   IMPLEMENTATION_ENGINE=codex             the Codex path below, unchanged
+#                                           (CODEX_IMPLEMENTATION_PROFILE still applies,
+#                                           e.g. =deepseek_v4_flash)
+#
+# Muse knobs: MUSE_IMPLEMENTATION_MODEL (default muse-spark-1.3) and
+# MUSE_IMPLEMENTATION_REASONING_EFFORT (default xhigh; the model catalog at
+# ~/.local/share/muse/model-catalog lists minimal|low|medium|high|xhigh|max).
+#
+# Invocation recovered from commit 16150863 (2026-09-06), which ran the ROOT CAUSE
+# agent on `muse exec --model muse-spark-1.3 --reasoning-effort xhigh --yolo`. That
+# commit confirmed the model id against the live API. It did NOT verify the resume
+# form (`muse resume --last`), and neither has this change -- prefer --fresh until a
+# resumed run has been observed to carry context.
+#
+# `--yolo` disables Muse's sandbox and approvals. An implementation agent has to
+# write, run flutter/dart, and use the network for pub, so that is intended here;
+# the git integrity guard below remains the backstop.
+#
+# Completion line for this engine: "muse exec exited with status N" --
+# watch_dispatch_log.sh and recover_loom_vm.sh already recognise it.
+ENGINE="${IMPLEMENTATION_ENGINE:-muse}"
+MUSE_BIN="${MUSE_BIN:-$HOME/.local/bin/muse}"
+MUSE_MODEL="${MUSE_IMPLEMENTATION_MODEL:-muse-spark-1.3}"
+MUSE_EFFORT="${MUSE_IMPLEMENTATION_REASONING_EFFORT:-xhigh}"
+case "$ENGINE" in
+  muse)
+    if [ ! -x "$MUSE_BIN" ]; then
+      echo "ERROR: Muse CLI not found at $MUSE_BIN." >&2
+      echo "       Install: curl -fsSL https://dev.meta.ai/install.sh | bash" >&2
+      echo "       Or use the Codex path: IMPLEMENTATION_ENGINE=codex" >&2
+      exit 1
+    fi
+    ;;
+  codex) ;;
+  *) echo "ERROR: IMPLEMENTATION_ENGINE must be 'muse' or 'codex', got '$ENGINE'" >&2; exit 2 ;;
+esac
+
 SANDBOX_MODE="${CODEX_IMPLEMENTATION_SANDBOX:-workspace-write}"
 # DeepSeek V4 Flash via the local gateway (user-directed 2026-09-11, forced
 # by the OpenAI/Codex account exhausting its usage credits the same day --
@@ -238,7 +289,7 @@ fi
 
 GATEWAY_KEY_FILE="$HOME/.deepseek_gateway_key"
 GATEWAY_HEALTH_URL="${CODEX_GATEWAY_HEALTH_URL:-http://127.0.0.1:8791/health}"
-if [[ "$PROFILE" == deepseek_* ]]; then
+if [ "$ENGINE" = "codex" ] && [[ "$PROFILE" == deepseek_* ]]; then
   # The gateway now runs ON THIS VM, bound to loopback (~/deepseek-gateway).
   # src/config.mjs only requires GATEWAY_API_KEY when the bind host is NOT
   # loopback, so a bridge token is optional here. The WSL-era arrangement
@@ -310,12 +361,20 @@ fi
 PRE_TRACKED_COUNT="$(git ls-files | wc -l)"
 PRE_HEAD="$(git rev-parse HEAD)"
 
-echo "=== Invoking Implementation Agent (codex exec) ==="
+echo "=== Invoking Implementation Agent ($ENGINE exec) ==="
 echo "Repo: $REPO_ROOT"
 echo "Prompt file: $PROMPT_FILE ($(wc -l < "$PROMPT_FILE") lines)"
 echo "Mode: $([ "$MODE" = "--fresh" ] && echo "fresh session" || echo "resume --last")"
-echo "Sandbox: $SANDBOX_MODE"
-echo "Profile: ${PROFILE:-<none -- Codex default model>}"
+if [ "$ENGINE" = "muse" ]; then
+  echo "Engine: muse ($MUSE_BIN)"
+  echo "Model: $MUSE_MODEL"
+  echo "Reasoning effort: $MUSE_EFFORT"
+  echo "Sandbox: disabled (--yolo) -- git integrity guard is the backstop"
+else
+  echo "Engine: codex"
+  echo "Sandbox: $SANDBOX_MODE"
+  echo "Profile: ${PROFILE:-<none -- Codex default model>}"
+fi
 echo "===================================================="
 
 cd "$REPO_ROOT"
@@ -409,7 +468,22 @@ CODEX_OUTPUT_CAPTURE="$(mktemp)"
 # right here, before STATUS is even captured -- silently skipping the git-
 # integrity guard below exactly when it matters most.
 set +e
-if [ "$MODE" = "--fresh" ]; then
+if [ "$ENGINE" = "muse" ]; then
+  if [ "$MODE" = "--fresh" ]; then
+    "$MUSE_BIN" exec \
+      --model "$MUSE_MODEL" \
+      --reasoning-effort "$MUSE_EFFORT" \
+      --yolo \
+      "$PROMPT" < /dev/null 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
+  else
+    # UNVERIFIED resume form -- see the engine-selection header note.
+    "$MUSE_BIN" resume --last \
+      --model "$MUSE_MODEL" \
+      --reasoning-effort "$MUSE_EFFORT" \
+      --yolo \
+      "$PROMPT" < /dev/null 2>&1 | tee "$CODEX_OUTPUT_CAPTURE"
+  fi
+elif [ "$MODE" = "--fresh" ]; then
   npx --yes @openai/codex exec \
     "${PROFILE_ARGS[@]}" \
     --sandbox "$SANDBOX_MODE" \
@@ -434,7 +508,7 @@ STATUS="${PIPESTATUS[0]}"
 set -e
 
 echo "===================================================="
-echo "codex exec exited with status $STATUS"
+echo "$ENGINE exec exited with status $STATUS"
 
 rm -f "$CODEX_OUTPUT_CAPTURE"
 
