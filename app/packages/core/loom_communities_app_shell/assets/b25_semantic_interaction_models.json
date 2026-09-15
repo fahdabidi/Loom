@@ -350,7 +350,7 @@
       "extensionId": "ext_cedar_commons_hoa",
       "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
       "workflowId": "hoa-architectural-request",
-      "role": "owner",
+      "role": "board",
       "expectedDecision": "Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths.",
       "requiredPrimaryActions": [
         "submit request",
@@ -373,7 +373,7 @@
       "extensionId": "ext_cedar_commons_hoa",
       "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
       "workflowId": "hoa-committee-decision",
-      "role": "owner",
+      "role": "board",
       "expectedDecision": "User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result.",
       "requiredPrimaryActions": [
         "submit",
@@ -395,7 +395,7 @@
       "extensionId": "ext_cedar_commons_hoa",
       "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
       "workflowId": "hoa-owner-notification",
-      "role": "owner",
+      "role": "board",
       "expectedDecision": "User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result.",
       "requiredPrimaryActions": [
         "submit",
@@ -417,7 +417,7 @@
       "extensionId": "ext_cedar_commons_hoa",
       "productDocPath": "docs/references/communities/cedar-commons-hoa-product-experience.md",
       "workflowId": "hoa-export-evidence",
-      "role": "owner",
+      "role": "board",
       "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
       "requiredPrimaryActions": [
         "export",
@@ -888,7 +888,7 @@
       "extensionId": "ext_garden_club",
       "productDocPath": "docs/references/communities/garden-club-product-experience.md",
       "workflowId": "garden-export-custom-schemas",
-      "role": "owner",
+      "role": "coordinator",
       "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
       "requiredPrimaryActions": [
         "export",
@@ -1482,7 +1482,7 @@
       "extensionId": "ext_neighborhood_book_club",
       "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md",
       "workflowId": "book-selection-publish",
-      "role": "owner",
+      "role": "organizer",
       "expectedDecision": "Admin decides whether a concrete announcement is ready for a named audience and delivery timing; members can later read the delivered update.",
       "requiredPrimaryActions": [
         "publish announcement",
@@ -1527,7 +1527,7 @@
       "extensionId": "ext_neighborhood_book_club",
       "productDocPath": "docs/references/communities/neighborhood-book-club-product-experience.md",
       "workflowId": "book-export-metadata",
-      "role": "owner",
+      "role": "organizer",
       "expectedDecision": "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
       "requiredPrimaryActions": [
         "export",
