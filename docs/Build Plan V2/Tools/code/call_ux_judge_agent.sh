@@ -1,9 +1,14 @@
 #!/bin/bash
 # data/call_ux_judge_agent.sh
 #
-# Dispatches the UX Review judge to a Claude Code CLI agent. Model default is `fable`
-# (line 27) -- this header said "Sonnet" until 2026-09-09 while the code said otherwise,
-# which is how a reader learns the wrong thing from the file that defines it.
+# Dispatches the UX Review judge to a Claude Code CLI agent: model `fable`, effort
+# `medium` (user-directed 2026-09-14). See MODEL / EFFORT below -- those lines are the
+# authority, not this comment.
+#
+# DRIFT NOTE, 2026-09-14: the three copies disagreed in opposite directions. The VM's
+# data/ copy ran `fable` under a header saying Sonnet; this repo copy and its Tools/code
+# mirror had a header saying fable over code defaulting to `sonnet`. None passed an
+# effort level. All three were replaced with this file -- after editing, cmp the VM copy.
 #
 # WHY CLAUDE AND NOT CODEX/DEEPSEEK: judging UX means LOOKING at the captured
 # screenshots. The DeepSeek gateway is text-only and refuses image content
@@ -28,7 +33,8 @@ set -euo pipefail
 
 PROMPT_FILE="${1:?usage: call_ux_judge_agent.sh <prompt-file> [label]}"
 LABEL="${2:-uxjudge-$(date +%Y%m%d-%H%M%S)}"
-MODEL="${CLAUDE_UX_JUDGE_MODEL:-sonnet}"
+MODEL="${CLAUDE_UX_JUDGE_MODEL:-fable}"
+EFFORT="${CLAUDE_UX_JUDGE_EFFORT:-medium}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -72,6 +78,7 @@ echo "=== Invoking UX Review Judge (Claude Code CLI) ==="
 echo "Repo:        $REPO_ROOT"
 echo "Prompt file: $PROMPT_FILE ($(wc -l < "$PROMPT_FILE") lines)"
 echo "Model:       $MODEL"
+echo "Effort:      $EFFORT"
 echo "Label:       $LABEL"
 echo "Log:         $OUTPUT_CAPTURE"
 echo "Role:        REVIEW ONLY -- reads screenshots and evidence, writes a verdict"
@@ -82,6 +89,7 @@ echo $$ > "$REPO_ROOT/.last_dispatch.pid"
 set +e
 claude -p "$PROMPT" \
   --model "$MODEL" \
+  --effort "$EFFORT" \
   --add-dir "$REPO_ROOT" \
   --dangerously-skip-permissions \
   2>&1 | tee "$OUTPUT_CAPTURE"
