@@ -1486,11 +1486,41 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         createdByFanId: fanId,
       );
     }
+    if (transition.action == 'cancel') {
+      await _sweepEventRsvpResponseRows(
+        eventMachine: machine,
+        eventInstanceId: instanceId,
+        cancelledByFanId: fanId,
+      );
+    }
 
     return WorkflowTransitionResult(
       newState: newState,
       newInstanceData: newData,
     );
+  }
+
+  /// The `event-rsvp` response-table spec declared on [machine]'s render
+  /// bindings, or null if [machine] is not a parent event machine of that
+  /// archetype family.
+  ///
+  /// Shared by the fan-out and the sweep so both gate identically. A response
+  /// machine inherits the `event-rsvp` family too (`permissions.md` §6 step
+  /// 3b) but declares no bindings of its own, so this correctly returns null
+  /// for it -- which is what keeps the sweep from ever firing on a response
+  /// machine's own `cancel` transition.
+  ResponseTableSpec? _eventRsvpResponseTableSpec(
+    LoomWorkflowStateMachine machine,
+  ) {
+    final resolved = _resolvedArchetypes[machine.workflowType];
+    if (resolved?.family != 'event-rsvp') return null;
+    for (final binding in machine.renderBindings) {
+      if (binding.cardSurfaceFamily == 'event-rsvp' &&
+          binding.responseTable != null) {
+        return binding.responseTable;
+      }
+    }
+    return null;
   }
 
   /// Materializes the response-table row owned by `event-rsvp` for every
@@ -1505,19 +1535,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     required String eventInstanceId,
     required String createdByFanId,
   }) async {
-    final resolved = _resolvedArchetypes[eventMachine.workflowType];
-    if (resolved?.family != 'event-rsvp') return;
-
-    ResponseTableSpec? responseTable;
-    for (final binding in eventMachine.renderBindings) {
-      if (binding.cardSurfaceFamily == 'event-rsvp' &&
-          binding.responseTable != null) {
-        responseTable = binding.responseTable;
-        break;
-      }
-    }
-    if (responseTable == null) return;
-    final responseSpec = responseTable;
+    final responseSpec = _eventRsvpResponseTableSpec(eventMachine);
+    if (responseSpec == null) return;
 
     final responseMachine = await _getDefinition(responseSpec.workflowType);
     if (responseMachine == null) {
@@ -1568,6 +1587,93 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           responseIdentityField: memberFanId,
         },
         fanId: createdByFanId,
+      );
+    }
+  }
+
+  /// Sweeps every non-terminal response row to the response workflow's own
+  /// `action: "cancel"` transition target when the parent event is
+  /// cancelled -- the exact mirror of [_fanOutEventRsvpResponseRows], which
+  /// creates those same rows. No workflow or community JSON authors this
+  /// revocation: see `docs/references/archetypes/event-rsvp.md` §4 "Who ends
+  /// a row".
+  ///
+  /// Bypasses the response transition's own guard, at the same trust level
+  /// as [_createInstanceValidated] and [_applyArchetypeBookkeeping]: this is
+  /// a platform obligation, not an act by whoever cancelled the event, and
+  /// the cancelling actor's roles are irrelevant to it. Deliberately does not
+  /// route through [applyTransition] per row -- that path evaluates the
+  /// row's guard for the cancelling actor, which is exactly the silent
+  /// partial-sweep failure this replaces (a `transitionRelated` cascade that
+  /// returns success while leaving rows behind). [cancelledByFanId] is used
+  /// only the way [_applyExtendedEffects] already uses a cross-instance
+  /// effect's source `fanId` -- as `$actor` in the moved row's own effects,
+  /// exactly the identity the `transitionRelated` cascade this replaces would
+  /// have supplied had its filter ever matched.
+  ///
+  /// A row the sweep cannot move throws rather than being silently left
+  /// behind: the response workflow's `action: "cancel"` transitions,
+  /// collectively, must declare a `from` covering every non-terminal state
+  /// it declares. Some communities (Garden Club, Book Club, Camera Club,
+  /// Youth Soccer) declare one such transition whose `from` lists every
+  /// non-terminal state; others (Tabletop) declare one per source state.
+  /// Both shapes are valid -- this matches each row against whichever
+  /// declared `cancel` transition's `from` actually covers its state.
+  Future<void> _sweepEventRsvpResponseRows({
+    required LoomWorkflowStateMachine eventMachine,
+    required String eventInstanceId,
+    required String cancelledByFanId,
+  }) async {
+    final responseSpec = _eventRsvpResponseTableSpec(eventMachine);
+    if (responseSpec == null) return;
+
+    final responseMachine = await _getDefinition(responseSpec.workflowType);
+    if (responseMachine == null) {
+      throw StateError(
+        'Unknown event-rsvp response workflow type: '
+        '${responseSpec.workflowType}',
+      );
+    }
+
+    final cancelTransitions = responseMachine.transitions
+        .where((candidate) => candidate.action == 'cancel')
+        .toList(growable: false);
+
+    final rows = (await _readAllInstancesOfType(
+      responseSpec.workflowType,
+    )).where((row) => row[responseSpec.eventField] == eventInstanceId);
+
+    for (final row in rows) {
+      final rowId = row[r'$id'] as String;
+      final state = row[r'$state'] as String;
+      if (responseMachine.states[state]?.isTerminal ?? false) continue;
+
+      LoomWorkflowTransition? cancelTransition;
+      for (final candidate in cancelTransitions) {
+        if (candidate.from.contains(state)) {
+          cancelTransition = candidate;
+          break;
+        }
+      }
+      if (cancelTransition == null) {
+        throw StateError(
+          'event-rsvp response workflow ${responseSpec.workflowType} has no '
+          '"cancel" transition covering row $rowId in state "$state"',
+        );
+      }
+
+      final locked = await _db.readInstanceForUpdate(rowId);
+      if (locked == null) {
+        throw StateError('Instance $rowId not found');
+      }
+      await _applyTransitionEffectsAndPersistWithinTransaction(
+        machine: responseMachine,
+        row: locked,
+        sourceData: jsonDecode(locked.instanceData) as Map<String, dynamic>,
+        transition: cancelTransition,
+        fanId: cancelledByFanId,
+        inputs: null,
+        suppressLegacyItemQueueBookkeeping: false,
       );
     }
   }
