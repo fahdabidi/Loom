@@ -187,6 +187,37 @@ plus a `createInstance` into `hoa-owner-notification`. The package does not wait
 
 `needs-skill-dispatch` — **STILL OPEN, but RE-STATED 2026-09-10 — the shipped doc is not broken and never was; only the rejected dispatch output had the five-column header.** This row reads as though Ad-Free's B25 table currently parses to zero rows. It does not. `ad-free-community-product-experience.md:124` carries the correct **six-column** header, and `git log -S` on that header line returns exactly **one** commit — `5d95e314`, 2026-08-10, when the doc was created. It was never rewritten in the committed tree, which is consistent with my own 2026-09-10 measurement showing Ad-Free contributing **6 rows** to the 72-row denominator and holding two walkthrough-proven workflows (`ad-off-member-checkout`, `ad-off-community-checkout`). **So there is nothing to repair and no phantom breakage to re-investigate.** What remains genuinely open is only the *enrichment*: the 2026-08-24 convergence dispatch's materially better doc (24 → 54 named interactions) was **never landed** — the file's history jumps 2026-08-10 → 08-25 → 08-27 → 08-31 with no 08-24 commit — because it was correctly rejected for the header. A redo must reproduce the enrichment **while leaving the existing six-column B25 header byte-identical**, since that header is a parsed contract gating the production bar. ORIGINAL: **Ad-Free product doc enrichment, redo under hard rule 14b.** The 2026-08-24 convergence dispatch returned a materially better doc (24 → 54 named interactions) that also rewrote the B25 header to five columns, which makes the judge parse **zero** rows for that community. The enrichment is worth keeping; the table shape is not negotiable
 
+### row-357 — Garden's two "unprovable" rows are a FIXTURE gap, not a product defect — user-confirmed 2026-09-17
+
+`needs-skill-dispatch` — **The behaviour is correct and must not be changed.** User, 2026-09-17: *"it appears
+for this workflow the behavior is correct and different from other workflows. I.e the owner should not be
+able to 'loan' a tool they own. They can cancel the listing. Same with a giveaway."* And on the full event:
+*"Given the User experience, this appears to be the correct behavior."*
+
+| Row | Seed | Why the documented action is refused — correctly |
+|---|---|---|
+| `garden-event-rsvp` | `spring-workshop`, `capacity: 2`; the platform fans out one response row per member, so both seeded members are already going | `goingCount >= capacity` withholds *Going*. The row's primary terms are rsvp/attend/going/reserve spot/confirm attendance and its alternates decline/not attending/maybe/change response/cancel rsvp — **"Join waitlist" is in neither set**, so the correct waitlist button cannot stand in |
+| `garden-tool-giveaway` | `terracotta-pots-giveaway`, `ownerFanId: "garden-member"` | `if(ownerFanId == $actor, false, true)` — the B25 persona `member` resolves to `garden-member`, i.e. the owner, who must not claim their own giveaway |
+
+**So the defect is that the fixtures put the persona on the wrong side of a working guard**, and a B25 row
+must demonstrate the capability at least once. **A correct refusal proves the guard, not the feature** —
+accepting it as evidence would be the "we found nothing" → "the system offers nothing" reclassification
+this project already records as concealing defects.
+
+**Why seeding more backend users cannot fix it:** the app shell has no member directory. It derives one
+actor identity per ROLE and aliases fanId to roleId, so Garden has exactly one `member` identity and owner
+and claimant are necessarily the same person — the same root cause as the Chess row holding
+`["chess-member", "chess-organizer", "fan-chess-member-1"]`.
+
+**The fix, both Skill-authored and both preserving today's behaviour:** seed the giveaway as owned by
+`garden-coordinator` so a member can legitimately claim it, and give the event a free place (capacity 3, or
+one seeded member not going). Fold into the Garden regeneration.
+
+**The durable version of this, worth a gate rather than a note:** nothing checks that a B25 row's persona
+can actually reach its documented primary action against the shipped seeds. That is statically checkable —
+persona → role, seed state, guard — and it is exactly the class this repo keeps rediscovering on a device
+after a 40-minute capture. Proposed as a sibling of `check_b25_status.sh`.
+
 ### row-356 — Regeneration is three steps; step 3 (install) is missing, which is why six parity violations exist
 
 `new-ticket` — **Traced layer by layer 2026-09-15; the JSON and the backend are both CORRECT and the live
