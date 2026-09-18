@@ -46,6 +46,7 @@ const Set<String> communityPackageValidatorFindingCodes = <String>{
   'dangling_visibility_role',
   'declared_role_shadows_system_admin',
   'dependency_cycle',
+  'destructive_exit_blocked_by_counterparty',
   'destructive_transition_ignores_availability_field',
   'duplicate_action_transition_id',
   'duplicate_instance_id',

@@ -319,6 +319,12 @@ seriously rather than dismissing them as noise.
 | `no_read_visibility_declared` (warning) | A workflow type omits the workflow-level `visibility` block, so its read policy is implicit even though the compatibility default remains `public`. | Add `"visibility": {"default": "public"}` (or `"default": "membersOnly"` / `"default": "guarded"` with a sibling `"readGuard"`) to make the community's intended read policy explicit. |
 | `no_render_binding_for_reachable_state` (warning) | A state is reachable via a transition path but no `renderBinding`'s `states` list covers it, so an instance sitting there renders on no tab. | Add a `renderBinding` (often `"bindingKind": "summary"`) whose `"states"` includes it, or confirm the state is intentionally never surfaced. |
 
+### Destructive-exit reachability (added 2026-09-18)
+
+| Code | Meaning | Fix |
+|---|---|---|
+| `destructive_exit_blocked_by_counterparty` (warning) | A party's own destructive exit (`delist`, `cancel`, …) is guarded on an availability-like field holding a specific value, but every transition that can clear the field out of some reachable value is guarded `actorEqualsField` to a *different* party. That party's exit can never fire once the field reaches that value — every individual guard is well-formed, and the defect exists only in the graph. Garden Club ships it: an owner cannot `delist` a tool once `availabilityState == "onLoan"`, because `return-item`, `report-lost`, `mark-damaged` and `cancel-loan` are all guarded to the borrower, who may simply stop responding. The check walks the field's own value graph — literal values in `instanceDataEquals` guards, `set` effects, and create-action `prefill` — rather than the machine's declared states, because an archetype like `equipment-loan` has one non-terminal state and keeps its real lifecycle in a field with `"to": null` transitions. A transition with no `instanceDataEquals` on the field (including one gated only by a formula) is treated as firing from any value, which is why a plain re-list/re-publish action with no field precondition quiets this warning for every party. | Give the blocked party their own exit from that value — either a destructive transition of their own gated on it (an archetype `delist` variant covering the stuck value), or a transition back to a value they can already exit from that is not exclusively guarded to someone else (role-guarded, or guarded to that same party). |
+
 ---
 
 
@@ -345,7 +351,7 @@ seriously rather than dismissing them as noise.
 The table above is the curated set: each row carries a diagnosis and a fix direction, because those
 are the findings that most need one.
 
-The validator can emit **115** finding codes. The table above documents 41 of them. The 74 below were
+The validator can emit **116** finding codes. The table above documents 42 of them. The 74 below were
 undocumented entirely until 2026-08-20, when the capability conformance test in
 `validator_capability_conformance_test.dart` counted them — an author who hit one had nothing to
 look up.

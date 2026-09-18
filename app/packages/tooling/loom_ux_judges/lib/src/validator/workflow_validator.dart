@@ -48,6 +48,26 @@ class ValidationReport {
   };
 }
 
+/// One edge in an availability-like field's value graph (see
+/// [WorkflowValidator._checkDestructiveExitBlockedByCounterparty]).
+///
+/// [from] is either a literal prior value of the field or
+/// [WorkflowValidator._anySource], meaning the owning transition carries no
+/// `instanceDataEquals` on this field and can therefore fire from any value.
+class _FieldGraphEdge {
+  final Object? from;
+  final Object? to;
+  final String? exclusiveTo;
+  final String transitionId;
+
+  const _FieldGraphEdge({
+    required this.from,
+    required this.to,
+    required this.exclusiveTo,
+    required this.transitionId,
+  });
+}
+
 /// Validates a set of workflow definitions against the §7c checks.
 ///
 /// Usage:
@@ -70,6 +90,11 @@ class WorkflowValidator {
     r'(?:delist|remove|cancel|delete|archive|withdraw-listing)',
     caseSensitive: false,
   );
+
+  /// Sentinel "from" value in a [_FieldGraphEdge] meaning the owning
+  /// transition has no `instanceDataEquals` on the field in question, and so
+  /// can fire from any value of that field.
+  static final Object _anySource = Object();
   static final RegExp _threadStateIntentPattern = RegExp(
     r'(?<![A-Za-z0-9])(?:unmute|mute)(?![A-Za-z0-9])'
     r'|(?<![A-Za-z0-9])mark(?:[-_\s]+[A-Za-z0-9]+){0,3}'
@@ -180,6 +205,7 @@ class WorkflowValidator {
       _checkRelatedAggregateGuards(machine, workflows, findings);
       _checkMissingLabels(machine, findings);
       _checkDestructiveTransitionIgnoresAvailabilityField(machine, findings);
+      _checkDestructiveExitBlockedByCounterparty(machine, findings);
       _checkPossibleFabricatedIdentifier(machine, findings);
       _checkBindingCap(machine, findings);
       _checkNoReadVisibilityDeclared(machine, findings);
@@ -1868,6 +1894,200 @@ class WorkflowValidator {
       caseSensitive: false,
     );
     return fieldInFormula.hasMatch(formula);
+  }
+
+  // ---------------------------------------------------------------------------
+  // destructive_exit_blocked_by_counterparty (warning)
+  // ---------------------------------------------------------------------------
+  //
+  // A party's destructive exit requires an availability-like field to hold a
+  // specific value (e.g. an owner may only `delist` while `availabilityState
+  // == "available"`). If every transition that can move the field OUT of a
+  // reachable value is guarded exclusively to a DIFFERENT party
+  // (`actorEqualsField` naming someone else), that party's own exit can
+  // never fire once the field reaches that value -- they are stranded behind
+  // a counterparty who may never act. Every individual guard involved is
+  // well-formed; the defect exists only in the graph.
+  //
+  // This walks the field's VALUE graph rather than the machine's declared
+  // states, for the same reason as the sibling check above
+  // (_checkDestructiveTransitionIgnoresAvailabilityField): an archetype like
+  // equipment-loan has exactly one non-terminal declared state and keeps the
+  // real lifecycle in a field, with lifecycle transitions declared
+  // `"to": null`.
+  //
+  // A transition with no `instanceDataEquals` on this field -- including one
+  // gated only by a formula -- is treated as firing "from any value" rather
+  // than parsed. This is deliberately conservative toward staying quiet: a
+  // re-publish/re-list action with no field precondition is a real escape
+  // hatch for every party, and a formula precondition is not evaluated here.
+  void _checkDestructiveExitBlockedByCounterparty(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    final availabilityFields = machine.instanceDataSchema.keys
+        .where(_availabilityLikeFieldPattern.hasMatch)
+        .toList();
+    if (availabilityFields.isEmpty) return;
+
+    bool isExit(LoomWorkflowTransition transition) =>
+        machine.states[transition.to]?.isTerminal == true;
+    bool isDestructive(LoomWorkflowTransition transition) =>
+        isExit(transition) ||
+        _destructiveTransitionIdPattern.hasMatch(transition.id);
+
+    Iterable<Object?> setValuesFor(
+      List<WorkflowEffect> effects,
+      String field,
+    ) sync* {
+      for (final effect in effects) {
+        if (effect.op == 'set' && effect.key == field) {
+          yield effect.value;
+        }
+        yield* setValuesFor(effect.thenEffects, field);
+        yield* setValuesFor(effect.elseEffects, field);
+        final onSuccess = effect.onSuccessEffects;
+        if (onSuccess != null) yield* setValuesFor(onSuccess, field);
+      }
+    }
+
+    for (final field in availabilityFields) {
+      final nodes = <Object?>{};
+      final edges = <_FieldGraphEdge>[];
+      final okByParty = <String, Set<Object?>>{};
+      var prefillDeclared = false;
+      final prefillSeeds = <Object?>{};
+
+      for (final binding in machine.renderBindings) {
+        for (final action in binding.actions.where((a) => a.kind == 'create')) {
+          final prefill = action.prefill;
+          if (prefill == null || !prefill.containsKey(field)) continue;
+          prefillDeclared = true;
+          final value = prefill[field];
+          final isTemplateOrPlaceholder =
+              value is String &&
+              (value.startsWith(r'$') || value.contains('{'));
+          if (!isTemplateOrPlaceholder) {
+            nodes.add(value);
+            prefillSeeds.add(value);
+          }
+        }
+      }
+
+      for (final transition in machine.transitions) {
+        final hasSpecificGuard =
+            transition.guard.instanceDataEquals?.key == field;
+        final guardValue = hasSpecificGuard
+            ? transition.guard.instanceDataEquals!.value
+            : null;
+        if (hasSpecificGuard) nodes.add(guardValue);
+
+        final postValues = setValuesFor(transition.effects, field).toSet();
+        nodes.addAll(postValues);
+
+        if (isExit(transition) || postValues.isEmpty) continue;
+
+        final exclusiveTo = transition.guard.actorEqualsField?.key;
+        for (final postValue in postValues) {
+          edges.add(
+            _FieldGraphEdge(
+              from: hasSpecificGuard ? guardValue : _anySource,
+              to: postValue,
+              exclusiveTo: exclusiveTo,
+              transitionId: transition.id,
+            ),
+          );
+        }
+      }
+
+      for (final transition in machine.transitions) {
+        if (!isDestructive(transition)) continue;
+        final party = transition.guard.actorEqualsField?.key;
+        if (party == null) continue;
+        if (transition.guard.instanceDataEquals?.key != field) continue;
+        okByParty
+            .putIfAbsent(party, () => <Object?>{})
+            .add(transition.guard.instanceDataEquals!.value);
+      }
+
+      if (okByParty.isEmpty || nodes.isEmpty) continue;
+
+      // Forward closure: which values can the field actually reach.
+      final reachable = <Object?>{
+        if (prefillDeclared) ...prefillSeeds else ...nodes,
+      };
+      var reachChanged = true;
+      while (reachChanged) {
+        reachChanged = false;
+        for (final edge in edges) {
+          if (reachable.contains(edge.to)) continue;
+          if (edge.from == _anySource || reachable.contains(edge.from)) {
+            reachable.add(edge.to);
+            reachChanged = true;
+          }
+        }
+      }
+
+      for (final entry in okByParty.entries) {
+        final party = entry.key;
+        final ok = entry.value;
+
+        // Backward fixpoint from ok(party) over edges that are NOT
+        // counterparty-exclusive (guarded to a *different* party).
+        final recoverable = <Object?>{...ok};
+        var allRecoverable = false;
+        var recChanged = true;
+        while (recChanged && !allRecoverable) {
+          recChanged = false;
+          for (final edge in edges) {
+            if (edge.exclusiveTo != null && edge.exclusiveTo != party) {
+              continue;
+            }
+            if (!recoverable.contains(edge.to)) continue;
+            if (edge.from == _anySource) {
+              allRecoverable = true;
+              recChanged = true;
+              break;
+            }
+            if (recoverable.add(edge.from)) recChanged = true;
+          }
+        }
+        if (allRecoverable) continue;
+
+        final stranded = reachable.difference(recoverable).toList()
+          ..sort((a, b) => '$a'.compareTo('$b'));
+        for (final value in stranded) {
+          final blockers = edges
+              .where(
+                (edge) =>
+                    edge.from == value &&
+                    edge.exclusiveTo != null &&
+                    edge.exclusiveTo != party,
+              )
+              .map((edge) => edge.exclusiveTo!)
+              .toSet();
+          final blockerText = blockers.isEmpty
+              ? 'exclusively to a different party'
+              : 'exclusively to ${blockers.map((b) => '"$b"').join(", ")}';
+          findings.add(
+            ValidationFinding(
+              type: 'destructive_exit_blocked_by_counterparty',
+              message:
+                  'On workflow "${machine.workflowType}", party "$party" '
+                  'holds a destructive exit gated on "$field" == '
+                  '${ok.map((v) => '"$v"').join(" or ")}, but once "$field" '
+                  'becomes "$value" every transition that changes it is '
+                  'guarded $blockerText. "$party" can never fire their own '
+                  'exit once the field reaches this value -- give this '
+                  'party its own exit from "$value", or an edge back to a '
+                  'value they can exit from.',
+              location: '${machine.workflowType}/instanceDataSchema/$field',
+              isWarning: true,
+            ),
+          );
+        }
+      }
+    }
   }
 
   void _checkPossibleFabricatedIdentifier(
