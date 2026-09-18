@@ -1024,3 +1024,56 @@ a post-production gap (`docs/Build Plan V2/Tickets/GAP-messaging-api.md`).
 ## 24. (RETRACTED 2026-09-03) — there was no response-modeling defect
 
 The masjid/book-club regen "conformance failures" were an ADOPTION filename bug (wrong docs-mirror name creating a duplicate .jsonc), not a response-modeling problem. book-club regen passes the demo suite 160/160 with response ROWS and UNBOUND response states (the shipped packages have them too). Response rows are canonical (Phase A.1); unbound response-state validator warnings are non-blocking and expected. Neither "responses are data" nor "every response state must be render-bound" was correct — both retracted. (masjid separately has a real extra `open-linked-volunteer-shift` divergence, tracked in §8.)
+
+## 25. A parent that ends must not release its members row-by-row — the archetype owns the sweep
+
+**Requirement shape:** the product doc says cancelling an event calls it off for everyone — "a cancelled
+event must not still show live RSVPs". The same shape appears wherever one record ends and per-member
+records must stop claiming a live answer.
+
+**Plausible-but-wrong shape** (and this is what `event-rsvp.md` itself taught until 2026-09-17, so it is
+shipping in four communities):
+
+```jsonc
+{ "id": "cancel-event", "action": "cancel", "from": ["open"], "to": "cancelled",
+  "effects": [
+    { "op": "transitionRelated", "transitionId": "event-cancelled",
+      "relatedQuery": { "workflowType": "garden-event-rsvp-response",
+                        "filter": { "eventId": "{id}", "$state": "going" } } },
+    { "op": "transitionRelated", "transitionId": "event-cancelled",
+      "relatedQuery": { "workflowType": "garden-event-rsvp-response",
+                        "filter": { "eventId": "{id}", "$state": "maybe" } } }
+    // ... one more per non-terminal state
+  ] }
+```
+
+**It is wrong twice over, and each half alone is fatal.** `{id}` resolves through an ordinary data-field
+lookup, and an instance's id is not a data field — it lives at the reserved `$id` key — so the filter
+matches nothing, the sweep no-ops, and the parent transition **still returns success**. And
+`transitionRelated` acts on `matches.first` **by design** (`effects.md` defines it as single-row,
+first-match, for waitlist promotion), so even with the token corrected, five members going would release
+exactly one. No correct authoring of this requirement exists in the grammar.
+
+**Verified-correct shape — declare the action and stop:**
+
+```jsonc
+{ "id": "cancel-event", "action": "cancel", "from": ["open"], "to": "cancelled",
+  "tone": "destructive",
+  "guard": { "allowedRoleIds": ["garden-coordinator"] } }
+```
+
+The engine reads the same `responseTable` spec it used to fan the rows out and moves every non-terminal
+row to the response machine's own `action: "cancel"` target, in the parent's transaction. The response
+workflow must declare an `action: "cancel"` transition whose `from` covers every non-terminal state —
+that is the only thing a package owes. **The platform granted the rows, so the platform revokes them**,
+exactly as with `deliver_reminder`, which no role holds and no package declares.
+
+**The general rule:** when a requirement says "ending X must end everything derived from X", check whether
+the platform CREATED those dependents. If it did, the revocation is platform-owned too, and authoring it
+per-member is both unnecessary and unsatisfiable. Asymmetry — platform creates, package revokes — is the
+smell.
+
+**Found in:** Garden Club, Book Club, Camera Club and Youth Soccer (2026-09-17) — 21 authored cascade sites
+across four communities, every one silently dead, found by sweeping the packages rather than by any failure.
+Masjid Nur was never affected: it keeps responses as lists on the event instance, so cancelling the event
+ends them by construction.

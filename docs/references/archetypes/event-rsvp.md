@@ -28,7 +28,7 @@ Eleven. Permission ids are `event_rsvp.<action>`.
 | Authoring | `create` · `edit` · `cancel` · `reopen` |
 | Responding | `respond` · `withdraw_response` · `join_waitlist` |
 | Personal | `set_reminder` |
-| Platform-applied | `deliver_reminder` — the Calendar sweep sends a reminder a member asked for. No role is granted it, so it never renders as a button. Not to be confused with `set_reminder`, which is the member asking. |
+| Platform-applied | `deliver_reminder` — the Calendar sweep sends a reminder a member asked for. No role is granted it, so it never renders as a button. Not to be confused with `set_reminder`, which is the member asking. **The response-row sweep behind `cancel` is platform-applied too** — see "Who ends a row" (§4). |
 | Suggesting | `propose_change` |
 | Recording | `record_outcome` |
 | Reading | `view` |
@@ -81,7 +81,7 @@ instead of encoding it, and make Tabletop's missing-exclusivity bug unrepresenta
 
 | Owned | Meaning |
 |---|---|
-| the response row's lifecycle | one row per member per event, created eagerly at event creation (§4) |
+| the response row's lifecycle | one row per member per event, created eagerly at event creation **and swept to cancelled when the event is cancelled** — both halves are platform-owned, and a community authors neither (§4) |
 | response state transitions | `respond` and `join_waitlist` move the row; a row has one state |
 | `reminderFanIds` | `set_reminder`, on the event — genuinely a set, and unambiguous. Delivery to those fans is `deliver_reminder`, a separate action nobody holds. |
 
@@ -121,6 +121,34 @@ declares the creation, and no member action triggers it.
 > community hand-roll per-member creation, which is the duplication this archetype exists to absorb.
 > An earlier draft of this section claimed the identity rule made the fan-out *inexpressible*. It does
 > not, and that reasoning should not be reused.
+
+### Who ends a row
+
+**The archetype does, as the exact mirror of the fan-out.** A transition declaring `action: "cancel"`
+on an event that carries a `responseTable` sweeps every non-terminal response row to the response
+workflow's own `action: "cancel"` target, in the same transaction as the parent transition.
+
+**A community MUST NOT author this sweep.** No `effects`, no `transitionRelated`, nothing naming the
+response workflow — exactly as with creation. Declaring `action: "cancel"` is the whole contract, and
+the platform holds both halves: it granted the rows, so it revokes them.
+
+> **This section replaced authored cascades on 2026-09-17, and the previous advice was doubly
+> unimplementable.** It told communities to write one `transitionRelated` effect per source state with
+> a `{id}` filter. `{id}` resolves through an ordinary data-field lookup, and an instance's id is not a
+> data field — it lives at the reserved `$id` key — so the filter matched nothing and the parent
+> transition still returned success. And `transitionRelated` acts on `matches.first` **by design**
+> (`effects.md` defines it as single-row, first-match, for waitlist promotion), so even with the token
+> fixed, five members going would have released one of them. **Four shipped communities authored the
+> pattern this doc taught, and every cancelled event in all four still had live response rows.** A
+> requirement that no correct authoring could satisfy belongs to the platform, not to the grammar.
+
+**What the response workflow must declare**, and the validator enforces it: an `action: "cancel"`
+transition whose `from` covers every non-terminal state the response machine declares — including
+`pending` and `declined`. A row the sweep cannot move is a row still claiming a live answer.
+
+**The sweep bypasses the response transition's own guard**, at the same trust level as the fan-out.
+It is a platform obligation, not an act by whoever cancelled the event, and the cancelling actor's
+roles are irrelevant to it. A guard refusal must never silently leave a row behind.
 
 This is what the shipped test suite asserts (`organizer creates an event and one pending response per
 member`): after an organizer creates an event, there is exactly one response instance per account, each
@@ -196,32 +224,15 @@ per-member answers. Showing only the first is what produced the array shape §2 
     { "id": "add-reminder",   "action": "set_reminder", "from": ["open"], "to": null,
       "guard": { "allowedRoleIds": ["garden-member"] } },
 
-    // Cancelling must sweep the rows, or they stay live and keep accepting
-    // responses -- a row cannot see its parent's state. One effect per source
-    // state, because a filter matches one state at a time, and the sweep must
-    // cover EVERY non-terminal state this community declares -- including
-    // `pending` and `declined`. Leaving those behind means a cancelled event
-    // still has rows claiming a live answer.
+    // Cancelling sweeps the response rows, and the ARCHETYPE does it -- see
+    // "Who ends a row" in section 4. Declare `action: "cancel"` and stop there:
+    // no effects, no per-state entries, nothing naming the response workflow.
+    // The engine reads the same `responseTable` spec it used to fan the rows
+    // out, and moves EVERY non-terminal row to the response machine's own
+    // `action: "cancel"` target, in the same transaction as this transition.
     { "id": "cancel-event", "action": "cancel", "from": ["open"], "to": "cancelled",
       "tone": "destructive",
-      "guard": { "allowedRoleIds": ["garden-coordinator"] },
-      "effects": [
-        { "op": "transitionRelated", "transitionId": "event-cancelled",
-          "relatedQuery": { "workflowType": "garden-event-rsvp-response",
-                            "filter": { "eventId": "{id}", "$state": "pending" } } },
-        { "op": "transitionRelated", "transitionId": "event-cancelled",
-          "relatedQuery": { "workflowType": "garden-event-rsvp-response",
-                            "filter": { "eventId": "{id}", "$state": "going" } } },
-        { "op": "transitionRelated", "transitionId": "event-cancelled",
-          "relatedQuery": { "workflowType": "garden-event-rsvp-response",
-                            "filter": { "eventId": "{id}", "$state": "maybe" } } },
-        { "op": "transitionRelated", "transitionId": "event-cancelled",
-          "relatedQuery": { "workflowType": "garden-event-rsvp-response",
-                            "filter": { "eventId": "{id}", "$state": "declined" } } },
-        { "op": "transitionRelated", "transitionId": "event-cancelled",
-          "relatedQuery": { "workflowType": "garden-event-rsvp-response",
-                            "filter": { "eventId": "{id}", "$state": "waitlisted" } } }
-      ] }
+      "guard": { "allowedRoleIds": ["garden-coordinator"] } }
   ]
 }
 ```
