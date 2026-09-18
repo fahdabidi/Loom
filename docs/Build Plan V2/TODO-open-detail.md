@@ -187,6 +187,59 @@ plus a `createInstance` into `hoa-owner-notification`. The package does not wait
 
 `needs-skill-dispatch` — **STILL OPEN, but RE-STATED 2026-09-10 — the shipped doc is not broken and never was; only the rejected dispatch output had the five-column header.** This row reads as though Ad-Free's B25 table currently parses to zero rows. It does not. `ad-free-community-product-experience.md:124` carries the correct **six-column** header, and `git log -S` on that header line returns exactly **one** commit — `5d95e314`, 2026-08-10, when the doc was created. It was never rewritten in the committed tree, which is consistent with my own 2026-09-10 measurement showing Ad-Free contributing **6 rows** to the 72-row denominator and holding two walkthrough-proven workflows (`ad-off-member-checkout`, `ad-off-community-checkout`). **So there is nothing to repair and no phantom breakage to re-investigate.** What remains genuinely open is only the *enrichment*: the 2026-08-24 convergence dispatch's materially better doc (24 → 54 named interactions) was **never landed** — the file's history jumps 2026-08-10 → 08-25 → 08-27 → 08-31 with no 08-24 commit — because it was correctly rejected for the header. A redo must reproduce the enrichment **while leaving the existing six-column B25 header byte-identical**, since that header is a parsed contract gating the production bar. ORIGINAL: **Ad-Free product doc enrichment, redo under hard rule 14b.** The 2026-08-24 convergence dispatch returned a materially better doc (24 → 54 named interactions) that also rewrote the B25 header to five columns, which makes the judge parse **zero** rows for that community. The enrichment is worth keeping; the table shape is not negotiable
 
+### row-354 — Ending a record must revoke its dependents: a platform capability, not a per-member cascade
+
+`new-milestone` — **USER DECISION 2026-09-15, quoted so it is not paraphrased away:** *"There should be a
+backend 'cancel event' API that cancels the event in the system, and removes everyone's entitlement to it.
+I.e. it should not cascade the property to each 'members' record of that event. The event itself should be
+a single record in the system for that community, and each member is given entitlement to that event,
+removing that event removes all entitlements."*
+
+**Measured by a package sweep across all ten shipped packages, 2026-09-15.** Notification records are
+deliberately excluded — a sent notice is history, not a live obligation. Four cases where a dependent
+record keeps a live obligation after its parent ends:
+
+| # | Parent ends | Dependents left live | Cascade? |
+|---|---|---|---|
+| 1 | `cancel-event` / `cancel-meeting` / `cancel-walk` / `cancel-practice` — **Garden, Book Club, Camera, Youth Soccer** | every member's response row still claims a live answer | declared, but all 21 sites use the broken `{id}` filter (row-355) |
+| 2 | Ad-Free `cancel-subscription` (from `active`) | `ad-off-entitlement-status` stays `active` — **the member keeps the paid benefit**; `ad-off-ad-suppression` too; refund chains leave receipt `issued` and settlement `settled` | broken `{id}`; suppression has none at all |
+| 3 | Youth Soccer `withdraw-request` (from draft/submitted/under-review/missing-info) | `soccer-registration-payment` and `soccer-waiver-document`, both created at `submit-request` — a guardian can still pay for a withdrawn registration | none |
+| 4 | Cedar `archive-document` (from `published`) | pending `hoa-document-access-request` rows — `hoa-board` can still grant access to an archived document | none |
+
+**Case 2 is verified live, not inferred:** the checkout reached `cancelled` while the entitlement stayed
+`active`, with a byte-identical `checkoutInstanceId` and identical guards on both ends.
+
+**Checked and NOT defects — do not re-raise:** Masjid donations (`cancel-donation` only from
+draft/pending/failed; donor visibility is created at `paid`) and Cedar's architectural-request ↔
+committee-decision pair (real data-field token, proven working live). **Masjid Nur already ships the
+user's model** for events — RSVPs are lists on the single event instance — which is why it needs no sweep.
+
+**The inverse class, possibly the same problem from the other end:** Garden's owner cannot `delist` a tool
+while it is on loan, because every transition clearing `onLoan` is borrower-guarded ([row-259](#row-259)).
+Book Club's shared library uses the same equipment-loan card and has not been checked.
+
+**Scoping dispatched 2026-09-15** to the Root Cause Agent, session key `record-lifecycle-revocation`,
+asked to attack the premise that these are one mechanism before proposing anything, and to answer where
+the capability lives, what "entitlement" means in the current data model, what breaks (the four response
+workflows, their B25 rows, the calendar RSVP card, existing Postgres rows, reminder blocks), migration for
+already-cancelled events, and whether `archetypes/event-rsvp.md`'s "must sweep EVERY non-terminal state"
+survives the model change. **No ticket until that lands** — this is exactly the "never write a ticket that
+asserts a mechanism nobody has traced" rule.
+
+### row-355 — `{id}` inside a `transitionRelated` filter resolves to nothing — 33 dead cascade sites
+
+`new-ticket` — **A plain bug with a working reference implementation in the same codebase; needs no spec
+decision.** The filter resolves `{token}` as an ordinary data-field lookup, and the instance id is not a
+data field, so `{id}` matches no rows: the cascade silently no-ops and the parent transition still returns
+**200**. Measured live in all four interpolation contexts — `{id}` in effect `fields` **works**,
+`{context.id}` in a create prefill **works**, a real data-field token in a filter **works** (Cedar cascaded
+a row to terminal `withdrawn`), `{id}` in a filter **broken**.
+
+**33 sites across 6 packages:** Ad-Free 11, Camera Club 6, Book Club 5, Garden Club 5, Youth Soccer 5,
+Cedar 1. **Sequencing note:** if [row-354](#row-354) moves events to a single-record model, 21 of those 33
+sites disappear with the response workflows, leaving mainly Ad-Free's refund chain and Cedar's withdraw —
+so land row-354's scoping first and re-count, rather than fixing all 33 and then deleting most of them.
+
 ### row-296 — §7 step 8 — legacy Dart catalog + bespoke-widget removal, now unblocked and far more tractable than 'unscoped' suggests
 
 `new-milestone` — §7 step 8: legacy Dart catalog + bespoke-widget removal, now unblocked but not yet scoped into tickets — see [Community JSON Migration Tracker.md §8](Community%20JSON%20Migration%20Tracker.md). **SCOPING EVIDENCE gathered 2026-09-10 — the legacy actor-identity catalog is nearly dead already, which makes this far more tractable than "not yet scoped" suggests.** `actorIdentitiesForExtensionId` (`part12_actor_identity_and_tabs.dart:3`) returns **package-derived** identities whenever the experience declares roles, and falls back to `_actorIdentitiesByExtensionId` only otherwise. All ten shipped packages declare `roles`, and `_parseActorIdentity` derives identities from them, so **for every shipped community the legacy catalog is unreachable — through every call site but one.** Of the five call sites, four pass `experience:` explicitly (`part01:212`, `:752`, `:1007`, `:1841`, and `part31_auth_screens.dart:328`). **The exception is `part12:138`, inside `roleWorkflowMatrixForExtensionId`, and it looks like an oversight rather than a choice: the line immediately above it computes `experienceForExtensionId(extensionId)` and then the call omits it**, so the matrix is built from legacy-catalog identities instead of the package's declared roles. **Impact is contained: the only consumer anywhere is a test** (`b17_actor_identity_role_inventory_test.dart:31`) — no production code calls it — but that does mean the b17 inventory asserts against legacy identities rather than package-derived ones, so it is validating the wrong source. **Sequencing that follows:** fix or delete that one call site and the legacy catalog becomes genuine dead code, at which point removal is deletion rather than migration. **What removal does NOT fix:** the `fanId`/`roleId` aliasing, since that comes from the live `_parseActorIdentity:398` (`fanId: roleId`), not from the legacy catalog — the two paths merely agree. Do not scope this milestone as the identity fix; they are independent.
