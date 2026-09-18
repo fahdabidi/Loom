@@ -61,6 +61,46 @@ Two consequences worth knowing, because each has produced a real defect:
   legacy-membership dependency the item queue exists to escape. Every other button in the list above
   genuinely is driven live, and that part of the sentence is accurate.
 
+## Delisting an item that is out — the owner always keeps an exit
+
+**An owner must never be stranded by a counterparty's inaction.** The obvious authoring gets this
+wrong, and it is shipping in Garden Club today: `delist` and `pause-listing` are guarded to the owner
+*and* preconditioned on `availabilityState == "available"`, while every transition that clears
+`onLoan` — `return-item`, `mark-damaged`, `report-lost` — is guarded to the borrower. So once an item
+is on loan, the owner's exits are precondition-blocked and every state-clearing action belongs to
+someone else. A borrower who simply stops responding keeps the owner's property listed forever, and
+the owner's only remaining action is `report-issue`, which declares `"to": null` and changes nothing.
+
+**Every one of those guards is individually correct**, which is the point: the defect exists only in
+the graph. A borrower *should* be the one who returns an item. What is wrong is that no path out
+remains for the owner.
+
+**The required shape: `delist` is always available to the owner, and what differs is where it lands.**
+
+| Item state | `delist` result | Why |
+|---|---|---|
+| `available` | `delisted`, terminal | nothing is outstanding |
+| `reserved` | `delisted`, terminal — the reservation is released with it | a reservation is a claim on the future, not custody |
+| `onLoan` | **`delisted-pending-return`**, non-terminal | the listing stops accepting new borrowers immediately, and the outstanding custody is still tracked |
+
+`delisted-pending-return` keeps exactly the transitions that discharge the obligation — the borrower's
+`return-item`, `mark-damaged` and `report-lost` — and offers no new-borrower actions. Returning from
+it lands in `delisted`, terminal. **The owner's decision takes effect at once; only the physical
+custody waits**, which is the honest model: revoking a listing cannot teleport a tool out of someone's
+hands, but it must not depend on that person to take effect either.
+
+**Do not solve this with a coordinator override instead.** An override adds a third party who must
+act, which is the same dependency one step removed — and Garden's coordinator role appears only on a
+create action, never on a transition guard, so today there is no such actor anyway. The owner's own
+exit is the fix.
+
+**The general rule, which is why this sits in the archetype and not in one community's package:** when
+a destructive transition is guarded to party A and preconditioned on a state only party B can clear,
+A is stranded. Either A gets an exit from that state, or the precondition is wrong. It is not
+something each package is expected to notice, because every declaration involved looks correct on its
+own — a validator rule for it is being built, and this paragraph will name its finding code once that
+lands. Until then, check it by hand when authoring an owner/counterparty split.
+
 ## Cross-workflow guard example
 
 Tabletop Club gates `borrow` on the member's dues-payment workflow being
