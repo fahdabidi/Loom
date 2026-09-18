@@ -461,6 +461,44 @@ uncommitted manifest bump surface at the same moment, so check them together.
 **The comparison set is the backend's specs, not Loom's.** Loom carries ~50 and the backend 8; the 42
 Loom-only files are app-side contracts with no service counterpart and are **not** drift. A spec
 present in the backend and missing from Loom is.
+### A regenerated package does not reach App Access either — regeneration is THREE steps
+
+Same shape as the section below, one layer across. Publishing definitions updates the **workflow
+service's** copy. Nothing updates **App Access's** copy of who may do what, and role permissions are
+derived from the package at *install* time — so a regenerated package keeps the OLD permission sets
+until `installCommunityPackage` runs again. Nothing fails, because the roles still exist and still
+work; they are simply the previous package's answer.
+
+Measured 2026-09-15 and traced layer by layer, which is the part worth copying:
+
+| Layer | State | How it was checked |
+|---|---|---|
+| Community JSON | **correct** | read the packages: `book-member` declares `record-download` (action `download`) and `withdraw-rsvp` (`withdraw_response`); `soccer-coach` declares action `edit` and no `upload` anywhere |
+| App Access deriver | **correct** | the parity gate's expected side is a live call to the service's own `CommunityPermissionDeriver`, never a reimplementation — it returned exactly what the JSON implies |
+| live `role_permission` | **stale** | Book Club and Youth Soccer roles last written **2026-09-02**; both packages regenerated **2026-09-05** |
+
+**So "the backend does not grant X" is usually not a JSON bug and not a deriver bug.** Check the
+install date against the package's last commit before theorising. `installCommunityPackage`
+*replaces* each declared role's set and resets the generated `<handle>-admin` to exactly its five
+`community.*` governance grants, so one install per community repairs both directions of drift —
+including grants that were hand-written rather than derived, which is where Masjid's 23 extra
+permissions came from (a 2026-09-02 SQL recipe, not any install).
+
+**Regeneration is therefore three steps, and the third is the one everyone forgets:**
+
+    1. regenerate the package (Skill)
+    2. publish workflow definitions      (the section below)
+    3. install the community package     (App Access role permissions)
+
+Then run `check_permission_parity.sh` — **in the post-deploy audit, not ad hoc**. That gate existed
+and reported six real violations for days while nobody ran it: a gate nobody runs is a gate that
+does not exist, which is the same failure this file records for the other parity gates.
+
+**Before any install, check two things** (both read-only, both cheap): that every live role in the
+group is either declared by the package or the generated admin — install *deletes* undeclared
+group-scoped roles — and that the admin's `role_kind` is `community_system_admin`, since install
+refuses on a mismatch.
+
 ### Publishing definitions is not a one-time step
 
 **It now covers generated artifacts too, because they drift the same way.**

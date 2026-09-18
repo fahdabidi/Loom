@@ -187,6 +187,36 @@ plus a `createInstance` into `hoa-owner-notification`. The package does not wait
 
 `needs-skill-dispatch` — **STILL OPEN, but RE-STATED 2026-09-10 — the shipped doc is not broken and never was; only the rejected dispatch output had the five-column header.** This row reads as though Ad-Free's B25 table currently parses to zero rows. It does not. `ad-free-community-product-experience.md:124` carries the correct **six-column** header, and `git log -S` on that header line returns exactly **one** commit — `5d95e314`, 2026-08-10, when the doc was created. It was never rewritten in the committed tree, which is consistent with my own 2026-09-10 measurement showing Ad-Free contributing **6 rows** to the 72-row denominator and holding two walkthrough-proven workflows (`ad-off-member-checkout`, `ad-off-community-checkout`). **So there is nothing to repair and no phantom breakage to re-investigate.** What remains genuinely open is only the *enrichment*: the 2026-08-24 convergence dispatch's materially better doc (24 → 54 named interactions) was **never landed** — the file's history jumps 2026-08-10 → 08-25 → 08-27 → 08-31 with no 08-24 commit — because it was correctly rejected for the header. A redo must reproduce the enrichment **while leaving the existing six-column B25 header byte-identical**, since that header is a parsed contract gating the production bar. ORIGINAL: **Ad-Free product doc enrichment, redo under hard rule 14b.** The 2026-08-24 convergence dispatch returned a materially better doc (24 → 54 named interactions) that also rewrote the B25 header to five columns, which makes the judge parse **zero** rows for that community. The enrichment is worth keeping; the table shape is not negotiable
 
+### row-356 — Regeneration is three steps; step 3 (install) is missing, which is why six parity violations exist
+
+`new-ticket` — **Traced layer by layer 2026-09-15; the JSON and the backend are both CORRECT and the live
+data is stale.** `book-member` declares `record-download` (action `download`) and `withdraw-rsvp`
+(`withdraw_response`); `soccer-coach` declares action `edit` and no `upload` anywhere — read from the
+packages, not from the gate. The gate's expected side is a live call to App Access's own
+`CommunityPermissionDeriver`, so layer 2 is confirmed by construction. **Live `role_permission` rows for
+Book Club and Youth Soccer were last written 2026-09-02; both packages were regenerated 2026-09-05.**
+Masjid's 23 extra admin grants have a different origin — a 2026-09-02 hand-written SQL recipe, never an
+install.
+
+**The work:**
+1. **Data:** run `installCommunityPackage` for `masjid-nur`, `neighborhood-book-club`,
+   `riverside-youth-soccer`. It *replaces* each declared role's set and resets the generated admin to its
+   five `community.*` grants, repairing both the missing-derived and the over-granted cases.
+   **Pre-checked safe 2026-09-15:** every live role in those three groups is either package-declared or the
+   generated admin with the correct `community_system_admin` kind, so the undeclared-role sweep deletes
+   nothing and the kind check passes. **BLOCKED** on permission to read the `keycloak-admin-credentials` /
+   `app-access-provisioner-credentials` secrets, needed for a provisioning-principal token (the classifier
+   refused it as credential exploration, correctly).
+2. **Process:** make regeneration three steps — regenerate → publish definitions → **install package** —
+   wherever the pipeline is documented, and add `check_permission_parity.sh` to the **post-deploy audit**
+   beside the other parity gates. Recorded in CLAUDE.md 2026-09-15 as "A regenerated package does not reach
+   App Access either".
+3. **Then re-run the gate** and expect exit 0. The gate found all six violations and was simply never read
+   — a gate nobody runs is a gate that does not exist.
+
+**Why this matters for the bar:** Book Club (7 rows) and Youth Soccer (6 rows) are in the B25 queue, and a
+missing derived permission is what produced the live 403 on Cedar's `hoa-facility-reservation`.
+
 ### row-354 — Ending a record must revoke its dependents: a platform capability, not a per-member cascade
 
 `new-milestone` — **USER DECISION 2026-09-15, quoted so it is not paraphrased away:** *"There should be a
