@@ -333,7 +333,7 @@ The effect declares `filter: { "checkoutInstanceId": "{id}", "$state": "active" 
 - [ ] `blocked` — `deriveInstanceRoles` picks the FIRST `actorEqualsField` guard — array order is not a business-party selector — [detail](TODO-open-detail.md#row-248)
 - [ ] `blocked` — A payment-service stub needs a service-backed transition binding specified first — grammar gap, stops and asks — [detail](TODO-open-detail.md#row-251)
 - [ ] `blocked` — Field-label humanization disagrees with itself across 4 sites in `part18`/`part26`/`part28` — [detail](TODO-open-detail.md#row-256)
-- [ ] `blocked` — Garden Club: a silent borrower strands the owner's own listing, and there is no coordinator override — [detail](TODO-open-detail.md#row-259)
+- [x] **CLOSED 2026-09-18** — archetype now requires an owner exit in every state (`delist` → `delisted-pending-return` from `onLoan`), and the validator catches the class as `destructive_exit_blocked_by_counterparty` (`2bd210d7`, ux judges 520, A/B-proven able to fail). Garden's package repair is a Skill dispatch, tracked with the other Garden fixtures in [row-357](TODO-open-detail.md#row-357) — [detail](TODO-open-detail.md#row-259)
 - [ ] `blocked` — `queryInstances` has no date-window parameter, so every calendar tab pages the whole instance set — [detail](TODO-open-detail.md#row-275)
 
 ### 3. Ready to ticket

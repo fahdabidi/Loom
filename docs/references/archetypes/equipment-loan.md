@@ -98,8 +98,17 @@ exit is the fix.
 a destructive transition is guarded to party A and preconditioned on a state only party B can clear,
 A is stranded. Either A gets an exit from that state, or the precondition is wrong. It is not
 something each package is expected to notice, because every declaration involved looks correct on its
-own — a validator rule for it is being built, and this paragraph will name its finding code once that
-lands. Until then, check it by hand when authoring an owner/counterparty split.
+own — so the validator catches it as
+[`destructive_exit_blocked_by_counterparty`](../guide/05-validation.md) (warning).
+
+**What quiets it** — either repair works, and the rule deliberately accepts both: give the blocked
+party a transition of their own out of the stuck value (the `delist` → `delisted-pending-return` shape
+above), or make the clearing transitions **role**-guarded rather than exclusive to one individual, so
+the owner can fire them by holding the role. Book Club and Camera Club already take the second route,
+which is why they ship the same archetype with no strand. **The check runs over the availability
+field's value graph, not declared states** — this family keeps its real lifecycle in
+`availabilityState` with `"to": null` transitions, and a state-based check would see one node and
+report everything as fine.
 
 ## Cross-workflow guard example
 
