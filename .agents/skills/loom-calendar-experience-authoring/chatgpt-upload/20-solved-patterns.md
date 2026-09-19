@@ -1190,3 +1190,35 @@ reassigns whatever coverage that seed was already providing.
 for the field you are about to change, and ask which of them depend on its *current* value. If any
 do, add a seed instead. A seed is a fixture serving potentially several rows at once, not a private
 detail of the row you happen to be fixing.
+
+### Second amendment, same day: adding is not automatically safe either — check ORDERING and SELECTION
+
+The amendment above says add a seed rather than mutate one. Correct, and still insufficient.
+
+Adding a **second event** to Garden Club — `spring-workshop` untouched, verified by a diff with
+**zero removed lines** — broke the same shipped test anyway. The new event was dated `2026-11-14`
+against `spring-workshop`'s `2027-03-13`, so it sorted first, the calendar surface selected *it* by
+default, and the test's event was never the rendered one. The action it looked for was absent
+because a different event's card was on screen.
+
+**So a surface that selects, orders, or counts is a shared resource, and a new seed competes for
+it.** The seed you add changes the answer to "which instance is showing" for every row bound to
+that surface.
+
+Before adding a seed, ask what the surface does with the collection:
+
+| surface behaviour | what an added seed can break |
+|---|---|
+| selects a default (calendar picks by date) | a test about a *different* instance, which is no longer the selected one |
+| orders a list (marketplace, queues) | any finder or tap that depends on position |
+| counts (`hasLength`, aggregate guards) | an absolute count assertion, and any `relatedAggregate` whose filter does not discriminate |
+
+**Make the addition inert with respect to selection.** For a calendar, date the new event *after*
+every existing one so the default selection does not move. For an ordered list, append rather than
+sort to the front. For anything counted, check the aggregate's filter really discriminates before
+assuming your row will not be counted.
+
+**And note what could not have caught this.** The package validated `pass`, 0 errors, both times.
+The diff was pure addition. The Skill followed the instruction exactly. Only the demo-app suite —
+the one skipped as unnecessary because the change was "just JSON" — could see it, and it saw it in
+the form of a completely unrelated-looking `Bad state: No element` inside a finder.
