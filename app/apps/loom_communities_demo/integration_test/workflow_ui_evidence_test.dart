@@ -2107,15 +2107,27 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       )
       .toList(growable: false);
   if (primaryCandidates.isEmpty) {
-    // No action fires in this branch, so a second and third capture here
-    // can only ever reproduce `start` byte-for-byte -- that is not evidence,
-    // it is a manufactured duplicate. `start` already proves what the
-    // screen looked like when the row was found to have no primary
-    // candidate; nothing further needs proving.
+    // `start` is captured at the top of the tab and may not show the
+    // instance itself (see positionUnavailableInstanceEvidence). This frame
+    // does not prove an action -- no tap sits between it and `start`, and
+    // the actionProof closure rule in _b25WalkthroughResult only applies to
+    // rowOutcome == 'attempted', which this row never becomes -- it exists
+    // only to put the instance in view for the reader.
+    final unavailableFrame = _b25ScreenshotName(
+      target,
+      b25Model,
+      'primary_action_unavailable',
+    );
+    await positionUnavailableInstanceEvidence(
+      tester: tester,
+      instanceId: selector.instance.instanceId,
+    );
+    await _pumpB25Frames(tester);
+    await capture(unavailableFrame);
     return _b25WalkthroughResult(
       model: b25Model,
       selector: selector,
-      screenshotNames: [start],
+      screenshotNames: [start, unavailableFrame],
       primaryUnavailableReason:
           'primary_action_unavailable: no primary action candidates were '
           'selected for this workflow row.',
@@ -2162,14 +2174,28 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       captureDiagnostic: capture,
     );
     if (actionWait.action == null) {
-      // The wait returned null because nothing became tappable, so nothing
-      // happened between `start` and now: a second and third capture here
-      // would only reproduce `start` byte-for-byte. See the sibling
-      // `primaryCandidates.isEmpty` branch above for the same reasoning.
+      // The wait returned null because nothing became tappable. See the
+      // sibling `primaryCandidates.isEmpty` branch above for why this frame
+      // does not prove an action. For a marketplace row, preparation has
+      // already opened the detail dialog above; positionUnavailableInstanceEvidence
+      // leaves it open rather than scrolling the tile behind it, since the
+      // open dialog IS the instance view at this point.
+      final unavailableFrame = _b25ScreenshotName(
+        target,
+        b25Model,
+        'primary_action_unavailable',
+      );
+      await positionUnavailableInstanceEvidence(
+        tester: tester,
+        instanceId: selector.instance.instanceId,
+        marketplacePreparation: marketplacePreparation,
+      );
+      await _pumpB25Frames(tester);
+      await capture(unavailableFrame);
       return _b25WalkthroughResult(
         model: b25Model,
         selector: selector,
-        screenshotNames: [start],
+        screenshotNames: [start, unavailableFrame],
         primaryUnavailableReason: actionWait.unavailableReason,
         availableSupplementaryActions: actionWait.otherAvailableActions,
       );

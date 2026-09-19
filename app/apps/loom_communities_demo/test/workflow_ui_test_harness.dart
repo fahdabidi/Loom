@@ -983,6 +983,58 @@ Future<bool> closeMarketplaceActionSurfaceAfterActionPolling({
   return closedWithOwnedControl;
 }
 
+/// The generic engine-native widget for [instanceId], matched the same way
+/// `_engineInstanceFinder` matches it in `workflow_ui_evidence_test.dart`:
+/// any keyed widget whose `ValueKey<String>` contains the instance id. Kept
+/// as its own predicate here rather than importing the test file's private
+/// finder, since this helper only needs it as a last-resort target.
+Finder _evidenceRowInstanceFinder(String instanceId) =>
+    find.byWidgetPredicate((widget) {
+      final key = widget.key;
+      return key is ValueKey<String> && key.value.contains(instanceId);
+    }, description: 'engine-native widget for $instanceId');
+
+/// Positions the row's instance for an unavailable-outcome evidence frame.
+///
+/// Non-mutating: it only scrolls; it never opens, taps or selects anything.
+/// The three cases are mutually exclusive and checked in order of how much
+/// the ambient surface already tells us:
+///
+/// 1. A marketplace detail dialog for [instanceId], if
+///    [marketplacePreparation] shows one already open, **is** the instance
+///    view -- scrolling the tile behind it would move a background the frame
+///    does not even show, and land the tile behind the modal barrier.
+/// 2. A Calendar selected-detail for [instanceId], if rendered, is brought
+///    into view in preference to the agenda entry beneath it.
+/// 3. Otherwise the generic instance card is brought into view.
+///
+/// Each step is guarded by `evaluate().isNotEmpty` so a missing widget is a
+/// no-op, never a throw -- this runs on an evidence path and must not abort
+/// the row. `ensureVisible` is called on `.first` because the underlying
+/// finders are contains-matches that can resolve to more than one widget.
+Future<void> positionUnavailableInstanceEvidence({
+  required WidgetTester tester,
+  required String instanceId,
+  MarketplaceActionSurfacePreparation? marketplacePreparation,
+}) async {
+  if (marketplacePreparation != null &&
+      marketplacePreparation.isMarketplaceSurface &&
+      marketplacePreparation.detailDialogPresent) {
+    return;
+  }
+
+  final calendarDetail = calendarSelectedDetailFinder(instanceId);
+  if (calendarDetail.evaluate().isNotEmpty) {
+    await tester.ensureVisible(calendarDetail.first);
+    return;
+  }
+
+  final instanceCard = _evidenceRowInstanceFinder(instanceId);
+  if (instanceCard.evaluate().isNotEmpty) {
+    await tester.ensureVisible(instanceCard.first);
+  }
+}
+
 /// Polls primary action candidates without turning a disabled product answer
 /// into a three-minute stall.
 ///
