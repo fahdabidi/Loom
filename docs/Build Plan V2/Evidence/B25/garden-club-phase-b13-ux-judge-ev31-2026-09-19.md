@@ -52,3 +52,41 @@ No row fails: every frame is readable, matches its name, and row 1's action sequ
 3. FAB overlapping content text in three frames (rows 1, 3, 5).
 4. Low-contrast "Cancelled" terminal-state banner (`result_receiver.png`).
 5. Harness-level, not product: single-frame unavailable rows capture the top of the tab rather than the instance in question, so the frame cannot evidence the (correct) reason for the absent action.
+
+---
+
+## Addendum by the validation agent, 2026-09-19 — finding 1 re-analysed, DO NOT ticket it as a product defect yet
+
+The judge's finding 1 ("app-bar community title clipped to a single `(` glyph in all nine frames")
+is **visually confirmed** — I read `..._coordinator_primary_action.png` myself and the lone glyph is
+there, immediately left of the LOCAL ENGINE badge. The status-banner clipping (finding 2) is
+confirmed the same way: "Ready for verified export" is sliced in half by the green header.
+
+But the natural reading of finding 1 — *a product defect affecting every community* — is **not
+established**, and two checks say it is probably a capture-harness artifact:
+
+1. **The glyph is not the title text.** Garden Club's `displayName` is exactly `"Garden Club"`, with
+   no parenthesis. The `(` is the **left arc of a clipped "G"**, i.e. the title is being rendered
+   into a slot a few pixels wide, not rendering wrong characters.
+2. **The thing eating the width is local-only.** `part01_local_extension_screen.dart:1613` builds
+   `AppBar(title: Text(community.displayName, maxLines: 2, overflow: ellipsis), actions: [...])`
+   whose first action is `LoomServiceBindingWarningBadge`. That badge is a *warning* label:
+   `part52_service_binding_report.dart:278` emits `LOCAL ENGINE` only when the workflow-engine
+   binding is local or unconfigured. The shipped app wires the **remote** engine, so the badge —
+   and the ~200px it occupies — is **absent in production**.
+
+So every frame in this run carries a wide diagnostic badge that the shipped app does not show, and
+the title starvation is plausibly caused by it.
+
+**What is actually unresolved:** production still renders up to four action buttons (refresh, bell,
+messages, overflow) beside the title, so the title could still be tight without the badge. Nothing
+in *these* frames can settle it, because every one of them has the badge.
+
+**The check that would settle it**, and it should be run before any ticket: capture the same
+community screen from a build running the remote engine (badge absent) and read the app bar. If the
+title renders, this is a harness artifact and the finding closes. If it still clips, it is a real
+product defect and the ticket writes itself.
+
+This is the same shape as "an APK containing the production app does not necessarily run the
+production app": the judge reported exactly what it saw, and what it saw was a property of the
+build under capture rather than of the product.
