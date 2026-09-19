@@ -21,15 +21,27 @@ const fullB25EvidencePhases = <String>[
   'B20',
 ];
 
-// Re-derived 2026-09-19 for the "byte-distinctness must prove an action"
-// fix: the harness stopped manufacturing frames that could never differ
-// (unavailable branches, the missing-package row, B19's cancel round-trip),
-// which legitimately shrinks a correct capture below the old 180. See the
-// derivation in that change's report -- this is a reasoned estimate from
-// the measured ev30 duplicate-frame data and the fixed auxiliary-row count,
-// not an empirically re-measured live capture, and should be tightened once
-// a live full-b25 run is available to confirm the real new total.
-const fullB25MinimumScreenshotRows = 117;
+// Measured 2026-09-19 from live run ev31 (instrumented APK built at
+// 256d22ea, all nine phases, --mode full-b25, emulator-5554):
+// screenshotStatus=complete, zero duplicate-frame findings, per-phase
+// B12=3 B13=9 B14=52 B15=29 B16=42 B17=2 B18=2 B19=7 B20=11, totalling 157.
+// This replaces the 117 provisional estimate from the byte-distinctness fix
+// (256d22ea) with a real measurement, not a reasoned guess.
+//
+// Gate set to 153 rather than 157: a correct run's frame count varies by
+// row outcome (a proven row emits several frames, an unavailable row emits
+// one), and as currently-blocked rows get fixed the total should go UP, not
+// down -- so the margin is kept deliberately tight, and 153 is the largest
+// multiple of 9 not exceeding 157 (divisibility is required by
+// b25_capture_prebuilt_binary_test.dart's fixture, which derives its
+// per-phase fake screenshot count via `~/ 9` and asserts the aggregate
+// lands exactly on the gate at the boundary). That leaves a 4-frame
+// (~2.5%) tolerance for run-to-run variance.
+//
+// Caveat: this is a single measurement. b25Proven=21/81 matched the prior
+// run (ev30) exactly, suggesting the walk is deterministic, but one run is
+// one run -- treat 157 as one data point, not a distribution.
+const fullB25MinimumScreenshotRows = 153;
 const fullB25MinimumWorkflowManifests = 9;
 
 const _uiUsabilityScoreDimensions = <String>[
