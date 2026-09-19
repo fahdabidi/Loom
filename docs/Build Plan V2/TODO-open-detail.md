@@ -194,6 +194,30 @@ for this workflow the behavior is correct and different from other workflows. I.
 able to 'loan' a tool they own. They can cancel the listing. Same with a giveaway."* And on the full event:
 *"Given the User experience, this appears to be the correct behavior."*
 
+
+> **CORRECTION 2026-09-19 — the prescribed fix above is WRONG as stated, and was proven wrong by
+> running it.** This row says "give the event a free place (capacity 3, or one seeded member not
+> going)". Doing exactly that made the RSVP row reachable **and broke
+> `b41_garden_engine_migration_test.dart`**, which taps `respond-waitlist` on `spring-workshop`.
+> `respond-waitlist` guards on a `relatedAggregate` counting `going` responses `>=` capacity, so
+> **"Join waitlist" renders only while the event is FULL**. The two rows are zero-sum on one seed:
+> `capacity: 2` leaves Going unprovable; `capacity: 3` leaves `join_waitlist` unprovable. **The fix
+> is a SECOND event seed — one full, one open — not a mutated capacity.** Recorded as an amendment
+> to `solved-patterns.md` §26 ("ADD a seed, do not MUTATE one"), because the same trap applies to
+> every future application of that rule. The regeneration was reverted; nothing shipped.
+>
+> **Also corrected: this row's explanation of the RSVP blockage is imprecise.** It says "both seeded
+> members are already going". Measured: `spring-workshop-response-coordinator` and
+> `...-response-rina` are `going`, while the B25 persona's own `...-response-member` is **`pending`**.
+> The blocker is capacity alone, not the member's own state.
+>
+> **And the class is wider than two rows.** The Skill dispatch, told to apply §26 and report rather
+> than silently fix, found **three more** seeds with the same shape: `steel-wheelbarrow`
+> (`ownerFanId: garden-member`, so "request loan" is self-ownership-refused, and the only other loan
+> seed is already `onLoan`), `club-hand-tool-set` (`borrowerFanId: garden-member-rina`, so "return
+> item" is unreachable by the member persona), and `mulch-delivery-shift` (`garden-member` already in
+> `signedUpFanIds`, and it is the only seed for that workflow type, so "sign up" is unreachable).
+> **Five rows, not two** — scope any fix by that population.
 | Row | Seed | Why the documented action is refused — correctly |
 |---|---|---|
 | `garden-event-rsvp` | `spring-workshop`, `capacity: 2`; the platform fans out one response row per member, so both seeded members are already going | `goingCount >= capacity` withholds *Going*. The row's primary terms are rsvp/attend/going/reserve spot/confirm attendance and its alternates decline/not attending/maybe/change response/cancel rsvp — **"Join waitlist" is in neither set**, so the correct waitlist button cannot stand in |

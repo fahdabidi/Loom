@@ -1160,3 +1160,33 @@ exist.
 not loan or claim their own item, and a full event must withhold `Going`. Changing the guard to make
 a row provable would convert a correct product into a broken one to satisfy a test — converging by
 removal against test data.
+
+### Amendment, found the same day the rule was written: ADD a seed, do not MUTATE one
+
+Applying the rule above to Garden Club by changing `spring-workshop`'s `capacity` from 2 to 3 made
+the documented RSVP reachable **and broke a shipped test**, because a *sibling* row depended on the
+opposite state.
+
+`respond-waitlist` (`action: join_waitlist`) guards on a `relatedAggregate` counting `going`
+responses with `comparator: ">="` against capacity — so **"Join waitlist" is offered only when the
+event is full.** The two rows are therefore zero-sum on one seed:
+
+| seed | `garden-event-rsvp` (Going) | `join_waitlist` |
+|---|---|---|
+| `capacity: 2` (full) | unreachable | reachable |
+| `capacity: 3` (free place) | reachable | **unreachable** |
+
+Nothing in a validator run can see this. The package is well-formed either way; the conflict is
+between a seed and a *different row's* reachability, and it surfaced only in the demo-app suite —
+the one that renders the shipped packages, and the one most often skipped because the change was
+"just JSON".
+
+**So the rule is: seed a NEW instance in the state the unreachable row needs, and leave the existing
+one alone.** Garden needs two events — one full, one with a free place — which is also more truthful
+product data than a single event that has to be both. Mutating a seed to fix one row silently
+reassigns whatever coverage that seed was already providing.
+
+**The check to run before changing any existing seed:** grep the other rows and the demo-app tests
+for the field you are about to change, and ask which of them depend on its *current* value. If any
+do, add a seed instead. A seed is a fixture serving potentially several rows at once, not a private
+detail of the row you happen to be fixing.
