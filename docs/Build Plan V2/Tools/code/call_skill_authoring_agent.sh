@@ -1,13 +1,26 @@
 #!/bin/bash
 # data/call_skill_authoring_agent.sh
 #
-# Dispatches the `loom-calendar-experience-authoring` Skill to a Codex CLI
-# agent running in a ChatGPT-equivalent emulation: zero local repo access,
-# zero shell/file tools beyond what Codex's own sandbox always grants, live
-# GitHub reads as the only way to see `docs/references/**`. This is the
-# THIRD channel the Skill is proven on (see SKILL.md's channel list), built
-# 2026-08-11 at explicit user request: "The tool emulates the chatgpt
-# envionment (including the AI model) using the codex cli."
+# Dispatches the `loom-calendar-experience-authoring` Skill to a CLI agent in a
+# ChatGPT-equivalent emulation: zero local repo access, live GitHub reads as the
+# only way to see `docs/references/**`. This is the THIRD channel the Skill is
+# proven on (see SKILL.md's channel list), built 2026-08-11 at explicit user
+# request: "The tool emulates the chatgpt envionment (including the AI model)
+# using the codex cli."
+#
+# ENGINE, 2026-09-18 (user-directed): **Claude Code CLI, `sonnet` at effort
+# `medium`** -- see MODEL/EFFORT below, which are the authority, not this comment.
+# It replaced `codex exec -p gpt5_6_sol_medium` when the OpenAI account hit its
+# usage limit. The engine changed; the channel's defining property did not, and
+# that property is zero repo access rather than any particular model.
+#
+# One real behavioural difference from the Codex era, and it is an improvement:
+# that sandbox could not reach arbitrary network endpoints, so the agent could
+# never call the validator and INSTRUCTIONS.md has it do a manual self-check
+# instead. `claude` here CAN curl loopback, so the validator preflight below is
+# now genuinely useful to the dispatched agent. Its self-check text is unchanged,
+# so treat validator-clean as something YOU still confirm after the dispatch --
+# see the caller's-job note further down, which still stands.
 #
 # Community JSON (docs/references/communities/*.jsonc) must NEVER be
 # hand-authored directly -- see this repo's own standing rule (surfaced hard,
@@ -60,23 +73,22 @@
 # pre-authorized) or pass ALLOW_STALE_PUSH=1 to bypass deliberately (e.g. a
 # throwaway mechanism smoke-test where doc currency doesn't matter).
 #
-# Model: gpt5_6_sol_xhigh ("GPT 5.6 Sol on High Reasoning",
-# ~/.codex/gpt5_6_sol_xhigh.config.toml -- model = "gpt-5.6-sol",
-# model_reasoning_effort = "xhigh"). This profile already existed (created
-# 2026-08-01, not by this script) -- confirmed by direct read, not assumed.
-# Override with CODEX_SKILL_AUTHORING_PROFILE=<name>.
-#
 # Isolation mechanism (the actual "turn off repo access" implementation):
-# `-C <fresh scratch dir under $HOME, OUTSIDE this repo entirely>` sets the
-# agent's working root to a directory with zero Loom content, `--add-dir` is
-# deliberately NEVER passed (nothing else becomes writable/visible), and
-# `--skip-git-repo-check` allows Codex to run outside a git repo at all
-# (the scratch dir isn't one). A fresh directory per dispatch, never reused,
-# so no output from a prior run can leak into a later one as unearned
-# context. `--ephemeral` additionally skips persisting Codex's own session
-# files, matching the "stateless external provider" premise -- no --resume
-# capability is offered by this script, deliberately: each dispatch should
-# stand on its own, exactly like a fresh ChatGPT conversation would.
+# the `claude` invocation runs with its working directory set to a fresh scratch
+# dir under $HOME, OUTSIDE this repo entirely, and `--add-dir` is deliberately
+# NEVER passed, so every file tool is confined to that directory. A fresh
+# directory per dispatch, never reused, so no output from a prior run can leak
+# into a later one as unearned context.
+#
+# `--dangerously-skip-permissions` is deliberately NOT used here, unlike the
+# implementation agent. It would grant an unrestricted Bash tool, which could
+# read this repo by absolute path and dissolve the channel silently -- the agent
+# would look like it was reading GitHub while actually reading the working tree,
+# which is precisely the failure this channel exists to rule out. The allowlist
+# instead grants file tools (confined to cwd), `curl`, and WebFetch.
+#
+# No --resume is offered, deliberately: each dispatch stands on its own, exactly
+# like a fresh ChatGPT conversation would.
 #
 # Migrated off WSL2 onto a VirtualBox Ubuntu VM 2026-08-12 -- see
 # docs/Build Plan V2/Tools/wsl-to-virtualbox-migration.md. Runs INSIDE the
@@ -98,11 +110,27 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
 LABEL="${2:-$(basename "$TARGET_DOC" | sed 's/\.[^.]*$//')-$(date +%Y%m%d-%H%M%S)}"
-PROFILE="${CODEX_SKILL_AUTHORING_PROFILE-gpt5_6_sol_medium}"
-PROFILE_ARGS=()
-if [ -n "$PROFILE" ]; then
-  PROFILE_ARGS=(-p "$PROFILE")
-fi
+# --- Engine: Claude Code CLI, sonnet at medium effort --------------------
+# User-directed 2026-09-18, replacing `codex exec -p gpt5_6_sol_medium` after the
+# OpenAI account hit its usage limit. Overrides: CLAUDE_SKILL_AUTHORING_MODEL,
+# CLAUDE_SKILL_AUTHORING_EFFORT.
+#
+# THE CHANNEL'S DEFINING PROPERTY IS PRESERVED, and it is not the model: this
+# dispatch must have ZERO local repo access, so the Skill is exercised exactly as
+# a ChatGPT user would exercise it -- reading `docs/references/**` live from
+# GitHub, never from this working tree. That is why the HEAD==origin/main
+# preflight above exists at all.
+#
+# How it is preserved here: `claude` runs with its working directory set to the
+# fresh scratch dir and the repo is NEVER passed to --add-dir, so every file tool
+# is confined to the scratch dir. `--dangerously-skip-permissions` is deliberately
+# NOT used -- it would hand the agent a Bash tool able to read the repo by
+# absolute path, silently dissolving the channel. Instead the allowlist grants
+# writes inside the scratch dir, `curl` (for the validator and GitHub raw), and
+# WebFetch.
+MODEL="${CLAUDE_SKILL_AUTHORING_MODEL:-sonnet}"
+EFFORT="${CLAUDE_SKILL_AUTHORING_EFFORT:-medium}"
+PROFILE=""  # retained so the DeepSeek preflight below stays inert
 
 # --- DeepSeek gateway preflight ----------------------------------------
 # The gateway runs on this VM bound to loopback (~/deepseek-gateway). Fail
@@ -163,12 +191,13 @@ PROMPT_FILE="$LOG_DIR/prompt.md"
   cat "$TARGET_DOC"
 } > "$PROMPT_FILE"
 
-echo "=== Invoking Skill-authoring Agent (codex exec, GitHub-fetch channel) ==="
+echo "=== Invoking Skill-authoring Agent (claude -p, GitHub-fetch channel) ==="
 echo "Repo:            $REPO_ROOT (origin/main @ $ORIGIN_MAIN)"
 echo "Target doc:      $TARGET_DOC"
 echo "Prompt file:     $PROMPT_FILE ($(wc -l < "$PROMPT_FILE") lines)"
 echo "Scratch dir:     $SCRATCH_DIR (fresh, zero repo content, --add-dir never granted)"
-echo "Profile:         ${PROFILE:-<none -- Codex default model>}"
+echo "Model:           $MODEL (effort $EFFORT)"
+echo "Repo access:     NONE -- cwd is the scratch dir, repo never passed to --add-dir"
 echo "Label:           $LABEL"
 echo "Event log:       $JSON_LOG"
 echo "Final answer:    $LAST_MESSAGE_FILE"
@@ -229,21 +258,36 @@ fi
 echo "Validator healthy at $VALIDATOR_URL"
 
 set +e
-npx --yes @openai/codex exec \
-  "${PROFILE_ARGS[@]}" \
-  --sandbox workspace-write \
-  -c sandbox_workspace_write.network_access=true \
-  -C "$SCRATCH_DIR" \
-  --skip-git-repo-check \
-  --ephemeral \
-  --json \
-  --output-last-message "$LAST_MESSAGE_FILE" \
-  - < "$PROMPT_FILE" | tee "$JSON_LOG"
+(
+  cd "$SCRATCH_DIR" || exit 1
+  claude -p \
+    --model "$MODEL" \
+    --effort "$EFFORT" \
+    --output-format stream-json \
+    --verbose \
+    --allowedTools "Read" "Write" "Edit" "Glob" "Grep" "WebFetch" \
+      "Bash(curl:*)" "Bash(cat:*)" "Bash(ls:*)" "Bash(jq:*)" \
+    --disallowedTools "WebSearch" \
+    < "$PROMPT_FILE"
+) 2>&1 | tee "$JSON_LOG"
 STATUS="${PIPESTATUS[0]}"
 set -e
 
+# The Codex flag `--output-last-message` has no Claude equivalent; extract the
+# final reply from the stream so downstream readers keep finding it where they
+# always have.
+if command -v jq >/dev/null 2>&1; then
+  grep '^{' "$JSON_LOG" 2>/dev/null \
+    | jq -rs '[.[] | select(.type=="result") | .result // ""] | last // ""' \
+    > "$LAST_MESSAGE_FILE" 2>/dev/null || true
+fi
+if [ ! -s "$LAST_MESSAGE_FILE" ]; then
+  echo "WARNING: no final reply extracted to $LAST_MESSAGE_FILE -- treat this dispatch as FAILED," >&2
+  echo "         not as an empty answer, and read $JSON_LOG before concluding anything." >&2
+fi
+
 echo "============================================================================"
-echo "codex exec exited with status $STATUS"
+echo "claude exited with status $STATUS"
 
 if [ -f "$LAST_MESSAGE_FILE" ]; then
   echo "Final answer captured: $LAST_MESSAGE_FILE ($(wc -l < "$LAST_MESSAGE_FILE") lines)"
