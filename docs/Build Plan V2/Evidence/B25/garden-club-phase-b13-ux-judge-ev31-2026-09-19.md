@@ -90,3 +90,27 @@ product defect and the ticket writes itself.
 This is the same shape as "an APK containing the production app does not necessarily run the
 production app": the judge reported exactly what it saw, and what it saw was a property of the
 build under capture rather than of the product.
+
+### Supporting measurement, same addendum — the badge accounts for the starvation
+
+Measured off `..._coordinator_primary_action.png` (native 1080x2400), converting from the 900px-wide
+render at 1.2x:
+
+| element | x (native) |
+|---|---|
+| back arrow ends | ~114 |
+| title slot | ~114 – 246 (**~132 px**) |
+| LOCAL ENGINE badge | ~246 – 576 (**~330 px**) |
+| four action icons | ~576 – 1080 |
+
+So the title is being given roughly **132 px**, which is why "Garden Club" renders as the left arc
+of its "G". Remove the badge and the slot becomes ~460 px, which comfortably fits the string at
+title size — and `maxLines: 2` gives it a second line besides.
+
+This is a measurement off a screenshot, not proof, and it does not settle the question: two of the
+four action icons are conditional (`_offlineReplicaEnabled` gates refresh,
+`resolvedNotificationPresentationStyle == 'bell'` gates the bell), so the production app bar's
+action width is itself variable per community. But it does make the badge the dominant term, and it
+means a remote-engine capture is very likely to show the title rendering correctly.
+
+**Unchanged conclusion: do not ticket this as a product defect until a remote-engine frame is read.**
