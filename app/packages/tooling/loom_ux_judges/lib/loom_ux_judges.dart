@@ -21,27 +21,34 @@ const fullB25EvidencePhases = <String>[
   'B20',
 ];
 
-// Measured 2026-09-19 from live run ev31 (instrumented APK built at
-// 256d22ea, all nine phases, --mode full-b25, emulator-5554):
-// screenshotStatus=complete, zero duplicate-frame findings, per-phase
-// B12=3 B13=9 B14=52 B15=29 B16=42 B17=2 B18=2 B19=7 B20=11, totalling 157.
-// This replaces the 117 provisional estimate from the byte-distinctness fix
-// (256d22ea) with a real measurement, not a reasoned guess.
+// The 153 value this replaces was measured from run ev31's
+// `screenshots=157/157` summary line -- a FILE count. The gate does not
+// compare that: it compares the summed manifest `verifiedScreenshotCount`
+// (b25_capture_workflow_screenshots.dart's `phaseScreenshotCount +=
+// integrity.verifiedScreenshotCount`), which excludes diagnostic frames by
+// design. Files and verified count are different quantities, and 153 was
+// derived from the wrong one.
 //
-// Gate set to 153 rather than 157: a correct run's frame count varies by
-// row outcome (a proven row emits several frames, an unavailable row emits
-// one), and as currently-blocked rows get fixed the total should go UP, not
-// down -- so the margin is kept deliberately tight, and 153 is the largest
-// multiple of 9 not exceeding 157 (divisibility is required by
+// Measured directly in the gate's own units: run ev32 (before the orphan
+// fix in ea85244d) and run ev33 (after it) both gave
+// verifiedScreenshotCount=143, files=179 on disk. The count held steady
+// across the fix, which is correct -- ea85244d reclassifies previously
+// orphaned frames as `diagnosticScreenshotPaths`, and diagnostics are
+// deliberately excluded from verifiedScreenshotCount, so fixing the orphan
+// bug does not raise this total. ev33 was otherwise healthy:
+// screenshotStatus=complete, b25TraversalFinalised=true, b25Communities=14/14,
+// zero zero-byte files, zero refusals.
+//
+// Gate set to 135, not 143: as currently-blocked or failing rows get fixed
+// they become `attempted` and emit MORE evidence frames, so the count
+// should drift UP, never down -- a downward move means rows regressed, and
+// the gate should catch that rather than accommodate it. 135 = 15 x 9 is
+// the largest multiple of 9 at or below 143 (divisibility is required by
 // b25_capture_prebuilt_binary_test.dart's fixture, which derives its
 // per-phase fake screenshot count via `~/ 9` and asserts the aggregate
-// lands exactly on the gate at the boundary). That leaves a 4-frame
-// (~2.5%) tolerance for run-to-run variance.
-//
-// Caveat: this is a single measurement. b25Proven=21/81 matched the prior
-// run (ev30) exactly, suggesting the walk is deterministic, but one run is
-// one run -- treat 157 as one data point, not a distribution.
-const fullB25MinimumScreenshotRows = 153;
+// lands exactly on the gate at the boundary). That leaves an 8-frame
+// (~5.6%) tolerance, deliberately tight for the same reason.
+const fullB25MinimumScreenshotRows = 135;
 const fullB25MinimumWorkflowManifests = 9;
 
 const _uiUsabilityScoreDimensions = <String>[
