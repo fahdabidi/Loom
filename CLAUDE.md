@@ -1024,6 +1024,50 @@ so the leak had never executed. **Fixing a real defect exposes the next one, and
 will often surface far from its cause** — here, two rows later, as a tap that "missed" a healthy
 button.
 
+### Byte-distinctness proves an action only across a declared tap boundary
+
+Found 2026-09-19, after my framing was wrong **twice in one tick** on the same 26 frames.
+
+`b25_capture_integrity.dart` failed a row when any two of its frames were byte-identical, on the
+premise its own comment states: *"B25 needs the second frame to prove an action."* True — for a pair
+with a **tap between them**. The harness has at least five sites that capture consecutive frames with
+no interaction at all (both `*_unavailable` branches; the no-alternate branch, which captures
+`alternate_action_unavailable` and `result_receiver` back to back; `alternate_action` after only an
+`ensureVisible`; the missing-package four-frame loop; and B19's cancel round-trip, which is *designed*
+to restore the start pixels). So the harness manufactured identical frames by construction and then
+failed itself on them.
+
+**All 26 duplicates in run `ev30` were manufactured. Zero were product defects.** The check that
+settled it in one query, after two hypotheses built from filenames: pair each duplicate with its
+`firstScreenshotPath` and ask whether a tap sits between the two. Nothing in a frame's *name* answers
+that — `result_receiver` is emitted from two different provenances, post-tap and
+no-alternate-found, and reading the wrong one into it is what made harness noise look like an engine
+defect.
+
+Two facts that decide the shape of any fix here, and both are counter-intuitive:
+
+- **A fully proven row was failing the gate.** Camera Club's `gear-loan-request` had `start`,
+  `primary_action` and `primary_result` all distinct and its post-tap `result_receiver` un-duplicated
+  — it failed only because `alternate_action` needed no scroll and so matched `primary_result`. **No
+  amount of emitting fewer frames rescues that row**, which is why "stop manufacturing frames" is
+  half a fix.
+- **Distinctness is neither necessary nor sufficient.** Cedar's `hoa-facility-reservation` flagged
+  only one of its two unavailable frames — the other pair *differed* with no interaction between
+  them, from animation and pump drift. Frames differ without actions and match despite them.
+
+**The general rule: an integrity predicate whose success condition can be satisfied by the
+producer's own structure is not an integrity check.** It fails rows that are fully proven and blesses
+none. The repair is to narrow enforcement to pairs the producer **declares** as having an action
+between them — plus a closure rule so a row cannot dodge enforcement by declaring nothing. That is
+strictly narrower, not weaker: an action that rendered nothing still fails hard, which is the hole
+the guard exists to hold open.
+
+And a scoping note worth carrying: the root cause agent named three sites for the coupled
+`fullB25MinimumScreenshotRows` threshold; grepping it myself found **six**, including the judge's own
+prompt text, which states the number to the model and would have gone on asserting 180 after the
+constant moved. **Verify a scoping report's enumerations before writing them into a ticket** — an
+undercounted population is exactly how a fix lands on some instances of a class and not the rest.
+
 ## Evidence rules
 
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A
