@@ -1068,6 +1068,47 @@ prompt text, which states the number to the model and would have gone on asserti
 constant moved. **Verify a scoping report's enumerations before writing them into a ticket** — an
 undercounted population is exactly how a fix lands on some instances of a class and not the rest.
 
+### Predicting a runtime decision offline: evaluate only the clauses whose context you can reproduce
+
+Found 2026-09-19 while scoping a fix I had already framed wrongly. The B25 selector chooses which
+seeded instance a row is proven against, and it decides by reading *declarations* — `allowedRoleIds`,
+`actorEqualsField`, `instanceDataEquals` — while ignoring `formula` guards entirely. So a reachable
+instance and an unreachable one look identical to it; the first wins, the formula refuses at render
+time, and the row records `primary_action_unavailable`. Adding a correctly-seeded instance therefore
+fixes **nothing**, which was proven by seeding five Garden rows and getting byte-for-byte the same
+frames back.
+
+**The obvious fix — "then make the predicate evaluate the guard" — would have broken working rows.**
+The engine's `evaluateGuard` returns `false` when `guard.relatedAggregate != null` and no precomputed
+aggregate is supplied (`guard_evaluator.dart:138`). An offline predictor has no engine and computes
+no aggregates, so routing through it marks **every `relatedAggregate`-guarded instance unselectable**
+— four shipped packages, several on primary actions. And clause semantics can deliberately differ
+offline: the engine compares `actorEqualsField` strictly, while the harness uses prefix matching so
+`garden-member-rina` satisfies role `garden-member`. Re-running that clause through the engine would
+contradict the harness's own account resolution.
+
+**So the rule is: predict only the clauses whose runtime context you can actually reproduce, and
+leave every other clause exactly as the existing code treats it.** Here that is the formula alone —
+it needs only `instanceData` and an actor id, both already in hand.
+
+Three constraints come with it, and each is a lesson this file already records, arriving in a new
+place:
+
+- **Unresolvable is a third state, not a denial.** A formula that throws must return *unknown* and
+  stay selectable. Collapsing unknown into denied could skip the only provable instance — the same
+  defect wearing new clothes, and the same shape as an unknown boolean defaulting to `false`.
+- **Rank, do not filter.** If every candidate is denied, still return one, because
+  `primary_action_unavailable` is a *designed* outcome. Throwing instead makes a designed branch
+  unreachable — the "fail fast aborted all eighty rows" shape.
+- **Scope the prediction to the right machine.** Response-workflow transitions must not be evaluated
+  against the parent instance's data; that is a category error dressed as a guard check.
+
+**The general form, worth applying to any offline predictor** — a validator, a planner, a selector, a
+dry run: *a check that reproduces some of a decision's inputs must be explicit about which ones, and
+must treat the rest as unknown rather than as false.* Failing closed on a clause you cannot compute
+converts "I don't know" into "no", and that is how a predictor quietly disqualifies the exact case it
+was built to find.
+
 ## Evidence rules
 
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A
