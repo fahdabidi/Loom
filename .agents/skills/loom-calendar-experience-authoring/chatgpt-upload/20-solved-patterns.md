@@ -1077,3 +1077,86 @@ smell.
 across four communities, every one silently dead, found by sweeping the packages rather than by any failure.
 Masjid Nur was never affected: it keeps responses as lists on the event instance, so cancelling the event
 ends them by construction.
+
+## 26. A seeded instance must let the documented persona reach the documented action — a correct refusal proves the guard, not the feature
+
+**Requirement shape.** A product doc promises a capability for a persona ("a member can claim a
+giveaway", "a member can RSVP to the workshop"). The package declares the guard correctly. The
+*seed* then places that persona on the refused side of the guard, so the promised action never
+renders for anyone who could exercise it.
+
+**Why this is a real defect and not a detail.** Verification proves a capability by *firing* it at
+least once. When the seed makes the documented action legitimately unavailable, a walkthrough
+records `primary_action_unavailable` — a correct outcome that proves the **guard** works and says
+nothing about whether the **feature** works. Accepting it as evidence is the "we found nothing" →
+"the system offers nothing" reclassification that conceals defects.
+
+**Found in:** Garden Club (2026-09-17, confirmed by the product owner that the *behaviour* is
+correct and must not change; the *fixtures* are the gap). Two rows, both unprovable for this reason.
+
+### Plausible but wrong
+
+The owner of a giveaway is the same identity the B25 persona resolves to, so the guard
+`if(ownerFanId == $actor, false, true)` correctly refuses — and the documented "claim giveaway"
+can never be demonstrated:
+
+```jsonc
+{
+  "instanceId": "terracotta-pots-giveaway",
+  "instanceData": {
+    "mode": "giveaway",
+    "ownerFanId": "garden-member",     // the SAME identity the `member` persona resolves to
+    "availabilityState": "available"
+  }
+}
+```
+
+And an event seeded exactly full, where the platform fans out one response row per member, so every
+seeded member is already going:
+
+```jsonc
+{
+  "instanceId": "spring-workshop",
+  "instanceData": { "capacity": 2 }    // two seeded members, both going -> `Going` withheld, correctly
+}
+```
+
+### Verified correct
+
+Put the persona on the reachable side. The guard, the transitions and the rendered behaviour are
+**unchanged** — only the fixture moves:
+
+```jsonc
+{
+  "instanceId": "terracotta-pots-giveaway",
+  "instanceData": {
+    "mode": "giveaway",
+    "ownerFanId": "garden-coordinator", // a DIFFERENT identity, so `member` may legitimately claim
+    "availabilityState": "available"
+  }
+}
+```
+
+```jsonc
+{
+  "instanceId": "spring-workshop",
+  "instanceData": { "capacity": 3 }    // a free place remains, so `Going` renders for a member
+}
+```
+
+**The check to run while authoring, for every seeded instance:** for each row the product doc
+promises, resolve the persona to its identity, evaluate the guard against the seed you are about to
+write, and confirm the documented primary action is *offered*. If it is refused, the seed is wrong —
+not the guard, and not the doc.
+
+**Two traps around this specific fix.**
+
+*Seeding more backend users does not help.* The app shell derives one actor identity per **role** and
+aliases `fanId` to `roleId`, so a community has exactly one `member` identity — owner and claimant
+are necessarily the same person. The fix is which identity the seed names, never how many accounts
+exist.
+
+*Do not "fix" it by widening the guard.* The refusals above are the product working: an owner must
+not loan or claim their own item, and a full event must withhold `Going`. Changing the guard to make
+a row provable would convert a correct product into a broken one to satisfy a test — converging by
+removal against test data.
