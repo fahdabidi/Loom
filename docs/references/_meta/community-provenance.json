@@ -58,8 +58,8 @@
       "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
     },
     "Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc": {
-      "sha256": "71659f0896f3d28d27f2d24b20da616b42834e66b6e313150e6c654e42b9ef3b",
-      "bytes": 106409,
+      "sha256": "e82a8b39015268dba34e2782bb81613e247fa7c7f7e94e402a80309c5b439d97",
+      "bytes": 112086,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "38f41976",
       "lastCommitDate": "2026-09-05",

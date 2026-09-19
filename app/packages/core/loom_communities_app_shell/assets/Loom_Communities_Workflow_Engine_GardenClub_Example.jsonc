@@ -3001,6 +3001,133 @@
           "coordinatorFanId": "garden-coordinator",
           "signedUpFanIds": ["garden-member"]
         }
+      },
+      {
+        "instanceId": "autumn-work-day",
+        "workflowType": "garden-event-rsvp",
+        "currentState": "open",
+        "createdByFanId": "garden-coordinator",
+        "instanceData": {
+          "title": "Autumn Work Day: Bed Turnover and Cover Crop Seeding",
+          "eventDate": "2027-09-11",
+          "eventTime": "09:00",
+          "location": "Community Garden — Plot C",
+          "capacity": 2,
+          "coordinatorFanId": "garden-coordinator",
+          "recurrenceLabel": "One-time seasonal work day",
+          "reminderOffsetHours": 24,
+          "durationMinutes": 180,
+          "workType": "Bed turnover and cover-crop seeding",
+          "accessibilityNote": "Gravel path to Plot C; kneeling pads available at the tool shed."
+        }
+      },
+      {
+        "instanceId": "autumn-work-day-response-coordinator",
+        "workflowType": "garden-event-rsvp-response",
+        "currentState": "going",
+        "createdByFanId": "garden-coordinator",
+        "instanceData": {
+          "eventId": "autumn-work-day",
+          "fanId": "garden-coordinator",
+          "respondedAt": "2026-08-10T09:00:00-07:00"
+        }
+      },
+      {
+        "instanceId": "autumn-work-day-response-member",
+        "workflowType": "garden-event-rsvp-response",
+        "currentState": "pending",
+        "createdByFanId": "garden-coordinator",
+        "instanceData": {
+          "eventId": "autumn-work-day",
+          "fanId": "garden-member"
+        }
+      },
+      {
+        "instanceId": "cedar-compost-bin-giveaway",
+        "workflowType": "garden-tool-giveaway",
+        "currentState": "published",
+        "createdByFanId": "garden-coordinator",
+        "instanceData": {
+          "title": "Cedar compost bin",
+          "itemDescription": "Three-bay cedar compost bin, disassembled and ready for reuse.",
+          "mode": "giveaway",
+          "ownerFanId": "garden-coordinator",
+          "coordinatorFanId": "garden-coordinator",
+          "ownerContactInfo": "Private club message to the tool coordinator",
+          "availabilityState": "available",
+          "conditionState": "good",
+          "conditionNote": "Slats sanded; hardware included in a labeled bag.",
+          "transferTerms": "Free to a club member with space to reassemble it.",
+          "pickupInstructions": "Collect from behind the coordinator's shed after confirming a pickup time.",
+          "careInstructions": "Please keep the bin dry until reassembled."
+        }
+      },
+      {
+        "instanceId": "compact-tiller",
+        "workflowType": "garden-tool-loan",
+        "currentState": "published",
+        "createdByFanId": "garden-coordinator",
+        "instanceData": {
+          "title": "Compact garden tiller",
+          "toolDescription": "Electric tiller for turning small raised beds; lightweight enough for one person.",
+          "mode": "loan",
+          "ownerFanId": "garden-coordinator",
+          "coordinatorFanId": "garden-coordinator",
+          "ownerContactInfo": "Private club message to the tool coordinator",
+          "availabilityState": "available",
+          "conditionState": "good",
+          "conditionNote": "Blades sharpened this season.",
+          "loanTerms": "One-week loan; return with soil rinsed from the blades.",
+          "pickupInstructions": "Collect from the locked tool shed after confirming with the coordinator.",
+          "returnInstructions": "Return to the labeled tiller bay.",
+          "careInstructions": "Rinse and dry blades before returning."
+        }
+      },
+      {
+        "instanceId": "soaker-hose-set",
+        "workflowType": "garden-tool-loan",
+        "currentState": "published",
+        "createdByFanId": "garden-coordinator",
+        "instanceData": {
+          "title": "Soaker hose set",
+          "toolDescription": "Three 25-foot soaker hoses with shutoff valves for drip watering raised beds.",
+          "mode": "loan",
+          "ownerFanId": "garden-coordinator",
+          "coordinatorFanId": "garden-coordinator",
+          "ownerContactInfo": "Private club message to the tool coordinator",
+          "availabilityState": "onLoan",
+          "borrowerFanId": "garden-member",
+          "borrowerContactInfo": "Private club message to member Alex",
+          "pickupWindow": "Weekday afternoons",
+          "dueDate": "2026-10-03",
+          "requestedAt": "2026-09-10T15:00:00-07:00",
+          "borrowedAt": "2026-09-11T09:00:00-07:00",
+          "conditionState": "good",
+          "conditionNote": "Valves tested before pickup.",
+          "loanTerms": "Two-week loan; coil hoses before returning.",
+          "pickupInstructions": "Collect from the locked tool shed after confirming with the coordinator.",
+          "returnInstructions": "Coil and return to the labeled hose bin.",
+          "careInstructions": "Drain hoses fully before storage."
+        }
+      },
+      {
+        "instanceId": "trellis-building-shift",
+        "workflowType": "garden-volunteer-shift",
+        "currentState": "open",
+        "createdByFanId": "garden-coordinator",
+        "instanceData": {
+          "shiftTitle": "Trellis building for climbing beans",
+          "shiftDate": "2026-10-03",
+          "shiftTime": "09:00",
+          "location": "East garden beds",
+          "capacity": 3,
+          "careCategory": "Structure building",
+          "instructions": "Assemble bamboo trellises and secure them along the east bed climbing rows.",
+          "signupCutoff": "2026-10-02",
+          "weatherPlan": "Light rain: proceed. Heavy rain: coordinator posts a new date.",
+          "coordinatorFanId": "garden-coordinator",
+          "signedUpFanIds": []
+        }
       }
     ]
   },
