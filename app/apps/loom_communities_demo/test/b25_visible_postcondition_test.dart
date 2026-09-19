@@ -114,14 +114,121 @@ void main() {
     test(
       'fails when the declared target-state label is absent from the viewport',
       () {
-        const postcondition = B25VisiblePostcondition.stateChange(
-          'Critique withdrawn',
+        final postcondition = B25VisiblePostcondition.stateChange(
+          const <String>{'Critique withdrawn'},
         );
 
         expect(
           postcondition.isSatisfiedBy(const <String>['Submitted for critique']),
           isFalse,
         );
+      },
+    );
+
+    test(
+      'matches a state label rendered only through a labelTemplate-composed '
+      'candidate',
+      () {
+        final candidates = b25StateLabelRenderCandidates(
+          'Ownership transferred',
+          <String, InstanceDataField>{
+            'transferSummary': const InstanceDataField(
+              type: 'text',
+              labelTemplate: 'Transfer: {value}',
+            ),
+          },
+        );
+        final postcondition = B25VisiblePostcondition.stateChange(candidates);
+
+        expect(
+          postcondition.isSatisfiedBy(const <String>[
+            'Transfer: Ownership transferred',
+          ]),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'does not treat a superstring decoy as a match for a '
+      'labelTemplate-composed candidate',
+      () {
+        final candidates = b25StateLabelRenderCandidates(
+          'Ownership transferred',
+          <String, InstanceDataField>{
+            'transferSummary': const InstanceDataField(
+              type: 'text',
+              labelTemplate: 'Transfer: {value}',
+            ),
+          },
+        );
+        final postcondition = B25VisiblePostcondition.stateChange(candidates);
+
+        expect(
+          postcondition.isSatisfiedBy(const <String>[
+            'Transfer: Ownership transferred (pending review)',
+          ]),
+          isFalse,
+          reason:
+              'A superstring must not satisfy an exact-match postcondition '
+              '-- product vocabulary collides on substrings, so loosening '
+              'this to textContaining-style matching would reintroduce that '
+              'hazard.',
+        );
+      },
+    );
+  });
+
+  group('b25StateLabelRenderCandidates', () {
+    test('always includes the bare state label', () {
+      final candidates = b25StateLabelRenderCandidates(
+        'Ownership transferred',
+        <String, InstanceDataField>{},
+      );
+
+      expect(candidates, <String>{'Ownership transferred'});
+    });
+
+    test('composes the label through every declared labelTemplate', () {
+      final candidates = b25StateLabelRenderCandidates(
+        'Ownership transferred',
+        <String, InstanceDataField>{
+          'transferSummary': const InstanceDataField(
+            type: 'text',
+            labelTemplate: 'Transfer: {value}',
+          ),
+          'title': const InstanceDataField(
+            type: 'text',
+            labelTemplate: '{value}',
+          ),
+        },
+      );
+
+      expect(candidates, <String>{
+        'Ownership transferred',
+        'Transfer: Ownership transferred',
+      });
+    });
+
+    test(
+      'ignores a labelTemplate with no {value} placeholder and a '
+      '{value.length} placeholder, since neither can carry the whole label',
+      () {
+        final candidates = b25StateLabelRenderCandidates(
+          'Ownership transferred',
+          <String, InstanceDataField>{
+            'staticLabelField': const InstanceDataField(
+              type: 'text',
+              labelTemplate: 'Fixed caption',
+            ),
+            'queueField': const InstanceDataField(
+              type: 'list',
+              labelTemplate: 'Queue: {value.length}',
+            ),
+          },
+        );
+
+        expect(candidates, <String>{'Ownership transferred'});
       },
     );
   });

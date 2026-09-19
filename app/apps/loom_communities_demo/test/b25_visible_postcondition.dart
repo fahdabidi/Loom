@@ -79,16 +79,51 @@ B25DataChangeVisibility b25DataChangeVisibility({
   );
 }
 
+/// Every exact string a workflow could legitimately render for a declared
+/// state label: the bare label itself, plus the label composed through any
+/// declared field's `labelTemplate` that has a `{value}` placeholder.
+///
+/// A workflow may surface a terminal state's label only through a computed
+/// field rather than the bare label -- Garden Club's `given` state is
+/// labelled `"Ownership transferred"`, but the giveaway card only ever shows
+/// that string via `transferSummary`'s `"Transfer: {value}"` template, i.e.
+/// as `"Transfer: Ownership transferred"`. Nothing declares which field (if
+/// any) does this, so every declared template is tried and the caller
+/// matches on exact string equality against the resulting set. This must
+/// never be loosened to a substring match: product vocabulary collides on
+/// substrings (`"Not attending"` contains `attend`, `"Join waitlist"`
+/// contains `wait`), so a superstring decoy must not satisfy it.
+Set<String> b25StateLabelRenderCandidates(
+  String stateLabel,
+  Map<String, InstanceDataField> instanceDataSchema,
+) {
+  final candidates = <String>{stateLabel};
+  for (final field in instanceDataSchema.values) {
+    final template = field.labelTemplate?.trim();
+    if (template == null ||
+        template.isEmpty ||
+        !template.contains('{value}')) {
+      continue;
+    }
+    candidates.add(renderWorkflowFactLabel(template, stateLabel));
+  }
+  return candidates;
+}
+
 /// A postcondition that must be visible in the viewport before B25 captures
 /// the receiver/result frame.
 class B25VisiblePostcondition {
-  const B25VisiblePostcondition.stateChange(this.stateLabel)
+  const B25VisiblePostcondition.stateChange(this.stateLabelCandidates)
     : dataChange = null;
 
   const B25VisiblePostcondition.sourceInstanceEffect(this.dataChange)
-    : stateLabel = null;
+    : stateLabelCandidates = null;
 
-  final String? stateLabel;
+  /// Every exact string that would prove the state change, as computed by
+  /// [b25StateLabelRenderCandidates]. Deliberately a set of exact strings
+  /// rather than one label: see that function for why more than one can be
+  /// legitimate.
+  final Set<String>? stateLabelCandidates;
   final B25DataChangeVisibility? dataChange;
 
   bool isSatisfiedBy(
@@ -96,9 +131,11 @@ class B25VisiblePostcondition {
     bool explicitSuccessAcknowledgement = false,
   }) {
     if (explicitSuccessAcknowledgement) return true;
-    final expectedStateLabel = stateLabel;
-    if (expectedStateLabel != null) {
-      return viewportTexts.any((text) => text.trim() == expectedStateLabel);
+    final expectedLabels = stateLabelCandidates;
+    if (expectedLabels != null) {
+      return viewportTexts.any(
+        (text) => expectedLabels.contains(text.trim()),
+      );
     }
     final changedData = dataChange;
     if (changedData == null ||

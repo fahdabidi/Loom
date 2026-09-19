@@ -775,6 +775,29 @@ Finder marketplaceDetailActionFinder(String transitionId) =>
                   key.value == 'marketplace-transition-fab-borrow'));
     }, description: 'marketplace detail action $transitionId');
 
+/// Finds a [Text] descendant of [scope] whose full rendered string exactly
+/// equals one of [candidates].
+///
+/// Exact equality only, deliberately: `find.textContaining` (or any
+/// substring test) would reintroduce the hazard this project explicitly
+/// forbids for product vocabulary (`"Not attending"` contains `attend`,
+/// `"Join waitlist"` contains `wait`). [candidates] should already enumerate
+/// every legitimate rendered form -- see `b25StateLabelRenderCandidates` for
+/// the state-label case, where a value can be shown bare or composed through
+/// a field's `labelTemplate`.
+Finder exactRenderedTextFinder(Finder scope, Set<String> candidates) =>
+    find.descendant(
+      of: scope,
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is Text &&
+            candidates.contains(
+              (widget.data ?? widget.textSpan?.toPlainText() ?? '').trim(),
+            ),
+        description: 'rendered text exactly matching one of $candidates',
+      ),
+    );
+
 /// Returns a rendered action-load exception without changing the surface.
 ///
 /// Calendar, Marketplace, and generic cards use existing visible error copy

@@ -2538,9 +2538,18 @@ Future<void> _positionShippedStateResultForCapture({
   final stateBadge = find.byKey(
     ValueKey('generic-instance-state-${selector.instance.instanceId}'),
   );
-  final stateLabelFinder = find.descendant(
-    of: _shippedResultCardFinder(selector),
-    matching: find.text(stateLabel),
+  // The state label is not always rendered bare: a field's labelTemplate can
+  // compose it into a longer string (Garden's giveaway card shows "Transfer:
+  // Ownership transferred" via `transferSummary`, never "Ownership
+  // transferred" alone), so every declared rendered form is a valid match --
+  // never a substring one, per b25StateLabelRenderCandidates's own doc.
+  final stateLabelCandidates = b25StateLabelRenderCandidates(
+    stateLabel,
+    selector.machine.instanceDataSchema,
+  );
+  final stateLabelFinder = exactRenderedTextFinder(
+    _shippedResultCardFinder(selector),
+    stateLabelCandidates,
   );
   var positionedBadge = false;
   for (var attempt = 0; attempt < 80; attempt += 1) {
@@ -2562,8 +2571,9 @@ Future<void> _positionShippedStateResultForCapture({
   throw B25ResultFramePositioningFailure(
     'Shipped workflow ${selector.machine.workflowType} persisted target '
     'state $targetState after ${transition.id}, but B25 could not locate its '
-    'declared state label "$stateLabel" on source instance '
-    '${selector.instance.instanceId} to position the result frame.',
+    'declared state label "$stateLabel" (tried rendered forms '
+    '$stateLabelCandidates) on source instance ${selector.instance.instanceId} '
+    'to position the result frame.',
   );
 }
 
@@ -2745,7 +2755,13 @@ Future<void> _expectVisibleShippedAlternateStatePostcondition({
       'state $targetState, so B25 cannot verify a visible state result.',
     );
   }
-  final postcondition = B25VisiblePostcondition.stateChange(stateLabel);
+  final stateLabelCandidates = b25StateLabelRenderCandidates(
+    stateLabel,
+    selector.machine.instanceDataSchema,
+  );
+  final postcondition = B25VisiblePostcondition.stateChange(
+    stateLabelCandidates,
+  );
   for (var attempt = 0; attempt < 80; attempt += 1) {
     for (final surface in _visibleShippedResultSurfaces(tester, selector)) {
       if (postcondition.isSatisfiedBy(surface.viewportTexts)) return;
@@ -2758,8 +2774,9 @@ Future<void> _expectVisibleShippedAlternateStatePostcondition({
   fail(
     'Shipped workflow ${selector.machine.workflowType} persisted target '
     'state $targetState after ${transition.id}, but its declared state label '
-    '"$stateLabel" was not visible in the captured viewport for source '
-    'instance ${selector.instance.instanceId}.',
+    '"$stateLabel" (tried rendered forms $stateLabelCandidates) was not '
+    'visible in the captured viewport for source instance '
+    '${selector.instance.instanceId}.',
   );
 }
 
