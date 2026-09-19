@@ -30,6 +30,7 @@ import 'package:loom_workflow_engine/loom_workflow_engine.dart'
 import '../test/b25_visible_postcondition.dart';
 import '../test/b25_actor_audience_resolution.dart';
 import '../test/b25_created_instance_identity.dart';
+import '../test/b25_formula_guard_reachability.dart';
 import '../test/b25_product_doc_role_resolution.dart';
 import '../test/b25_shipped_state_postcondition.dart';
 import '../test/b25_workflow_row_selection.dart';
@@ -3858,12 +3859,33 @@ _ShippedWorkflowSelector _shippedWorkflowSelector({
           transitions: accountTransitions,
         );
         if (b25Model != null &&
-            !accountTransitions.any(
-              (candidate) => matchB25TransitionAgainstTerms(
-                candidate.transition,
-                primaryTerms: b25Model.requiredPrimaryActions,
-                alternateTerms: b25Model.requiredAlternateActions,
-              ).primary,
+            !b25PrimaryMatchIsReachable(
+              candidates: accountTransitions.map(
+                (candidate) => candidate.transition,
+              ),
+              matchesPrimaryTerm: (candidateTransition) =>
+                  matchB25TransitionAgainstTerms(
+                    candidateTransition,
+                    primaryTerms: b25Model.requiredPrimaryActions,
+                    alternateTerms: b25Model.requiredAlternateActions,
+                  ).primary,
+              // A candidate's formula guard is evaluated in isolation, never
+              // through the shared engine guard evaluator -- see
+              // b25_formula_guard_reachability.dart for why.
+              formulaVerdict: (candidateTransition) =>
+                  formulaGuardVerdictForTransition(
+                    transition: candidateTransition,
+                    instanceData: instance.instanceData,
+                    actorId:
+                        _transitionAccountId(
+                          transition: candidateTransition,
+                          instance: instance,
+                          roleId: roleId,
+                          allowViewerResponse: responseWorkflowType != null,
+                        ) ??
+                        roleId,
+                    allowViewerResponse: responseWorkflowType != null,
+                  ),
             )) {
           b25FallbackSelector ??= selector;
           continue;
