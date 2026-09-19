@@ -7,6 +7,57 @@ import 'b25_workflow_row_selection.dart';
 void main() {
   group('B25 workflow row scope', () {
     test(
+      'a failure from an awaited try/finally still stays row-scoped and the '
+      'next row runs',
+      () async {
+        // Mirrors the shape `_runB25ShippedWorkflowWalkthrough` fixed: the
+        // row's own work sits in a try whose finally does independent
+        // cleanup. Once the try's return is properly awaited (`return
+        // await`, not a bare `return`), an error thrown deep inside still
+        // propagates through the finally and out to this scope's catch --
+        // it does not need a dedicated recovery path of its own.
+        final attemptedRows = <String>[];
+        final events = <String>[];
+
+        Future<String> finish() async {
+          events.add('finish-start');
+          await Future<void>.value();
+          throw StateError('guarded function conflict (simulated)');
+        }
+
+        Future<void> cleanup() async {
+          events.add('cleanup-start');
+          await Future<void>.value();
+          events.add('cleanup-end');
+        }
+
+        final failed = await runB25WorkflowRowScope<String>(() async {
+          attemptedRows.add('garden-tool-loan');
+          try {
+            return await finish();
+          } finally {
+            await cleanup();
+          }
+        });
+        final next = await runB25WorkflowRowScope<String>(() async {
+          attemptedRows.add('garden-event-rsvp');
+          return 'continued';
+        });
+
+        expect(attemptedRows, ['garden-tool-loan', 'garden-event-rsvp']);
+        expect(events, ['finish-start', 'cleanup-start', 'cleanup-end']);
+        expect(failed.completed, isFalse);
+        expect(failed.failure!.rowOutcome, 'row_execution_failed');
+        expect(
+          failed.failure!.reason,
+          'guarded function conflict (simulated)',
+        );
+        expect(next.completed, isTrue);
+        expect(next.value, 'continued');
+      },
+    );
+
+    test(
       'an audience-resolution failure is recorded verbatim and the next row runs',
       () async {
         final attemptedRows = <String>[];

@@ -87,8 +87,15 @@ class WorkflowUiEvidenceWriter {
             .map((entry) => Map<String, dynamic>.from(entry))
             .toList(growable: false);
     final b25RowSummary = _summarizeB25Rows(entries);
+    // Seeded to an empty list before the walkthrough runs and only replaced
+    // with its final value once the run reaches its own report finalisation.
+    // A run that aborts mid-walkthrough leaves this false, and the rows
+    // recorded so far (if any) are not a complete count -- see
+    // _summarizeB25CommunityTraversals's `finalised` field.
+    final b25TraversalFinalised = data?['b25TraversalFinalised'] == true;
     final b25CommunityTraversalSummary = _summarizeB25CommunityTraversals(
       b25CommunityTraversals,
+      finalised: b25TraversalFinalised,
     );
     final b25BlockedAudienceReasonGroups =
         _formatB25BlockedAudienceReasonGroups(b25RowSummary);
@@ -229,6 +236,7 @@ class WorkflowUiEvidenceWriter {
           .toList(growable: false);
       final phaseCommunityTraversalSummary = _summarizeB25CommunityTraversals(
         phaseCommunityTraversals,
+        finalised: b25TraversalFinalised,
       );
       final phaseExpectedNameSet = <String>{
         for (final entry in phaseEntries)
@@ -425,11 +433,10 @@ class WorkflowUiEvidenceWriter {
       'b25ProductFindings=${b25RowSummary['productFindingRows']} '
       'b25RowExecutionFailed=${b25RowSummary['rowExecutionFailedRows']} '
       'b25NonProvenRows=$b25NonProvenRows '
-      'b25Communities='
-      '${b25CommunityTraversalSummary['completelyTraversedCommunities']}/'
-      '${b25CommunityTraversalSummary['recordedCommunities']} '
+      'b25Communities=${_formatB25CommunityRatio(b25CommunityTraversalSummary)} '
       'b25IncompletelyTraversed='
-      '${b25CommunityTraversalSummary['incompletelyTraversedCommunities']} '
+      '${_formatB25IncompleteCount(b25CommunityTraversalSummary)} '
+      'b25TraversalFinalised=$b25TraversalFinalised '
       'screenshots=${_screenshotPaths.length}/${expectedScreenshotNames.length} '
       'completionGateEligible=${runStatus == 'pass'}',
     );
@@ -498,9 +505,25 @@ String _formatB25BlockedRows(Map<String, Object?> summary) =>
 String _formatB25NonProvenRows(Map<String, Object?> summary) =>
     jsonEncode(summary['nonProvenRows']);
 
+/// A number nobody finished writing must never print as a measurement: an
+/// aborted run can still hold a `recordedCommunities`/`completelyTraversed`
+/// ratio that looks clean purely because it undercounts, so an unfinalised
+/// summary reports `unknown` rather than a ratio that reads as complete.
+String _formatB25CommunityRatio(Map<String, Object?> summary) {
+  if (summary['finalised'] != true) return 'unknown';
+  return '${summary['completelyTraversedCommunities']}/'
+      '${summary['recordedCommunities']}';
+}
+
+String _formatB25IncompleteCount(Map<String, Object?> summary) {
+  if (summary['finalised'] != true) return 'unknown';
+  return '${summary['incompletelyTraversedCommunities']}';
+}
+
 Map<String, Object?> _summarizeB25CommunityTraversals(
-  Iterable<Map<String, dynamic>> traversals,
-) {
+  Iterable<Map<String, dynamic>> traversals, {
+  required bool finalised,
+}) {
   final records = traversals.toList(growable: false);
   final incompleteCommunities =
       records
@@ -533,6 +556,13 @@ Map<String, Object?> _summarizeB25CommunityTraversals(
     'completelyTraversedCommunities': completelyTraversedCommunities,
     'incompletelyTraversedCommunities': incompleteCommunities.length,
     'incompleteCommunities': incompleteCommunities,
+    // Whether the run reached its own report finalisation. A run that
+    // aborted mid-walkthrough can still have recorded some communities as
+    // "completely_traversed" before it died, but the counts above are then
+    // an undercount of the whole run, not a clean result -- see the stdout
+    // formatting below, which reports "unknown" rather than a ratio when
+    // this is false.
+    'finalised': finalised,
   };
 }
 

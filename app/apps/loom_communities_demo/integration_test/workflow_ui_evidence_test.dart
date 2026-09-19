@@ -105,6 +105,11 @@ void main() {
       binding.reportData!['workflowEvidence'] = entries;
       final communityTraversals = <B25CommunityTraversalRecord>[];
       binding.reportData!['b25CommunityTraversals'] = <Map<String, Object?>>[];
+      // Only becomes true once the walkthrough reaches its own finalisation
+      // below. An aborted run leaves this false, so the writer can tell "no
+      // communities were incomplete" apart from "the run never got far
+      // enough to know" instead of printing a ratio that reads as complete.
+      binding.reportData!['b25TraversalFinalised'] = false;
       // Preloaded demo-catalog entries are not evidence that a shipped package
       // was installed. Every walkthrough target must be installed from its
       // registered shipped package during this run.
@@ -1298,6 +1303,7 @@ void main() {
       binding.reportData!['b25CommunityTraversals'] = [
         for (final traversal in communityTraversals) traversal.toReportData(),
       ];
+      binding.reportData!['b25TraversalFinalised'] = true;
       binding.reportData!['b25WalkthroughSummary'] =
           _summarizeB25WalkthroughRows(entries);
       binding.reportData!['screenshotVisibleTextByName'] =
@@ -2216,7 +2222,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         persistedInstance: persisted,
       );
       await capture(primaryResult);
-      return _finishB25WalkthroughAfterPrimary(
+      return await _finishB25WalkthroughAfterPrimary(
         tester: tester,
         target: target,
         package: package,
@@ -2265,7 +2271,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         targetState: targetState,
       );
       await capture(primaryResult);
-      return _finishB25WalkthroughAfterPrimary(
+      return await _finishB25WalkthroughAfterPrimary(
         tester: tester,
         target: target,
         package: package,
@@ -2322,7 +2328,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       targetStateLabel: targetStateLabel,
     );
     await capture(primaryResult);
-    return _finishB25WalkthroughAfterPrimary(
+    return await _finishB25WalkthroughAfterPrimary(
       tester: tester,
       target: target,
       package: package,
