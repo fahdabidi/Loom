@@ -768,6 +768,33 @@ void _writeProgressReport(String path, Map<String, Object?> fields) {
   );
 }
 
+/// Fails the whole capture run loudly on any screenshot that is missing or
+/// predates [captureStartedAt] -- shared by evidence and diagnostic frames,
+/// since a stale diagnostic frame is exactly as misleading as a stale
+/// evidence one.
+Future<void> _checkScreenshotFreshness(
+  Iterable<String> paths, {
+  required DateTime captureStartedAt,
+}) async {
+  for (final path in paths) {
+    final screenshot = File(path);
+    if (!screenshot.existsSync()) {
+      stderr.writeln(
+        'b25_capture_workflow_screenshots: missing screenshot $path',
+      );
+      exit(65);
+    }
+    final modifiedAt = await screenshot.lastModified();
+    if (modifiedAt.toUtc().isBefore(captureStartedAt)) {
+      stderr.writeln(
+        'b25_capture_workflow_screenshots: stale screenshot $path. '
+        'modified=$modifiedAt captureStarted=$captureStartedAt',
+      );
+      exit(65);
+    }
+  }
+}
+
 Future<_CombinedManifestSummary> _writeCombinedManifest({
   required Directory evidenceRoot,
   required List<String> phases,
@@ -844,23 +871,10 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
     for (final workflow in workflows.whereType<Map<String, dynamic>>()) {
       final paths = workflow['screenshotPaths'];
       if (paths is List) {
-        for (final path in paths.whereType<String>()) {
-          final screenshot = File(path);
-          if (!screenshot.existsSync()) {
-            stderr.writeln(
-              'b25_capture_workflow_screenshots: missing screenshot $path',
-            );
-            exit(65);
-          }
-          final modifiedAt = await screenshot.lastModified();
-          if (modifiedAt.toUtc().isBefore(captureStartedAt)) {
-            stderr.writeln(
-              'b25_capture_workflow_screenshots: stale screenshot $path. '
-              'modified=$modifiedAt captureStarted=$captureStartedAt',
-            );
-            exit(65);
-          }
-        }
+        await _checkScreenshotFreshness(
+          paths.whereType<String>(),
+          captureStartedAt: captureStartedAt,
+        );
         final integrity = await applyWorkflowScreenshotFrameIntegrity(workflow);
         phaseScreenshotCount += integrity.verifiedScreenshotCount;
         for (final findingJson in integrity.failingFindingsJson) {
@@ -872,6 +886,20 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
           phaseDuplicateFrameFindings.add(finding);
           duplicateFrameFindings.add(finding);
         }
+      }
+      // Diagnostic frames carry no action-proof weight, so they are
+      // deliberately excluded from `applyWorkflowScreenshotFrameIntegrity`
+      // (never summed into `phaseScreenshotCount`, never subject to the
+      // duplicate-frame guard) -- but a stale diagnostic frame is exactly
+      // as misleading as a stale evidence one, so freshness is still
+      // enforced. See CLAUDE.md "B25: a row that captures frames and then
+      // fails must not discard them".
+      final diagnosticPaths = workflow['diagnosticScreenshotPaths'];
+      if (diagnosticPaths is List) {
+        await _checkScreenshotFreshness(
+          diagnosticPaths.whereType<String>(),
+          captureStartedAt: captureStartedAt,
+        );
       }
     }
     screenshotCount += phaseScreenshotCount;

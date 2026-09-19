@@ -132,11 +132,20 @@ class WorkflowUiEvidenceWriter {
       for (final phase in phases) phase: <Map<String, dynamic>>[],
     };
     final expectedScreenshotNameSet = <String>{};
+    // Diagnostic frames a failed row had already captured -- resolved to
+    // paths below like evidence frames, but NEVER folded into
+    // `expectedScreenshotNameSet`/`missingScreenshots`/`screenshotCount`.
+    // See CLAUDE.md "B25: a row that captures frames and then fails must
+    // not discard them".
+    final diagnosticScreenshotNameSet = <String>{};
 
     for (final entry in entries) {
       final phase = entry['phase'] as String? ?? 'unknown';
       final screenshotNames = _stringList(entry['screenshotNames']);
       expectedScreenshotNameSet.addAll(screenshotNames);
+      diagnosticScreenshotNameSet.addAll(
+        _stringList(entry['diagnosticScreenshotNames']),
+      );
       grouped.putIfAbsent(phase, () => <Map<String, dynamic>>[]).add(entry);
     }
     final noWorkflowPhaseReasons = <String, String>{
@@ -152,6 +161,17 @@ class WorkflowUiEvidenceWriter {
     );
     final expectedScreenshotNames = expectedScreenshotNameSet.toList()..sort();
     for (final name in expectedScreenshotNames) {
+      final hostCapturedFile = File(
+        '${evidenceRoot.path}/${_phaseFor(name, null)}/screenshots/$name.png',
+      );
+      if (hostCapturedFile.existsSync()) {
+        _screenshotPaths.putIfAbsent(name, () => hostCapturedFile.path);
+      }
+    }
+    // Same host-side backfill, for diagnostic-only frames. This never
+    // touches `expectedScreenshotNames`/`missingScreenshots`, so a missing
+    // diagnostic frame is not an error -- it just resolves to no path below.
+    for (final name in diagnosticScreenshotNameSet) {
       final hostCapturedFile = File(
         '${evidenceRoot.path}/${_phaseFor(name, null)}/screenshots/$name.png',
       );
@@ -298,6 +318,18 @@ class WorkflowUiEvidenceWriter {
           }
           visibleTexts.add(screenshotVisibleTextByName[name] ?? '');
         }
+        // Diagnostic frames resolve the same way, but into their own key --
+        // never merged into `screenshotPaths`, which is what
+        // `applyWorkflowScreenshotFrameIntegrity` sums into
+        // `verifiedScreenshotCount`/`screenshotCount`.
+        final diagnosticScreenshotNames = _stringList(
+          entry['diagnosticScreenshotNames'],
+        );
+        final diagnosticPaths = <String>[
+          for (final name in diagnosticScreenshotNames)
+            if (_screenshotPaths[name] case final path?)
+              if (File(path).existsSync()) path,
+        ];
         writtenEntries.add({
           ...entry,
           'recordedRowStatus': entry['status'],
@@ -307,6 +339,7 @@ class WorkflowUiEvidenceWriter {
           'screenshotPaths': paths,
           'screenshotPathsByName': pathsByName,
           'screenshotVisibleTexts': visibleTexts,
+          'diagnosticScreenshotPaths': diagnosticPaths,
           'commandOutputPath': commandOutputPath,
           ...device,
           'pass': phaseStatus == 'pass',

@@ -133,6 +133,15 @@ void main() {
       var productFindingWorkflowEvidenceEntries = 0;
       var rowExecutionFailedWorkflowEvidenceEntries = 0;
 
+      // Frames `capture` has written for the row currently in flight.
+      // Cleared at the start of every `runB25WorkflowRowScope` call so a
+      // failing row can hand its own already-captured frames to
+      // `_b25RowScopedFailureFor` as diagnostic evidence -- see CLAUDE.md
+      // "B25: a row that captures frames and then fails must not discard
+      // them". Frames captured outside a row scope (the B12 harness) are
+      // simply overwritten by the next clear and never read.
+      final currentRowScreenshotNames = <String>[];
+
       void recordEvidenceEntry(Map<String, Object?> entry) {
         entries.add(entry);
         binding.reportData!['workflowEvidence'] = List<Map<String, Object?>>.of(
@@ -240,13 +249,14 @@ void main() {
           tester,
           screenshotVisibleTextByName,
           name,
-        ).then(
-          (_) => bodyWatch.beat(
+        ).then((_) {
+          currentRowScreenshotNames.add(name);
+          bodyWatch.beat(
             lastCompletedStep: 'screenshot $name captured',
             attemptedStep: 'continuing the walkthrough after $name',
             waitingFor: 'the next walkthrough step to become ready',
-          ),
-        );
+          );
+        });
       }
 
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
@@ -358,67 +368,72 @@ void main() {
               workflowId: productDocRow.workflowId,
               communityName: target.communityName,
             );
-            final rowScope = await runB25WorkflowRowScope(() async {
-              late final _B25WalkthroughResult walkthroughResult;
-              if (!shippedPackage.experience.workflowDefinitions!.containsKey(
-                productDocRow.workflowId,
-              )) {
-                walkthroughResult = await _captureMissingB25PackageWorkflow(
-                  tester: tester,
-                  target: target,
-                  package: shippedPackage,
-                  bodyWatch: bodyWatch,
-                  b25Model: productDocRow,
-                  capture: capture,
-                );
-              } else {
-                final rowSelection = selectB25WorkflowRow(
-                  () => _shippedWorkflowSelector(
+            currentRowScreenshotNames.clear();
+            final rowScope = await runB25WorkflowRowScope(
+              () async {
+                late final _B25WalkthroughResult walkthroughResult;
+                if (!shippedPackage.experience.workflowDefinitions!.containsKey(
+                  productDocRow.workflowId,
+                )) {
+                  walkthroughResult = await _captureMissingB25PackageWorkflow(
+                    tester: tester,
                     target: target,
                     package: shippedPackage,
-                    workflowType: productDocRow.workflowId,
+                    bodyWatch: bodyWatch,
                     b25Model: productDocRow,
-                  ),
+                    capture: capture,
+                  );
+                } else {
+                  final rowSelection = selectB25WorkflowRow(
+                    () => _shippedWorkflowSelector(
+                      target: target,
+                      package: shippedPackage,
+                      workflowType: productDocRow.workflowId,
+                      b25Model: productDocRow,
+                    ),
+                  );
+                  final selector = rowSelection.selector;
+                  walkthroughResult = selector == null
+                      ? rowSelection.isBlockedByAudience
+                            ? await _recordB25AudienceBlockedWorkflow(
+                                tester: tester,
+                                target: target,
+                                b25Model: productDocRow,
+                                reason: rowSelection.blockedReason!,
+                                cause: rowSelection.blockedCause!,
+                                capture: capture,
+                              )
+                            : await _recordB25SelectorSetupBlockedWorkflow(
+                                tester: tester,
+                                target: target,
+                                b25Model: productDocRow,
+                                reason: rowSelection.blockedReason!,
+                                cause: rowSelection.blockedCause!,
+                                capture: capture,
+                              )
+                      : await _runB25ShippedWorkflowWalkthrough(
+                          tester: tester,
+                          target: target,
+                          package: shippedPackage,
+                          bodyWatch: bodyWatch,
+                          selector: selector,
+                          b25Model: productDocRow,
+                          capture: capture,
+                        );
+                }
+                await assertB25CommunityRowSurface(
+                  tester: tester,
+                  target: target,
+                  workflowId: productDocRow.workflowId,
+                  role: productDocRow.role,
+                  boundary: 'after',
+                  captureDiagnostic: capture,
                 );
-                final selector = rowSelection.selector;
-                walkthroughResult = selector == null
-                    ? rowSelection.isBlockedByAudience
-                          ? await _recordB25AudienceBlockedWorkflow(
-                              tester: tester,
-                              target: target,
-                              b25Model: productDocRow,
-                              reason: rowSelection.blockedReason!,
-                              cause: rowSelection.blockedCause!,
-                              capture: capture,
-                            )
-                          : await _recordB25SelectorSetupBlockedWorkflow(
-                              tester: tester,
-                              target: target,
-                              b25Model: productDocRow,
-                              reason: rowSelection.blockedReason!,
-                              cause: rowSelection.blockedCause!,
-                              capture: capture,
-                            )
-                    : await _runB25ShippedWorkflowWalkthrough(
-                        tester: tester,
-                        target: target,
-                        package: shippedPackage,
-                        bodyWatch: bodyWatch,
-                        selector: selector,
-                        b25Model: productDocRow,
-                        capture: capture,
-                      );
-              }
-              await assertB25CommunityRowSurface(
-                tester: tester,
-                target: target,
-                workflowId: productDocRow.workflowId,
-                role: productDocRow.role,
-                boundary: 'after',
-                captureDiagnostic: capture,
-              );
-              return walkthroughResult;
-            });
+                return walkthroughResult;
+              },
+              capturedScreenshotNames: () =>
+                  List<String>.of(currentRowScreenshotNames),
+            );
             final walkthroughResult =
                 rowScope.value ?? _recordB25RowScopedFailure(rowScope.failure!);
             recordEvidenceEntry({
@@ -439,6 +454,8 @@ void main() {
                 productDocRow.resultAndReceiverState,
               ],
               'screenshotNames': walkthroughResult.screenshotNames,
+              'diagnosticScreenshotNames':
+                  walkthroughResult.diagnosticScreenshotNames,
               'b25RowOutcome': walkthroughResult.rowOutcome,
               if (walkthroughResult.blockedByAudienceReason != null)
                 'blockedByAudienceReason':
@@ -558,6 +575,7 @@ void main() {
         _B25WalkthroughResult result,
       ) => <String, Object?>{
         'screenshotNames': result.screenshotNames,
+        'diagnosticScreenshotNames': result.diagnosticScreenshotNames,
         'b25RowOutcome': result.rowOutcome,
         if (result.blockedByAudienceReason != null)
           'blockedByAudienceReason': result.blockedByAudienceReason,
@@ -670,7 +688,12 @@ void main() {
               workflowId: workflowId,
               communityName: mosqueTarget.communityName,
             );
-            final scoped = await runB25WorkflowRowScope(walk);
+            currentRowScreenshotNames.clear();
+            final scoped = await runB25WorkflowRowScope(
+              walk,
+              capturedScreenshotNames: () =>
+                  List<String>.of(currentRowScreenshotNames),
+            );
             final result =
                 scoped.value ?? _recordB25RowScopedFailure(scoped.failure!);
             recordEvidenceEntry({
@@ -1114,14 +1137,19 @@ void main() {
             workflowId: workflowId,
             communityName: target.communityName,
           );
-          final rowScope = await runB25WorkflowRowScope(() async {
-            if (!capturedCapabilityCommunityList) {
-              await returnToCommunityList();
-              await capture('B20_app_shell_main_community_list_states');
-              capturedCapabilityCommunityList = true;
-            }
-            return prepare(segmentSetup);
-          });
+          currentRowScreenshotNames.clear();
+          final rowScope = await runB25WorkflowRowScope(
+            () async {
+              if (!capturedCapabilityCommunityList) {
+                await returnToCommunityList();
+                await capture('B20_app_shell_main_community_list_states');
+                capturedCapabilityCommunityList = true;
+              }
+              return prepare(segmentSetup);
+            },
+            capturedScreenshotNames: () =>
+                List<String>.of(currentRowScreenshotNames),
+          );
           final result =
               rowScope.value ?? _recordB25RowScopedFailure(rowScope.failure!);
           recordEvidenceEntry({
@@ -3123,9 +3151,16 @@ class _B25WalkthroughResult {
     this.actionProofFramePairsRequired = false,
     this.alternateUnavailableReason,
     this.extraFields = const <String, Object?>{},
+    this.diagnosticScreenshotNames = const <String>[],
   });
 
   final List<String> screenshotNames;
+
+  /// Frames captured before this row failed, carrying no action-proof
+  /// weight -- audit-only. Never summed into `screenshotNames` or anything
+  /// downstream that counts proof-bearing evidence. See CLAUDE.md "B25: a
+  /// row that captures frames and then fails must not discard them".
+  final List<String> diagnosticScreenshotNames;
   final String actionProofStatus;
   final List<String> visiblePrimaryActions;
   final List<String> visibleAlternateActions;
@@ -3182,6 +3217,7 @@ class _B25WalkthroughResult {
 _B25WalkthroughResult _recordB25RowScopedFailure(B25RowScopedFailure failure) {
   return _B25WalkthroughResult(
     screenshotNames: const <String>[],
+    diagnosticScreenshotNames: failure.screenshotNames,
     actionProofStatus: failure.actionProofStatus,
     visiblePrimaryActions: const <String>[],
     visibleAlternateActions: const <String>[],

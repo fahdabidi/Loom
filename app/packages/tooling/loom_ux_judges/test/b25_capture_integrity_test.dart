@@ -115,6 +115,56 @@ void main() {
   );
 
   test(
+    'diagnostic frames from a failed row are never summed into '
+    'verifiedScreenshotCount/screenshotCount, and byte-identity among them '
+    'is never flagged',
+    () async {
+      final root = await Directory.systemTemp.createTemp(
+        'loom-b25-diagnostic-frames-',
+      );
+      addTearDown(() => root.delete(recursive: true));
+      // Byte-identical to each other -- if the duplicate-frame guard ever
+      // looked at diagnostics, this pair would trip it.
+      final diagnosticStart = File('${root.path}/start.png')
+        ..writeAsBytesSync(<int>[7, 7, 7]);
+      final diagnosticAction = File('${root.path}/primary_action.png')
+        ..writeAsBytesSync(<int>[7, 7, 7]);
+      final workflow = <String, dynamic>{
+        'status': 'row_execution_failed',
+        'screenshotStatus': 'complete',
+        'b25RowOutcome': 'row_execution_failed',
+        'b25ActionProofStatus': 'row_execution_failed',
+        // No evidence frames at all: this row captured two frames and then
+        // failed. Only the diagnostic field carries them.
+        'screenshotNames': const <String>[],
+        'screenshotPaths': const <String>[],
+        'diagnosticScreenshotNames': const ['start', 'primary_action'],
+        'diagnosticScreenshotPaths': [
+          diagnosticStart.path,
+          diagnosticAction.path,
+        ],
+        'productFindings': <String>['forced failure after two frames'],
+      };
+
+      final integrity = await applyWorkflowScreenshotFrameIntegrity(workflow);
+
+      expect(integrity.hasFailingFindings, isFalse);
+      expect(integrity.verifiedScreenshotCount, 0);
+      expect(integrity.actionProofDuplicates, isEmpty);
+      expect(integrity.missingDeclarations, isEmpty);
+      expect(integrity.informationalDuplicates, isEmpty);
+      expect(workflow['screenshotCount'], 0);
+      expect(workflow['status'], 'row_execution_failed');
+      expect(workflow.containsKey('captureIntegrityFindings'), isFalse);
+      // The diagnostic files themselves are untouched -- this function must
+      // not delete or otherwise treat them as invalid just because it does
+      // not count them.
+      expect(diagnosticStart.existsSync(), isTrue);
+      expect(diagnosticAction.existsSync(), isTrue);
+    },
+  );
+
+  test(
     'a duplicate OUTSIDE a declared pair -- the gear-loan-request shape -- '
     'passes even though the row declares other pairs',
     () async {

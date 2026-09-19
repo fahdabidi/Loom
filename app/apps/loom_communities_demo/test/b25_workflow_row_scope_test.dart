@@ -154,6 +154,103 @@ void main() {
     );
 
     test(
+      'a row_execution_failed row carries the frames captured before it '
+      'failed as diagnostic evidence',
+      () async {
+        final failed = await runB25WorkflowRowScope<String>(
+          () async {
+            throw StateError('forced failure after two frames captured');
+          },
+          capturedScreenshotNames: () =>
+              const <String>['start', 'primary_action'],
+        );
+
+        expect(failed.failure!.rowOutcome, 'row_execution_failed');
+        expect(failed.failure!.screenshotNames, ['start', 'primary_action']);
+      },
+    );
+
+    test(
+      'an action_succeeded_result_unverified row carries the frames '
+      'captured before it failed as diagnostic evidence',
+      () async {
+        const reason =
+            'Shipped workflow book-reading-material changed source instance '
+            'data after acknowledge-material, but B25 could not locate a '
+            'changed rendered value or explicit success acknowledgement for '
+            'material-public to position the result frame.';
+        final unverified = await runB25WorkflowRowScope<String>(
+          () async => throw B25ResultFramePositioningFailure(reason),
+          capturedScreenshotNames: () =>
+              const <String>['start', 'primary_action'],
+        );
+
+        expect(
+          unverified.failure!.rowOutcome,
+          'action_succeeded_result_unverified',
+        );
+        expect(unverified.failure!.screenshotNames, [
+          'start',
+          'primary_action',
+        ]);
+      },
+    );
+
+    test(
+      'a blocked_by_audience row never carries captured frames, even if '
+      'some were captured before the block fired',
+      () async {
+        final blocked = await runB25WorkflowRowScope<String>(
+          () async {
+            throw B25ActorAudienceResolutionFailure(
+              workflowId: 'book-nomination',
+              instanceId: 'nom-draft-1',
+              roleId: 'book-member',
+              actorEqualsField: 'nominatorFanId',
+            );
+          },
+          // Blocked rows never legitimately capture anything before they
+          // fail. This simulated frame proves the separation is enforced by
+          // outcome, not merely by what happened to run first -- see
+          // CLAUDE.md "B25: a row that captures frames and then fails must
+          // not discard them".
+          capturedScreenshotNames: () => const <String>['start'],
+        );
+
+        expect(blocked.failure!.rowOutcome, 'blocked_by_audience');
+        expect(blocked.failure!.screenshotNames, isEmpty);
+      },
+    );
+
+    test(
+      'a blocked_by_selector_setup row never carries captured frames',
+      () async {
+        final blocked = await runB25WorkflowRowScope<String>(
+          () async => throw B25SelectorSetupFailure('selector setup failed'),
+          capturedScreenshotNames: () => const <String>['start'],
+        );
+
+        expect(blocked.failure!.rowOutcome, 'blocked_by_selector_setup');
+        expect(blocked.failure!.screenshotNames, isEmpty);
+      },
+    );
+
+    test(
+      'a blocked_by_prerequisite row never carries captured frames',
+      () async {
+        final blocked = await runB25WorkflowRowScope<String>(
+          () async => throw B25DependentReceiverBlockedFailure(
+            'B20 member receiver is blocked by the named prerequisite.',
+          ),
+          capturedScreenshotNames: () => const <String>['start'],
+        );
+
+        expect(blocked.failure!.rowOutcome, 'blocked_by_prerequisite');
+        expect(blocked.failure!.screenshotNames, isEmpty);
+      },
+    );
+
+    test(
       'unproven target-state checks stay distinct from blocked rows, proof, and result positioning',
       () async {
         final proven = await runB25WorkflowRowScope<String>(

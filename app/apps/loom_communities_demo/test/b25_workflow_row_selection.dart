@@ -100,6 +100,7 @@ class B25RowScopedFailure {
     required this.reason,
     this.actionExecutionEvidence = const <B25ActionExecutionEvidence>[],
     this.selectorSetupCause,
+    this.screenshotNames = const <String>[],
   });
 
   final String rowOutcome;
@@ -107,6 +108,13 @@ class B25RowScopedFailure {
   final String reason;
   final List<B25ActionExecutionEvidence> actionExecutionEvidence;
   final String? selectorSetupCause;
+
+  /// Frames the walkthrough had already captured for this row before it
+  /// failed. These carry no action-proof weight -- they are recorded as
+  /// diagnostic evidence only, never folded into the row's proof-bearing
+  /// `screenshotNames`. See CLAUDE.md "B25: a row that captures frames and
+  /// then fails must not discard them".
+  final List<String> screenshotNames;
 
   bool get actionSucceededButResultUnverified =>
       rowOutcome == 'action_succeeded_result_unverified';
@@ -239,12 +247,19 @@ class B25CommunityTraversalRecord {
 /// [run] are recorded as this row's outcome, while exceptions thrown before
 /// or after this call remain global failures and abort the walkthrough.
 Future<B25WorkflowRowScopeResult<T>> runB25WorkflowRowScope<T>(
-  Future<T> Function() run,
-) async {
+  Future<T> Function() run, {
+  List<String> Function()? capturedScreenshotNames,
+}) async {
   try {
     return B25WorkflowRowScopeResult<T>.completed(await run());
   } catch (error) {
-    return B25WorkflowRowScopeResult<T>.failed(_b25RowScopedFailureFor(error));
+    return B25WorkflowRowScopeResult<T>.failed(
+      _b25RowScopedFailureFor(
+        error,
+        capturedScreenshotNames:
+            capturedScreenshotNames?.call() ?? const <String>[],
+      ),
+    );
   }
 }
 
@@ -284,16 +299,22 @@ String buildB25CommunityTeardownFailureMessage({
       '${detail == null ? '' : '\n$detail'}';
 }
 
-B25RowScopedFailure _b25RowScopedFailureFor(Object error) {
+B25RowScopedFailure _b25RowScopedFailureFor(
+  Object error, {
+  List<String> capturedScreenshotNames = const <String>[],
+}) {
   if (error is B25PostconditionNotObservedFailure) {
     return B25RowScopedFailure(
       rowOutcome: 'row_execution_failed',
       actionProofStatus: 'row_execution_failed',
       reason: error.reason,
       actionExecutionEvidence: error.actionExecutionEvidence,
+      screenshotNames: capturedScreenshotNames,
     );
   }
   if (error is B25ActorAudienceResolutionFailure) {
+    // Blocked rows capture nothing before they fail: an empty list here is
+    // the truthful record, not a gap this constructor should backfill.
     return B25RowScopedFailure(
       rowOutcome: 'blocked_by_audience',
       actionProofStatus: 'blocked_by_audience',
@@ -313,6 +334,7 @@ B25RowScopedFailure _b25RowScopedFailureFor(Object error) {
       rowOutcome: 'action_succeeded_result_unverified',
       actionProofStatus: 'action_succeeded_result_unverified',
       reason: error.reason,
+      screenshotNames: capturedScreenshotNames,
     );
   }
   if (error is B25DependentReceiverBlockedFailure) {
@@ -327,12 +349,14 @@ B25RowScopedFailure _b25RowScopedFailureFor(Object error) {
       rowOutcome: 'product_finding',
       actionProofStatus: 'product_finding',
       reason: error.reason,
+      screenshotNames: capturedScreenshotNames,
     );
   }
   return B25RowScopedFailure(
     rowOutcome: 'row_execution_failed',
     actionProofStatus: 'row_execution_failed',
     reason: error is StateError ? error.message.toString() : error.toString(),
+    screenshotNames: capturedScreenshotNames,
   );
 }
 

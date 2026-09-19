@@ -872,6 +872,83 @@ void main() {
       await temporaryRoot.delete(recursive: true);
     }
   });
+
+  test(
+    'diagnostic frames from a failed row are resolved to paths but never '
+    'counted as screenshotCount evidence',
+    () async {
+      final temporaryRoot = await Directory.systemTemp.createTemp(
+        'loom-workflow-evidence-diagnostic-frames-',
+      );
+      try {
+        final writer = WorkflowUiEvidenceWriter(
+          evidenceRoot: temporaryRoot,
+          commandOutputPath: 'diagnostic-frames.log',
+        );
+        const diagnosticNames = <String>['start', 'primary_action'];
+        for (final name in diagnosticNames) {
+          await writer.recordScreenshot(name, <int>[1, 2, 3]);
+        }
+
+        final responseData = _responseData(screenshotCaptureStatus: 'complete')
+          ..['walkthroughStatus'] = 'fail';
+        responseData['workflowEvidence'] = <Map<String, Object?>>[
+          <String, Object?>{
+            'phase': 'B12',
+            'appId': 'ext_book_club',
+            'communityName': 'Book Club',
+            'workflowId': 'book-reading-material',
+            'role': 'book-member',
+            // No evidence frames at all -- this row captured two frames and
+            // then failed. Only the diagnostic field should carry them.
+            'screenshotNames': const <String>[],
+            'diagnosticScreenshotNames': diagnosticNames,
+            'b25RowOutcome': 'row_execution_failed',
+            'b25ActionProofStatus': 'row_execution_failed',
+            'rowExecutionFailureReason': 'forced failure after two frames',
+            'status': 'row_execution_failed',
+          },
+        ];
+
+        await writer.writeEvidence(responseData);
+
+        final phaseManifest =
+            jsonDecode(
+                  await File(
+                    '${temporaryRoot.path}/B12/workflow-ui-evidence.json',
+                  ).readAsString(),
+                )
+                as Map<String, dynamic>;
+        // The two diagnostic frames must not be visible to anything that
+        // counts EVIDENCE: zero requested, zero missing, zero counted --
+        // this row declared no evidence frames at all.
+        expect(phaseManifest['screenshotCount'], 0);
+        expect(phaseManifest['requestedScreenshotCount'], 0);
+        expect(phaseManifest['missingScreenshotCount'], 0);
+
+        final row =
+            (phaseManifest['workflows'] as List<dynamic>).single
+                as Map<String, dynamic>;
+        expect(row['screenshotPaths'], isEmpty);
+        // ...yet the diagnostic frames are still resolved to real files,
+        // under their own key, so a later stage (b25_capture_integrity.dart)
+        // can still integrity-check them without ever summing them into
+        // verifiedScreenshotCount -- that function only ever reads
+        // `screenshotPaths`/`screenshotNames`.
+        expect(row['diagnosticScreenshotPaths'], hasLength(2));
+        for (final path
+            in (row['diagnosticScreenshotPaths'] as List<dynamic>)
+                .cast<String>()) {
+          expect(File(path).existsSync(), isTrue);
+        }
+
+        final aggregate = await _readAggregate(temporaryRoot);
+        expect(aggregate['completionGateEligible'], isFalse);
+      } finally {
+        await temporaryRoot.delete(recursive: true);
+      }
+    },
+  );
 }
 
 const _harnessScreenshotNames = <String>[
