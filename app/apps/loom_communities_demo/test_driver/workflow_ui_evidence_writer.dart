@@ -284,10 +284,17 @@ class WorkflowUiEvidenceWriter {
         final screenshotNames = _stringList(entry['screenshotNames']);
         final paths = <String>[];
         final visibleTexts = <String>[];
+        // Keyed by NAME rather than position: `paths` above skips any name
+        // whose file is missing, so the two lists can differ in length and
+        // a positional zip would silently mis-map. This is how
+        // `actionProofFramePairs` (declared by name) gets resolved to the
+        // actual captured files in b25_capture_integrity.dart.
+        final pathsByName = <String, String>{};
         for (final name in screenshotNames) {
           final path = _screenshotPaths[name];
           if (path != null && File(path).existsSync()) {
             paths.add(path);
+            pathsByName[name] = path;
           }
           visibleTexts.add(screenshotVisibleTextByName[name] ?? '');
         }
@@ -298,6 +305,7 @@ class WorkflowUiEvidenceWriter {
           'assertionStatus': entry['status'] == 'pass' ? 'pass' : 'fail',
           'screenshotStatus': phaseScreenshotStatus,
           'screenshotPaths': paths,
+          'screenshotPathsByName': pathsByName,
           'screenshotVisibleTexts': visibleTexts,
           'commandOutputPath': commandOutputPath,
           ...device,

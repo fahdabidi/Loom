@@ -6,6 +6,8 @@ import 'package:loom_ux_judges/b25_capture_integrity.dart';
 import 'package:loom_ux_judges/b25_capture_package_provenance.dart';
 import 'package:loom_ux_judges/b25_device_dialog_guard.dart';
 import 'package:loom_ux_judges/b25_product_doc_interaction_models.dart';
+import 'package:loom_ux_judges/loom_ux_judges.dart'
+    show fullB25MinimumScreenshotRows;
 import 'package:loom_ux_judges/src/community_package_provenance.dart';
 
 const _fullB25Phases = <String>[
@@ -512,9 +514,10 @@ void main(List<String> args) async {
     });
     exit(65);
   }
-  if (mode == 'full-b25' && screenshotCount < 180) {
+  if (mode == 'full-b25' && screenshotCount < fullB25MinimumScreenshotRows) {
     stderr.writeln(
-      'b25_capture_workflow_screenshots: expected at least 180 screenshots, found $screenshotCount.',
+      'b25_capture_workflow_screenshots: expected at least '
+      '$fullB25MinimumScreenshotRows screenshots, found $screenshotCount.',
     );
     _writeProgressReport(progressReportPath, {
       'status': 'failed',
@@ -860,11 +863,11 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
         }
         final integrity = await applyWorkflowScreenshotFrameIntegrity(workflow);
         phaseScreenshotCount += integrity.verifiedScreenshotCount;
-        for (final duplicate in integrity.duplicateFrames) {
+        for (final findingJson in integrity.failingFindingsJson) {
           final finding = <String, Object?>{
             'phase': phase,
             'workflowId': workflow['workflowId'],
-            ...duplicate.toJson(),
+            ...findingJson,
           };
           phaseDuplicateFrameFindings.add(finding);
           duplicateFrameFindings.add(finding);

@@ -2,7 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:loom_ux_judges/b25_capture_drive_plan.dart';
+import 'package:loom_ux_judges/loom_ux_judges.dart'
+    show fullB25MinimumScreenshotRows;
 import 'package:test/test.dart';
+
+/// The fake capture script below emits this many screenshots per phase by
+/// default; 9 phases x this must equal [fullB25MinimumScreenshotRows] for
+/// the default-count fixture to land exactly at the gate.
+const _fakeScreenshotsPerPhase = fullB25MinimumScreenshotRows ~/ 9;
 
 void main() {
   group('B25 prebuilt application-binary capture', () {
@@ -133,7 +140,7 @@ void main() {
           ),
         );
         expect(aggregate['phases'], hasLength(9));
-        expect(aggregate['screenshotCount'], 180);
+        expect(aggregate['screenshotCount'], fullB25MinimumScreenshotRows);
         expect(aggregate['fullB25Coverage'], isTrue);
         expect(aggregate['commitEligible'], isTrue);
         expect(aggregate['completionGateEligible'], isTrue);
@@ -163,7 +170,9 @@ void main() {
     test('full B25 refuses a low screenshot result', () async {
       final harness = await _FakeCaptureHarness.create();
       addTearDown(harness.dispose);
-      harness.environment['FAKE_SCREENSHOT_COUNT'] = '19';
+      final lowPerPhase = _fakeScreenshotsPerPhase - 1;
+      final lowTotal = lowPerPhase * 9;
+      harness.environment['FAKE_SCREENSHOT_COUNT'] = '$lowPerPhase';
       final applicationBinary = File('${harness.root.path}/loom.apk')
         ..writeAsBytesSync(<int>[1, 2, 3]);
 
@@ -175,12 +184,15 @@ void main() {
       expect(result.exitCode, 65);
       expect(
         result.stderr,
-        contains('expected at least 180 screenshots, found 171'),
+        contains(
+          'expected at least $fullB25MinimumScreenshotRows screenshots, '
+          'found $lowTotal',
+        ),
       );
       final aggregate = _jsonFile(
         File('${harness.evidenceRoot.path}/B20/all-workflow-ui-evidence.json'),
       );
-      expect(aggregate['screenshotCount'], 171);
+      expect(aggregate['screenshotCount'], lowTotal);
       expect(aggregate['status'], 'fail');
       expect(aggregate['commitEligible'], isFalse);
       expect(aggregate['completionGateEligible'], isFalse);
@@ -246,7 +258,7 @@ void main() {
         isCanonicalB25CaptureEligible(
           mode: 'full-b25',
           fullB25Coverage: false,
-          screenshotCount: 180,
+          screenshotCount: fullB25MinimumScreenshotRows,
           hasDuplicateFrames: false,
         ),
         isFalse,
@@ -255,7 +267,7 @@ void main() {
         isCanonicalB25CaptureEligible(
           mode: 'full-b25',
           fullB25Coverage: true,
-          screenshotCount: 179,
+          screenshotCount: fullB25MinimumScreenshotRows - 1,
           hasDuplicateFrames: false,
         ),
         isFalse,
@@ -264,7 +276,7 @@ void main() {
         isCanonicalB25CaptureEligible(
           mode: 'full-b25',
           fullB25Coverage: true,
-          screenshotCount: 180,
+          screenshotCount: fullB25MinimumScreenshotRows,
           hasDuplicateFrames: true,
         ),
         isFalse,
@@ -273,7 +285,7 @@ void main() {
         isCanonicalB25CaptureEligible(
           mode: 'full-b25',
           fullB25Coverage: true,
-          screenshotCount: 180,
+          screenshotCount: fullB25MinimumScreenshotRows,
           hasDuplicateFrames: false,
         ),
         isTrue,
@@ -333,7 +345,12 @@ class _FakeCaptureHarness {
     final flutterInvocations = File('${root.path}/flutter-invocations.txt');
     final flutter = File('${bin.path}/flutter');
     final adb = File('${sdk.path}/adb');
-    flutter.writeAsStringSync(_fakeFlutterScript);
+    flutter.writeAsStringSync(
+      _fakeFlutterScript.replaceFirst(
+        '__DEFAULT_SCREENSHOT_COUNT__',
+        '$_fakeScreenshotsPerPhase',
+      ),
+    );
     adb.writeAsStringSync(_fakeAdbScript);
     await Process.run('chmod', <String>['+x', flutter.path, adb.path]);
     return _FakeCaptureHarness._(
@@ -351,6 +368,11 @@ class _FakeCaptureHarness {
   Future<void> dispose() => root.delete(recursive: true);
 }
 
+// `screenshotNames`/`screenshotPathsByName`/`actionProofFramePairs` are
+// declared for every fake workflow so `FAKE_DUPLICATE_FRAME` still exercises
+// a real declared-pair failure end to end through the capture binary: under
+// the "byte-distinctness must prove an action" model, an UNDECLARED
+// duplicate is informational only and would no longer fail the row.
 const _fakeFlutterScript = r'''#!/bin/sh
 set -eu
 printf '%s\n' "$*" >> "$FAKE_FLUTTER_INVOCATIONS"
@@ -364,10 +386,13 @@ do
     continue
   fi
   paths=""
+  names=""
+  pathsByName=""
   index=1
-  while [ "$index" -le "${FAKE_SCREENSHOT_COUNT:-20}" ]
+  while [ "$index" -le "${FAKE_SCREENSHOT_COUNT:-__DEFAULT_SCREENSHOT_COUNT__}" ]
   do
     frame="$root/$phase/frame_$index.png"
+    name="frame_$index"
     if [ "${FAKE_DUPLICATE_FRAME:-false}" = "true" ] && [ "$phase" = "B12" ] && [ "$index" -eq 2 ]
     then
       printf '%s' 'B12-frame-1' > "$frame"
@@ -376,9 +401,13 @@ do
     fi
     if [ -n "$paths" ]; then paths="$paths,"; fi
     paths="$paths\"$frame\""
+    if [ -n "$names" ]; then names="$names,"; fi
+    names="$names\"$name\""
+    if [ -n "$pathsByName" ]; then pathsByName="$pathsByName,"; fi
+    pathsByName="$pathsByName\"$name\":\"$frame\""
     index=$((index + 1))
   done
-  printf '{"phase":"%s","workflows":[{"workflowId":"workflow-%s","screenshotPaths":[%s]}]}' "$phase" "$phase" "$paths" > "$root/$phase/workflow-ui-evidence.json"
+  printf '{"phase":"%s","workflows":[{"workflowId":"workflow-%s","screenshotPaths":[%s],"screenshotNames":[%s],"screenshotPathsByName":{%s},"b25RowOutcome":"attempted","actionProofFramePairsRequired":true,"actionProofFramePairs":[["frame_1","frame_2"]]}]}' "$phase" "$phase" "$paths" "$names" "$pathsByName" > "$root/$phase/workflow-ui-evidence.json"
 done
 printf '%s\n' 'B25_CAPTURE_PROGRESS {"status":"screenshot-start","phase":"B12","screenshotName":"prebuilt_listener"}'
 ''';

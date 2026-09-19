@@ -21,7 +21,15 @@ const fullB25EvidencePhases = <String>[
   'B20',
 ];
 
-const fullB25MinimumScreenshotRows = 180;
+// Re-derived 2026-09-19 for the "byte-distinctness must prove an action"
+// fix: the harness stopped manufacturing frames that could never differ
+// (unavailable branches, the missing-package row, B19's cancel round-trip),
+// which legitimately shrinks a correct capture below the old 180. See the
+// derivation in that change's report -- this is a reasoned estimate from
+// the measured ev30 duplicate-frame data and the fixed auxiliary-row count,
+// not an empirically re-measured live capture, and should be tightened once
+// a live full-b25 run is available to confirm the real new total.
+const fullB25MinimumScreenshotRows = 117;
 const fullB25MinimumWorkflowManifests = 9;
 
 const _uiUsabilityScoreDimensions = <String>[

@@ -1,3 +1,5 @@
+import 'package:loom_ux_judges/loom_ux_judges.dart' show fullB25MinimumScreenshotRows;
+
 /// The `flutter drive` argument construction for B25 screenshot capture.
 ///
 /// A supplied application binary is already compiled, so Dart environment
@@ -67,5 +69,5 @@ bool isCanonicalB25CaptureEligible({
 }) =>
     mode == 'full-b25' &&
     fullB25Coverage &&
-    screenshotCount >= 180 &&
+    screenshotCount >= fullB25MinimumScreenshotRows &&
     !hasDuplicateFrames;

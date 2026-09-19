@@ -475,6 +475,13 @@ void main() {
               'status': walkthroughResult.isRecordedFailure
                   ? walkthroughResult.rowOutcome
                   : 'pass',
+              'actionProofFramePairs': walkthroughResult.actionProofFramePairs,
+              'actionProofFramePairsRequired':
+                  walkthroughResult.actionProofFramePairsRequired,
+              if (walkthroughResult.alternateUnavailableReason != null)
+                'alternateUnavailableReason':
+                    walkthroughResult.alternateUnavailableReason,
+              ...walkthroughResult.extraFields,
             });
             emitProgress(
               'workflow-complete',
@@ -524,6 +531,7 @@ void main() {
         List<String> productFindings = const <String>[],
         List<B25ActionExecutionEvidence> actionExecutionEvidence =
             const <B25ActionExecutionEvidence>[],
+        Map<String, Object?> extraFields = const <String, Object?>{},
       }) {
         if (actionProofStatus != 'pass' && productFindings.isEmpty) {
           throw StateError(
@@ -542,6 +550,7 @@ void main() {
               ? 'attempted'
               : 'product_finding',
           actionExecutionEvidence: actionExecutionEvidence,
+          extraFields: extraFields,
         );
       }
 
@@ -575,6 +584,11 @@ void main() {
         'visibleAlternateActions': result.visibleAlternateActions,
         'productFindings': result.productFindings,
         'status': result.isRecordedFailure ? result.rowOutcome : 'pass',
+        'actionProofFramePairs': result.actionProofFramePairs,
+        'actionProofFramePairsRequired': result.actionProofFramePairsRequired,
+        if (result.alternateUnavailableReason != null)
+          'alternateUnavailableReason': result.alternateUnavailableReason,
+        ...result.extraFields,
       };
 
       if (isB25DedicatedCommunitySelected(
@@ -787,6 +801,7 @@ void main() {
                   selectRole: false,
                 );
                 await capture('B19_member_primary_member_workflow');
+                final beforeCancelVisibleText = _visibleTextFor(tester);
                 await tester.tap(
                   find.byKey(const ValueKey('actor-identity-picker-button')),
                 );
@@ -794,15 +809,36 @@ void main() {
                 await capture('B19_member_alternate_leave_unchanged');
                 await tester.tap(find.text('Cancel'));
                 await tester.pumpAndSettle();
-                await capture('B19_member_result_unchanged');
+                // The cancel round-trip is DESIGNED to restore the screen
+                // exactly, so a third screenshot here would only reproduce
+                // `B19_member_primary_member_workflow` byte-for-byte -- not
+                // evidence, a manufactured duplicate. Check the actual
+                // postcondition in-walk instead: this is strictly stronger,
+                // because it is a checked assertion rather than a shipped
+                // file the byte-integrity guard could only flag as
+                // suspicious without being able to say why.
+                final afterCancelVisibleText = _visibleTextFor(tester);
+                final resultUnchangedVerified =
+                    afterCancelVisibleText == beforeCancelVisibleText;
+                expect(
+                  resultUnchangedVerified,
+                  isTrue,
+                  reason:
+                      'B19 member cancel round-trip: canceling the actor '
+                      'identity picker was expected to restore the screen '
+                      'exactly, but the visible text changed.\nbefore: '
+                      '$beforeCancelVisibleText\nafter: $afterCancelVisibleText',
+                );
                 return dedicatedPass(
                   screenshotNames: const [
                     'B19_member_primary_member_workflow',
                     'B19_member_alternate_leave_unchanged',
-                    'B19_member_result_unchanged',
                   ],
                   visiblePrimaryActions: const ['view member workflow'],
                   visibleAlternateActions: const ['leave unchanged'],
+                  extraFields: <String, Object?>{
+                    'resultUnchangedVerified': resultUnchangedVerified,
+                  },
                 );
               },
             );
@@ -965,8 +1001,13 @@ void main() {
                       'The shipped member receipt action did not mark the '
                       'published announcement as read.',
                 );
+                // Nothing acts between this capture and the one just above
+                // it, so a second capture named `_alternate_unavailable`
+                // here would only reproduce `_member_received` byte-for-byte
+                // -- the same manufactured-duplicate shape as the B25 row
+                // sites this ticket fixes, found by sweeping this file for
+                // any other adjacent `capture()` pair with nothing between.
                 await capture('B20_announcement_member_received');
-                await capture('B20_announcement_member_alternate_unavailable');
                 await _selectPackageTab(
                   tester: tester,
                   target: mosqueTarget,
@@ -997,7 +1038,6 @@ void main() {
                     'B20_announcement_member_ready',
                     'B20_announcement_member_action',
                     'B20_announcement_member_received',
-                    'B20_announcement_member_alternate_unavailable',
                     'B20_member_calendar_tab_pinned_event',
                     'B20_member_messages_tab',
                     'B20_admin_custom_tab_pinned_surface',
@@ -2067,22 +2107,15 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       )
       .toList(growable: false);
   if (primaryCandidates.isEmpty) {
-    final primaryUnavailable = _b25ScreenshotName(
-      target,
-      b25Model,
-      'primary_action_unavailable',
-    );
-    final resultUnavailable = _b25ScreenshotName(
-      target,
-      b25Model,
-      'result_receiver_unavailable',
-    );
-    await capture(primaryUnavailable);
-    await capture(resultUnavailable);
+    // No action fires in this branch, so a second and third capture here
+    // can only ever reproduce `start` byte-for-byte -- that is not evidence,
+    // it is a manufactured duplicate. `start` already proves what the
+    // screen looked like when the row was found to have no primary
+    // candidate; nothing further needs proving.
     return _b25WalkthroughResult(
       model: b25Model,
       selector: selector,
-      screenshotNames: [start, primaryUnavailable, resultUnavailable],
+      screenshotNames: [start],
       primaryUnavailableReason:
           'primary_action_unavailable: no primary action candidates were '
           'selected for this workflow row.',
@@ -2129,22 +2162,14 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       captureDiagnostic: capture,
     );
     if (actionWait.action == null) {
-      final primaryUnavailable = _b25ScreenshotName(
-        target,
-        b25Model,
-        'primary_action_unavailable',
-      );
-      final resultUnavailable = _b25ScreenshotName(
-        target,
-        b25Model,
-        'result_receiver_unavailable',
-      );
-      await capture(primaryUnavailable);
-      await capture(resultUnavailable);
+      // The wait returned null because nothing became tappable, so nothing
+      // happened between `start` and now: a second and third capture here
+      // would only reproduce `start` byte-for-byte. See the sibling
+      // `primaryCandidates.isEmpty` branch above for the same reasoning.
       return _b25WalkthroughResult(
         model: b25Model,
         selector: selector,
-        screenshotNames: [start, primaryUnavailable, resultUnavailable],
+        screenshotNames: [start],
         primaryUnavailableReason: actionWait.unavailableReason,
         availableSupplementaryActions: actionWait.otherAvailableActions,
       );
@@ -2230,6 +2255,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         selector: selector,
         executedPrimary: visibleAction.candidate.transition,
         screenshotNames: [start, action, primaryResult],
+        primaryActionProofPair: [action, primaryResult],
         capture: capture,
         actionSurface: marketplacePreparation.actionSurface,
         useMarketplaceDetailActionFinder:
@@ -2279,6 +2305,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         selector: selector,
         executedPrimary: visibleAction.candidate.transition,
         screenshotNames: [start, action, primaryResult],
+        primaryActionProofPair: [action, primaryResult],
         capture: capture,
         actionSurface: marketplacePreparation.actionSurface,
         useMarketplaceDetailActionFinder:
@@ -2336,6 +2363,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       selector: selector,
       executedPrimary: visibleAction.candidate.transition,
       screenshotNames: [start, action, primaryResult],
+      primaryActionProofPair: [action, primaryResult],
       capture: capture,
       actionSurface: marketplacePreparation.actionSurface,
       useMarketplaceDetailActionFinder:
@@ -2844,6 +2872,7 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
   required _ShippedWorkflowSelector selector,
   required LoomWorkflowTransition executedPrimary,
   required List<String> screenshotNames,
+  required List<String> primaryActionProofPair,
   required Future<void> Function(String name) capture,
   required Finder actionSurface,
   required bool useMarketplaceDetailActionFinder,
@@ -2859,20 +2888,19 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
     excludedTransitionId: executedPrimary.id,
   );
   if (alternate == null) {
-    final unavailable = _b25ScreenshotName(
-      target,
-      model,
-      'alternate_action_unavailable',
-    );
-    final result = _b25ScreenshotName(target, model, 'result_receiver');
-    await capture(unavailable);
-    await capture(result);
+    // The `start`/`action`/`primaryResult` proof is already complete: the
+    // primary transition fired and its target state was verified. No
+    // alternate was found ready within the wait budget, so there is no
+    // result to receive -- capturing `alternate_action_unavailable` and
+    // `result_receiver` here would only reproduce `primaryResult`
+    // byte-for-byte, since nothing acts on the screen between them.
     return _b25WalkthroughResult(
       model: model,
       selector: selector,
       executedPrimary: executedPrimary,
-      screenshotNames: [...screenshotNames, unavailable, result],
+      screenshotNames: screenshotNames,
       actionExecutionEvidence: actionExecutionEvidence,
+      actionProofFramePairs: [primaryActionProofPair],
     );
   }
 
@@ -2995,6 +3023,10 @@ Future<_B25WalkthroughResult> _finishB25WalkthroughAfterPrimary({
       ...actionExecutionEvidence,
       observedAlternateAction,
     ],
+    actionProofFramePairs: [
+      primaryActionProofPair,
+      [alternateAction, result],
+    ],
   );
 }
 
@@ -3061,6 +3093,10 @@ class _B25WalkthroughResult {
     this.actionSucceededResultUnverifiedReason,
     this.rowExecutionFailureReason,
     this.actionExecutionEvidence = const <B25ActionExecutionEvidence>[],
+    this.actionProofFramePairs = const <List<String>>[],
+    this.actionProofFramePairsRequired = false,
+    this.alternateUnavailableReason,
+    this.extraFields = const <String, Object?>{},
   });
 
   final List<String> screenshotNames;
@@ -3078,6 +3114,29 @@ class _B25WalkthroughResult {
   final String? actionSucceededResultUnverifiedReason;
   final String? rowExecutionFailureReason;
   final List<B25ActionExecutionEvidence> actionExecutionEvidence;
+
+  /// Pairs of screenshot NAMES (not paths) that have a declared tap between
+  /// them. `b25_capture_integrity.dart` fails the row only when one of
+  /// THESE pairs is byte-identical -- a duplicate anywhere else in
+  /// `screenshotNames` carries no proof weight and is recorded for audit
+  /// only. See CLAUDE.md "B25 capture: byte-distinctness must prove an
+  /// action, not merely differ".
+  final List<List<String>> actionProofFramePairs;
+
+  /// True only for rows produced by [_b25WalkthroughResult] when a primary
+  /// transition actually fired (`rowOutcome == 'attempted'`). This is the
+  /// closure rule: a row in that population cannot dodge enforcement by
+  /// declaring no pairs -- the integrity check fails it instead of silently
+  /// passing. Dedicated/capability rows (`dedicatedPass`) never set this;
+  /// they were not built around a primary/alternate action-proof pair and
+  /// are out of scope for this rule.
+  final bool actionProofFramePairsRequired;
+  final String? alternateUnavailableReason;
+
+  /// Extra keys merged verbatim into the recorded manifest entry, for
+  /// fields that don't fit the named properties above (e.g.
+  /// `resultUnchangedVerified`).
+  final Map<String, Object?> extraFields;
 
   bool get isBlockedByAudience => rowOutcome == 'blocked_by_audience';
   bool get isBlockedBySelectorSetup =>
@@ -3140,6 +3199,7 @@ _B25WalkthroughResult _b25WalkthroughResult({
   String? primaryUnavailableReason,
   List<B25ActionExecutionEvidence> actionExecutionEvidence =
       const <B25ActionExecutionEvidence>[],
+  List<List<String>> actionProofFramePairs = const <List<String>>[],
 }) {
   final primaryTermMatch = executedPrimary == null
       ? const (primary: <String>[], alternate: <String>[])
@@ -3171,6 +3231,12 @@ _B25WalkthroughResult _b25WalkthroughResult({
   final rowOutcome = primaryUnavailableReason == null
       ? 'attempted'
       : 'primary_action_unavailable';
+  // Computed once and reused below as `alternateUnavailableReason`, so a
+  // reader does not have to pick it out of the combined findings list.
+  final noAlternateExercisedFinding =
+      '${model.communityName} / ${model.workflowId} / ${model.role}: '
+      'the walkthrough exercised no documented '
+      'alternate/change/reject action ${model.requiredAlternateActions.isEmpty ? 'because the product doc declares `${model.alternateRequirementNote}`' : model.requiredAlternateActions}.';
   final findings = <String>[
     if (primaryUnavailableReason != null) primaryUnavailableReason,
     if (supplementaryActions.isNotEmpty)
@@ -3183,11 +3249,22 @@ _B25WalkthroughResult _b25WalkthroughResult({
           '${executedPrimary == null ? 'no documented primary package action was exercised' : 'the exercised package action `${executedPrimary.label}` does not match any documented primary action'} '
           '${model.requiredPrimaryActions}; the package offers '
           '[${offeredActions.join(', ')}] to this role.',
-    if (visibleAlternate.isEmpty)
-      '${model.communityName} / ${model.workflowId} / ${model.role}: '
-          'the walkthrough exercised no documented '
-          'alternate/change/reject action ${model.requiredAlternateActions.isEmpty ? 'because the product doc declares `${model.alternateRequirementNote}`' : model.requiredAlternateActions}.',
+    if (visibleAlternate.isEmpty) noAlternateExercisedFinding,
   ];
+  final alternateUnavailableReason = visibleAlternate.isEmpty
+      ? noAlternateExercisedFinding
+      : null;
+  if (rowOutcome == 'attempted' && actionProofFramePairs.isEmpty) {
+    throw StateError(
+      'A row with rowOutcome "attempted" must declare its primary '
+      'action-proof frame pair (the [action, result] screenshot names a '
+      'tap sits between). ${model.communityName} / ${model.workflowId} / '
+      '${model.role} declared none -- this is exactly the closure rule '
+      'CLAUDE.md "B25 capture: byte-distinctness must prove an action, not '
+      'merely differ" exists to catch, caught here at capture time instead '
+      'of at combine time.',
+    );
+  }
   return _B25WalkthroughResult(
     screenshotNames: screenshotNames,
     actionProofStatus: findings.isEmpty ? 'pass' : 'fail',
@@ -3197,6 +3274,9 @@ _B25WalkthroughResult _b25WalkthroughResult({
     productFindings: findings,
     rowOutcome: rowOutcome,
     actionExecutionEvidence: actionExecutionEvidence,
+    actionProofFramePairs: actionProofFramePairs,
+    actionProofFramePairsRequired: rowOutcome == 'attempted',
+    alternateUnavailableReason: alternateUnavailableReason,
   );
 }
 
@@ -3252,15 +3332,13 @@ Future<_B25WalkthroughResult> _captureMissingB25PackageWorkflow({
     await _selectCommunityTab(tester, preferredTab);
   }
 
-  final screenshotNames = <String>[
-    _b25ScreenshotName(target, b25Model, 'start'),
-    _b25ScreenshotName(target, b25Model, 'primary_unavailable'),
-    _b25ScreenshotName(target, b25Model, 'alternate_unavailable'),
-    _b25ScreenshotName(target, b25Model, 'result_unavailable'),
-  ];
+  // The package has no definition for this workflow at all, so nothing on
+  // screen can change between successive captures: three more frames here
+  // would only reproduce `start` byte-for-byte. One frame is the complete
+  // evidence for "the row could not be attempted".
+  final screenshotNames = <String>[_b25ScreenshotName(target, b25Model, 'start')];
   for (final screenshotName in screenshotNames) {
     await capture(screenshotName);
-    await tester.pump(const Duration(milliseconds: 20));
   }
   final offered = package.experience.workflowDefinitions!.keys.toList()..sort();
   return _B25WalkthroughResult(
