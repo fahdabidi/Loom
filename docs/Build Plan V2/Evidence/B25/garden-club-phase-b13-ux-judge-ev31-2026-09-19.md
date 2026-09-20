@@ -114,3 +114,18 @@ action width is itself variable per community. But it does make the badge the do
 means a remote-engine capture is very likely to show the title rendering correctly.
 
 **Unchanged conclusion: do not ticket this as a product defect until a remote-engine frame is read.**
+
+---
+
+## Machine-readable row index
+
+Added 2026-09-19. `check_b25_status.sh` extracts judged workflows by matching the literal
+`**Workflow:** \`<id>\`` form that the live-write manifests use; this verdict originally named its
+rows only in prose headings, so the tool could not see it and the judge half undercounted. Each line
+below corresponds to a per-row verdict above — nothing is claimed here that was not judged.
+
+**Workflow:** `garden-export-custom-schemas`
+**Workflow:** `garden-event-rsvp`
+**Workflow:** `plant-exchange-submission`
+**Workflow:** `garden-tool-loan`
+**Workflow:** `garden-tool-giveaway`

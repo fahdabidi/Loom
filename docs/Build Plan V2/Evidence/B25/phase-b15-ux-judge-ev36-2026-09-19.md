@@ -54,3 +54,16 @@ Findings:
 All four rows have a genuine, legible before/action/after story, and in all four the `primary_result` frame (or, for critique-submission, the sequence completed by `result_receiver`) shows a real state change named on screen — no row shows an action that rendered nothing. The recurring cross-row findings worth fixing once, centrally: raw developer vocabulary reaching members (camelCase field names, JSON history entries, microsecond timestamps), grammatical number on count chips, the low-contrast state chip for warning states, and — specific to gear-loan — a labeled chip that renders with no value after a state change. The truncated app title in the top bar (only "(" visible beside the LOCAL ENGINE pill) appears in all 20 frames and is worth a cosmetic ticket.
 
 No application code, community JSON, or tests were touched; no suites were run (review-only dispatch, nothing to verify by test).
+
+---
+
+## Machine-readable row index
+
+Added 2026-09-19, same reason as the B13 verdict: `check_b25_status.sh` matches the literal
+`**Workflow:** \`<id>\`` form, and this verdict named its rows only in prose headings. Each line
+corresponds to a per-row verdict above — nothing is claimed here that was not judged.
+
+**Workflow:** `chess-export-package`
+**Workflow:** `photo-walk-rsvp`
+**Workflow:** `critique-submission`
+**Workflow:** `gear-loan-request`
