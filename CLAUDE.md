@@ -21,6 +21,16 @@ Rebooting a dev VM whose emulator is wedged is routine maintenance. Do not wait 
 
 ### The build and the cluster share one machine
 
+**The VM is 8 cores and 8 GB as of 2026-09-19 — it has been shrinking, and every warning in this
+section gets sharper each time.** `VBoxManage showvminfo ubuntu-24.04.4-loom` reports
+`memory=8192, cpus=8`, and the guest confirms 7.7 GiB total. The recorded history is 16 GB → 12 GB
+(2026-09-04) → 8 GB, the last step taking effect at a reboot on 2026-09-19. **Read the memory
+figures in the incident reports below as relative to a larger box than you have now**: the
+2026-08-31 note reasoning that "a 15 GB VM with 12 GB available did not fail for lack of memory" was
+measured on nearly twice today's RAM, so the same workload has far less headroom. Check
+`free -h` — not just load — before any build or five-suite dispatch, and re-read `memory=` from the
+host rather than trusting this paragraph, since it has now been wrong twice.
+
 The k3s cluster runs on the same 8-core VM that builds images and hosts dispatches. A Maven or
 Docker build starves it: on 2026-08-30 an `app-access` image build stalled the node hard enough
 that **every pod's probes failed at once** — app-access, fan-passport, keycloak and minio all
@@ -77,10 +87,44 @@ Captures run on Windows.
 
 **A VM-hosted session can still drive that emulator — this section has been misread as saying it
 cannot.** The emulator process must live on Windows; *talking* to it need not. A dispatch running on
-the VM reaches it through the Windows adb server, and when the VM-local adb server dies mid-run the
-recovery is `adb -H 192.168.56.1 -P 5037 …` rather than abandoning the run. Proven 2026-09-08 across
-three B25 walkthroughs, one of which recovered exactly this way. Same shape as the APK-build lesson
-below: check whether a limitation is intrinsic to the task or incidental to where it is running.
+the VM reaches it through an **ssh reverse tunnel**, and a walkthrough that reports no device is
+almost always that tunnel, not a dead emulator. Same shape as the APK-build lesson below: check
+whether a limitation is intrinsic to the task or incidental to where it is running.
+
+**The recovery recorded here until 2026-09-19 — `adb -H 192.168.56.1 -P 5037 …` — does not work,
+and following it costs a dispatch.** Windows' adb server binds **127.0.0.1 only**, so the host's
+`:5037` is not reachable across the host-only network at all. Measured that day *with a control*, so
+this is not another empty-query trap: a TCP probe from the VM to `192.168.56.1:5037` was refused
+while a probe to `192.168.56.10:30083` on the same network succeeded, and `adb devices` on the VM
+listed `emulator-5554` the whole time — served by the tunnel, never by `-H`.
+
+**The mechanism, and it is a two-part failure that looks like one.** The tunnel is opened *from
+Windows* and forwards the VM's `:5037` to the Windows adb server. A **VM reboot kills it**, and on
+the way back up the VM starts its **own** adb server, which binds `127.0.0.1:5037` and squats the
+port — so the tunnel cannot re-bind even once you try, and every `adb` call on the VM resolves zero
+devices. Killing the squatter is therefore a *prerequisite* of re-opening the tunnel, not an
+alternative to it:
+
+    # on the VM — confirm the squatter by resolved pid before killing it
+    ssh loom-vm 'ss -ltnp | grep 5037; pgrep -a adb'
+    ssh loom-vm 'adb kill-server'          # then confirm nothing listens on 5037
+
+    # from WINDOWS — re-open the tunnel and leave it running
+    ssh -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -N -R 5037:127.0.0.1:5037 loom-vm &
+
+    # verify from the VM, not from Windows
+    ssh loom-vm 'adb -s emulator-5554 get-state'   # must print: device
+
+`ExitOnForwardFailure=yes` is the load-bearing flag: without it ssh connects happily when the bind
+fails, and you get a tunnel that is up and forwards nothing — the same
+indistinguishable-from-success shape this file records everywhere else.
+
+**Pre-flight `get-state` before every device dispatch.** On 2026-09-19 two consecutive Garden
+walkthroughs were spent discovering this: the first was SIGTERM'd by the reboot itself, and the
+second correctly banked a BLOCKED manifest saying "no device" — correct behaviour, and still a
+wasted dispatch, because one cheap check beforehand would have caught it. **A vanished tunnel must
+never be recorded as evidence about a workflow**; it is an infrastructure fault and the manifest
+should say so.
 
 After a VM reboot `/tmp` is cleared and the **validator service on :8787 does not restart
 itself**. Bring it back with
