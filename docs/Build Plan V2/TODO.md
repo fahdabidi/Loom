@@ -475,7 +475,21 @@ matched only `roleId`, while B25 rows name personas by label or generic term. Fi
 defect in three hard-locked product docs**: their B25 persona column says `owner` where each doc's
 own persona table and its package say Board (Cedar, 4 workflows), Organizer (Book Club, 2) and
 Coordinator (Garden, 1). Chess declares both `chess-owner` and `chess-organizer`, which is why
-`owner` cannot be mapped onto those roles by rule. Needs a user decision to edit the docs.
+`owner` cannot be mapped onto those roles by rule. ~~Needs a user decision to edit the docs.~~
+**STRUCK 2026-09-19 — ALREADY FIXED, AND FOUR DAYS BEFORE I LAST REPEATED IT.** `979be9df`
+(2026-09-15, "B25 persona column names the persona each doc already declares") corrected all three
+docs; the row was never struck, so it kept being surfaced to the user as a decision they owed.
+**Re-measured rather than inferred from the commit message:** the persona columns now read Cedar
+`board` (8) / `member` (7), Garden `member` (7) / `coordinator` (2), Book Club `member` (14) /
+`organizer` (4), with **zero** `owner` in any of the three. **Control passed** — the identical regex
+returns 4 on `ad-free-community-product-experience.md`, so the empty result means absent rather than
+a broken query, which matters because an empty result that agrees with you gets less scrutiny than
+one that does not. **And `owner` in the other docs is correct, not residue:** Ad-Free, Chess and
+Data Portability genuinely declare owner roles (`ad-off-owner`, `chess-owner`, `portability-owner`),
+so a sweep for the string alone would have produced a false finding against three healthy docs.
+**No doc edit is needed and no user decision is owed.** Corroborating it from the other end: of the
+workflows this row named, Cedar's and Garden's are already proven, so the doc wording was not
+gating them.
 
 **The `DateTime` row independently reproduces a documented defect.** `CLAUDE.md` records Cedar's
 listing failing with `JsonUnsupportedObjectError: Instance of 'DateTime'`, traced to `reminderAt`:
@@ -486,6 +500,19 @@ strand.
 
 **What this changes about priorities.** Further harness work has sharply diminishing returns: the
 remaining code-side causes are five distinct one-row issues. The leverage is in ~~**seeding** (12 rows)~~
-the **three hard-locked doc corrections** (7 workflows, see the correction above) and in the **held Book
-Club regeneration** (row-247). Neither is fixable by another dispatch, and both are decisions rather than
-defects.
+~~the **three hard-locked doc corrections** (7 workflows, see the correction above) and in the **held Book~~
+~~Club regeneration** (row-247). Neither is fixable by another dispatch, and both are decisions rather than~~
+~~defects.~~ **REWRITTEN 2026-09-19 — both halves of that priority claim are now wrong, in the same
+direction: each named a decision the user owed, and neither was owed.** The doc corrections were
+**already made** on 2026-09-15 by `979be9df` (struck above, re-measured with a passing control). And
+Book Club's blocker was **not** its held regeneration but a credential, which had itself been closed
+on 2026-09-08 — `loom-book-member-2` and `loom-book-organizer-1` both return HTTP 200, verified live.
+**So the leverage was never in decisions; it was in walkthroughs nobody was dispatching.** Acting on
+that the same day took the bar 47 → 50 (`garden-tool-giveaway`, `book-meeting-rsvp`, `book-vote`),
+and established that all five remaining Book Club rows are drivable with no missing platform service
+gating any of them. **The pattern worth naming, because it produced three stale items in one day:
+every one of them was a claim that made work look blocked, and every one was refuted by a single
+live check that took under a minute.** A blocker withholds work from the queue while looking
+responsible, which is exactly why it is the row class that must be re-tested before it is repeated —
+and the held Book Club regeneration (row-247) remains genuinely open, so it should not be swept up
+in this correction.
