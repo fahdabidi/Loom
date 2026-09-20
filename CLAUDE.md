@@ -1582,6 +1582,35 @@ Grep every dispatch diff for weakened assertions — changed `hasLength(N)`, `ex
 
 ### The five suites, and their baselines
 
+**RE-MEASURED 2026-09-20 by me, all five, on a quiet box, after a Youth Soccer package
+regeneration.** Use these over the per-row figures below where they disagree; the rows are kept for
+their reasoning.
+
+| Suite | Measured | Previously recorded | Delta accounted? |
+|---|---|---|---|
+| UX judges | **525**, exit 0 | 514 | **+11 unverified.** Note it was **RED** before this session — see below |
+| App shell | **421** (+2 skipped), exit 0 | 421 (+2) | exact match |
+| Workflow engine | **341** (+5 skipped), exit 0 | 330 (+5) | +2 mine (declared-count verified); **+9 unverified** prior drift |
+| Workflow service | **168** (+1 skipped), exit 0 | 166 (+1) | +2 mine. The skip of **1** is what proves the PostgreSQL tests ran |
+| Demo app | **261** + exactly **1** known held failure | 212 + 1 | +49 unverified prior drift; the held failure is unchanged |
+
+**The judges suite was already red before this session, and its baseline did not say so.**
+`community_package_provenance_test.dart` was failing because the provenance manifest had been stale
+for **Garden Club since 2026-09-19** — Garden's sha256 and byte count were unchanged, so only the
+`lastCommit` metadata was out of date, which is enough to fail "updater rendering is byte-identical".
+Regenerating the manifest turned the suite green.
+
+**A red suite that is not in the baseline is worse than one that is**, because the next person to run
+it assumes their own change caused it — which is exactly the possibility I had to rule out here, by
+reading the manifest diff and confirming Garden's hash and bytes were identical across it. When you
+find a suite red for a reason that predates your work, fix the baseline as well as the suite.
+
+**The demo app's one held failure is identified by its FAILURE MESSAGE, not its test name.** The test
+is `b43_book_engine_migration_test.dart`'s *"book engine tabs preserve app behavior parity"*; the
+documented "owner-visibility" phrasing describes the assertion inside it, which fails as
+`Found 0 widgets with key 'generic-instance-card-nom-draft-1'`. Match on that, or a correct run reads
+as a differently-named new failure.
+
 There are **five**, and the demo app is the one that gets forgotten — it was omitted from a previous
 migration too, and a Chess regeneration broke it for a full day in 2026-08 because I was running the
 other four and calling that "the suites".
