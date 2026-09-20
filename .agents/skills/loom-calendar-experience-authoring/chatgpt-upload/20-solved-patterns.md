@@ -1222,3 +1222,90 @@ assuming your row will not be counted.
 The diff was pure addition. The Skill followed the instruction exactly. Only the demo-app suite —
 the one skipped as unnecessary because the change was "just JSON" — could see it, and it saw it in
 the form of a completely unrelated-looking `Bad state: No element` inside a finder.
+
+## 27. A response workflow's schema is part of the platform fan-out contract — `required` beyond the two supplied fields kills every row
+
+**Found in** Riverside Youth Soccer, 2026-09-20. **Already correct in** Neighborhood Book Club.
+
+**Requirement shape.** "Members RSVP to a practice; the coach can send a reminder to those who
+responded." The `event_rsvp` archetype fans a response row out to each member automatically.
+
+**The platform supplies exactly two fields, and the archetype doc says so.**
+`_fanOutEventRsvpResponseRows` creates each row with the event id and the member's fan id and
+**nothing else** — `docs/references/archetypes/event-rsvp.md` §4 calls that shape "required, not
+optional". Every response row in every community is born with those two fields alone.
+
+**Plausible but wrong** — the response row is modelled as if a person filled in a form, so the
+event's details and the reminder's content are declared required on it:
+
+```jsonc
+"soccer-practice-rsvp-response": {
+  "instanceDataSchema": {
+    "eventId":            { "type": "text", "required": true },
+    "fanId":              { "type": "fanId", "required": true },
+    "eventTitle":         { "type": "text", "required": true },   // no writer exists
+    "eventDate":          { "type": "date", "required": true },   // denormalised parent copy
+    "eventTime":          { "type": "time", "required": true },
+    "location":           { "type": "text", "required": true },
+    "fieldName":          { "type": "text", "required": true },
+    "reminderChannel":    { "type": "text", "required": true },   // belongs in transition inputs
+    "reminderBody":       { "type": "textarea", "required": true },
+    "reminderStatus":     { "type": "text", "required": true, "writableBy": "effect" },
+    "responseUpdatedAt":  { "type": "date", "required": true, "writableBy": "effect" }
+  }
+}
+```
+
+Every fan-out row is rejected with `Validation error on "eventTitle": Required field is missing or
+null`. **The parent event still creates and sits at `upcoming` with no response rows**, so the
+symptom appears downstream, far from the cause — and any workflow whose only writer is a transition
+on the response row becomes uncreatable too.
+
+**Verified correct** — required is exactly the two the platform supplies; everything else is
+optional, and reminder content comes from the transition's `inputs` rather than stored row data:
+
+```jsonc
+"soccer-practice-rsvp-response": {
+  "instanceDataSchema": {
+    "eventId":           { "type": "text",  "required": true },
+    "fanId":             { "type": "fanId", "required": true },
+    "reminderStatus":    { "type": "text",  "writableBy": "effect" },
+    "responseUpdatedAt": { "type": "date",  "writableBy": "effect" },
+    "responseHistory":   { "type": "list",  "writableBy": "effect" }
+  },
+  "transitions": [
+    { "id": "send-reminder", "action": "send_reminder",
+      "inputs": { "channel": { "required": true }, "messageBody": { "required": true } },
+      "effects": [
+        { "op": "createInstance", "workflowType": "soccer-reminder-notification",
+          "fields": { "recipientFanId": "{fanId}", "senderFanId": "$actor",
+                      "relatedScheduleId": "{eventId}",
+                      "channel": "{input.channel}", "messageBody": "{input.messageBody}" } } ] }
+  ]
+}
+```
+
+Book Club ships the conformant shape: its response schema is exactly `{eventId, fanId}` required, and
+`set-personal-reminder` takes its content from `inputs`. Garden Club adds only *optional*
+effect-written fields. Youth Soccer was the sole outlier among six `event_rsvp` communities.
+
+**Two rules that generalise past this archetype.**
+
+`required: true` together with `writableBy: "effect"` is **uncreatable by construction** — no creator
+can supply a field only an effect may write. And **a field with no writer anywhere is not merely
+empty, it is fatal when required**: `eventTitle` could never have been populated, because the parent
+declares `title`.
+
+**The fix's scope is the whole `createInstance` chain, not the schema that failed first.** Relaxing
+the response row alone moves the identical failure one hop downstream: a whole-string interpolation
+of a missing field resolves to **null**, and the created notification's own required set rejects it.
+Relax every schema on the chain in the same change.
+
+**What could not have caught this.** The package validates `pass` — every declaration is well-formed
+in isolation, and the defect is a relationship between a schema and a platform code path. Seed-backed
+tests cannot see it either: hand-authored `workflowInstances` carry full data, so they satisfy any
+required set, and **only the platform's own creation path ever runs the two-field shape.**
+
+**Before adding `required: true` to any workflow the platform instantiates** — a fan-out, a
+`createInstance` effect, a recurrence generator — find the creating call site and read exactly which
+fields it supplies.
