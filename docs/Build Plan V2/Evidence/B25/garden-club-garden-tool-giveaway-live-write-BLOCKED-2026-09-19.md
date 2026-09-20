@@ -1,5 +1,11 @@
 # B25 live walkthrough — Garden Club, `garden-tool-giveaway`
 
+> **SUPERSEDED 2026-09-19 (UTC 2026-09-20).** The device was recovered and the row was proven
+> live. See `garden-club-garden-tool-giveaway-live-write-2026-09-19.md`, which creates a fresh
+> listing as `loom-garden-coordinator-1` and claims it as `loom-garden-member-1` into the terminal
+> state `given`. This manifest is kept because its blocked-cause analysis and layer checks are
+> accurate and were re-confirmed by that run.
+
 **Workflow:** `garden-tool-giveaway`
 **Community:** Garden Club (`community_garden_club`)
 **Date:** 2026-09-19 (UTC 2026-09-20)
