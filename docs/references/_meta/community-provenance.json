@@ -61,9 +61,9 @@
       "sha256": "e82a8b39015268dba34e2782bb81613e247fa7c7f7e94e402a80309c5b439d97",
       "bytes": 112086,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "38f41976",
-      "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
+      "lastCommit": "1b5c9f70",
+      "lastCommitDate": "2026-09-19",
+      "lastCommitSubject": "fix(garden): seed the five unprovable B25 rows by ADDING instances, never mutating one"
     },
     "Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc": {
       "sha256": "7a7b48223d14f7ae50237af3a7c290f646eb84ca2c1efa4c0f54ec9d6b6fe1ff",
@@ -98,12 +98,12 @@
       "lastCommitSubject": "feat(tabletop-club): declare experience.notifications"
     },
     "Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc": {
-      "sha256": "a36df7d62bea301e2e686db11d401027efce93c5e92210564b63569761777504",
-      "bytes": 107479,
+      "sha256": "e5a732f845dfb677c589b747e012f1e59cba19b9b88986a0ab650a0b86e0581a",
+      "bytes": 106381,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "c6ec6116",
-      "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
+      "lastCommit": "0ebd4a60",
+      "lastCommitDate": "2026-09-20",
+      "lastCommitSubject": "fix(soccer): sync the package's docs twin -- I updated one copy of a two-copy contract"
     }
   }
 }
