@@ -2585,6 +2585,42 @@ any other pair of layers in this project** — the validator doesn't get an exem
 fix here is to retire the two obsolete checks and their finding-code declaration, not to build the
 mechanism the stale warning implied was still missing.
 
+### A response workflow's schema is part of the platform's fan-out contract
+
+Found 2026-09-20. The `event_rsvp` fan-out creates every response row with **exactly two fields** —
+`_fanOutEventRsvpResponseRows` (`local_workflow_engine_api.dart:1533-1591`) writes
+`{responseSpec.eventField: eventInstanceId, responseIdentityField: memberFanId}` and nothing else,
+deliberately; `docs/references/archetypes/event-rsvp.md` §4 calls that shape "required, not optional".
+
+**So any `required: true` beyond those two makes every fan-out row uncreatable**, and
+`required: true` combined with `writableBy: "effect"` is uncreatable *by construction* — no creator
+can supply a field only an effect may write. Youth Soccer declared **11** and was the sole outlier
+among six `event_rsvp` communities (Book Club's response schema is exactly `{eventId, fanId}`).
+Five of its required fields had no writer even in principle: they were named `eventTitle`,
+`eventDate`… while the parent's field is `title`, so nothing anywhere could have copied them.
+
+**Why nothing caught it, which is the part worth carrying:**
+
+- **The validator cannot see it.** Every declaration is well-formed in isolation; the defect is the
+  relationship between a package's schema and a platform code path.
+- **Seed-backed tests cannot see it.** Hand-authored `workflowInstances` seeds carry full data, so
+  they satisfy any required set. **Only the platform's own creation path runs the two-field shape**,
+  and no suite exercises it. A green suite over seeds proves nothing about fan-out.
+- **The parent does not roll back.** The event still creates and sits at `upcoming`; it simply has no
+  response rows. So the symptom is an absence downstream, far from the cause.
+
+**And the obvious fix moves the bug one hop instead of removing it.** Relaxing the response schema
+alone leaves `send-reminder`'s `createInstance` writing into a notification whose own required set is
+just as strict — and a whole-string interpolation of a missing field resolves to **null**
+(`effect_evaluator.dart:59-75`), which the same validator then rejects. **When a defect is "a required
+set is wrong", the scope is every schema on the `createInstance` chain**, not the one that failed
+first.
+
+The general rule: **a workflow created by the platform rather than by a person has a contract with the
+code that creates it.** Before adding `required: true` to any workflow that something else
+instantiates — a fan-out, a `createInstance` effect, a recurrence generator — find the creating call
+site and read exactly which fields it supplies.
+
 ### A comment saying "deliberately" is not a decision record
 
 Found 2026-09-19, by a root cause agent I dispatched specifically because one word in a comment made
