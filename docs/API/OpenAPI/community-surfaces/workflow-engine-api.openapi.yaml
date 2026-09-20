@@ -673,6 +673,15 @@ components:
         updatedAt:
           type: string
           format: date-time
+        createdByFanId:
+          type: string
+          description: >-
+            The fan who created this instance. Not required, so an older deployed service can omit
+            it without breaking a newer client. A client's `actor`-role resolution falls back to
+            this field whenever a transition names no `actorEqualsField`, so its absence silently
+            makes every actor-only render binding match nobody. The change feed's
+            `WorkflowInstanceSnapshot` already exposes this same value to the identical
+            read-visibility-filtered audience.
 
     AvailableTransition:
       type: object

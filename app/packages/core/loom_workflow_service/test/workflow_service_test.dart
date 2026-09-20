@@ -367,6 +367,7 @@ void main() {
         expect(item['workflowType'], _workflowType);
         expect(item['currentState'], 'draft');
         expect(item['updatedAt'], isA<String>());
+        expect(item['createdByFanId'], 'fan-batch-creator');
         final stored = await database.readInstance(
           item['instanceId'] as String,
         );
@@ -716,6 +717,40 @@ void main() {
       final body =
           jsonDecode(await response.readAsString()) as Map<String, dynamic>;
       expect(body['items'], isEmpty);
+    },
+  );
+
+  test(
+    'createInstance and queryInstances expose createdByFanId, so an '
+    'actor-only render binding can resolve its own creator',
+    () async {
+      await _installCreatableDefinition(database);
+
+      final createResponse = await service.handler(
+        _createRequest(
+          fanId: 'fan-alpha',
+          body: {
+            'workflowType': _workflowType,
+            'instanceData': {'ownerFanId': 'fan-alpha'},
+          },
+        ),
+      );
+      expect(createResponse.statusCode, 201);
+      final createBody =
+          jsonDecode(await createResponse.readAsString())
+              as Map<String, dynamic>;
+      expect(createBody['createdByFanId'], 'fan-alpha');
+
+      final listResponse = await service.handler(
+        _getRequest('/v1/communities/$_communityId/instances', 'fan-alpha'),
+      );
+      expect(listResponse.statusCode, 200);
+      final listBody =
+          jsonDecode(await listResponse.readAsString())
+              as Map<String, dynamic>;
+      final items = listBody['items'] as List<dynamic>;
+      expect(items, hasLength(1));
+      expect(items.single, containsPair('createdByFanId', 'fan-alpha'));
     },
   );
 
@@ -1205,6 +1240,7 @@ void main() {
         containsPair('title', 'After'),
       );
       expect(body['updatedAt'], isA<String>());
+      expect(body['createdByFanId'], 'fan-editor');
       final stored = await database.readInstance(_editableInstanceId);
       expect(jsonDecode(stored!.instanceData), containsPair('title', 'After'));
       expect(appAccessClient.callCount, 0);
@@ -1562,6 +1598,7 @@ void main() {
         acceptedJson['instanceData'] as Map<String, dynamic>,
         containsPair('decision', 'approved'),
       );
+      expect(acceptedJson['createdByFanId'], 'fan-owner');
 
       final stale = await service.handler(
         _transitionRequest(

@@ -77,6 +77,34 @@ void main() {
     );
 
     test(
+      'queryInstances decodes a server-supplied createdByFanId, so an '
+      'actor-only render binding can resolve its own creator',
+      () async {
+        final api = _api(
+          handler: (request) async => _jsonResponse({
+            'items': [
+              {
+                'instanceId': 'instance-1',
+                'workflowType': 'event',
+                'currentState': 'draft',
+                'instanceData': {'title': 'Town hall'},
+                'createdByFanId': 'fan-alpha',
+              },
+            ],
+            'pageInfo': {'hasMore': false, 'nextCursor': null},
+          }),
+        );
+
+        final page = await api.queryInstances(
+          tabId: 'ignored-tab',
+          fanId: 'ignored-fan',
+        );
+
+        expect(page.items.single.createdByFanId, 'fan-alpha');
+      },
+    );
+
+    test(
       'availableTransitionsAsync sends and decodes the render projection',
       () async {
         late http.Request sent;

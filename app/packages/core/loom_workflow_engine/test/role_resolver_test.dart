@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 import 'package:test/test.dart';
 
@@ -111,6 +115,57 @@ void main() {
         viewerRoleId: 'board-role',
       );
       expect(roles, {'receiver'});
+    },
+  );
+
+  test(
+    'a remote-decoded instance carrying a server-supplied createdByFanId '
+    'resolves actor for its creator, closing the "renders for nobody" gap',
+    () async {
+      final machine = _machine([
+        <String, dynamic>{
+          'id': 'noop',
+          'label': 'noop',
+          'from': <String>['open'],
+          'to': 'done',
+        },
+      ]);
+      final api = RemoteWorkflowEngineApi(
+        baseUri: Uri.parse('https://workflow.example.test/api/'),
+        communityId: 'community-one',
+        bearerTokenProvider: () async => 'test-token',
+        httpClient: MockClient(
+          (request) async => http.Response(
+            jsonEncode({
+              'items': [
+                {
+                  'instanceId': 'remote-instance',
+                  'workflowType': 'test-workflow',
+                  'currentState': 'open',
+                  'instanceData': <String, dynamic>{},
+                  'createdByFanId': 'fan-alpha',
+                },
+              ],
+              'pageInfo': {'hasMore': false, 'nextCursor': null},
+            }),
+            200,
+            headers: const {'content-type': 'application/json'},
+          ),
+        ),
+      );
+
+      final page = await api.queryInstances(
+        tabId: 'ignored-tab',
+        fanId: 'fan-alpha',
+      );
+      final roles = deriveInstanceRoles(
+        machine,
+        page.items.single,
+        viewerFanId: 'fan-alpha',
+        viewerRoleId: 'member',
+      );
+
+      expect(roles, {'actor'});
     },
   );
 

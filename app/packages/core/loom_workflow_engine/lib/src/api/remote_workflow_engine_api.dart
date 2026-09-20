@@ -582,8 +582,12 @@ class RemoteWorkflowEngineApi implements WorkflowEngineApi {
       instanceData: Map<String, dynamic>.from(
         value['instanceData'] as Map<String, dynamic>,
       ),
-      // The OpenAPI projection deliberately does not expose creator identity.
-      createdByFanId: createdByFanId,
+      // `createdByFanId` is an optional field on the wire so an older deployed
+      // service can omit it without breaking this client. When present, it is
+      // authoritative; the caller-supplied fallback covers that rollout gap
+      // and the endpoints (`applyTransition`, `updateInstanceFields`) whose
+      // response is the mutation result rather than a fresh read.
+      createdByFanId: value['createdByFanId'] as String? ?? createdByFanId,
     );
   }
 

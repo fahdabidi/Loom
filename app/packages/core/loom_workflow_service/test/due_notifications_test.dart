@@ -101,6 +101,17 @@ void main() {
     expect(bobData['recipientFanId'], _bob);
   });
 
+  test(
+    'a due reminder exposes createdByFanId, so an actor-only render '
+    'binding can resolve its own creator',
+    () async {
+      await _seed(service, recipient: _alice, dueAt: '2026-01-01T09:00:00Z');
+      final aliceItems = await _dueFor(service, _alice);
+      expect(aliceItems, hasLength(1));
+      expect(aliceItems.single['createdByFanId'], _alice);
+    },
+  );
+
   test('a reminder that has not come due yet is withheld', () async {
     await _seed(service, recipient: _alice, dueAt: '2099-01-01T09:00:00Z');
     expect(await _dueFor(service, _alice), isEmpty);

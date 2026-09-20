@@ -626,6 +626,7 @@ class WorkflowService {
               created.updatedAt,
               isUtc: true,
             ).toIso8601String(),
+            'createdByFanId': created.createdByFanId,
           }),
           headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
         );
@@ -820,6 +821,7 @@ class WorkflowService {
               instance.updatedAt,
               isUtc: true,
             ).toIso8601String(),
+            'createdByFanId': instance.createdByFanId,
           });
         }
         return Response(
@@ -4201,6 +4203,7 @@ class WorkflowService {
     'workflowType': instance.workflowType,
     'currentState': instance.currentState,
     'instanceData': _jsonSafeInstanceData(instance.instanceData),
+    'createdByFanId': instance.createdByFanId,
   };
 
   Map<String, dynamic> _visibleChangeInstanceJson(
@@ -4412,6 +4415,7 @@ class WorkflowService {
               after.updatedAt,
               isUtc: true,
             ).toIso8601String(),
+            'createdByFanId': after.createdByFanId,
           }),
           headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
         );
@@ -4580,6 +4584,7 @@ class WorkflowService {
               persistedAfter.updatedAt,
               isUtc: true,
             ).toIso8601String(),
+            'createdByFanId': persistedAfter.createdByFanId,
           }),
           headers: {..._jsonHeaders, 'x-loom-correlation-id': correlationId},
         );
