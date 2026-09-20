@@ -2585,6 +2585,53 @@ any other pair of layers in this project** — the validator doesn't get an exem
 fix here is to retire the two obsolete checks and their finding-code declaration, not to build the
 mechanism the stale warning implied was still missing.
 
+### A comment saying "deliberately" is not a decision record
+
+Found 2026-09-19, by a root cause agent I dispatched specifically because one word in a comment made
+me unwilling to write a ticket. `remote_workflow_engine_api.dart:585` reads:
+
+    // The OpenAPI projection deliberately does not expose creator identity.
+
+That sentence froze a one-line accident into policy. Nobody proposes the obvious fix, because the
+code says somebody already decided.
+
+**Nobody had.** The comment arrived with the client's own introducing commit (`54ed86d5`,
+"add remote API client") — the author documenting the spec's v1 shape, not recording a choice. The
+original spec commit enumerates its deliberate decisions explicitly (identity from the token,
+server-computed transitions, absent-not-redacted unreadable instances, non-specific 403s) and creator
+omission is **not among them**; that schema was simply lean, exposing neither creator nor `updatedAt`.
+And the later change-feed schema `WorkflowInstanceSnapshot` **exposes `createdByFanId` outright**, to
+an audience filtered by *the same* `readVisibleInstance` rule. So the "policy" had already been
+reversed for the identical set of callers, and nobody noticed the conflict.
+
+**The cost while it stood:** every instance object the remote path renders from carries `''` as its
+creator, so `role_resolver.dart:30`'s documented fallback (`actor` → the creator, when no transition
+declares `actorEqualsField`) can never match a real fan. Any binding whose only audience is `actor`
+**renders for nobody — including its own creator.** The instance persists, every call returns 200,
+and the card simply never appears.
+
+**Two checks that settle "is this omission deliberate?" cheaply**, and they are the reusable part:
+
+- **Read the introducing commit's own message**, and the spec commit's list of stated decisions. A
+  real decision is usually written down somewhere that is not the comment asserting it.
+- **Find the newest sibling schema or endpoint answering the same question.** If a later surface
+  already exposes the thing *to the same audience*, the boundary theory is dead on arrival.
+
+Worth separating two ideas this incident kept confusing: **the privacy boundary in this system is
+read visibility, not field redaction.** Unreadable instances are absent rather than redacted, and the
+one shipped anonymity feature (Masjid's donor visibility) works by `readGuard: actorEqualsField`,
+making the whole instance invisible. "You may read this instance but must not know who created it" is
+not a state this platform has.
+
+**And when a doc makes a normative promise, the packages relying on it are conformant and the
+platform is the defect.** `render-bindings.md` says `actor` resolves to the creator when no
+`actorEqualsField` exists. So "regenerate the two affected packages to declare `actorEqualsField`"
+would repair four state-bindings and leave the contract broken for every future package that uses the
+documented fallback — a fix aimed at the wrong layer, and expensive here because community JSON is
+Skill-authored. Same for "add a validator rule banning `actor`-only bindings": that codifies a
+platform defect as a permanent authoring restriction, which is exactly the retired `dead_role_binding`
+shape — a validator asserting a limitation the platform does not have.
+
 ### An unwritten field may be an honest declaration — read its comments before calling it an orphan
 
 Three "orphan field" findings in three days, all mine, all wrong, all produced the same way: grep for
