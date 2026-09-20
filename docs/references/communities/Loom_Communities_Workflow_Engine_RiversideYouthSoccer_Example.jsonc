@@ -1,6 +1,6 @@
 {
   "specVersion": 4,
-  "skillVersion": "3.3.0",
+  "skillVersion": "3.6.0",
   "packageId": "init_riverside_youth_soccer_v2",
   "communityId": "community_riverside_youth_soccer",
   "communityHandle": "riverside-youth-soccer",
@@ -616,7 +616,8 @@
         ],
         "renderBindings": [
           { "states": ["unpaid", "processing", "failed", "paid", "refunded"], "audience": "any", "tabId": "giving", "cardSurfaceFamily": "paymentCheckout", "bindingKind": "primary" },
-          { "states": ["paid", "refunded"], "audience": "any", "tabId": "home", "cardSurfaceFamily": "paymentCheckout", "bindingKind": "summary" }
+          { "states": ["paid", "refunded"], "audience": "any", "tabId": "home", "cardSurfaceFamily": "paymentCheckout", "bindingKind": "summary" },
+          { "states": ["unpaid", "processing", "failed", "paid", "refunded"], "audience": "any", "tabId": "admin", "cardSurfaceFamily": "paymentCheckout", "bindingKind": "primary" }
         ],
         "instanceDataSchema": {
           "registrationCaseId": { "type": "text", "required": true, "searchable": true, "displayIcon": "link", "labelTemplate": "Registration case: {value}", "displayContexts": ["detail"] },
@@ -817,6 +818,10 @@
             "id": "send-reminder", "label": "Send reminder", "icon": "notifications_active", "tone": "primary", "action": "set_reminder",
             "from": ["pending", "going", "maybe", "declined", "waitlisted"], "to": null,
             "guard": { "allowedRoleIds": ["soccer-coach"] },
+            "inputs": {
+              "reminderChannel": { "type": "text", "required": true },
+              "reminderBody": { "type": "textarea", "required": true }
+            },
             "effects": [
               { "op": "set", "key": "reminderStatus", "value": "sent" },
               { "op": "append", "key": "responseHistory", "value": { "response": "reminder-sent", "byFanId": "$actor", "at": "$timestamp" } },
@@ -824,8 +829,7 @@
                 "op": "createInstance", "workflowType": "soccer-reminder-notification",
                 "fields": {
                   "recipientFanId": "{fanId}", "senderFanId": "$actor", "relatedScheduleId": "{eventId}",
-                  "eventTitle": "{eventTitle}", "eventDate": "{eventDate}", "eventTime": "{eventTime}", "location": "{location}",
-                  "audienceLabel": "Guardian for this practice", "channel": "{reminderChannel}", "messageBody": "{reminderBody}",
+                  "audienceLabel": "Guardian for this practice", "channel": "{input.reminderChannel}", "messageBody": "{input.reminderBody}",
                   "sentAt": "$timestamp", "deliveryStatus": "sent", "changeRequests": []
                 }
               }
@@ -841,15 +845,8 @@
         "instanceDataSchema": {
           "eventId": { "type": "text", "required": true, "searchable": true, "displayContexts": [] },
           "fanId": { "type": "fanId", "required": true, "displayContexts": [] },
-          "eventTitle": { "type": "text", "required": true, "displayIcon": "sports_soccer", "labelTemplate": "{value}", "displayContexts": ["detail"] },
-          "eventDate": { "type": "date", "required": true, "displayIcon": "calendar_today", "labelTemplate": "Date: {value}", "displayContexts": ["detail"] },
-          "eventTime": { "type": "time", "required": true, "displayIcon": "schedule", "labelTemplate": "Time: {value}", "displayContexts": ["detail"] },
-          "location": { "type": "text", "required": true, "displayIcon": "location_on", "labelTemplate": "Location: {value}", "displayContexts": ["detail"] },
-          "fieldName": { "type": "text", "required": true, "displayIcon": "place", "labelTemplate": "Field: {value}", "displayContexts": ["detail"] },
-          "reminderChannel": { "type": "text", "required": true, "displayContexts": [] },
-          "reminderBody": { "type": "textarea", "required": true, "displayContexts": [] },
-          "reminderStatus": { "type": "text", "required": true, "writableBy": "effect", "displayContexts": [] },
-          "responseUpdatedAt": { "type": "date", "required": true, "writableBy": "effect", "displayContexts": [] },
+          "reminderStatus": { "type": "text", "writableBy": "effect", "displayContexts": [] },
+          "responseUpdatedAt": { "type": "date?", "writableBy": "effect", "displayContexts": [] },
           "responseHistory": { "type": "list", "writableBy": "effect", "displayContexts": [] }
         }
       },
@@ -1043,10 +1040,10 @@
           "recipientFanId": { "type": "fanId", "required": true, "displayIcon": "person", "labelTemplate": "Recipient: {value}", "displayContexts": ["detail"] },
           "senderFanId": { "type": "fanId", "required": true, "displayIcon": "sports", "labelTemplate": "Sent by: {value}", "displayContexts": ["tile", "detail"] },
           "relatedScheduleId": { "type": "text", "required": true, "searchable": true, "displayIcon": "event", "labelTemplate": "Schedule: {value}", "displayContexts": ["detail"] },
-          "eventTitle": { "type": "text", "required": true, "displayIcon": "sports_soccer", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "eventDate": { "type": "date", "required": true, "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "Date: {value}", "displayContexts": ["tile", "detail"] },
-          "eventTime": { "type": "time", "required": true, "displayIcon": "schedule", "labelTemplate": "Time: {value}", "displayContexts": ["tile", "detail"] },
-          "location": { "type": "text", "required": true, "displayIcon": "location_on", "labelTemplate": "Location: {value}", "displayContexts": ["tile", "detail"] },
+          "eventTitle": { "type": "text", "displayIcon": "sports_soccer", "labelTemplate": "{value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "eventDate": { "type": "date?", "sortable": true, "displayIcon": "calendar_today", "labelTemplate": "Date: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "eventTime": { "type": "time", "displayIcon": "schedule", "labelTemplate": "Time: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
+          "location": { "type": "text", "displayIcon": "location_on", "labelTemplate": "Location: {value}", "hideWhenEmpty": true, "displayContexts": ["tile", "detail"] },
           "audienceLabel": { "type": "text", "required": true, "displayIcon": "groups", "labelTemplate": "Audience: {value}", "displayContexts": ["tile", "detail"] },
           "channel": { "type": "text", "required": true, "displayIcon": "notifications", "labelTemplate": "Channel: {value}", "displayContexts": ["tile", "detail"] },
           "messageBody": { "type": "textarea", "required": true, "displayIcon": "message", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
@@ -1399,13 +1396,6 @@
         "instanceData": {
           "eventId": "soccer-practice-aug-18",
           "fanId": "soccer-guardian",
-          "eventTitle": "Riverside Rapids U12 practice",
-          "eventDate": "2026-08-18",
-          "eventTime": "17:30",
-          "location": "Riverside Sports Complex",
-          "fieldName": "North Field 2",
-          "reminderChannel": "In-app reminder center",
-          "reminderBody": "Practice starts at 5:30 PM on North Field 2. Bring water and shin guards.",
           "reminderStatus": "pending",
           "responseUpdatedAt": "2026-08-12T08:30:00-07:00",
           "responseHistory": [
