@@ -1,0 +1,93 @@
+# SHELL — adopt the in-repo field-label humanizer at all four sites
+
+**Status:** written 2026-09-25, **NOT dispatched** (user decided: adopt the humanizer everywhere).
+**Route:** `data/call_implementation_agent.sh --fresh`. Supersedes the open question in row-256.
+
+## The defect
+
+Field-label fallback behaviour disagrees with itself across four sites, and **`part18` disagrees with
+itself** — which is what makes this a conformance bug rather than an open product question:
+
+| Site | Fallback today |
+|---|---|
+| `part18_marketplace_rendering.dart:514` (`schema.labelTemplate ?? field`) | **raw key** |
+| `part18_marketplace_rendering.dart:629` (`?? member.key`) | **raw key** |
+| `part18_marketplace_rendering.dart:923` | **humanized**, via `_humanizeFactField` |
+| `part26_generic_instance_card.dart:403` | **humanized**, via `_humanizeFieldName` |
+| `part28_engine_native_calendar_surface.dart:2475` (`schema.labelTemplate ?? ''`) | **empty string** |
+
+Two of the sites already humanize, and the helpers are written and shipped. So the decision was only
+whether to adopt the existing behaviour everywhere — **user decided yes, 2026-09-25.**
+
+**Live reproduction, on a third surface:** a Cedar walkthrough found a chip rendering the literal raw
+key `requestInstanceId` on the spawned `hoa-committee-decision` card, which binds
+`cardSurfaceFamily: "approvalQueueItem"` — i.e. a `part18`-served surface, consistent with the split
+above.
+
+## What to build
+
+**Adopt one humanizer at all four sites.** `part26`'s `_humanizeFieldName` (camelCase → spaced Title
+Case, so `memberNotice` → "Member Notice") and `part18`'s `_humanizeFactField` are two implementations
+of one idea; **consolidate to a single shared helper** in `part08` and have all four sites call it,
+rather than leaving two helpers and adding two more call sites. A rule implemented twice gets a third
+variant later.
+
+- `part18:514` and `:629` — replace the raw-key fallback.
+- `part28:2475` — replace the empty-string fallback. **Note this is a real behaviour change**, not just
+  a label swap: a field with no `labelTemplate` currently renders *nothing* on the calendar surface and
+  will now render a humanized label. That is the intent of the decision, but call it out in the report.
+- `part18:923` and `part26:403` — repoint to the shared helper; behaviour unchanged.
+
+## The trap this ticket must NOT fall into
+
+**Humanizing is the wrong fix for internal fields, and doing it blindly makes them worse.** Cedar's
+`requestInstanceId` is `writableBy: "effect"` holding an opaque instance id. Humanized it renders
+*"Request Instance Id: community_cedar_commons_hoa_…"* — which dresses an internal identifier up as a
+user-facing fact, worse than the raw key it replaces.
+
+**The correct fix for that field is package-side** — `displayContexts: []` — and the opt-out mechanism
+already exists and is deliberate. Its semantics are documented in the renderer's own source at
+`part26_generic_instance_card.dart:420-422`: *"An empty list means 'never render this field anywhere'
+(used for internal/formula-only fields); only an omitted/null list means 'no restriction, show in every
+context' — the two must not be conflated."* `part18:181` agrees (`if (displayContexts == null) return
+true;`).
+
+**So this ticket humanizes the fallback and does not touch that distinction.** Preserve
+empty-list-means-never exactly as it is at every site you edit. Cedar's own `displayContexts: []` fix is
+Skill-authored and tracked separately — do not hand-edit the `.jsonc`.
+
+## The consequence worth stating in the report
+
+The platform's default is *show*, and the label fallback is the *raw key*, so the two defaults compound:
+**the least-annotated fields are the most exposed.** A field with no display metadata at all — the
+clearest signal its author never meant it to be seen — is currently rendered everywhere with a
+developer-facing name. This ticket fixes the label half. The exposure half is a candidate validator rule
+(a field that is `writableBy: effect` or `platform` with no `labelTemplate` and no `displayContexts` is
+almost certainly internal and should have to say so) — **note it, do not build it here.**
+
+## Regression tests
+
+- A field with **no `labelTemplate`** renders a humanized label at each of the four sites — four cases,
+  since the point is that they now agree.
+- A field with **`displayContexts: []`** renders **nowhere**, at every site. This is the guard against
+  the trap above and matters more than the humanizing tests.
+- A field with an explicit `labelTemplate` is **unchanged** — the humanizer is a fallback only.
+- `part28` specifically: a field with no `labelTemplate` previously rendered an empty string and now
+  renders a label; assert the new behaviour and note the old in the test name.
+
+Prove at least the first can fail by neutralising the shared helper.
+
+## Verification
+
+- **All five suites.** Baselines (2026-09-20): judges **525**, app shell **421 (+2)**, engine **341
+  (+5)**, service **168 (+1)** with both credential sets, demo app **261 + one known failure** matched
+  by `Found 0 widgets with key 'generic-instance-card-nom-draft-1'`.
+- **Expect text-finder churn.** Any test asserting a raw key appears — `find.text('requestInstanceId')`
+  — was asserting the defect and should assert the humanized form instead. Diff every changed assertion
+  and justify each; do not weaken a count to get green.
+- `flutter analyze` clean on the app shell.
+
+## Out of scope
+
+Community JSON, `docs/references/**`, the engine, the workflow service, the validator rule noted above,
+and the `displayContexts: []` fix for Cedar's `requestInstanceId`.
