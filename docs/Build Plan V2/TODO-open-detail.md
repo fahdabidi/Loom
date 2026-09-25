@@ -179,7 +179,48 @@ plus a `createInstance` into `hoa-owner-notification`. The package does not wait
 
 `new-milestone` — **archetype-owned bookkeeping is unimplemented**, so `grant_access`/`share` cannot populate the shared-with field a grant reads; blocks Cedar's `explicitReaderFanIds` ever being filled — see [document-library.md §6](../references/archetypes/document-library.md)
 
-### row-247 — Book Club regeneration is HELD by user decision — dispatching now would bake in a known loss permanently
+### row-247 — HOLD RELEASED 2026-09-25 by user decision; ticketed, not dispatched — ~~Book Club regeneration is HELD by user decision — dispatching now would bake in a known loss permanently~~
+
+> **HOLD RELEASED 2026-09-25. The condition this row waited for is MET, and two of the row's own
+> premises below are now false — read this before acting on anything in the original text.**
+> Ticket: [SKILL-bookclub-regeneration-release-hold.md](Tickets/SKILL-bookclub-regeneration-release-hold.md),
+> deliberately **not dispatched**.
+>
+> **The hold said "until the listing/loan backend exists so the community is regenerated ONCE against
+> the new API". That backend exists and the shell uses it.** All four paths in
+> `listing-loan-api.openapi.yaml` are served by the workflow service (`_matchesItemQueue`,
+> `_matchesItemQueueMember`, `_matchesItemQueueAdvance`, `_matchesQueueMemberships`) over
+> `item_queue_repository.dart`, Postgres-backed and covered by the RLS tests; the client is
+> `LoomItemQueueClient` (`part46`); and the shell routes by **action verb** —
+> `_usesServiceItemQueue = _remoteEngine != null && _declaresItemQueue`, any transition with
+> `action == 'join_queue' || 'leave_queue'` (`part36:543-551`, dispatched at `:838`). So regenerating
+> now *is* regenerating against the new API.
+>
+> **False premise 1 — the queue fields are not a loss to restore; they are superseded.** The shell
+> classifies `queuedFanIds` / `queueLength` / `myQueuePosition` as **legacy**
+> (`_isLegacyQueueField`), because the service owns queue state. The ticket excludes them explicitly.
+>
+> **False premise 2 — "six dead buttons / zero effects" is stale.** Zero effects on
+> `join-queue`/`leave-queue` is now **correct by design**; there is nothing for an effect to write.
+> Book Club still declares both transitions (2 occurrences) and **`c0e0355b` never removed them** —
+> its diff contains no `join_queue`/`leave_queue` lines at all.
+>
+> **So the real remaining loss is much smaller than this row implies:** the reading-material access
+> lists (`accessRequestedFanIds`, `approvedFanIds`). The reminder removal was `c0e0355b`'s deliberate
+> purpose and is correct. Everything else the row calls damage is either superseded or intentional.
+>
+> **How I got this wrong first, recorded because the mistake is reusable.** I reported "the
+> listing/loan backend does not exist — zero Dart references", with a control. Both halves were bad.
+> I grepped for `listing-loan` / `ListingLoan` / `listingLoan`; **the implementation is named "item
+> queue"**, so the search could never have hit it — the documented "when a name returns nothing,
+> search for the neighbourhood" trap, walked into immediately after invoking the control discipline.
+> And my control (`documentLibrary`, 32 hits) mostly matched a `cardSurfaceFamily` string rather than
+> a service client, so it **passed for the wrong reason**; the real evidence for that service is
+> `part42_document_client.dart`, which my query never distinguished. **A control that can pass on the
+> wrong mechanism is not a control.** The user caught it by challenging the control directly.
+>
+> The original text below is kept for its scoping of the create-time identity fix, which remains
+> correct and is carried into the ticket verbatim. Its hold rationale is superseded.
 
 `needs-skill-dispatch` — **HELD, NOT DISPATCHED — fold into Book Club's pending single regeneration.** All four affected workflows are Book Club's, and Book Club is **knowingly damaged and held by user decision** (`c0e0355b` removed its per-member `send-reminder`, shared-library queue/custody fields and reading-material access lists; a verified restore sits uninstalled at `~/.codex-skill-authoring-scratch/bookclub-restore-r2/`, held until the listing/loan backend exists so the community is regenerated ONCE against the new API). Dispatching this fix now would regenerate from the damaged HEAD and bake that loss in permanently — and the tracker's own warning applies: **verify any Book Club output against `c0e0355b^`, not against HEAD**, because HEAD is the damaged state and a diff against it reports the loss as faithfully preserved. **So this fix is queued to that regeneration, not dispatched separately.** SCOPED 2026-09-08: the fix is create-time identity in the PACKAGE, not a creator fallback in the engine.** (Root cause agent, session key `draft-binding-invisibility`.) **The fix I would have reached for is wrong, and that is the main result.** Falling back to `createdByFanId` when the actor field is null would break an intentional design: the docs deliberately give the **business party precedence over the creator** — justified with a charge created by a board member for another payer (`render-bindings.md`, `guards.md:392`) — so a generic creator fallback changes semantics rather than repairing missing initialization. **Verified by me in `role_resolver.dart:20-31`:** the loop takes the FIRST `actorEqualsField` guard and `break`s, and `createdByFanId` is used **only when no guard exists at all** (`if (!foundActorEqualsField)`), so a null field yields no actor and nobody matches. **The scoped fix (Skill dispatch, Book Club):** add `"prefill": {"nominatorFanId": "$actor"}` to the "Nominate a book" create action; change `nominatorFanId` to `"writableBy": "platform"` and required; **remove** the `nominatorFanId = $actor` effect from `submit-nomination` (ownership should survive submission and revision) while keeping the timestamp effect; and add a draft `creationGuard` requiring the member role plus `actorEqualsField: nominatorFanId`, so mismatched ownership fails creation including via direct API. **Three siblings confirmed by static inspection** (not live): `book-vote-response` (`voterFanId` on `confirm-vote`), `book-shared-library-item` (`ownerFanId` on `publish-listing`), `book-search-ai-digest` (`submitterFanId` on `submit-query`). **My 19-binding count was an over-count** — "the raw audience count is not the defect count"; other candidates already prefill their identity, and the audit should be by workflow/state/creation-path, not 19 mechanical replacements. **Existing invisible rows need a separate repair:** prefill only affects future creation, so the one verified draft (`..._il5zplsant0a`) needs `nominatorFanId` backfilled from its `created_by_fan_id`, applied ONLY to established self-owned workflow/state cases — creator-to-business-party copying is not valid generically.
 
