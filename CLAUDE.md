@@ -2650,6 +2650,64 @@ code that creates it.** Before adding `required: true` to any workflow that some
 instantiates — a fan-out, a `createInstance` effect, a recurrence generator — find the creating call
 site and read exactly which fields it supplies.
 
+### "Is this key consumed?" means resolution AND dispatch AND rendering — and a doc's field table is a contract
+
+Found 2026-09-25, when the user asked to see the product lines, the JSON and the resulting issue for a
+defect I had already explained to them four times. Assembling that evidence falsified my own
+explanation.
+
+**`bindingKind` is a REQUIRED grammar key that nothing in the shell reads.**
+`render-bindings.md:33` marks it `// REQUIRED`, `:49` lists it required, and `:553-560` documents it
+normatively — `primary` = "Full, interactive card — includes the action buttons", `summary` =
+"Compact/read-only card". Yet a `summary` binding renders a **fully interactive card** today. I had
+been telling the user "a summary card renders less" for two weeks.
+
+**Checking "is this consumed" requires all three stages, and I had checked one:**
+
+| Stage | Where | Reads `bindingKind`? |
+|---|---|---|
+| Resolution | `binding_resolver.dart:10-37` | No — filters on `states`, audience, `audienceMemberField` |
+| Card selection | `part27:364`, `part32:132` | No — keys on `cardSurfaceFamily` |
+| Rendering | the shell's `lib/` | No — **zero** reads; `part02:996` is a fixture *write* |
+
+A single `grep` showing the model parses it, the engine serializes it and the **validator** enforces
+rules premised on it is easy to misread as "it is wired". Parsing is not consuming. And the real
+drivers were elsewhere entirely: interactivity from transitions and guards per instance, editors from
+`states[].editGuard`, compactness from `displayContext`, which is **surface**-driven, never
+binding-driven.
+
+**The cost of this shape is paid by authors:** a required key plus validator rules for a distinction
+the platform ignores — and `workflow_validator.dart:607` actively *recommends* authoring
+`"bindingKind": "summary"`. Same family as the `deliberately` comment below: a confident artifact
+freezing an accident into policy.
+
+**Second lesson, and the one that cost more: a doc's field-table "Meaning" column is a normative
+promise, exactly like prose.** I told the user there was no contract requiring a state label to
+render, having searched `docs/references/reference/` for phrasings like "state label" and "shown". The
+sentence was in `workflow-grammar.md:279` all along:
+
+    | `label` | string | **yes** | Human-readable state name, shown in the UI |
+
+`label` is the **only required key** on a state and its documented meaning is display. So the packages
+are conformant and the shell is the defect — which flipped the whole decision from "what should count
+as evidence" to "fix the renderer", and it was the root cause agent that found the line.
+
+**My control had passed**, which is what made me confident: `bindingKind` appears 10 times in
+`render-bindings.md`, so the query mechanically worked. **A control proves your query runs; it does not
+prove you are querying the right file or the right wording.** This file already says a control does not
+prove the question is worth asking — this is the sharper version: when searching for a *contract*,
+search the grammar's own field tables, not only prose, and not only the doc whose subject you assume
+it is.
+
+**Third, smaller, and reusable: a comment claiming to be the only place something happens is not a
+census.** `part27:311` says it is *"the single place `cardSurfaceFamily` is ever switched on for
+rendering purposes."* It is not — `part32:132` switches on it too, intercepting the `table` family
+**before** the dispatcher is reached. I had enumerated "five affected cards" from that comment's
+promise; the real population was six, and the sixth is precisely the one a dispatcher-level fix would
+miss. **Grep for the key before trusting a comment that asserts singularity** — and note that the
+missed instance is disproportionately likely to be the one that breaks your fix, because it is missed
+for the same reason it is structurally different.
+
 ### A comment saying "deliberately" is not a decision record
 
 Found 2026-09-19, by a root cause agent I dispatched specifically because one word in a comment made
