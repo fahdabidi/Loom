@@ -215,7 +215,8 @@ void main() {
     });
 
     test(
-      'the held Book Club package records all four audience blocks',
+      'the Book Club package resolves all four actor audiences after '
+      'create-time identity',
       () async {
         final target = loomEvidenceTargets.singleWhere(
           (target) => target.extensionId == 'ext_neighborhood_book_club',
@@ -253,6 +254,9 @@ void main() {
               ),
             )
             .toList(growable: false);
+        final memberFanId = actorCandidates
+            .singleWhere((candidate) => candidate.roleId == 'book-member')
+            .fanId;
 
         final selections = <B25ActorAudienceRowSelection<String>>[
           for (final expected in expectedRows)
@@ -276,24 +280,33 @@ void main() {
         expect(selections, hasLength(4));
         expect(
           selections.where((selection) => selection.isBlockedByAudience),
-          hasLength(4),
-        );
-        expect(
-          selections.map((selection) => selection.blockedCause),
-          everyElement(
-            B25ActorAudienceResolutionFailure.absentActorEqualsFieldCause,
-          ),
+          isEmpty,
+          reason:
+              'create-time identity (d87f9875) means none of these four '
+              'rows should be blocked by an absent actorEqualsField any '
+              'more.',
         );
         for (var index = 0; index < expectedRows.length; index += 1) {
           final expected = expectedRows[index];
+          final selection = selections[index];
           expect(
-            selections[index].blockedReason,
-            allOf(
-              contains('workflow ${expected.workflowId}'),
-              contains('instance ${expected.instanceId}'),
-              contains('actorEqualsField ${expected.field}'),
-              contains('absent from the instance data'),
-            ),
+            selection.selector,
+            isNotNull,
+            reason:
+                'workflow ${expected.workflowId} should resolve a '
+                'renderer-approved actor',
+          );
+          expect(selection.selector, memberFanId);
+          final instance = package.experience.workflowInstances!.singleWhere(
+            (instance) => instance.instanceId == expected.instanceId,
+          );
+          expect(
+            instance.instanceData[expected.field],
+            memberFanId,
+            reason:
+                'workflow ${expected.workflowId} instance '
+                '${expected.instanceId} should carry create-time identity '
+                'in ${expected.field}',
           );
         }
       },
