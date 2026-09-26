@@ -82,8 +82,8 @@
       "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
     },
     "Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc": {
-      "sha256": "71e1f0688b7dffd1b29cb90a1066998f003abdf920523cac8dcb535837726957",
-      "bytes": 79881,
+      "sha256": "23acd52b316458ad10ddc09e1bb4e97101f9443b1b81841ea3c1d2182b8a6532",
+      "bytes": 81493,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "38f41976",
       "lastCommitDate": "2026-09-05",

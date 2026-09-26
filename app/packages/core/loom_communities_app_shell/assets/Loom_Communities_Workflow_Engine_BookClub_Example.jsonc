@@ -52,7 +52,9 @@
           "draft": { "label": "Draft", "tone": "info",
             "editableFields": ["title", "author", "reason", "genre", "meetingCycle"],
             "editGuard": { "allowedRoleIds": ["book-member"] },
-            "readGuard": { "allowedRoleIds": ["book-member"] } },
+            "readGuard": { "allowedRoleIds": ["book-member"] },
+            "creationGuard": { "allowedRoleIds": ["book-member"],
+              "actorEqualsField": { "key": "nominatorFanId" } } },
           "submitted": { "label": "Submitted", "tone": "warning",
             "readGuard": { "allowedRoleIds": ["book-member", "book-organizer"] } },
           "selected": { "label": "Selected for ballot", "tone": "positive", "isTerminal": true },
@@ -67,7 +69,6 @@
                 "filter": { "title": "{title}", "author": "{author}", "$state": "submitted" },
                 "op": "count", "comparator": "<", "compareTo": 1 } },
             "effects": [
-              { "op": "set", "key": "nominatorFanId", "value": "$actor" },
               { "op": "set", "key": "submittedAt", "value": "$timestamp" }
             ] },
           { "id": "revise-nomination", "label": "Edit nomination", "icon": "edit", "tone": "secondary",
@@ -84,7 +85,8 @@
           { "states": ["draft"], "audience": "actor", "tabId": "books",
             "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
             "actions": [ { "kind": "create", "label": "Nominate a book",
-              "byRoleIds": ["book-member"], "scope": "tab", "presentation": "fab" } ] },
+              "byRoleIds": ["book-member"], "scope": "tab", "presentation": "fab",
+              "prefill": { "nominatorFanId": "$actor" } } ] },
           { "states": ["submitted", "selected"], "audience": "any", "tabId": "books",
             "cardSurfaceFamily": "statusTimeline", "bindingKind": "summary" },
           { "states": ["withdrawn"], "audience": "actor", "tabId": "books",
@@ -108,7 +110,7 @@
           "meetingCycle": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "date_range", "labelTemplate": "Cycle: {value}",
             "displayContexts": ["tile", "detail"] },
-          "nominatorFanId": { "type": "fanId", "writableBy": "effect",
+          "nominatorFanId": { "type": "fanId", "required": true, "writableBy": "platform",
             "displayIcon": "badge_outlined", "labelTemplate": "Nominated by {value}",
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "submittedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true }
@@ -175,15 +177,16 @@
         "initialState": "pending",
         "states": {
           "pending": { "label": "Not confirmed", "tone": "info",
-            "editableFields": ["ballotId", "choice"], "editGuard": { "allowedRoleIds": ["book-member"] } },
+            "editableFields": ["ballotId", "choice"], "editGuard": { "allowedRoleIds": ["book-member"] },
+            "creationGuard": { "allowedRoleIds": ["book-member"],
+              "actorEqualsField": { "key": "voterFanId" } } },
           "voted": { "label": "Voted", "tone": "positive" }
         },
         "transitions": [
           { "id": "confirm-vote", "label": "Vote", "icon": "how_to_vote", "tone": "primary",
             "from": ["pending"], "to": "voted",
             "guard": { "allowedRoleIds": ["book-member"],
-                       "formula": "if(choice == null, false, true)" },
-            "effects": [ { "op": "set", "key": "voterFanId", "value": "$actor" } ] },
+                       "formula": "if(choice == null, false, true)" } },
           { "id": "change-vote", "label": "Change vote", "icon": "swap_horiz", "tone": "primary",
             "from": ["voted"], "to": null,
             "guard": { "actorEqualsField": { "key": "voterFanId" } },
@@ -208,7 +211,8 @@
             "cardSurfaceFamily": "formEntry", "bindingKind": "primary",
             "actions": [
               { "kind": "create", "label": "Cast a vote",
-                "byRoleIds": ["book-member"], "scope": "tab", "presentation": "fab" }
+                "byRoleIds": ["book-member"], "scope": "tab", "presentation": "fab",
+                "prefill": { "voterFanId": "$actor" } }
             ] },
           { "states": ["pending", "voted"], "audience": "actor", "tabId": "books",
             "cardSurfaceFamily": "formEntry", "bindingKind": "primary" }
@@ -220,7 +224,7 @@
             "displayIcon": "how_to_vote", "labelTemplate": "Ballot: {value}", "displayContexts": ["detail"] },
           "choice": { "type": "text", "writableBy": "formEntry",
             "displayIcon": "menu_book", "labelTemplate": "Voted for {value}", "displayContexts": ["tile", "detail"] },
-          "voterFanId": { "type": "fanId?", "writableBy": "effect", "hideWhenEmpty": true }
+          "voterFanId": { "type": "fanId", "required": true, "writableBy": "platform", "hideWhenEmpty": true }
         }
       },
 
@@ -466,21 +470,28 @@
             "from": ["active"], "to": null,
             "guard": { "allowedRoleIds": ["book-member"],
               "instanceDataEquals": { "key": "accessType", "value": "private" } },
-            "effects": [ { "op": "append", "key": "engagementAudit",
-              "value": { "event": "access-requested", "fanId": "$actor", "at": "$timestamp" } } ] },
+            "effects": [
+              { "op": "appendUnique", "key": "accessRequestedFanIds", "value": "$actor" },
+              { "op": "append", "key": "engagementAudit",
+                "value": { "event": "access-requested", "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "withdraw-access-request", "action": "withdraw_access_request", "label": "Withdraw access request", "icon": "undo", "tone": "secondary",
             "from": ["active"], "to": null,
             "guard": { "allowedRoleIds": ["book-member"],
               "instanceDataEquals": { "key": "accessType", "value": "private" } },
-            "effects": [ { "op": "append", "key": "engagementAudit",
-              "value": { "event": "access-request-withdrawn", "fanId": "$actor", "at": "$timestamp" } } ] },
+            "effects": [
+              { "op": "removeValue", "key": "accessRequestedFanIds", "value": "$actor" },
+              { "op": "append", "key": "engagementAudit",
+                "value": { "event": "access-request-withdrawn", "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "approve-access", "action": "grant_access", "label": "Approve access", "icon": "how_to_reg", "tone": "primary",
             "from": ["active"], "to": null,
             "guard": { "allowedRoleIds": ["book-organizer"] },
-            "inputs": { "member": { "type": "text", "required": true } },
-            "effects": [ { "op": "append", "key": "engagementAudit",
-              "value": { "event": "access-approved", "member": "{input.member}",
-                "fanId": "$actor", "at": "$timestamp" } } ] },
+            "inputs": { "member": { "type": "fanId", "required": true } },
+            "effects": [
+              { "op": "removeValue", "key": "accessRequestedFanIds", "value": "{input.member}" },
+              { "op": "appendUnique", "key": "approvedFanIds", "value": "{input.member}" },
+              { "op": "append", "key": "engagementAudit",
+                "value": { "event": "access-approved", "member": "{input.member}",
+                  "fanId": "$actor", "at": "$timestamp" } } ] },
           { "id": "share-within-club", "action": "share", "label": "Share within club", "icon": "group_add", "tone": "secondary",
             "from": ["active"], "to": null,
             "guard": { "allowedRoleIds": ["book-organizer"] },
@@ -521,6 +532,12 @@
             "displayContexts": ["tile", "detail"] },
           "engagementAudit": { "type": "list", "writableBy": "effect",
             "displayIcon": "fact_check_outlined", "labelTemplate": "{value.length} engagement events",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "accessRequestedFanIds": { "type": "fanId[]", "writableBy": "effect",
+            "displayIcon": "how_to_reg", "labelTemplate": "{value.length} pending access requests",
+            "hideWhenEmpty": true, "displayContexts": ["detail"] },
+          "approvedFanIds": { "type": "fanId[]", "writableBy": "effect",
+            "displayIcon": "verified_user_outlined", "labelTemplate": "{value.length} approved members",
             "hideWhenEmpty": true, "displayContexts": ["detail"] }
         }
       },
@@ -530,7 +547,9 @@
         "states": {
           "draft": { "label": "Draft listing", "tone": "info",
             "editableFields": ["title", "format", "condition", "listingMode"],
-            "editGuard": { "allowedRoleIds": ["book-member"] } },
+            "editGuard": { "allowedRoleIds": ["book-member"] },
+            "creationGuard": { "allowedRoleIds": ["book-member"],
+              "actorEqualsField": { "key": "ownerFanId" } } },
           "published": { "label": "In library", "tone": "positive",
             "editableFields": ["title", "format", "condition"],
             "editGuard": { "actorEqualsField": { "key": "ownerFanId" } } },
@@ -543,7 +562,6 @@
             "from": ["draft"], "to": "published",
             "guard": { "allowedRoleIds": ["book-member"] },
             "effects": [
-              { "op": "set", "key": "ownerFanId", "value": "$actor" },
               { "op": "set", "key": "availabilityState", "value": "available" }
             ] },
           { "id": "pause-listing", "action": "pause_listing", "label": "Pause listing", "icon": "pause_circle_outline", "tone": "secondary",
@@ -654,7 +672,8 @@
           { "states": ["draft"], "audience": "actor", "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary",
             "actions": [ { "kind": "create", "label": "List an item",
-              "byRoleIds": ["book-member"], "scope": "tab", "presentation": "fab" } ] },
+              "byRoleIds": ["book-member"], "scope": "tab", "presentation": "fab",
+              "prefill": { "ownerFanId": "$actor" } } ] },
           { "states": ["published"], "audience": "any", "tabId": "marketplace",
             "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" },
           { "states": ["given", "delisted", "lost"], "audience": "any", "tabId": "marketplace",
@@ -671,7 +690,7 @@
             "displayIcon": "verified_outlined", "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "listingMode": { "type": "text", "required": true, "writableBy": "formEntry",
             "displayIcon": "swap_horiz", "labelTemplate": "{value}", "displayContexts": ["tile", "detail"] },
-          "ownerFanId": { "type": "fanId?", "writableBy": "effect",
+          "ownerFanId": { "type": "fanId", "required": true, "writableBy": "platform",
             "displayIcon": "person_outline", "labelTemplate": "Owner: {value}",
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
           "pendingBorrowerFanId": { "type": "fanId?", "writableBy": "effect",
@@ -818,7 +837,9 @@
         "initialState": "draft",
         "states": {
           "draft": { "label": "Draft query", "tone": "info",
-            "editableFields": ["query"], "editGuard": { "allowedRoleIds": ["book-member"] } },
+            "editableFields": ["query"], "editGuard": { "allowedRoleIds": ["book-member"] },
+            "creationGuard": { "allowedRoleIds": ["book-member"],
+              "actorEqualsField": { "key": "submitterFanId" } } },
           "open": { "label": "Digest open", "tone": "positive",
             "editableFields": ["query", "curatedSummary"],
             "editGuard": { "allowedRoleIds": ["book-member", "book-organizer"] } },
@@ -832,7 +853,6 @@
             "from": ["draft"], "to": "open",
             "guard": { "allowedRoleIds": ["book-member"] },
             "effects": [
-              { "op": "set", "key": "submitterFanId", "value": "$actor" },
               { "op": "set", "key": "submittedAt", "value": "$timestamp" }
             ] },
           { "id": "save-digest", "action": "curate", "label": "Save digest", "icon": "bookmark", "tone": "primary",
@@ -867,10 +887,11 @@
           { "states": ["draft"], "audience": "actor", "tabId": "books",
             "cardSurfaceFamily": "searchAiAnswer", "bindingKind": "primary",
             "actions": [ { "kind": "create", "label": "Ask the club",
-              "byRoleIds": ["book-member"], "scope": "tab", "presentation": "fab" } ] },
-          { "states": ["open"], "audience": "any", "tabId": "books",
+              "byRoleIds": ["book-member"], "scope": "tab", "presentation": "fab",
+              "prefill": { "submitterFanId": "$actor" } } ] },
+          { "states": ["open", "saved"], "audience": "any", "tabId": "books",
             "cardSurfaceFamily": "searchAiAnswer", "bindingKind": "primary" },
-          { "states": ["saved", "withdrawn"], "audience": "any", "tabId": "books",
+          { "states": ["withdrawn"], "audience": "any", "tabId": "books",
             "cardSurfaceFamily": "searchAiAnswer", "bindingKind": "summary" }
         ],
         "visibility": { "default": "membersOnly" },
@@ -894,7 +915,7 @@
           "staleCitationReports": { "type": "list", "writableBy": "effect",
             "displayIcon": "report_outlined", "labelTemplate": "{value.length} citation reports",
             "hideWhenEmpty": true, "displayContexts": ["detail"] },
-          "submitterFanId": { "type": "fanId?", "writableBy": "effect", "hideWhenEmpty": true },
+          "submitterFanId": { "type": "fanId", "required": true, "writableBy": "platform", "hideWhenEmpty": true },
           "submittedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true },
           "savedAt": { "type": "date?", "writableBy": "effect", "sortable": true, "hideWhenEmpty": true }
         }
@@ -1055,7 +1076,7 @@
         "createdByFanId": "book-member",
         "instanceData": { "title": "The Night Watchman", "author": "Louise Erdrich",
           "reason": "Great discussion potential and a strong local-history angle.", "genre": "Historical fiction",
-          "meetingCycle": "October 2026" } },
+          "meetingCycle": "October 2026", "nominatorFanId": "book-member" } },
       { "instanceId": "nom-submitted-1", "workflowType": "book-nomination", "currentState": "submitted",
         "createdByFanId": "book-member",
         "instanceData": { "title": "Circe", "author": "Madeline Miller",
@@ -1076,7 +1097,7 @@
         "instanceData": { "ballotId": "vote-august", "choice": "Circe", "voterFanId": "book-member" } },
       { "instanceId": "vresp-2", "workflowType": "book-vote-response", "currentState": "pending",
         "createdByFanId": "book-member",
-        "instanceData": { "ballotId": "vote-august", "choice": "The Song of Achilles" } },
+        "instanceData": { "ballotId": "vote-august", "choice": "The Song of Achilles", "voterFanId": "book-member" } },
 
       { "instanceId": "meeting-sept", "workflowType": "book-meeting-rsvp", "currentState": "open",
         "createdByFanId": "book-organizer",
@@ -1109,11 +1130,13 @@
         "instanceData": { "title": "Circe author background (members only)", "author": "Madeline Miller",
           "source": "Madeline Miller official site", "version": "v1",
           "publicationDate": "2026-07-01", "accessType": "private",
-          "materialUrl": "https://www.madelinemiller.com/circe/" } },
+          "materialUrl": "https://www.madelinemiller.com/circe/",
+          "accessRequestedFanIds": ["book-member"] } },
 
       { "instanceId": "item-draft", "workflowType": "book-shared-library-item", "currentState": "draft",
         "createdByFanId": "book-member",
-        "instanceData": { "title": "Circe (hardcover)", "format": "Book", "condition": "Good", "listingMode": "loan" } },
+        "instanceData": { "title": "Circe (hardcover)", "format": "Book", "condition": "Good", "listingMode": "loan",
+          "ownerFanId": "book-member" } },
       { "instanceId": "item-loan-available", "workflowType": "book-shared-library-item", "currentState": "published",
         "createdByFanId": "book-member",
         "instanceData": { "title": "The Song of Achilles (paperback)", "format": "Book", "condition": "Like new",
@@ -1149,7 +1172,7 @@
 
       { "instanceId": "digest-draft", "workflowType": "book-search-ai-digest", "currentState": "draft",
         "createdByFanId": "book-member",
-        "instanceData": { "query": "What historical context does Circe draw on?" } },
+        "instanceData": { "query": "What historical context does Circe draw on?", "submitterFanId": "book-member" } },
       { "instanceId": "digest-open", "workflowType": "book-search-ai-digest", "currentState": "open",
         "createdByFanId": "book-member",
         "instanceData": { "query": "Best discussion questions for The Song of Achilles?",
