@@ -433,6 +433,47 @@ The effect declares `filter: { "checkoutInstanceId": "{id}", "$state": "active" 
 
   **Verify by size, not count, after the transfer as well as after the capture** — the existing rule about 88 empty files being indistinguishable from 88 real ones in `wc -l` applies twice over when the files have moved hosts.
 
+  ### Step 6 runbook, assembled 2026-09-26 — every line has a recorded failure behind it
+
+  Not a plan, a checklist. Each step exists because skipping it has already cost something.
+
+  1. **Start the emulator on Windows** (AVD `loom_win`). Checked 2026-09-26: `adb devices` lists
+     **nothing** and the adb daemon was not even running, so this is genuinely down, not merely
+     untunnelled. ~72s with WHPX. Then `adb -s emulator-5554 get-state` must print `device` **before**
+     anything else — a vanished device is infrastructure, never evidence about a workflow, and two
+     consecutive Garden walkthroughs were spent learning that.
+  2. **Build the instrumented APK on the VM** — Linux has no symlink restriction — with
+     `--target=integration_test/workflow_ui_evidence_test.dart` **and both** `--dart-define`s
+     (`LOOM_PRELOAD_EXAMPLE_COMMUNITIES`, `LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS`). The prebuilt
+     drive path supplies **no** defines, so an APK missing them captures nothing and reads as a tool
+     failure rather than a build mistake.
+  3. **Transfer the APK to Windows and `adb install -r -g`.** The `-g` pre-grants
+     `POST_NOTIFICATIONS`; without it the Android 13+ prompt steals focus and **every frame is refused**
+     — 88 of them, once, with the run otherwise looking complete.
+  4. **Capture from Windows**, `--mode full-b25`, with an explicit `--evidence-root`. `full-b25` is the
+     only canonical mode; `targeted-precheck` output must never be committed as bar evidence, and the
+     tool says so itself.
+  5. **Copy the frames to the VM** — `scp`/`rsync`, **not** git, because `*.png` is gitignored and a
+     commit moves nothing. Then verify **by size and non-zero-ness at both ends**, not by count.
+  6. **Judge on the VM, in the same sitting.** The frames are transient and uncommitted, so a judge run
+     deferred to "later" has nothing to read. Verdicts are now born countable and gated (`1b7d5b79`),
+     so a verdict missing its `**Workflow:**` lines fails loudly instead of counting zero in silence.
+  7. **Include product-doc reconciliation as an explicit per-community rubric item** in the judge brief
+     (row-295, folded here rather than run as nine separate dispatches).
+  8. **Commit the manifests.** A capture run that does not commit its manifest has proven nothing, and
+     every manifest must record `skillVersion` + `sha256` — which is exactly what let today's staleness
+     check find that 13 Book Club and Ad-Free manifests no longer match their packages.
+  9. **Report `b25Proven` and the bar separately.** The capture tool's `b25Proven` and
+     `check_b25_status.sh`'s figure measure different things and have been conflated before. And under
+     the 2026-09-25 ruling the judge half is invalid corpus-wide until this campaign replaces it, so no
+     combined completion figure is quotable until then.
+
+  **Backend pre-flight, confirmed 2026-09-26:** all six `loom` pods `1/1`, and the stack *serves* rather
+  than merely runs — Keycloak returned a real OIDC discovery document, app-access answered **401**
+  (auth required) and workflow-service **404** (no such route). Those are answers; only `000` would mean
+  unreachable. Re-check after any heavy build, because a whole-node stall leaves pods `Running` while
+  long-lived connections are already broken.
+
 - [ ] `evidence` — **Regenerating Book Club and Ad-Free INVALIDATED 13 of their own live-write manifests, by design. Step 6's walkthrough half is no longer "already current" for those two communities.** Measured 2026-09-25 by comparing each manifest's recorded `sha256` against the current provenance manifest.
 
   | Community | Manifests recording a sha | Recorded | Current | Verdict |
