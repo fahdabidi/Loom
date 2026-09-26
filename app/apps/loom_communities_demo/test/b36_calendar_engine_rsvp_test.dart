@@ -210,7 +210,20 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.byIcon(Icons.check_circle_outline), findsNothing);
+      // Tone "positive" (the event's initial "open" state) legitimately
+      // renders a check-circle inside its own state badge -- confirm it
+      // lives there, and nowhere else, rather than asserting it is absent.
+      final stateBadge = find.byKey(
+        const ValueKey('workflow-state-badge-$_gameNightId'),
+      );
+      expect(
+        find.descendant(
+          of: stateBadge,
+          matching: find.byIcon(Icons.check_circle_outline),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
     });
 
     testWidgets('calendar fixture declares per-member response instances', (

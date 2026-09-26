@@ -989,6 +989,13 @@ class _EquipmentLoanArchetypeCardState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              _WorkflowStateBadge(
+                machine: widget.resolved.machine,
+                instance: _instance,
+                modernTheme: widget.modernTheme,
+                displayContext: widget.displayContext,
+              ),
+              const SizedBox(height: 12),
               WorkflowFactPillRow(
                 key: ValueKey(
                   'equipment-loan-facts-${_instance.instanceId}-${widget.displayContext}',
@@ -1735,6 +1742,13 @@ class _DocumentLibraryArchetypeCardState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              _WorkflowStateBadge(
+                machine: widget.resolved.machine,
+                instance: _instance,
+                modernTheme: widget.modernTheme,
+                displayContext: widget.displayContext,
+              ),
+              const SizedBox(height: 12),
               WorkflowFactPillRow(
                 key: ValueKey(
                   'document-library-facts-${_instance.instanceId}-${widget.displayContext}',
@@ -3058,6 +3072,13 @@ class _SearchAiAnswerArchetypeCardState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              _WorkflowStateBadge(
+                machine: widget.resolved.machine,
+                instance: _instance,
+                modernTheme: widget.modernTheme,
+                displayContext: widget.displayContext,
+              ),
+              const SizedBox(height: 12),
               if (query != null && query.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),

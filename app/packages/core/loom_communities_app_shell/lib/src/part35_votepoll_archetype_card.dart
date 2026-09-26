@@ -240,6 +240,12 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _WorkflowStateBadge(
+              machine: widget.resolved.machine,
+              instance: instance,
+              modernTheme: widget.modernTheme,
+            ),
+            const SizedBox(height: 12),
             Text(
               title,
               key: ValueKey('votepoll-attendance-title-${instance.instanceId}'),
@@ -313,6 +319,12 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _WorkflowStateBadge(
+              machine: widget.resolved.machine,
+              instance: instance,
+              modernTheme: widget.modernTheme,
+            ),
+            const SizedBox(height: 12),
             if (round != null && round.isNotEmpty)
               Text(
                 'Round: $round',

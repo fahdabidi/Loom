@@ -548,15 +548,82 @@ class _StateBadge extends StatelessWidget {
           children: [
             Icon(icon, size: 18, color: contentColor),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: contentColor,
-                fontWeight: FontWeight.w700,
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: contentColor,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+Color _stateToneColor(BuildContext context, String? tone, {Color? fallback}) =>
+    switch (tone) {
+      'positive' => Colors.green.shade700,
+      'warning' => Colors.orange.shade800,
+      'negative' => Theme.of(context).colorScheme.error,
+      'info' => Theme.of(context).colorScheme.primary,
+      _ => fallback ?? Theme.of(context).colorScheme.primary,
+    };
+
+IconData _stateToneIcon(String? tone) => switch (tone) {
+  'positive' => Icons.check_circle_outline,
+  'warning' => Icons.warning_amber_outlined,
+  'negative' => Icons.cancel_outlined,
+  'info' => Icons.info_outline,
+  _ => Icons.pending_outlined,
+};
+
+/// The declared-state badge every bespoke archetype card renders at the top
+/// of its Card column. workflow-grammar.md's `states` field table marks
+/// `label` REQUIRED and "shown in the UI" -- this widget is the single
+/// implementation of that contract for the bespoke archetype cards.
+/// [GenericWorkflowInstanceCard] and `ExportWizardArchetypeCard` predate it
+/// and deliberately keep their own, richer badges -- do not migrate them.
+class _WorkflowStateBadge extends StatelessWidget {
+  const _WorkflowStateBadge({
+    required this.machine,
+    required this.instance,
+    this.modernTheme,
+    this.displayContext,
+  });
+
+  final LoomWorkflowStateMachine machine;
+  final WorkflowInstance instance;
+  final LoomCardTheme? modernTheme;
+
+  /// Distinguishes this badge's key when the same instance is rendered more
+  /// than once at a time (a marketplace tile and its detail dialog share one
+  /// instance id). Omit when a card only ever renders once per instance.
+  final String? displayContext;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = machine.states[instance.currentState];
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: _StateBadge(
+        key: ValueKey(
+          'workflow-state-badge-${instance.instanceId}'
+          '${displayContext == null ? '' : '-$displayContext'}',
+        ),
+        icon: _stateToneIcon(state?.tone),
+        label: state?.label ?? instance.currentState,
+        foreground: _stateToneColor(
+          context,
+          state?.tone,
+          fallback: modernTheme?.accent,
+        ),
+        accent: modernTheme?.accent,
       ),
     );
   }

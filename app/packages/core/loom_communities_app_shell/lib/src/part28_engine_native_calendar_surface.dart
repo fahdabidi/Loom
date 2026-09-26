@@ -2694,6 +2694,8 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _WorkflowStateBadge(machine: widget.machine, instance: _instance),
+            const SizedBox(height: 12),
             if (title != null && title.isNotEmpty) ...[
               Text(
                 title,
