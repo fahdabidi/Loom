@@ -26,17 +26,50 @@ above.
 
 ## What to build
 
-**Adopt one humanizer at all four sites.** `part26`'s `_humanizeFieldName` (camelCase → spaced Title
-Case, so `memberNotice` → "Member Notice") and `part18`'s `_humanizeFactField` are two implementations
-of one idea; **consolidate to a single shared helper** in `part08` and have all four sites call it,
-rather than leaving two helpers and adding two more call sites. A rule implemented twice gets a third
-variant later.
+**CORRECTED 2026-09-26 BEFORE DISPATCH — the population was undercounted. There are THREE
+implementations, not two, and a whole file was missing from the site list.** Swept
+`app/packages/core/loom_communities_app_shell/lib/` myself rather than trusting the enumeration below,
+and `part32_engine_native_list_surface.dart` never appeared in it:
+
+| Implementation | Kind | camelCase → Title | Handles `_` |
+|---|---|---|---|
+| `part18:1002` `_humanizeFactField` | top-level | yes | **yes** (`replaceAll('_', ' ')`) |
+| `part26:824` `_humanizeFieldName` | **class method** | yes | no |
+| `part32:590` `_humanizeFieldName` | top-level | yes | no |
+
+`part26`'s and `part32`'s bodies are **character-identical** — the same regex, the same capitalisation,
+duplicated across two files. `part18`'s differs **behaviourally**: a field named `foo_bar` renders
+"Foo bar" through `part18` and stays `foo_bar` through the other two. So this is not "two
+implementations of one idea" but three, one of which silently disagrees.
+
+**`part32` matters more than its omission suggests: it is the `table` renderer**, intercepting that
+family at `:132` before the dispatcher is reached. Leaving it out would make table column labels
+humanize differently from every other surface — a fix landing on some instances of the class and not
+the rest, which is exactly the shape this repo keeps recording.
+
+**Adopt ONE shared helper in `part08` and have every site below call it.** Delete all three local
+implementations; do not leave a single duplicate behind. **Decide the underscore question explicitly
+and state it in the report** — `part18`'s behaviour (underscores become spaces) is the superset and is
+almost certainly right, but it is a real behaviour change for the other two sites and must be a
+decision, not a side effect of whichever body you copied.
+
+Call sites, all of which must end up on the shared helper:
 
 - `part18:514` and `:629` — replace the raw-key fallback.
 - `part28:2475` — replace the empty-string fallback. **Note this is a real behaviour change**, not just
   a label swap: a field with no `labelTemplate` currently renders *nothing* on the calendar surface and
   will now render a humanized label. That is the intent of the decision, but call it out in the report.
 - `part18:923` and `part26:403` — repoint to the shared helper; behaviour unchanged.
+- **`part32:390` and `:396`** — repoint to the shared helper. These are the two sites the original
+  ticket missed, and both are genuine `template.isEmpty` / `label.isEmpty` fallbacks.
+- `part26:387`, `:805` and `:993` — repoint whatever still resolves to a local helper. `:993` calls
+  `_humanizeFactField`, which resolves to `part18`'s top-level function because these are `part` files
+  of one library; check each call resolves to the shared helper after the change rather than assuming.
+
+**A `part` file caveat that will bite otherwise:** these files share one library scope, so two
+top-level helpers with the same name in different `part` files would not compile — which is why
+`part26`'s is a method and `part32`'s is top-level. When you add the shared helper to `part08`, the
+existing top-level names must be removed in the same change or the library will not build.
 
 ## The trap this ticket must NOT fall into
 
