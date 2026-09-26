@@ -1582,9 +1582,50 @@ Grep every dispatch diff for weakened assertions — changed `hasLength(N)`, `ex
 
 ### The five suites, and their baselines
 
-**RE-MEASURED 2026-09-20 by me, all five, on a quiet box, after a Youth Soccer package
-regeneration.** Use these over the per-row figures below where they disagree; the rows are kept for
-their reasoning.
+**RE-MEASURED 2026-09-25 by me, all five, on a quiet box (91.7% idle, 4.5 GiB available), after the
+Book Club regeneration `d87f9875`.** Use these over every figure below where they disagree.
+
+| Suite | Measured 2026-09-25 | 2026-09-20 | Accounted? |
+|---|---|---|---|
+| UX judges | **525**, exit 0 | 525 | exact match |
+| App shell | **421** (+2 skipped), exit 0 | 421 (+2) | exact match |
+| Workflow engine | **345** (+1 skipped) = **346 cases**, exit 0 | 341 (+5) = 346 | **total identical**; four PG tests that previously skipped actually ran. Skips going DOWN is the direction that means more was proven |
+| Workflow service | **165** (+1) **−3**, all 3 proven environmental | 168 (+1) = 169 | total 169, exact. See the contention note below |
+| Demo app | **261 + 1 failure, and it is a DIFFERENT failure** | 261 + 1 known | the old known failure is **GONE**. See below — this is the fix working |
+
+**The demo app's long-standing known failure is fixed, and a different test went red in the same run.
+Do not read that as a wash.** `b43_book_engine_migration_test.dart`'s owner-visibility check —
+`Found 0 widgets with key 'generic-instance-card-nom-draft-1'` — **now passes**, because `d87f9875`
+gave `book-nomination` create-time identity, so a draft has a rendering identity and its own author
+can see it. That failure had been held deliberately since `89bfb7f2` and is the one the baseline told
+you to expect.
+
+What is red instead is `b25_actor_audience_resolution_test.dart`'s *"the held Book Club package
+records all four audience blocks"*, which **asserts the defect still exists**: it reads the shipped
+package and requires all four seeds to be blocked by an absent `actorEqualsField`. All four are now
+repaired, so the filtered list is empty where it wanted four. **It is better evidence than the failure
+it replaced** — `b43` proved one workflow, this proves all four at once. Ticketed as
+`Tickets/SHELL-invert-bookclub-audience-block-test.md`; the expected end state is the first fully
+green demo-app run (**262, 0 failed**).
+
+**The general shape, which cost real time to read correctly here: when a fix lands, the suite that
+goes red may be the one that was guarding the defect's presence.** Two tests pointed at the same
+repair from opposite directions, and only one of them was in the baseline. So a failure whose name you
+do not recognise is not automatically new damage — read its *message*, then ask whether your own
+change made its premise false. The baseline rule ("identified by its FAILURE MESSAGE, not its test
+name") is what made this quick; the missing half is that a **newly** red test can also be a success
+signal.
+
+**Three service PostgreSQL tests time out under concurrency, not just the RLS one.** Measured
+2026-09-25: `postgres_transaction_rollback_integration_test`,
+`postgres_guard_refusal_integration_test` and `postgres_idempotency_race_integration_test` all failed
+with `TimeoutException` in the full run, and **all three passed isolated at `--concurrency=1` in 13s,
+9s and 7s** — far inside the 30s limit. The documented RLS note generalises: several PG-heavy files
+share one port-forward, and whichever set happens to overlap is the set that times out. RLS itself
+passed this time. Re-run isolated before filing anything, and never record a service baseline from a
+run where any of them timed out.
+
+**Superseded — the 2026-09-20 measurement**, kept for its reasoning:
 
 | Suite | Measured | Previously recorded | Delta accounted? |
 |---|---|---|---|
@@ -1592,7 +1633,7 @@ their reasoning.
 | App shell | **421** (+2 skipped), exit 0 | 421 (+2) | exact match |
 | Workflow engine | **341** (+5 skipped), exit 0 | 330 (+5) | +2 mine (declared-count verified); **+9 unverified** prior drift |
 | Workflow service | **168** (+1 skipped), exit 0 | 166 (+1) | +2 mine. The skip of **1** is what proves the PostgreSQL tests ran |
-| Demo app | **261** + exactly **1** known held failure | 212 + 1 | +49 unverified prior drift; the held failure is unchanged |
+| Demo app | **261** + exactly **1** known held failure | 212 + 1 | +49 unverified prior drift. **SUPERSEDED 2026-09-25: that held failure is now FIXED** — see the 2026-09-25 table above |
 
 **The judges suite was already red before this session, and its baseline did not say so.**
 `community_package_provenance_test.dart` was failing because the provenance manifest had been stale
@@ -1640,7 +1681,7 @@ the single test in isolation before calling it a regression; a failed `expect` i
 matter"). Do not file an RLS defect, and do not weaken the test's timeout, without an isolated run
 first. Equally, do not record a service baseline from a run where it timed out — the pass count is
 one short.
-| Demo app | `app/apps/loom_communities_demo` | **212 passed + 1 KNOWN FAILURE = 213** (0 skipped) — re-measured 2026-09-13. **This suite is deliberately RED, and you need to know exactly what red means here before you read a run.** The one failure is `b43_book_engine_migration_test.dart`'s **owner-visibility** check (`Neighborhood Book Club owner visibility 0/1`), added by `89bfb7f2`. It fails in ~24s on a real assertion — zero `generic-instance-card-nom-draft-1` widgets — never via a watchdog. **It fails because the defect is real and its fix is HELD:** `nominatorFanId` is stamped only on submission, so a `draft` has no rendering identity and its own author cannot see it; the repair is create-time identity in the **package**, and Book Club's regeneration is held by user decision (TODO row-247) until the listing/loan backend exists. **So: 1 failure is expected; 2 or more is new, and so is any failure with a different name.** Do not weaken or delete that check to get green — it is the only signal that will tell us when the package is repaired. Totals moved 160 → 187 across **ten** B25 capture commits, every increment attributable: `9c25054f` +1, `7ba98707` +1, `43168718` +1, `51bb1cb3` +2, `b5bc8880` +2, `e5c26a57` +1, `093c6c61` +4, `ec3a7f0c` +3, `a99c69d8` +2, `690e9abf` +4, `c82a1cff` +3, `89bfb7f2` +3. **A total that moves up needs its reason named as much as one that moves down** |
+| Demo app | `app/apps/loom_communities_demo` | **SUPERSEDED 2026-09-25 — the held failure described in this row is FIXED and this row's premise no longer holds; read the 2026-09-25 table above instead.** The hold was released, `d87f9875` gave `book-nomination` create-time identity, and the owner-visibility check now passes. Kept for its reasoning and its commit-by-commit accounting. ~~**212 passed + 1 KNOWN FAILURE = 213** (0 skipped) — re-measured 2026-09-13. This suite is deliberately RED, and you need to know exactly what red means here before you read a run.~~ The one failure was `b43_book_engine_migration_test.dart`'s **owner-visibility** check (`Neighborhood Book Club owner visibility 0/1`), added by `89bfb7f2`. It fails in ~24s on a real assertion — zero `generic-instance-card-nom-draft-1` widgets — never via a watchdog. **It fails because the defect is real and its fix is HELD:** `nominatorFanId` is stamped only on submission, so a `draft` has no rendering identity and its own author cannot see it; the repair is create-time identity in the **package**, and Book Club's regeneration is held by user decision (TODO row-247) until the listing/loan backend exists. **So: 1 failure is expected; 2 or more is new, and so is any failure with a different name.** Do not weaken or delete that check to get green — it is the only signal that will tell us when the package is repaired. Totals moved 160 → 187 across **ten** B25 capture commits, every increment attributable: `9c25054f` +1, `7ba98707` +1, `43168718` +1, `51bb1cb3` +2, `b5bc8880` +2, `e5c26a57` +1, `093c6c61` +4, `ec3a7f0c` +3, `a99c69d8` +2, `690e9abf` +4, `c82a1cff` +3, `89bfb7f2` +3. **A total that moves up needs its reason named as much as one that moves down** |
 
 **On the engine's −2, recorded rather than waved away.** The suite is green (exit 0, skips unchanged
 at 5), so this is not a failure — but a total moving *down* is the shape that can hide a deletion, so
