@@ -2,9 +2,28 @@
 
 **Status:** written 2026-09-25, **NOT dispatched** (user decided: implement it).
 **Route:** `data/call_implementation_agent.sh --fresh`.
-**BLOCKED ON:** [SKILL-summary-orphan-primary-bindings.md](SKILL-summary-orphan-primary-bindings.md).
-**Do not dispatch this until that has landed and the orphan sweep reports 0** — otherwise five states
-across three communities lose reachable actions, including a refund request and a resubmit path.
+**UNBLOCKED 2026-09-26. The prerequisite is MET — `check_orphan_summary_bindings.py` reports
+0 orphans, exit 0.** ~~BLOCKED ON [SKILL-summary-orphan-primary-bindings.md](SKILL-summary-orphan-primary-bindings.md); five states across three communities lose reachable actions.~~
+
+**The "five orphan states" framing was wrong and you must not act on it.** Re-measured: only **two**
+were real, and both are fixed — Book Club's `book-search-ai-digest`/`saved` (`d87f9875`) and Ad-Free's
+`ad-off-community-checkout`/`funded` (`a8c01fe5`), each moved into its tab's existing primary.
+
+**The other three were never defects, and this matters directly to your work.** Cedar's
+`hoa-architectural-request`/`approved`, `/denied` and `hoa-committee-decision`/`changes-needed` have
+exits that are **`transitionRelated` cascade targets** — `reopen-case`, `owner-resubmitted`,
+`owner-withdraw` are fired by a *sibling workflow's effects*, never by a button. Their member-shaped
+guards authorize the cascade, not an affordance.
+
+**So when your change makes `summary` read-only, those three states WILL lose rendered buttons, and
+that is CORRECT — it is the defect being repaired, not a regression.** Do not exempt Cedar, do not add
+a primary binding to "restore" them, and do not weaken a test that observes it. Firing one of those
+transitions directly desynchronizes the workflow pair (the decision advances while the request stays
+put, with no revision submitted); they are reachable today **only** because `bindingKind` is inert,
+which is the very thing you are fixing.
+
+If a test breaks because a Cedar action disappears from a summary card, the test was asserting the
+defect. Report it and say which one — do not quietly adjust it.
 
 ## The defect
 
@@ -66,8 +85,15 @@ Swept across all ten packages:
   changes.
 - For **115 state-coverages** a `primary` binding elsewhere also covers the state, so actions survive
   on the primary and the summary correctly becomes a status view. **That is the intended outcome.**
-- **0 orphaned states** — *after* the prerequisite ticket lands. Re-run that sweep and confirm 0
-  before you begin; if it is not 0, stop and say so rather than proceeding.
+- **0 orphaned states — already true as of 2026-09-26.** Re-run the gate yourself before you begin and
+  confirm it still holds:
+
+      python3 "docs/Build Plan V2/Tools/code/check_orphan_summary_bindings.py"
+
+  Expect `ORPHANED summary states WITH live exits: 0`, exit 0, and **3 states listed under EXCLUDED as
+  cascade-only**. Those three are Cedar's, they are reported deliberately rather than hidden, and they
+  are **not** work for you. If the orphan count is anything but 0, stop and say so rather than
+  proceeding.
 
 ## Regression tests
 
