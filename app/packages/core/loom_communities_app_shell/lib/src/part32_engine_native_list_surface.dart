@@ -587,15 +587,6 @@ class _WorkflowTableArchetypeCardState
   }
 }
 
-String _humanizeFieldName(String key) {
-  final spaced = key.replaceAllMapped(
-    RegExp(r'(?<=[a-z0-9])([A-Z])'),
-    (match) => ' ${match.group(0)}',
-  );
-  if (spaced.isEmpty) return spaced;
-  return '${spaced[0].toUpperCase()}${spaced.substring(1)}';
-}
-
 Iterable<String> _deriveActorOrReceiverRolesForInstance(
   Map<String, LoomWorkflowStateMachine> definitions,
   WorkflowInstance instance,

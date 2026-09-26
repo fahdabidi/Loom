@@ -2504,14 +2504,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
         .replaceAll('{value}', '')
         .replaceAll(RegExp(r'[:\-–—]+\s*$'), '')
         .trim();
-    if (label.isNotEmpty) return label;
-    final spaced = key.replaceAllMapped(
-      RegExp(r'(?<=[a-z0-9])([A-Z])'),
-      (match) => ' ${match.group(0)}',
-    );
-    return spaced.isEmpty
-        ? spaced
-        : '${spaced[0].toUpperCase()}${spaced.substring(1)}';
+    return label.isNotEmpty ? label : _humanizeFieldName(key);
   }
 
   Widget _editor(String key, InstanceDataField schema) {

@@ -944,3 +944,16 @@ String _reviewTrustFor(String category) {
   }
   return 'Private member details stay protected.';
 }
+
+/// Renders an instance-data field's key as a human-readable label, for use
+/// when a workflow schema declares no explicit `labelTemplate`. Splits
+/// camelCase word boundaries and underscores into separate words and
+/// capitalizes the first letter. Shared by every schema-driven card and list
+/// surface so a field's fallback label reads the same everywhere it appears.
+String _humanizeFieldName(String key) => key
+    .replaceAllMapped(
+      RegExp(r'([a-z])([A-Z])'),
+      (match) => '${match[1]} ${match[2]}',
+    )
+    .replaceAll('_', ' ')
+    .replaceFirstMapped(RegExp(r'^.'), (match) => match[0]!.toUpperCase());

@@ -511,7 +511,10 @@ class WorkflowFactPillRow extends StatelessWidget {
       if (schema.hideWhenEmpty && _isEmpty(value)) {
         continue;
       }
-      final label = _renderLabel(schema.labelTemplate ?? field, value);
+      final label = _renderLabel(
+        schema.labelTemplate ?? _humanizeFieldName(field),
+        value,
+      );
       if (label.trim().isEmpty) {
         continue;
       }
@@ -626,7 +629,7 @@ class WorkflowFactPillRow extends StatelessWidget {
             continue;
           }
           final memberLabel = _renderLabel(
-            member.value.labelTemplate ?? member.key,
+            member.value.labelTemplate ?? _humanizeFieldName(member.key),
             memberValue,
           );
           if (memberLabel.trim().isEmpty) {
@@ -920,7 +923,7 @@ class _WorkflowFactParagraph extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _humanizeFactField(field),
+              _humanizeFieldName(field),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: foreground.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w600,
@@ -999,13 +1002,6 @@ class _WorkflowFanFact extends StatelessWidget {
   }
 }
 
-String _humanizeFactField(String field) => field
-    .replaceAllMapped(
-      RegExp(r'([a-z])([A-Z])'),
-      (match) => '${match[1]} ${match[2]}',
-    )
-    .replaceAll('_', ' ')
-    .replaceFirstMapped(RegExp(r'^.'), (match) => match[0]!.toUpperCase());
 
 class WorkflowCardSurfaceTemplateRenderer extends StatelessWidget {
   const WorkflowCardSurfaceTemplateRenderer({

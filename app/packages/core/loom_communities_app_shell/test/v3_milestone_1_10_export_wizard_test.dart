@@ -253,8 +253,8 @@ bool _fixtureRendersAsParagraph(InstanceDataField schema, Object? value) {
       value.toString().length > (schema.maxLength ?? 80);
 }
 
-// Mirrors `_humanizeFactField` in
-// `lib/src/part18_marketplace_rendering.dart`.
+// Mirrors `_humanizeFieldName` in
+// `lib/src/part08_garden_and_helpers.dart`.
 String _humanizeFixtureFactField(String field) => field
     .replaceAllMapped(
       RegExp(r'([a-z])([A-Z])'),

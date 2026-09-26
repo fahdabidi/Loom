@@ -1023,6 +1023,62 @@ void main() {
     },
   );
 
+  testWidgets(
+    'Calendar detail editor label for a field with no labelTemplate is '
+    'humanized -- underscores included, which the pre-shared-helper fallback '
+    'in this file did not handle',
+    (tester) async {
+      final installed = (await tester.runAsync(
+        () => _install(
+          'calr-humanizer-fallback',
+          configure: (source) {
+            final experience = source['experience'] as Map<String, dynamic>;
+            final definitions =
+                experience['workflowDefinitions'] as Map<String, dynamic>;
+            final event = definitions['event-rsvp'] as Map<String, dynamic>;
+            final open =
+                (event['states'] as Map<String, dynamic>)['open']
+                    as Map<String, dynamic>;
+            (open['editableFields'] as List<dynamic>).add('contact_email');
+            (event['instanceDataSchema'] as Map<String, dynamic>)
+                ['contact_email'] = <String, dynamic>{
+              'type': 'text',
+              'storage': 'inline',
+            };
+            final instances =
+                experience['workflowInstances'] as List<dynamic>;
+            final friday =
+                instances.firstWhere(
+                      (instance) =>
+                          (instance as Map<String, dynamic>)['instanceId'] ==
+                          'event-friday-game-night',
+                    )
+                    as Map<String, dynamic>;
+            (friday['instanceData']
+                as Map<String, dynamic>)['contact_email'] =
+                'organizer@example.com';
+          },
+        ),
+      ))!;
+      try {
+        await tester.pumpWidget(_calendar(installed, 'tabletop-organizer'));
+        await _selectAgenda(tester, 'event-friday-game-night', 0);
+        final editor = find.byKey(
+          const ValueKey(
+            'event-rsvp-editor-event-friday-game-night-contact_email',
+          ),
+        );
+        await _pumpUntil(tester, editor);
+        await tester.ensureVisible(editor);
+        expect(find.text('contact_email'), findsNothing);
+        expect(find.text('Contact_email'), findsNothing);
+        expect(find.text('Contact email'), findsOneWidget);
+      } finally {
+        await tester.runAsync(installed.dispose);
+      }
+    },
+  );
+
   testWidgets('recurring edit scope saves only the selected occurrence', (
     tester,
   ) async {

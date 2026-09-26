@@ -821,14 +821,6 @@ class _GenericWorkflowInstanceCardState
     );
   }
 
-  String _humanizeFieldName(String key) {
-    final spaced = key.replaceAllMapped(
-      RegExp(r'(?<=[a-z0-9])([A-Z])'),
-      (match) => ' ${match.group(0)}',
-    );
-    if (spaced.isEmpty) return spaced;
-    return '${spaced[0].toUpperCase()}${spaced.substring(1)}';
-  }
 }
 
 /// Generic rendering for a list-valued instance field whose items are maps.
@@ -990,7 +982,7 @@ class _GenericInstanceListField extends StatelessWidget {
             for (final entry in otherValues) ...[
               const SizedBox(height: 4),
               Text(
-                '${_humanizeFactField(entry.key)}: ${entry.value}',
+                '${_humanizeFieldName(entry.key)}: ${entry.value}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: foreground.withValues(alpha: 0.78),
                 ),
