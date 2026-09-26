@@ -534,6 +534,21 @@ permissions came from (a 2026-09-02 SQL recipe, not any install).
     2. publish workflow definitions      (the section below)
     3. install the community package     (App Access role permissions)
 
+**REFINED 2026-09-26, measured twice: step 3 is conditional, and the gate decides it.**
+`check_permission_parity.sh` builds its expected side from the **repo's** package assets
+(`_exportRequestBody(ParsedCommunityPackage)`) and posts them to App Access's own deriver, so it
+compares *repo-derived* against *live rows* — which makes it a **detector of a missing install**, not
+merely an auditor of live data. Book Club (`d87f9875`) and Ad-Free (`a8c01fe5`) were both regenerated
+that day and parity stayed green **without** an install, because binding, schema, `prefill` and
+`writableBy` changes do not alter what permissions derive.
+
+**So: after any regeneration run BOTH gates — `check_role_parity.sh` (role existence) and
+`check_permission_parity.sh` (exact permission-id sets) — and install when either fails.** Together
+they cover the two ways a regeneration fails to reach App Access: a new or renamed role with no live
+row, and a changed action set whose grants are stale. **Do not install reflexively:** install invokes
+the undeclared-group-role sweep, which bypasses `deleteRole`'s holder protections, so it is not a free
+no-op. Steps 1 and 2 are unconditional; step 3 is what the gates tell you.
+
 Then run `check_permission_parity.sh` — **in the post-deploy audit, not ad hoc**. That gate existed
 and reported six real violations for days while nobody ran it: a gate nobody runs is a gate that
 does not exist, which is the same failure this file records for the other parity gates.
