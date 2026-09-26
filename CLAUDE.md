@@ -1591,7 +1591,18 @@ Book Club regeneration `d87f9875`.** Use these over every figure below where the
 | App shell | **421** (+2 skipped), exit 0 | 421 (+2) | exact match |
 | Workflow engine | **345** (+1 skipped) = **346 cases**, exit 0 | 341 (+5) = 346 | **total identical**; four PG tests that previously skipped actually ran. Skips going DOWN is the direction that means more was proven |
 | Workflow service | **165** (+1) **−3**, all 3 proven environmental | 168 (+1) = 169 | total 169, exact. See the contention note below |
-| Demo app | **261 + 1 failure, and it is a DIFFERENT failure** | 261 + 1 known | the old known failure is **GONE**. See below — this is the fix working |
+| Demo app | **262, exit 0, ZERO failures, zero skipped** | 261 + 1 known | **this suite is now GREEN.** See below |
+
+**The demo app suite is green for the first time — so ANY failure in it is now new.** For months this
+row told you to expect exactly one failure and to identify it by its message. That is no longer true:
+`d87f9875` fixed the held defect and `4192dbb8` inverted the test that had been asserting the defect
+still existed. **The bar for this suite is now 262 passed, 0 failed, 0 skipped.** A single failure is
+a regression, not a known quantity, and there is no longer any failure you should read past.
+
+`flutter analyze` on `app/apps/loom_communities_demo` reports **2 pre-existing issues** — a
+`flutter_lints` include that cannot be resolved when analyzing from the `app/` root, and an unused
+`_availableIdentitiesDiagnostic` in `b25_product_doc_role_resolution_test.dart:263`. Both were
+A/B'd against HEAD (2 with the change, 2 without), so a **third** issue here is yours.
 
 **The demo app's long-standing known failure is fixed, and a different test went red in the same run.
 Do not read that as a wash.** `b43_book_engine_migration_test.dart`'s owner-visibility check —
