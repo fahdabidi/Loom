@@ -18,8 +18,8 @@
   "algorithm": "sha-256",
   "packages": {
     "Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc": {
-      "sha256": "dd455f4890eec4fb71d6dc9ef189f9ef2c60e225effb07f59cb72a9dbd16a44c",
-      "bytes": 88007,
+      "sha256": "13b894604b5baf0f41a5a6bb75525c871f117848bfe79cb2ec203d0f0db36936",
+      "bytes": 88021,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "38f41976",
       "lastCommitDate": "2026-09-05",
@@ -85,9 +85,9 @@
       "sha256": "23acd52b316458ad10ddc09e1bb4e97101f9443b1b81841ea3c1d2182b8a6532",
       "bytes": 81493,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "38f41976",
-      "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
+      "lastCommit": "d87f9875",
+      "lastCommitDate": "2026-09-25",
+      "lastCommitSubject": "feat(book-club): release the hold -- access lists, create-time identity, saved binding"
     },
     "Loom_Communities_Workflow_Engine_Phase1_TabletopClub_Example.jsonc": {
       "sha256": "e639a2f837e8e828231f7cc505e628c7b67246fdef5614b417cfaf870d5476b2",
