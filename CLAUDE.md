@@ -708,6 +708,49 @@ Three habits, in the order they would have saved the most time:
   callers, any symbol from the same feature. Four of the five above were real, working code sitting
   under a name I had assumed rather than checked.
 
+### A member-guarded transition on a board-facing workflow is often a cascade target, not a missing button
+
+Found 2026-09-26, by a Root Cause Agent I dispatched specifically to attack my own framing — and it
+did. I was one approval away from regenerating a community to "fix" something that was correct.
+
+**The shape that fooled me:** Cedar's `hoa-committee-decision` has `changes-needed` bound only as
+`summary` on a board-only tab, while its two exits (`owner-resubmitted`, `owner-withdraw`) are guarded
+`allowedRoleIds: ["hoa-member"]`. Read from the render-bindings table alone that is textbook
+"guarded role cannot see the instance" — the documented defect this file already records.
+
+**It is nothing of the kind. Those transitions are `transitionRelated` CASCADE TARGETS.**
+`hoa-architectural-request`'s `resubmit-request` and `withdraw-request` name them in their effects
+(verified: all five `transitionRelated` effects in that workflow target the decision). The engine
+resolves a cascade target with `fanId:` the **same acting fan**, so the member-shaped guard exists to
+**authorize the cascade, not to offer a button**. The member's real action lives on the sibling
+workflow, which already has a member-visible primary; the decision record follows automatically.
+
+**So before diagnosing "the guarded role has no surface for this transition", grep every other
+workflow in the package for a `transitionRelated` effect naming that `transitionId`.** The render
+bindings cannot answer reachability, because the capability can live in a neighbour's `effects`.
+
+Three consequences worth keeping:
+
+- **Do not retire them as redundant.** A cascade whose target is missing fails **silently** — a target
+  guard or lookup failure deliberately does not affect the source — so deleting one breaks the sibling
+  with no error anywhere.
+- **Do not surface them either.** Firing a mirror transition directly desynchronizes the pair, because
+  the mirror carries no cascade back: the decision goes `superseded` while the request sits in
+  `changes-needed` with no revision submitted. This is live today only because `bindingKind` is inert,
+  and a "fix" adding a primary binding would have made it *more* prominent.
+- **A precedent transfers on its discriminator, not its silhouette.** I leaned on Youth Soccer's
+  `bfef838d`, whose real discriminator was that **no cascade writer existed anywhere** — the capability
+  was absent from the system. Cedar's exists twice over. Same silhouette, opposite diagnosis. When
+  citing a precedent, state what made the earlier case *true* and check that specific thing, not the
+  resemblance.
+
+**And it broke a gate I had written hours earlier.** `check_orphan_summary_bindings.py` flagged all
+three of these, so its "must report 0" exit condition was **permanently unpassable** and would have
+blocked the `bindingKind` work forever while inviting exactly the wrong repair. It now excludes
+cascade-only states and **prints them rather than dropping them**, A/B'd to prove the exclusion is
+precise: disabled, exactly those three flag; enabled, zero. A gate that cannot pass is as broken as one
+that cannot fail.
+
 ### A workflow can be perfectly valid and still have an outcome nobody can reach
 
 The 2026-09-08 B25 campaign drove all ten communities live. **Four of them had an intended outcome no
