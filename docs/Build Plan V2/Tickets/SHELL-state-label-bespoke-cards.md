@@ -177,12 +177,17 @@ Consolidating all three onto one helper is an optional follow-up, explicitly not
 Nothing outside the app shell: no definition publish, no package install, no vocabulary copy, no
 deploy. This is pure rendering, so the multi-layer trap does not apply here.
 
-- **Run all five suites** — "verified means all five". Baselines as re-measured 2026-09-20: judges
-  **525**, app shell **421 (+2 skipped)**, engine **341 (+5)**, service **168 (+1)** with BOTH
-  credential sets, demo app **261 + exactly one known failure**.
-- **The demo app's one expected failure is identified by its FAILURE MESSAGE, not its test name**:
-  `Found 0 widgets with key 'generic-instance-card-nom-draft-1'` in
-  `b43_book_engine_migration_test.dart`. Two failures, or a differently-named one, is yours.
+- **Run all five suites** — "verified means all five". Baselines **re-measured 2026-09-25**: judges
+  **525**, app shell **421 (+2 skipped)**, engine **346 cases** (`345 +1` with PostgreSQL
+  credentials; `341 +5` without), service **169 cases** (`168 +1`) with BOTH credential sets,
+  demo app **262, exit 0, ZERO failures**.
+- **The demo app suite is GREEN — ANY failure in it is yours.** This bullet previously told you to
+  expect one known failure matching `Found 0 widgets with key 'generic-instance-card-nom-draft-1'` in
+  `b43_book_engine_migration_test.dart`. **That is obsolete**: `d87f9875` fixed the underlying defect
+  and `4192dbb8` inverted the test that had been asserting it still existed. There is no failure here
+  you should read past.
+- **Three service PostgreSQL tests time out under concurrency** — transaction-rollback, guard-refusal
+  and idempotency-race. Re-run any alone at `--concurrency=1` before filing a regression.
 - **Watch for newly-ambiguous text finders.** The demo-app harness pumps real packages, so any
   existing `find.text(...)` expecting a state word exactly once — a facet or history entry echoing
   "Cancelled" — can now find two. **Diff every changed `findsOneWidget → findsNWidgets` and justify

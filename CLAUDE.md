@@ -1648,9 +1648,23 @@ run where any of them timed out.
 
 **The judges suite was already red before this session, and its baseline did not say so.**
 `community_package_provenance_test.dart` was failing because the provenance manifest had been stale
-for **Garden Club since 2026-09-19** — Garden's sha256 and byte count were unchanged, so only the
-`lastCommit` metadata was out of date, which is enough to fail "updater rendering is byte-identical".
+for **Garden Club since 2026-09-19**. ~~Garden's sha256 and byte count were unchanged, so only the
+`lastCommit` metadata was out of date, which is enough to fail "updater rendering is byte-identical".~~
 Regenerating the manifest turned the suite green.
+
+**CORRECTED 2026-09-25 by reading the test: a stale `lastCommit` CANNOT fail that test, so the
+explanation above was wrong even though the fix was right.** The test *deliberately does not shell
+out to git* — its `commitMetadataFor` callback feeds each package's **existing** `lastCommit`, date
+and subject straight back in, with a comment saying this is so it runs in history-less checkouts. So
+the only thing "updater rendering is byte-identical" can catch is **sha256/bytes drift** or a missing
+entry. Whatever was wrong with Garden, it was not the commit metadata alone.
+
+**And a consequence worth knowing before it looks like drift: `lastCommit` is ALWAYS one commit stale
+for the package you just changed.** The updater records the last commit that touched each file, and
+you necessarily regenerate *before* committing — so the commit it is about to become part of does not
+exist yet. Book Club sat at the previous commit through a fully green judges run on 2026-09-25 and
+corrected itself at the next regeneration. **Do not chase it**: it is self-healing, it fails nothing,
+and re-running the updater to "fix" it just moves the staleness to whatever you commit next.
 
 **A red suite that is not in the baseline is worse than one that is**, because the next person to run
 it assumes their own change caused it — which is exactly the possibility I had to rule out here, by

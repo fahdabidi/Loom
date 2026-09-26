@@ -79,9 +79,16 @@ Prove at least the first can fail by neutralising the shared helper.
 
 ## Verification
 
-- **All five suites.** Baselines (2026-09-20): judges **525**, app shell **421 (+2)**, engine **341
-  (+5)**, service **168 (+1)** with both credential sets, demo app **261 + one known failure** matched
-  by `Found 0 widgets with key 'generic-instance-card-nom-draft-1'`.
+- **All five suites.** Baselines **re-measured 2026-09-25**: judges **525**, app shell **421 (+2)**,
+  engine **346 cases** (`345 +1 skipped` with PostgreSQL credentials; `341 +5` without), service
+  **169 cases** (`168 +1`) with both credential sets, demo app **262, exit 0, ZERO failures**.
+- **The demo app suite is GREEN now — any failure in it is yours.** Earlier copies of this ticket told
+  you to expect one known failure matching `Found 0 widgets with key 'generic-instance-card-nom-draft-1'`.
+  **That is obsolete**: `d87f9875` fixed the defect and `4192dbb8` inverted the test that asserted it.
+  Do not read past a failure here on the strength of the old instruction.
+- **Three service PostgreSQL tests time out under concurrency** — transaction-rollback, guard-refusal
+  and idempotency-race. Re-run any of them alone with `--concurrency=1` before filing a regression;
+  all three pass isolated in under 15s.
 - **Expect text-finder churn.** Any test asserting a raw key appears — `find.text('requestInstanceId')`
   — was asserting the defect and should assert the humanized form instead. Diff every changed assertion
   and justify each; do not weaken a count to get green.

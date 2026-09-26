@@ -86,10 +86,18 @@ stated reason. A test never observed failing is not a guard.
 
 ## Verification
 
-- **All five suites** — "verified means all five". Baselines (re-measured 2026-09-20): judges **525**,
-  app shell **421 (+2 skipped)**, engine **341 (+5)**, service **168 (+1)** with BOTH credential sets,
-  demo app **261 + exactly one known failure** identified by its message
-  `Found 0 widgets with key 'generic-instance-card-nom-draft-1'`.
+- **All five suites** — "verified means all five". Baselines **re-measured 2026-09-25**: judges
+  **525**, app shell **421 (+2 skipped)**, engine **346 cases** (`345 +1` with PostgreSQL
+  credentials; `341 +5` without), service **169 cases** (`168 +1`) with BOTH credential sets,
+  demo app **262, exit 0, ZERO failures**.
+- **The demo app suite is GREEN now — any failure in it is yours.** Earlier copies of this ticket said
+  to expect one known failure matching `Found 0 widgets with key 'generic-instance-card-nom-draft-1'`.
+  **That is obsolete**: `d87f9875` fixed the defect and `4192dbb8` inverted the test that asserted it.
+  This matters more for this ticket than the others — 59 bindings change what they render, so you will
+  see churn here, and an obsolete "one failure is expected" line is exactly how real churn gets waved
+  through.
+- **Three service PostgreSQL tests time out under concurrency** — transaction-rollback, guard-refusal
+  and idempotency-race. Re-run any alone at `--concurrency=1` before filing a regression.
 - **Expect demo-app churn and do not paper over it.** The harness pumps real packages, and 59 bindings
   change what they render. Any test asserting an action is tappable on what is actually a `summary`
   binding was asserting the defect. **Diff every changed assertion and justify each** — a test that
