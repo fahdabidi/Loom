@@ -106,10 +106,17 @@ defect count.
 
 ## MANDATORY pre-dispatch checks
 
-1. **Read the restore artifact first.** A verified restore sits at
-   `~/.codex-skill-authoring-scratch/bookclub-restore-r2/` on the VM. It was built under the **old**
-   assumption that queue-in-JSON was the mechanism, so it may re-add the three legacy fields. Read it
-   before dispatching and either exclude those fields or do not use it as the basis.
+1. ~~**Read the restore artifact first.**~~ **DONE 2026-09-25 — and the answer is DO NOT USE IT. This check is complete; do not repeat it.** `~/.codex-skill-authoring-scratch/bookclub-restore-r2/bookclub-restored.jsonc` (dated 2026-08-28) fails in **all three** directions, which is worse than this ticket originally anticipated:
+
+   | Category | In the restore | Wanted? |
+   |---|---|---|
+   | `queuedFanIds` ×2, `queueLength` ×1, `myQueuePosition` ×1 | **present** | **NO** — legacy, superseded by the item-queue service |
+   | `reminderSentAt` ×2, `deliver_reminder` ×1 | **present** | **NO** — `c0e0355b` removed these deliberately and correctly |
+   | `accessRequestedFanIds`, `approvedFanIds` | **ABSENT (0 and 0)** | **YES** — the one thing this ticket actually wants |
+
+   Its own `bookclub-restoration.diff` adds 45 lines, all schema and effect scaffolding, and **zero** access-list entries. The artifact was built 2026-08-28 against an understanding that predates both the queue service and the reminder decision, so it restores what we must not restore and omits what we must.
+
+   **So author from this ticket's spec directly and ignore the artifact entirely.** Do not pass it to the Skill, do not use it as a base, and do not diff against it.
 2. **Diff against `c0e0355b^`, not HEAD.** HEAD is the damaged state; a diff against HEAD reports the
    loss as faithfully preserved. This is the single easiest way to verify this work wrongly.
 3. **Restart the validator on `:8787`** if it predates the grammar, and confirm

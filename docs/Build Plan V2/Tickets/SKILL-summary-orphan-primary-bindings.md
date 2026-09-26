@@ -44,22 +44,49 @@ rather than a cosmetic one.
 
 ## What to build
 
-For each of the five, **add a `primary` render binding covering that state** on the tab where its
-persona already works, so the actions keep a home once `summary` becomes read-only. Do **not** change
-the existing `summary` bindings — they are correct and become status views.
+**CORRECTED 2026-09-25, BEFORE DISPATCH — the original instruction here was wrong in both halves and
+would have shipped a visible defect.** It said "add a `primary` binding" and "do not change the
+existing `summary` bindings". Neither works:
 
-**Derive the tab and audience from each community's own product doc**, not by copying a sibling: the
-doc's persona table says who acts on that state and where. Say per state which doc line you used.
+- **`part32_engine_native_list_surface.dart:145` renders a card PER MATCHING BINDING**
+  (`for (final resolved in bindings)`). So adding a primary for a state that is *also* in a summary
+  binding **on the same tab** renders the same instance twice.
+- **Every one of the five orphan states shares its summary binding with other states**, measured
+  below — so the summary binding must be narrowed. "Do not change it" makes the fix impossible.
+
+**The correct fix: MOVE the orphan state out of its same-tab `summary` binding and into that tab's
+existing `primary` binding.** Narrow the summary's `states` list, extend the primary's. That avoids
+double-rendering *and* avoids binding proliferation, and it keeps each state bound exactly once per
+tab.
+
+**Leave summary bindings on OTHER tabs alone.** Several of these states also appear in summaries on
+`home` or `admin`; those are on a different tab, so they cannot double-render and are exactly the
+status views `bindingKind` is meant to produce.
+
+### Measured per state — the exact edit
+
+| Package / workflow | Move this state | Out of (same-tab summary) | Into (same-tab primary) |
+|---|---|---|---|
+| Ad-Free `ad-off-community-checkout` | `funded` | `giving` summary `["funded","refunded"]` → `["refunded"]` | `giving` primary (add `funded`) |
+| Book Club `book-search-ai-digest` | `saved` | `books` summary `["saved","withdrawn"]` → `["withdrawn"]` | `books` primary currently `["open"]` (add `saved`) |
+| Cedar `hoa-architectural-request` | `approved`, `denied` | `requests` summary `["approved","denied","withdrawn"]` → `["withdrawn"]` | `requests` primary (add both) |
+| Cedar `hoa-committee-decision` | `changes-needed` | `admin` summary `["changes-needed","superseded","withdrawn"]` → `["superseded","withdrawn"]` | `admin` primary (add `changes-needed`) |
+
+**Untouched by design**, because they are on other tabs and become correct status views: Cedar
+`hoa-architectural-request`'s `home`, `calendar` and `admin` summaries, and `hoa-committee-decision`'s
+`requests` summary.
+
+**Sanity-check each move against the community's product doc** — the persona table says who acts on
+that state and where. If the doc puts the action on a different tab than the existing primary, say so
+and stop rather than guessing; that is a real disagreement worth surfacing.
 
 **Per-package notes:**
 
 - **Book Club `book-search-ai-digest` / `saved`** — this workflow is also touched by
   [SKILL-bookclub-regeneration-release-hold.md](SKILL-bookclub-regeneration-release-hold.md), which
-  adds `submitterFanId` create-time identity. **Sequence those two or fold them into one Book Club
-  dispatch**; two independent regenerations of one community is exactly what row-247's "regenerate
-  ONCE" instinct was protecting against. Folding is preferred.
-- **Cedar `hoa-architectural-request`** — it already carries **four** render bindings, three of them
-  `summary`. Read them before adding a fifth; the `approved`/`denied` pair may belong on one binding.
+  adds `submitterFanId` create-time identity. **Fold them into ONE Book Club dispatch**; two
+  independent regenerations of one community is exactly what row-247's "regenerate ONCE" instinct was
+  protecting against.
 - **Ad-Free `ad-off-community-checkout` / `funded`** — `funded` is the success state and
   `request-community-refund` is its only exit, so a member who has funded currently has a visible
   refund path that must survive.
