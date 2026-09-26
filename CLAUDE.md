@@ -1588,7 +1588,7 @@ Book Club regeneration `d87f9875`.** Use these over every figure below where the
 | Suite | Measured 2026-09-25 | 2026-09-20 | Accounted? |
 |---|---|---|---|
 | UX judges | **525**, exit 0 | 525 | exact match |
-| App shell | **421** (+2 skipped), exit 0 | 421 (+2) | exact match |
+| App shell | **435** (+2 skipped), exit 0 — was 421 earlier the same day | 421 (+2) | **+14, fully accounted**: `b4b691f9`'s state-badge conformance test loops the archetype registry, so 14 archetypes − 1 exempt (`table`) = 13 cases, plus 1 standalone. `flutter analyze` clean |
 | Workflow engine | **345** (+1 skipped) = **346 cases**, exit 0 | 341 (+5) = 346 | **total identical**; four PG tests that previously skipped actually ran. Skips going DOWN is the direction that means more was proven |
 | Workflow service | **165** (+1) **−3**, all 3 proven environmental | 168 (+1) = 169 | total 169, exact. See the contention note below |
 | Demo app | **262, exit 0, ZERO failures, zero skipped** | 261 + 1 known | **this suite is now GREEN.** See below |
