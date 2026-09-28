@@ -17,6 +17,7 @@ class VotePollArchetypeCard extends StatefulWidget {
     required this.onInstanceChanged,
     this.accent,
     this.modernTheme,
+    this.interactive = true,
     this.instanceScopedCreateActions = const [],
     this.onInstanceScopedCreate,
   });
@@ -27,6 +28,11 @@ class VotePollArchetypeCard extends StatefulWidget {
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final Color? accent;
   final LoomCardTheme? modernTheme;
+
+  /// `bindingKind: "summary"` (render-bindings.md:553-560) means a compact,
+  /// read-only card: no vote/close-vote buttons, no instance-scoped create
+  /// buttons. Tally, round and the state badge still render.
+  final bool interactive;
   final List<WorkflowAction> instanceScopedCreateActions;
   final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
 
@@ -263,7 +269,9 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
             ),
             _InstanceScopedCreateActionButtons(
               instanceId: instance.instanceId,
-              actions: widget.instanceScopedCreateActions,
+              actions: widget.interactive
+                  ? widget.instanceScopedCreateActions
+                  : const [],
               onInstanceScopedCreate: widget.onInstanceScopedCreate,
               isMutating: _mutating,
             ),
@@ -402,7 +410,7 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
                             ),
                           ),
                         ),
-                        if (_canVote)
+                        if (_canVote && widget.interactive)
                           FilledButton(
                             key: ValueKey(
                               'votepoll-vote-${instance.instanceId}-${candidate['id']}',
@@ -417,7 +425,7 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
                   ),
                 ),
               ),
-            if (_canClose) ...[
+            if (_canClose && widget.interactive) ...[
               const SizedBox(height: 8),
               FilledButton.icon(
                 key: ValueKey('votepoll-close-vote-${instance.instanceId}'),
@@ -435,7 +443,9 @@ class _VotePollArchetypeCardState extends State<VotePollArchetypeCard> {
               ),
             _InstanceScopedCreateActionButtons(
               instanceId: instance.instanceId,
-              actions: widget.instanceScopedCreateActions,
+              actions: widget.interactive
+                  ? widget.instanceScopedCreateActions
+                  : const [],
               onInstanceScopedCreate: widget.onInstanceScopedCreate,
               isMutating: _mutating,
             ),

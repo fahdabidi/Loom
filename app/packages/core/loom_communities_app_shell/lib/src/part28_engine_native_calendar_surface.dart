@@ -1483,6 +1483,7 @@ class _EventRsvpDetailCard extends StatefulWidget {
     required this.accent,
     required this.onInstanceChanged,
     this.responseMachine,
+    this.interactive = true,
     this.instanceScopedCreateActions = const [],
     this.onInstanceScopedCreate,
   });
@@ -1499,6 +1500,11 @@ class _EventRsvpDetailCard extends StatefulWidget {
   final String fanId;
   final String roleId;
   final Color accent;
+
+  /// `bindingKind: "summary"` (render-bindings.md:553-560) means a compact,
+  /// read-only card: no RSVP action chips, no editors, no instance-scoped
+  /// create buttons. Capacity, attendees and the state badge still render.
+  final bool interactive;
   final ValueChanged<WorkflowInstance>? onInstanceChanged;
   final List<WorkflowAction> instanceScopedCreateActions;
   final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
@@ -2873,7 +2879,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
               ),
               const SizedBox(height: 12),
             ],
-            if (editable.isNotEmpty) ...[
+            if (widget.interactive && editable.isNotEmpty) ...[
               for (final key in editable)
                 _editor(key, widget.machine.instanceDataSchema[key]!),
               const SizedBox(height: 8),
@@ -2916,7 +2922,7 @@ class _EventRsvpDetailCardState extends State<_EventRsvpDetailCard> {
                   'No response record is available for you for this event.',
                 ),
               ),
-            if (!_loadingActions) ...[
+            if (!_loadingActions && widget.interactive) ...[
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,

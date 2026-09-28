@@ -20,6 +20,7 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
     this.modernTheme,
     this.visibleFieldKeys,
     this.showEditors = true,
+    this.interactive = true,
     this.instanceScopedCreateActions = const [],
     this.onInstanceScopedCreate,
   }) : assert(displayContext == 'tile' || displayContext == 'detail');
@@ -39,6 +40,13 @@ class GenericWorkflowInstanceCard extends StatefulWidget {
   /// presentation used by existing callers.
   final Set<String>? visibleFieldKeys;
   final bool showEditors;
+
+  /// `bindingKind: "summary"` (render-bindings.md:553-560) means a compact,
+  /// read-only card: no transition buttons, no editors, no instance-scoped
+  /// create buttons, regardless of what else this widget is given. Fields,
+  /// facets and the state badge still render -- this is a status view, not a
+  /// blank card.
+  final bool interactive;
   final List<WorkflowAction> instanceScopedCreateActions;
   final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
 
@@ -559,7 +567,9 @@ class _GenericWorkflowInstanceCardState
                       accent: resolvedAccent,
                     ),
                   ),
-              if (widget.showEditors && editable.isNotEmpty) ...[
+              if (widget.showEditors &&
+                  widget.interactive &&
+                  editable.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 for (final key in editable)
                   _editor(key, widget.machine.instanceDataSchema[key]!),
@@ -613,7 +623,7 @@ class _GenericWorkflowInstanceCardState
                     ],
                   ),
                 ),
-              if (!_loadingActions)
+              if (!_loadingActions && widget.interactive)
                 WorkflowActionButtonRow(
                   surface: 'generic-instance-${_instance.instanceId}',
                   availableTransitions: [
@@ -630,7 +640,8 @@ class _GenericWorkflowInstanceCardState
                   accent: resolvedAccent,
                   modernTheme: modernTheme,
                 ),
-              if (widget.instanceScopedCreateActions.isNotEmpty) ...[
+              if (widget.interactive &&
+                  widget.instanceScopedCreateActions.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 for (final action in widget.instanceScopedCreateActions)
                   Padding(

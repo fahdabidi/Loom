@@ -344,6 +344,11 @@ class EngineNativeArchetypeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // `bindingKind: "summary"` (render-bindings.md:553-560) means "compact,
+    // read-only card" -- no transition affordances and no editors. This is
+    // the single place that decision is made; every card below only reacts
+    // to the derived flag rather than re-reading `bindingKind` itself.
+    final interactive = resolved.binding.bindingKind != 'summary';
     final instanceScopedCreateActions = [
       for (final action in resolved.binding.actions)
         if (action.kind == 'create' &&
@@ -374,6 +379,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           fanId: fanId,
           roleId: roleId,
           accent: accent,
+          interactive: interactive,
           onInstanceChanged: onInstanceChanged,
           instanceScopedCreateActions: instanceScopedCreateActions,
           onInstanceScopedCreate: invokeInstanceScopedCreate,
@@ -393,6 +399,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
             fanId: fanId,
             accent: accent,
             modernTheme: modernTheme,
+            interactive: interactive,
             onInstanceChanged: onInstanceChanged,
             instanceScopedCreateActions: instanceScopedCreateActions,
             onInstanceScopedCreate: invokeInstanceScopedCreate,
@@ -407,6 +414,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           roleId: roleId,
           displayContext: displayContext,
           showEditors: showEditors,
+          interactive: interactive,
           visibleFieldKeys: visibleFieldKeys,
           accent: accent,
           modernTheme: modernTheme,
@@ -424,6 +432,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           accent: accent,
           modernTheme: modernTheme,
           displayContext: displayContext,
+          interactive: interactive,
           visibleFieldKeys: visibleFieldKeys,
           onInstanceChanged: onInstanceChanged,
           instanceScopedCreateActions: instanceScopedCreateActions,
@@ -438,6 +447,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           accent: accent,
           modernTheme: modernTheme,
           displayContext: displayContext,
+          interactive: interactive,
           visibleFieldKeys: visibleFieldKeys,
           onInstanceChanged: onInstanceChanged,
           instanceScopedCreateActions: instanceScopedCreateActions,
@@ -453,6 +463,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           onInstanceChanged: onInstanceChanged,
           modernTheme: modernTheme,
           displayContext: displayContext,
+          interactive: interactive,
           visibleFieldKeys: visibleFieldKeys,
           instanceScopedCreateActions: instanceScopedCreateActions,
           onInstanceScopedCreate: invokeInstanceScopedCreate,
@@ -467,6 +478,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           onInstanceChanged: onInstanceChanged,
           modernTheme: modernTheme,
           displayContext: displayContext,
+          interactive: interactive,
           visibleFieldKeys: visibleFieldKeys,
           instanceScopedCreateActions: instanceScopedCreateActions,
           onInstanceScopedCreate: invokeInstanceScopedCreate,
@@ -481,6 +493,7 @@ class EngineNativeArchetypeCard extends StatelessWidget {
           roleId: roleId,
           displayContext: displayContext,
           showEditors: showEditors,
+          interactive: interactive,
           visibleFieldKeys: visibleFieldKeys,
           accent: accent,
           modernTheme: modernTheme,

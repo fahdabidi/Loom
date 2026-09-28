@@ -393,6 +393,7 @@ class EquipmentLoanArchetypeCard extends StatefulWidget {
     required this.onInstanceChanged,
     this.modernTheme,
     this.displayContext = 'tile',
+    this.interactive = true,
     this.visibleFieldKeys,
     this.instanceScopedCreateActions = const [],
     this.onInstanceScopedCreate,
@@ -406,6 +407,11 @@ class EquipmentLoanArchetypeCard extends StatefulWidget {
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final LoomCardTheme? modernTheme;
   final String displayContext;
+
+  /// `bindingKind: "summary"` (render-bindings.md:553-560) means a compact,
+  /// read-only card: no borrow/return/queue/instance-scoped-create buttons.
+  /// Facts, queue status and the state badge still render.
+  final bool interactive;
   final Set<String>? visibleFieldKeys;
   final List<WorkflowAction> instanceScopedCreateActions;
   final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
@@ -1035,11 +1041,13 @@ class _EquipmentLoanArchetypeCardState
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(_error!),
                 ),
-              if (!_loadingActions && contextualBorrow != null) ...[
+              if (!_loadingActions &&
+                  widget.interactive &&
+                  contextualBorrow != null) ...[
                 const SizedBox(height: 8),
                 _borrowButton(context, contextualBorrow),
               ],
-              if (!_loadingActions && buttons.isNotEmpty)
+              if (!_loadingActions && widget.interactive && buttons.isNotEmpty)
                 WorkflowActionButtonRow(
                   surface: widget.displayContext == 'detail'
                       ? 'marketplace'
@@ -1065,7 +1073,9 @@ class _EquipmentLoanArchetypeCardState
                 ),
               _InstanceScopedCreateActionButtons(
                 instanceId: _instance.instanceId,
-                actions: widget.instanceScopedCreateActions,
+                actions: widget.interactive
+                    ? widget.instanceScopedCreateActions
+                    : const [],
                 onInstanceScopedCreate: widget.onInstanceScopedCreate,
                 isMutating: _mutating,
               ),
@@ -1091,6 +1101,7 @@ class DocumentLibraryArchetypeCard extends StatefulWidget {
     required this.onInstanceChanged,
     this.modernTheme,
     this.displayContext = 'tile',
+    this.interactive = true,
     this.visibleFieldKeys,
     this.instanceScopedCreateActions = const [],
     this.onInstanceScopedCreate,
@@ -1103,6 +1114,11 @@ class DocumentLibraryArchetypeCard extends StatefulWidget {
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final LoomCardTheme? modernTheme;
   final String displayContext;
+
+  /// `bindingKind: "summary"` (render-bindings.md:553-560) means a compact,
+  /// read-only card: no upload/acknowledge/instance-scoped-create buttons.
+  /// Facts, member state and the state badge still render.
+  final bool interactive;
   final Set<String>? visibleFieldKeys;
   final List<WorkflowAction> instanceScopedCreateActions;
   final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
@@ -1790,7 +1806,7 @@ class _DocumentLibraryArchetypeCardState
                     label: const Text('View acknowledgements'),
                   ),
                 ),
-              if (!_loadingActions)
+              if (!_loadingActions && widget.interactive)
                 WorkflowActionButtonRow(
                   surface: widget.displayContext == 'detail'
                       ? 'document-library'
@@ -1809,7 +1825,9 @@ class _DocumentLibraryArchetypeCardState
                 ),
               _InstanceScopedCreateActionButtons(
                 instanceId: _instance.instanceId,
-                actions: widget.instanceScopedCreateActions,
+                actions: widget.interactive
+                    ? widget.instanceScopedCreateActions
+                    : const [],
                 onInstanceScopedCreate: widget.onInstanceScopedCreate,
                 isMutating: _mutating,
               ),
@@ -2004,6 +2022,7 @@ class ExportWizardArchetypeCard extends StatefulWidget {
     required this.onInstanceChanged,
     this.modernTheme,
     this.displayContext = 'tile',
+    this.interactive = true,
     this.visibleFieldKeys,
     this.instanceScopedCreateActions = const [],
     this.onInstanceScopedCreate,
@@ -2016,6 +2035,11 @@ class ExportWizardArchetypeCard extends StatefulWidget {
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final LoomCardTheme? modernTheme;
   final String displayContext;
+
+  /// `bindingKind: "summary"` (render-bindings.md:553-560) means a compact,
+  /// read-only card: no generate/download/instance-scoped-create buttons.
+  /// Facts, history and the state badge still render.
+  final bool interactive;
   final Set<String>? visibleFieldKeys;
   final List<WorkflowAction> instanceScopedCreateActions;
   final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
@@ -2682,7 +2706,7 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
                     label: const Text('Verify checksum'),
                   ),
                 ),
-              if (!_loadingActions)
+              if (!_loadingActions && widget.interactive)
                 WorkflowActionButtonRow(
                   surface: widget.displayContext == 'detail'
                       ? 'export-wizard'
@@ -2701,7 +2725,9 @@ class _ExportWizardArchetypeCardState extends State<ExportWizardArchetypeCard> {
                 ),
               _InstanceScopedCreateActionButtons(
                 instanceId: _instance.instanceId,
-                actions: widget.instanceScopedCreateActions,
+                actions: widget.interactive
+                    ? widget.instanceScopedCreateActions
+                    : const [],
                 onInstanceScopedCreate: widget.onInstanceScopedCreate,
                 isMutating: _mutating,
               ),
@@ -2732,6 +2758,7 @@ class SearchAiAnswerArchetypeCard extends StatefulWidget {
     required this.onInstanceChanged,
     this.modernTheme,
     this.displayContext = 'tile',
+    this.interactive = true,
     this.visibleFieldKeys,
     this.instanceScopedCreateActions = const [],
     this.onInstanceScopedCreate,
@@ -2744,6 +2771,11 @@ class SearchAiAnswerArchetypeCard extends StatefulWidget {
   final ValueChanged<WorkflowInstance> onInstanceChanged;
   final LoomCardTheme? modernTheme;
   final String displayContext;
+
+  /// `bindingKind: "summary"` (render-bindings.md:553-560) means a compact,
+  /// read-only card: no transition/instance-scoped-create buttons. The
+  /// answer, citations and the state badge still render.
+  final bool interactive;
   final Set<String>? visibleFieldKeys;
   final List<WorkflowAction> instanceScopedCreateActions;
   final Future<void> Function(WorkflowAction action)? onInstanceScopedCreate;
@@ -3162,7 +3194,7 @@ class _SearchAiAnswerArchetypeCardState
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(_error!),
                 ),
-              if (!_loadingActions)
+              if (!_loadingActions && widget.interactive)
                 WorkflowActionButtonRow(
                   surface: widget.displayContext == 'detail'
                       ? 'searchAiAnswer'
@@ -3181,7 +3213,9 @@ class _SearchAiAnswerArchetypeCardState
                 ),
               _InstanceScopedCreateActionButtons(
                 instanceId: _instance.instanceId,
-                actions: widget.instanceScopedCreateActions,
+                actions: widget.interactive
+                    ? widget.instanceScopedCreateActions
+                    : const [],
                 onInstanceScopedCreate: widget.onInstanceScopedCreate,
                 isMutating: _mutating,
               ),
