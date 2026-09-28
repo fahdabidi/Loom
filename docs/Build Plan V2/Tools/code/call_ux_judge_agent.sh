@@ -64,6 +64,41 @@ else
   PROMPT="$(cat "$PROMPT_FILE")"
 fi
 
+# A verdict the bar cannot see is a verdict that did not happen.
+# `check_b25_status.sh` extracts judged rows with
+#   grep -oE '\*\*Workflow:\*\* `[a-z0-9-]+`'
+# over `*ux-judge*.md`, so a verdict that names its rows only in a prose heading
+# (`## Chess Club -- chess-export-package, owner`) counts as ZERO judged rows.
+# That happened on 2026-09-19: nine judged rows were invisible for hours, and the
+# tell -- a judge count that did not move after a verdict was committed -- was
+# misread as "those rows were already covered".
+#
+# This requirement is appended to EVERY judge dispatch rather than left to each
+# hand-written brief, because a convention that is mandatory but undocumented
+# will be missed again. Appended last so it cannot be overridden by the brief,
+# and so the cached stable prefix above is unaffected.
+PROMPT="$PROMPT
+
+---
+
+# MANDATORY VERDICT FORMAT -- this is how the bar counts your work
+
+Your verdict is parsed, not read. For **every row you judge**, the verdict file must contain a line
+of exactly this form, on its own line:
+
+    **Workflow:** \`<workflow-id>\`
+
+Use the workflow id verbatim (for example \`garden-tool-giveaway\`), lowercase, in backticks. One such
+line per judged row, in addition to any prose heading you write -- headings are for humans and are
+**not** counted.
+
+A row you judged without that line is counted as **not judged at all**, and the pass or fail you
+recorded for it is silently discarded. If you judge nine rows and omit the line, the bar moves by
+zero and nothing tells you.
+
+Write the verdict to a file whose name contains \`ux-judge\` and ends in \`.md\`, or it will not be
+found."
+
 LOG_DIR="$REPO_ROOT/.codex-logs/ux-judge/$LABEL"
 mkdir -p "$LOG_DIR"
 OUTPUT_CAPTURE="$LOG_DIR/output.log"
@@ -107,6 +142,55 @@ if [ "$POST_TRACKED_COUNT" -lt "$PRE_TRACKED_COUNT" ] || [ "$POST_HEAD" != "$PRE
   echo "  HEAD:          $PRE_HEAD -> $POST_HEAD" >&2
   echo "  A review agent must not delete tracked files or move HEAD." >&2
   exit 1
+fi
+
+# Verdict-countability gate. The prompt above REQUIRES a `**Workflow:** `<id>``
+# line per judged row; this checks the agent actually wrote one, because the
+# failure it guards against is invisible by construction -- the verdict file
+# exists, reads correctly to a human, and contributes zero to the bar.
+#
+# Deliberately three distinct outcomes, not two, so neither direction is a guard
+# whose output never changes:
+#   - verdict file(s) found, all carry the line   -> silent, nothing to say
+#   - verdict file(s) found, one or more lack it  -> LOUD, non-zero exit
+#   - no verdict file found at all               -> stated plainly, not failed;
+#     a diagnostic or re-judging run may legitimately write nothing, and this
+#     script cannot tell that from a verdict written to an unmatched filename.
+# NOTE the quote stripping, which this gate silently needed and did not have on
+# the first attempt: `git status --porcelain` QUOTES any path containing a space,
+# and this repo's evidence lives under `docs/Build Plan V2/...`. So every verdict
+# path arrives as `"docs/Build Plan V2/.../x-ux-judge.md"` and a pattern anchored
+# on `\.md$` matches nothing -- the gate reported "no verdict file" for a file
+# sitting right in front of it, in all three test cases. Caught only by
+# deliberately feeding it a bad verdict and watching it stay quiet.
+# (Only surrounding quotes are stripped; git also backslash-escapes non-ASCII
+# inside those quotes, which would need `-z` to handle properly. No such path
+# exists here, and a mangled name fails loudly at the `grep -q` below rather
+# than passing, so the residual risk is a false alarm, not a false pass.)
+VERDICT_FILES="$(cd "$REPO_ROOT" && git status --porcelain \
+  | sed 's/^...//; s/^"//; s/"$//' | grep -E '(^|/)[^/]*ux-judge[^/]*\.md$' || true)"
+if [ -z "$VERDICT_FILES" ]; then
+  echo "NOTE: no new or modified *ux-judge*.md file in the working tree."
+  echo "      If this run was meant to produce a verdict, it is not where the bar looks."
+else
+  VERDICT_UNCOUNTABLE=""
+  while IFS= read -r vf; do
+    [ -n "$vf" ] || continue
+    if ! grep -qE '^\*\*Workflow:\*\* `[a-z0-9-]+`' "$REPO_ROOT/$vf" 2>/dev/null; then
+      VERDICT_UNCOUNTABLE="$VERDICT_UNCOUNTABLE $vf"
+    fi
+  done <<< "$VERDICT_FILES"
+  if [ -n "$VERDICT_UNCOUNTABLE" ]; then
+    echo "!!! VERDICT NOT COUNTABLE !!!" >&2
+    echo "  These verdict files carry no '**Workflow:** \`<id>\`' line, so" >&2
+    echo "  check_b25_status.sh will count ZERO judged rows from them:" >&2
+    for vf in $VERDICT_UNCOUNTABLE; do echo "    $vf" >&2; done
+    echo "  Add one such line per judged row before committing. The verdict is" >&2
+    echo "  not wrong -- it is invisible, which is worse, because nothing else" >&2
+    echo "  will report it." >&2
+    exit 1
+  fi
+  echo "Verdict countability: OK -- every *ux-judge*.md carries a **Workflow:** line."
 fi
 
 DIRTY="$(cd "$REPO_ROOT" && git status --porcelain)"
