@@ -2381,6 +2381,46 @@ the whole question. A `pubspec.yaml` dependency edge is not evidence of use eith
 this look worse than it was. Before treating a count as a risk, ask what would have to be true for
 each counted item to actually reach the surface you care about, and measure *that*.
 
+### A commit is not evidence that a `data/` script changed — `data/` is gitignored
+
+Found 2026-09-28, by the gate it broke. I added a countability gate to
+`data/call_ux_judge_agent.sh`, proved it could fail against the exact historical failure, wrote a
+commit message describing both halves, and shipped **none of it**. `.gitignore` line 1 is `/data/`,
+so that file is **untracked**: `git add -A` staged nothing for it, `git status` stayed clean, and the
+commit succeeded carrying only the tracker row. The script change never left the machine I typed it
+on — and the judge runs on the **other** machine.
+
+**It surfaced the only way it could.** The next real judge run produced a verdict with zero countable
+`**Workflow:**` lines, and the gate that was supposed to fail loudly printed **nothing at all** — an
+always-quiet guard, which is precisely the failure the gate existed to prevent, wearing the costume
+of a gate already proven to fail.
+
+**So: a change to a `data/` dispatch script is not done when it is committed. It is done when you
+have grepped the VM's copy and seen it there.** A commit proves nothing about these files. Three
+copies exist and drift independently:
+
+| Copy | Tracked? | How it changes |
+|---|---|---|
+| `data/<script>.sh` (Windows) | **no** — gitignored | you edit it |
+| `docs/Build Plan V2/Tools/code/<script>.sh` | **yes** | you must copy it there for the change to be durable |
+| `~/Loom/data/<script>.sh` (VM) | n/a | **only `scp`** puts it there; `git pull` never will |
+
+The cheap audit, worth running after any dispatcher change — it compares all three and takes seconds:
+
+    for f in call_ux_judge_agent.sh call_implementation_agent.sh call_skill_authoring_agent.sh \
+             call_root_cause_agent.sh call_live_verification_agent.sh call_patterns_agent.sh \
+             watch_dispatch_log.sh; do
+      cmp -s "data/$f" "docs/Build Plan V2/Tools/code/$f" && m=same || m=DIFFER
+      v=$(ssh loom-vm "md5sum ~/Loom/data/$f 2>/dev/null | cut -d' ' -f1")
+      l=$(md5sum "data/$f" | cut -d' ' -f1)
+      [ "$v" = "$l" ] && s=same || s=DIFFER
+      printf '%-34s mirror=%-7s vm=%s\n' "$f" "$m" "$s"
+    done
+
+Run clean on 2026-09-28 after the fix, so the drift was isolated to the one edited file. This is the
+mechanical form of the existing warning that the VM copy and the repo copy can disagree **in either
+direction** — that one was found by `cmp`, and so was this.
+
 ### Writing a lesson down does not install it — prefer the gate to the note
 
 On 2026-09-09 I wrote "a count measures the thing counted, not the exposure to it", and then within

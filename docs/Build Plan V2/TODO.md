@@ -442,6 +442,25 @@ The effect declares `filter: { "checkoutInstanceId": "{id}", "$state": "active" 
      untunnelled. ~72s with WHPX. Then `adb -s emulator-5554 get-state` must print `device` **before**
      anything else — a vanished device is infrastructure, never evidence about a workflow, and two
      consecutive Garden walkthroughs were spent learning that.
+
+     **1a. If it does not reach `device`, clear the stale crash database before anything else.**
+     Measured 2026-09-28, and it cost the first hour of the campaign. `qemu-system-x86_64` was running
+     and looked alive while accumulating **1.29 seconds of CPU across fifteen minutes** — the tell is
+     CPU, not process existence. Its log's **tail** (the head shows a perfectly normal startup, so
+     reading the head teaches nothing) said:
+
+         detected a hanging thread 'QEMU2 CPU2 thread'. No response for 15002 ms
+
+     followed by a crashpad dump. This project's memory records the cause with a **Linux** path; the
+     **Windows** one is `%LOCALAPPDATA%\Temp\AndroidEmulator\emu-crash-*.db`, and the file there was
+     two weeks stale. Stop the emulator by resolved pid, delete that database, also clear
+     `~/.android/avd/loom_win.avd/hardware-qemu.ini.lock` (a **directory**, and one dated Aug 24 was
+     still present) and `multiinstance.lock`, then relaunch **with stdout/stderr redirected to files**
+     — the first launch was minimized with no capture, which is why there were no diagnostics at all.
+     With the database cleared it booted in **28 seconds** with zero hanging-thread lines.
+
+     **Launch the emulator detached** (`Start-Process`), not as a foreground child, or it dies with
+     the shell that started it.
   2. **Build the instrumented APK on the VM** — Linux has no symlink restriction — with
      `--target=integration_test/workflow_ui_evidence_test.dart` **and both** `--dart-define`s
      (`LOOM_PRELOAD_EXAMPLE_COMMUNITIES`, `LOOM_EVIDENCE_EXTERNAL_ANDROID_SCREENSHOTS`). The prebuilt
@@ -453,6 +472,27 @@ The effect declares `filter: { "checkoutInstanceId": "{id}", "$state": "active" 
   4. **Capture from Windows**, `--mode full-b25`, with an explicit `--evidence-root`. `full-b25` is the
      only canonical mode; `targeted-precheck` output must never be committed as bar evidence, and the
      tool says so itself.
+
+     **Two invocation constraints, each of which cost a failed start on 2026-09-28 and neither of
+     which is discoverable from `--help`:**
+
+     - **Run it from `<repo>/app`, nothing else.** The tool computes
+       `final appRoot = Directory.current; final repoRoot = appRoot.parent;`, so the working directory
+       *is* the configuration. Run from the package directory it looked for the provenance manifest
+       under `packages/tooling/docs/references/...` and died on a `PathNotFoundException` that reads
+       like a missing file rather than a wrong cwd. It works on the VM only because everything there
+       is invoked from `~/Loom/app`.
+     - **`C:\Android\flutter\bin` must be on PATH.** The tool spawns `flutter` by **bare name**, so
+       without it the run dies with `'flutter' is not recognized` *after* passing every startup check.
+       This is a `flutter drive`, not a build, so the documented "a full APK build needs all three"
+       does not obviously apply — but the PATH half does. Set `JAVA_HOME` and `ANDROID_SDK_ROOT` too;
+       they cost nothing and the drive installs an APK.
+
+     **Judge the whole `WORKFLOW_EVIDENCE_RESULT` line, not its status word.** The 2026-09-28 run
+     printed `status=fail walkthroughStatus=fail screenshotStatus=partial` **and** `exit 0` with
+     `fullB25Coverage=true` and 182 real frames. Those are not in conflict: rows that legitimately
+     could not be attempted are recorded as such, and a run with recorded non-completions is still a
+     successful capture. Read the outcome buckets.
   5. **Copy the frames to the VM** — `scp`/`rsync`, **not** git, because `*.png` is gitignored and a
      commit moves nothing. Then verify **by size and non-zero-ness at both ends**, not by count.
   6. **Judge on the VM, in the same sitting.** The frames are transient and uncommitted, so a judge run
