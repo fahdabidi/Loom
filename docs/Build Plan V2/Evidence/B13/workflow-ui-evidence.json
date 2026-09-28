@@ -3,19 +3,526 @@
   "phase": "B13",
   "status": "fail",
   "walkthroughStatus": "fail",
-  "screenshotStatus": "missing",
+  "screenshotStatus": "complete",
   "completionGateEligible": false,
   "deviceName": "emulator-5554",
   "emulatorName": "emulator-5554",
   "deviceClass": "Android emulator",
   "platform": "android",
   "apiLevel": "Android 16 API 36",
-  "commandOutputPath": "/home/fahd/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-  "expectedWorkflowCount": 2,
-  "workflowCount": 0,
-  "requestedScreenshotCount": 0,
-  "screenshotCount": 0,
+  "commandOutputPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "expectedWorkflowCount": 5,
+  "workflowCount": 5,
+  "b25RowSummary": {
+    "recordedRows": 5,
+    "provenRows": 1,
+    "completedRows": 5,
+    "primaryActionUnavailableRows": 2,
+    "blockedRows": [],
+    "nonProvenRows": [
+      {
+        "outcome": "attempted",
+        "communityName": "Garden Club",
+        "workflowId": "garden-tool-giveaway",
+        "role": "member",
+        "reason": "Garden Club / garden-tool-giveaway / member: the walkthrough exercised no documented alternate/change/reject action [pause listing, resume listing, delist listing]."
+      },
+      {
+        "outcome": "primary_action_unavailable",
+        "communityName": "Garden Club",
+        "workflowId": "garden-event-rsvp",
+        "role": "member",
+        "reason": "primary_action_unavailable: Going unavailable: Spring Workshop: Pollinator-Friendly Planting is full, 2/2. Other available actions include Add reminder, Join waitlist, Maybe and Not attending. The documented primary attendance action was not exercised. a tappable shipped workflow action on the calendar tab for garden-member. calendar instance spring-workshop: agenda entry present? yes; selected detail present? yes. per-candidate readiness: [respond-going (Going): absent]."
+      },
+      {
+        "outcome": "primary_action_unavailable",
+        "communityName": "Garden Club",
+        "workflowId": "plant-exchange-submission",
+        "role": "member",
+        "reason": "primary_action_unavailable: no primary action candidates were selected for this workflow row."
+      },
+      {
+        "outcome": "row_execution_failed",
+        "communityName": "Garden Club",
+        "workflowId": "garden-tool-loan",
+        "role": "member",
+        "reason": "Converting object to an encodable object failed: Instance of 'DateTime'"
+      }
+    ],
+    "blockedByAudienceRows": 0,
+    "blockedByAudienceRowsByCommunity": {},
+    "blockedByAudienceReasonGroups": [],
+    "blockedBySelectorSetupRows": 0,
+    "blockedBySelectorSetupRowsByCommunity": {},
+    "blockedBySelectorSetupReasonGroups": [],
+    "blockedByPrerequisiteRows": 0,
+    "blockedByPrerequisiteRowsByCommunity": {},
+    "blockedByPrerequisiteReasonGroups": [],
+    "actionSucceededResultUnverifiedRows": 0,
+    "actionSucceededResultUnverifiedRowsByCommunity": {},
+    "productFindingRows": 0,
+    "productFindingRowsByCommunity": {},
+    "rowExecutionFailedRows": 1,
+    "rowExecutionFailedRowsByCommunity": {
+      "Garden Club": 1
+    }
+  },
+  "b25CommunityTraversals": [
+    {
+      "phase": "B13",
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "extensionId": "ext_garden_club",
+      "traversalStatus": "completely_traversed",
+      "lastRowWalked": "garden-export-custom-schemas/coordinator"
+    }
+  ],
+  "b25CommunityTraversalSummary": {
+    "recordedCommunities": 1,
+    "completelyTraversedCommunities": 1,
+    "incompletelyTraversedCommunities": 0,
+    "incompleteCommunities": [],
+    "finalised": true
+  },
+  "requestedScreenshotCount": 14,
+  "screenshotCount": 14,
   "missingScreenshotCount": 0,
   "missingScreenshotNames": [],
-  "workflows": []
+  "workflows": [
+    {
+      "phase": "B13",
+      "appId": "ext_garden_club",
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "workflowId": "garden-event-rsvp",
+      "role": "member",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md",
+      "requiredPrimaryActions": [
+        "rsvp",
+        "attend",
+        "going",
+        "reserve spot",
+        "confirm attendance"
+      ],
+      "requiredAlternateActions": [
+        "decline",
+        "not attending",
+        "maybe",
+        "change response",
+        "edit response",
+        "cancel rsvp"
+      ],
+      "expectedAssertions": [
+        "Member decides attendance for a named dated event with time, location, capacity/status, and a later change path.",
+        "rsvp, attend, going, reserve spot, confirm attendance",
+        "decline, not attending, maybe, change response, edit response, cancel rsvp",
+        "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      ],
+      "screenshotNames": [
+        "B13_ext_garden_club_garden-event-rsvp_member_start",
+        "B13_ext_garden_club_garden-event-rsvp_member_primary_action_unavailable"
+      ],
+      "diagnosticScreenshotNames": [],
+      "b25RowOutcome": "primary_action_unavailable",
+      "b25ActionProofStatus": "fail",
+      "visiblePrimaryActions": [],
+      "visibleAlternateActions": [],
+      "availableSupplementaryActions": [
+        "Add reminder",
+        "Join waitlist",
+        "Maybe",
+        "Not attending"
+      ],
+      "productFindings": [
+        "primary_action_unavailable: Going unavailable: Spring Workshop: Pollinator-Friendly Planting is full, 2/2. Other available actions include Add reminder, Join waitlist, Maybe and Not attending. The documented primary attendance action was not exercised. a tappable shipped workflow action on the calendar tab for garden-member. calendar instance spring-workshop: agenda entry present? yes; selected detail present? yes. per-candidate readiness: [respond-going (Going): absent].",
+        "Garden Club / garden-event-rsvp / member: prepared but unexercised supplementary actions [Add reminder, Join waitlist, Maybe, Not attending] are recorded separately from documented primary and alternate action proof.",
+        "Garden Club / garden-event-rsvp / member: no documented primary package action was exercised [rsvp, attend, going, reserve spot, confirm attendance]; the package offers [add-reminder, respond-declined, respond-going, respond-maybe, respond-waitlist] to this role.",
+        "Garden Club / garden-event-rsvp / member: the walkthrough exercised no documented alternate/change/reject action [decline, not attending, maybe, change response, edit response, cancel rsvp]."
+      ],
+      "status": "fail",
+      "actionProofFramePairs": [],
+      "actionProofFramePairsRequired": false,
+      "alternateUnavailableReason": "Garden Club / garden-event-rsvp / member: the walkthrough exercised no documented alternate/change/reject action [decline, not attending, maybe, change response, edit response, cancel rsvp].",
+      "recordedRowStatus": "pass",
+      "assertionStatus": "pass",
+      "screenshotStatus": "complete",
+      "screenshotPaths": [
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_member_start.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_member_primary_action_unavailable.png"
+      ],
+      "screenshotPathsByName": {
+        "B13_ext_garden_club_garden-event-rsvp_member_start": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_member_start.png",
+        "B13_ext_garden_club_garden-event-rsvp_member_primary_action_unavailable": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_member_primary_action_unavailable.png"
+      },
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Evidence garden-member | Member | Member - RSVPs to events, offers or requests plants, borrows or gives away items, and signs up for care shifts. | 2 available community roles | Calendar | Seasonal workshops and work days with capacity, RSVP state, recurrence, and reminders. | Day | Week | Month | Pending | Mar 2027 | MON | TUE | WED | THU | FRI | SAT | SUN | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | Spring Workshop: Pollinator-Friendly Planting | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 2027-03-13 | 2027-09-11 | Agenda | 10:00 | RSVP open | 2 / 2 going | 0 seats left | Attendees | Going | • garden-coordinator | • garden-member-rina | • garden-member-maya | Community Garden — Plot A | Repeats: Monthly on the second Saturday | Default reminder: 24 hours before | 120 minutes | Seasonal focus: Pollinator habitat workshop | Accessibility Note | No response record is available for you for this event. | Maybe | Not attending | Join waitlist | Add reminder | Autumn Work Day: Bed Turnover and Cover Crop Seeding | 09:00 | Community Garden — Plot C | Repeats: One-time seasonal work day",
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Evidence garden-member | Member | Member - RSVPs to events, offers or requests plants, borrows or gives away items, and signs up for care shifts. | 2 available community roles | Calendar | Seasonal workshops and work days with capacity, RSVP state, recurrence, and reminders. | Day | Week | Month | Pending | Mar 2027 | MON | TUE | WED | THU | FRI | SAT | SUN | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | Spring Workshop: Pollinator-Friendly Planting | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 2027-03-13 | 2027-09-11 | Agenda | 10:00 | RSVP open | 2 / 2 going | 0 seats left | Attendees | Going | • garden-coordinator | • garden-member-rina | • garden-member-maya | Community Garden — Plot A | Repeats: Monthly on the second Saturday | Default reminder: 24 hours before | 120 minutes | Seasonal focus: Pollinator habitat workshop | Accessibility Note | No response record is available for you for this event. | Maybe | Not attending | Join waitlist | Add reminder | Autumn Work Day: Bed Turnover and Cover Crop Seeding | 09:00 | Community Garden — Plot C | Repeats: One-time seasonal work day"
+      ],
+      "diagnosticScreenshotPaths": [],
+      "commandOutputPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "deviceName": "emulator-5554",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "platform": "android",
+      "apiLevel": "Android 16 API 36",
+      "pass": false,
+      "screenshotCount": 2
+    },
+    {
+      "phase": "B13",
+      "appId": "ext_garden_club",
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "workflowId": "plant-exchange-submission",
+      "role": "member",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md",
+      "requiredPrimaryActions": [
+        "submit exchange",
+        "offer plant",
+        "request plant"
+      ],
+      "requiredAlternateActions": [
+        "edit draft",
+        "withdraw submission"
+      ],
+      "expectedAssertions": [
+        "Member submits a concrete plant offer or request with variety, notes, and pickup window, then a coordinator reviews it for handoff.",
+        "submit exchange, offer plant, request plant",
+        "edit draft, withdraw submission",
+        "Fresh screenshots must show the submitted item, review/handoff state, coordinator receiver state, and the submitter's own status after review."
+      ],
+      "screenshotNames": [
+        "B13_ext_garden_club_plant-exchange-submission_member_start",
+        "B13_ext_garden_club_plant-exchange-submission_member_primary_action_unavailable"
+      ],
+      "diagnosticScreenshotNames": [],
+      "b25RowOutcome": "primary_action_unavailable",
+      "b25ActionProofStatus": "fail",
+      "visiblePrimaryActions": [],
+      "visibleAlternateActions": [],
+      "availableSupplementaryActions": [],
+      "productFindings": [
+        "primary_action_unavailable: no primary action candidates were selected for this workflow row.",
+        "Garden Club / plant-exchange-submission / member: no documented primary package action was exercised [submit exchange, offer plant, request plant]; the package offers [withdraw-submission] to this role.",
+        "Garden Club / plant-exchange-submission / member: the walkthrough exercised no documented alternate/change/reject action [edit draft, withdraw submission]."
+      ],
+      "status": "fail",
+      "actionProofFramePairs": [],
+      "actionProofFramePairsRequired": false,
+      "alternateUnavailableReason": "Garden Club / plant-exchange-submission / member: the walkthrough exercised no documented alternate/change/reject action [edit draft, withdraw submission].",
+      "recordedRowStatus": "pass",
+      "assertionStatus": "pass",
+      "screenshotStatus": "complete",
+      "screenshotPaths": [
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_member_start.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_member_primary_action_unavailable.png"
+      ],
+      "screenshotPathsByName": {
+        "B13_ext_garden_club_plant-exchange-submission_member_start": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_member_start.png",
+        "B13_ext_garden_club_plant-exchange-submission_member_primary_action_unavailable": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_member_primary_action_unavailable.png"
+      },
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Shipped garden-member | Member | Member - RSVPs to events, offers or requests plants, borrows or gives away items, and signs up for care shifts. | 2 available community roles | Home | This week's event, exchange and care needs, and read-only export status. | Submitted for review | Genovese basil starts | Request | Pickup: Weekday evenings after 6pm | Pickup date: 2026-09-03 | Safe pickup: Exchange at the staffed community garden gate. | Availability: Request open | Privacy: Contact protected until coordinator-approved handoff | Submitted 2026-08-07T18:15:00-07:00 | Handoff: Awaiting Review | Ready for verified export | Mode: Export | 2 schemas selected | Destination: Neighborhood Association archive | Status: Redaction approved; ready to run. The platform will generate and verify the package checksum. | Redaction: Approved | Download: Unavailable | 2 schemas | Open for sign-up | Mulch delivery and bed top-up | 2026-09-05 | 08:30 | 4 spots | Care task: Mulch and soil care | Signed up: 1 | 3 spots left | You are signed up: Yes | Reviewed for handoff | Brandywine tomato seedlings | Offer | Pickup: Saturday 9–11am at the community shed | Pickup date: 2026-09-05 | Safe pickup: Meet beside the public shed door; no home address is shared. | Availability: Six available | Privacy: Contact visible only to submitter, reviewer, and approved recipient | Submitted 2026-08-05T13:00:00-07:00 | Reviewed 2026-08-06T10:30:00-07:00 | Handoff: Approved | Trellis building for climbing beans | 2026-10-03 | 09:00 | 3 spots | Care task: Structure building | Signed up: 0 | You are signed up: No | RSVP open | Autumn Work Day: Bed Turnover and Cover Crop Seeding | 1 / 2 going | 1 seats left | Community Garden — Plot C | Repeats: One-time seasonal work day | Default reminder: 24 hours before | 180 minutes | Seasonal focus: Bed turnover and cover-crop seeding | Accessibility Note | Available to claim | Cedar compost bin | Mode: Giveaway | Availability: Available | Condition: Good | Transfer: Awaiting claim | Listed for loan | Club hand-tool set | Mode: Loan | Availability: On Loan | Pickup: Saturday mornings | Due back 2026-08-20 | Requested 2026-07-31T16:00:00-07:00 | Borrowed 2026-08-01T09:30:00-07:00 | Overdue: Yes | Current holder: Checked out to a club member",
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Shipped garden-member | Member | Member - RSVPs to events, offers or requests plants, borrows or gives away items, and signs up for care shifts. | 2 available community roles | Home | This week's event, exchange and care needs, and read-only export status. | Submitted for review | Genovese basil starts | Request | Pickup: Weekday evenings after 6pm | Pickup date: 2026-09-03 | Safe pickup: Exchange at the staffed community garden gate. | Availability: Request open | Privacy: Contact protected until coordinator-approved handoff | Submitted 2026-08-07T18:15:00-07:00 | Handoff: Awaiting Review | Ready for verified export | Mode: Export | 2 schemas selected | Destination: Neighborhood Association archive | Status: Redaction approved; ready to run. The platform will generate and verify the package checksum. | Redaction: Approved | Download: Unavailable | 2 schemas | Open for sign-up | Mulch delivery and bed top-up | 2026-09-05 | 08:30 | 4 spots | Care task: Mulch and soil care | Signed up: 1 | 3 spots left | You are signed up: Yes | Reviewed for handoff | Brandywine tomato seedlings | Offer | Pickup: Saturday 9–11am at the community shed | Pickup date: 2026-09-05 | Safe pickup: Meet beside the public shed door; no home address is shared. | Availability: Six available | Privacy: Contact visible only to submitter, reviewer, and approved recipient | Submitted 2026-08-05T13:00:00-07:00 | Reviewed 2026-08-06T10:30:00-07:00 | Handoff: Approved | Trellis building for climbing beans | 2026-10-03 | 09:00 | 3 spots | Care task: Structure building | Signed up: 0 | You are signed up: No | RSVP open | Autumn Work Day: Bed Turnover and Cover Crop Seeding | 1 / 2 going | 1 seats left | Community Garden — Plot C | Repeats: One-time seasonal work day | Default reminder: 24 hours before | 180 minutes | Seasonal focus: Bed turnover and cover-crop seeding | Accessibility Note | Available to claim | Cedar compost bin | Mode: Giveaway | Availability: Available | Condition: Good | Transfer: Awaiting claim | Listed for loan | Club hand-tool set | Mode: Loan | Availability: On Loan | Pickup: Saturday mornings | Due back 2026-08-20 | Requested 2026-07-31T16:00:00-07:00 | Borrowed 2026-08-01T09:30:00-07:00 | Overdue: Yes | Current holder: Checked out to a club member"
+      ],
+      "diagnosticScreenshotPaths": [],
+      "commandOutputPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "deviceName": "emulator-5554",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "platform": "android",
+      "apiLevel": "Android 16 API 36",
+      "pass": false,
+      "screenshotCount": 2
+    },
+    {
+      "phase": "B13",
+      "appId": "ext_garden_club",
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "workflowId": "garden-tool-loan",
+      "role": "member",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md",
+      "requiredPrimaryActions": [
+        "browse items",
+        "list item",
+        "request loan",
+        "join waitlist",
+        "confirm pickup"
+      ],
+      "requiredAlternateActions": [
+        "leave queue",
+        "cancel loan",
+        "decline request",
+        "pause/resume/delist listing",
+        "mark damaged",
+        "report lost",
+        "return item"
+      ],
+      "expectedAssertions": [
+        "Member browses available garden tools, requests to borrow one or joins the waitlist when unavailable, and the owner confirms pickup or declines; the borrower later returns the item or flags a condition issue.",
+        "browse items, list item, request loan, join waitlist, confirm pickup",
+        "leave queue, cancel loan, decline request, pause/resume/delist listing, mark damaged, report lost, return item",
+        "Fresh screenshots must show browse/list views, owner/current-holder privacy, queue position, borrower state, custody/condition state, and the pickup/return result both owner and borrower receive."
+      ],
+      "screenshotNames": [],
+      "diagnosticScreenshotNames": [
+        "B13_ext_garden_club_garden-tool-loan_member_start",
+        "B13_ext_garden_club_garden-tool-loan_member_primary_action"
+      ],
+      "b25RowOutcome": "row_execution_failed",
+      "rowExecutionFailureReason": "Converting object to an encodable object failed: Instance of 'DateTime'",
+      "b25ActionProofStatus": "row_execution_failed",
+      "visiblePrimaryActions": [],
+      "visibleAlternateActions": [],
+      "availableSupplementaryActions": [],
+      "productFindings": [
+        "Converting object to an encodable object failed: Instance of 'DateTime'"
+      ],
+      "status": "fail",
+      "actionProofFramePairs": [],
+      "actionProofFramePairsRequired": false,
+      "recordedRowStatus": "row_execution_failed",
+      "assertionStatus": "fail",
+      "screenshotStatus": "complete",
+      "screenshotPaths": [],
+      "screenshotPathsByName": {},
+      "screenshotVisibleTexts": [],
+      "diagnosticScreenshotPaths": [
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-tool-loan_member_start.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-tool-loan_member_primary_action.png"
+      ],
+      "commandOutputPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "deviceName": "emulator-5554",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "platform": "android",
+      "apiLevel": "Android 16 API 36",
+      "pass": false,
+      "screenshotCount": 0
+    },
+    {
+      "phase": "B13",
+      "appId": "ext_garden_club",
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "workflowId": "garden-tool-giveaway",
+      "role": "member",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md",
+      "requiredPrimaryActions": [
+        "browse items",
+        "list item",
+        "claim giveaway",
+        "schedule pickup"
+      ],
+      "requiredAlternateActions": [
+        "pause listing",
+        "resume listing",
+        "delist listing"
+      ],
+      "expectedAssertions": [
+        "Member browses items offered for giveaway and claims one to take ownership; the owner lists, pauses, resumes, or delists their own item.",
+        "browse items, list item, claim giveaway, schedule pickup",
+        "pause listing, resume listing, delist listing",
+        "Fresh screenshots must show browse/list views, owner privacy, claimant state, pickup coordination, and the ownership-transfer result the owner receives."
+      ],
+      "screenshotNames": [
+        "B13_ext_garden_club_garden-tool-giveaway_member_start",
+        "B13_ext_garden_club_garden-tool-giveaway_member_primary_action",
+        "B13_ext_garden_club_garden-tool-giveaway_member_primary_result"
+      ],
+      "diagnosticScreenshotNames": [],
+      "b25RowOutcome": "attempted",
+      "b25ActionExecutionEvidence": [
+        {
+          "transitionId": "claim-giveaway",
+          "tapReturned": "returned",
+          "handlerEntry": "not_observable",
+          "engineCallCompletion": "not_observable",
+          "errorSurface": "not_observed",
+          "postcondition": "target_state_observed"
+        }
+      ],
+      "b25ActionProofStatus": "fail",
+      "visiblePrimaryActions": [
+        "claim giveaway"
+      ],
+      "visibleAlternateActions": [],
+      "availableSupplementaryActions": [],
+      "productFindings": [
+        "Garden Club / garden-tool-giveaway / member: the walkthrough exercised no documented alternate/change/reject action [pause listing, resume listing, delist listing]."
+      ],
+      "status": "fail",
+      "actionProofFramePairs": [
+        [
+          "B13_ext_garden_club_garden-tool-giveaway_member_primary_action",
+          "B13_ext_garden_club_garden-tool-giveaway_member_primary_result"
+        ]
+      ],
+      "actionProofFramePairsRequired": true,
+      "alternateUnavailableReason": "Garden Club / garden-tool-giveaway / member: the walkthrough exercised no documented alternate/change/reject action [pause listing, resume listing, delist listing].",
+      "recordedRowStatus": "pass",
+      "assertionStatus": "pass",
+      "screenshotStatus": "complete",
+      "screenshotPaths": [
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-tool-giveaway_member_start.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-tool-giveaway_member_primary_action.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-tool-giveaway_member_primary_result.png"
+      ],
+      "screenshotPathsByName": {
+        "B13_ext_garden_club_garden-tool-giveaway_member_start": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-tool-giveaway_member_start.png",
+        "B13_ext_garden_club_garden-tool-giveaway_member_primary_action": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-tool-giveaway_member_primary_action.png",
+        "B13_ext_garden_club_garden-tool-giveaway_member_primary_result": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-tool-giveaway_member_primary_result.png"
+      },
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Shipped garden-member | Member | Member - RSVPs to events, offers or requests plants, borrows or gives away items, and signs up for care shifts. | 2 available community roles | Marketplace | Browse, list, borrow, queue for, return, or give away garden items. | Search available items | Available to claim | Cedar compost bin | Mode: Giveaway | Availability: Available | Condition: Good | Transfer: Awaiting claim | Claim giveaway | Listed for loan | Club hand-tool set | Mode: Loan | Availability: On Loan | Pickup: Saturday mornings | Due back 2026-08-20 | Requested 2026-07-31T16:00:00-07:00 | Borrowed 2026-08-01T09:30:00-07:00 | Overdue: Yes | Current holder: Checked out to a club member | Join queue | Compact garden tiller | Availability: Reserved | Pickup: Evidence pickupWindow | Due back 2026-08-22 | Requested 2026-09-28T21:05:47.374375Z | Overdue: No | Current holder: No current holder | Cancel loan | Report issue | Soaker hose set | Pickup: Weekday afternoons | Due back 2026-10-03 | Requested 2026-09-10T15:00:00-07:00 | Borrowed 2026-09-11T09:00:00-07:00 | Current holder: Garden Member | Return item | Mark damaged | Report lost | Steel wheelbarrow | Pause listing | Delist | Terracotta pots — assorted sizes | Local package details | LOCAL ENGINE | Calendar | Care | Messages | Give away a garden item | List a tool to loan",
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Shipped garden-member | Member | Member - RSVPs to events, offers or requests plants, borrows or gives away items, and signs up for care shifts. | 2 available community roles | Marketplace | Browse, list, borrow, queue for, return, or give away garden items. | Search available items | Available to claim | Cedar compost bin | Mode: Giveaway | Availability: Available | Condition: Good | Transfer: Awaiting claim | Claim giveaway | Listed for loan | Club hand-tool set | Mode: Loan | Availability: On Loan | Pickup: Saturday mornings | Due back 2026-08-20 | Requested 2026-07-31T16:00:00-07:00 | Borrowed 2026-08-01T09:30:00-07:00 | Overdue: Yes | Current holder: Checked out to a club member | Join queue | Compact garden tiller | Availability: Reserved | Pickup: Evidence pickupWindow | Due back 2026-08-22 | Requested 2026-09-28T21:05:47.374375Z | Overdue: No | Current holder: No current holder | Cancel loan | Report issue | Soaker hose set | Pickup: Weekday afternoons | Due back 2026-10-03 | Requested 2026-09-10T15:00:00-07:00 | Borrowed 2026-09-11T09:00:00-07:00 | Current holder: Garden Member | Return item | Mark damaged | Report lost | Steel wheelbarrow | Pause listing | Delist | Terracotta pots — assorted sizes | Local package details | LOCAL ENGINE | Calendar | Care | Messages | Give away a garden item | List a tool to loan | Three-bay cedar compost bin, disassembled and ready for reuse. | Owner: Garden Coordinator | Slats sanded; hardware included in a labeled bag. | Transfer terms: Free to a club member with space to reassemble it. | Pickup instructions: Collect from behind the coordinator's shed after confirming a pickup time. | Reuse note: Please keep the bin dry until reassembled. | Claim: Not claimed | Owner contact: Protected until ownership handoff | Claimant contact: Protected until ownership handoff | Close",
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Shipped garden-member | Member | Member - RSVPs to events, offers or requests plants, borrows or gives away items, and signs up for care shifts. | 2 available community roles | Marketplace | Browse, list, borrow, queue for, return, or give away garden items. | Search available items | Available to claim | Cedar compost bin | Mode: Giveaway | Availability: Available | Condition: Good | Transfer: Awaiting claim | Claim giveaway | Listed for loan | Club hand-tool set | Mode: Loan | Availability: On Loan | Pickup: Saturday mornings | Due back 2026-08-20 | Requested 2026-07-31T16:00:00-07:00 | Borrowed 2026-08-01T09:30:00-07:00 | Overdue: Yes | Current holder: Checked out to a club member | Join queue | Compact garden tiller | Availability: Reserved | Pickup: Evidence pickupWindow | Due back 2026-08-22 | Requested 2026-09-28T21:05:47.374375Z | Overdue: No | Current holder: No current holder | Cancel loan | Report issue | Soaker hose set | Pickup: Weekday afternoons | Due back 2026-10-03 | Requested 2026-09-10T15:00:00-07:00 | Borrowed 2026-09-11T09:00:00-07:00 | Current holder: Garden Member | Return item | Mark damaged | Report lost | Steel wheelbarrow | Pause listing | Delist | Terracotta pots — assorted sizes | Local package details | LOCAL ENGINE | Calendar | Care | Messages | Give away a garden item | List a tool to loan | Ownership transferred | Three-bay cedar compost bin, disassembled and ready for reuse. | Owner: Garden Coordinator | Slats sanded; hardware included in a labeled bag. | Transfer terms: Free to a club member with space to reassemble it. | Pickup instructions: Collect from behind the coordinator's shed after confirming a pickup time. | Reuse note: Please keep the bin dry until reassembled. | Claimed 2026-09-28T21:06:10.401301Z | Transfer: | Claim: | Owner contact: | Close"
+      ],
+      "diagnosticScreenshotPaths": [],
+      "commandOutputPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "deviceName": "emulator-5554",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "platform": "android",
+      "apiLevel": "Android 16 API 36",
+      "pass": false,
+      "screenshotCount": 3
+    },
+    {
+      "phase": "B13",
+      "appId": "ext_garden_club",
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "workflowId": "garden-export-custom-schemas",
+      "role": "coordinator",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md",
+      "requiredPrimaryActions": [
+        "export",
+        "download export",
+        "start transfer",
+        "import data"
+      ],
+      "requiredAlternateActions": [
+        "change scope",
+        "cancel transfer",
+        "rollback",
+        "retry",
+        "redaction preview"
+      ],
+      "expectedAssertions": [
+        "Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.",
+        "export, download export, start transfer, import data",
+        "change scope, cancel transfer, rollback, retry, redaction preview",
+        "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+      ],
+      "screenshotNames": [
+        "B13_ext_garden_club_garden-export-custom-schemas_coordinator_start",
+        "B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_action",
+        "B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_result",
+        "B13_ext_garden_club_garden-export-custom-schemas_coordinator_alternate_action",
+        "B13_ext_garden_club_garden-export-custom-schemas_coordinator_result_receiver"
+      ],
+      "diagnosticScreenshotNames": [],
+      "b25RowOutcome": "attempted",
+      "b25ActionExecutionEvidence": [
+        {
+          "transitionId": "start-export",
+          "tapReturned": "returned",
+          "handlerEntry": "not_observable",
+          "engineCallCompletion": "not_observable",
+          "errorSurface": "not_observed",
+          "postcondition": "target_state_observed"
+        },
+        {
+          "transitionId": "cancel-transfer",
+          "tapReturned": "returned",
+          "handlerEntry": "not_observable",
+          "engineCallCompletion": "not_observable",
+          "errorSurface": "not_observed",
+          "postcondition": "target_state_observed"
+        }
+      ],
+      "b25ActionProofStatus": "pass",
+      "visiblePrimaryActions": [
+        "export"
+      ],
+      "visibleAlternateActions": [
+        "cancel transfer"
+      ],
+      "availableSupplementaryActions": [],
+      "productFindings": [],
+      "status": "fail",
+      "actionProofFramePairs": [
+        [
+          "B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_action",
+          "B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_result"
+        ],
+        [
+          "B13_ext_garden_club_garden-export-custom-schemas_coordinator_alternate_action",
+          "B13_ext_garden_club_garden-export-custom-schemas_coordinator_result_receiver"
+        ]
+      ],
+      "actionProofFramePairsRequired": true,
+      "recordedRowStatus": "pass",
+      "assertionStatus": "pass",
+      "screenshotStatus": "complete",
+      "screenshotPaths": [
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_start.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_action.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_result.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_alternate_action.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_result_receiver.png"
+      ],
+      "screenshotPathsByName": {
+        "B13_ext_garden_club_garden-export-custom-schemas_coordinator_start": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_start.png",
+        "B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_action": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_action.png",
+        "B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_result": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_result.png",
+        "B13_ext_garden_club_garden-export-custom-schemas_coordinator_alternate_action": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_alternate_action.png",
+        "B13_ext_garden_club_garden-export-custom-schemas_coordinator_result_receiver": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_result_receiver.png"
+      },
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Shipped garden-coordinator | Coordinator | Coordinator - Organizes events, reviews plant handoffs, coordinates shared items and care shifts, and owns club exports. | 2 available community roles | Documents | Coordinator-owned export scope, redaction, integrity, history, and portability state. Tuned for Coordinator. | Ready for verified export | Mode: Export | 2 schemas selected | Destination: Neighborhood Association archive | Status: Redaction approved; ready to run. The platform will generate and verify the package checksum. | Redaction: Approved | Download: Unavailable | 2 schemas | Export | Change scope | Cancel transfer | Local package details | LOCAL ENGINE | Marketplace | Organize | Messages | New export package",
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Shipped garden-coordinator | Coordinator | Coordinator - Organizes events, reviews plant handoffs, coordinates shared items and care shifts, and owns club exports. | 2 available community roles | Documents | Coordinator-owned export scope, redaction, integrity, history, and portability state. Tuned for Coordinator. | Ready for verified export | Mode: Export | 2 schemas selected | Destination: Neighborhood Association archive | Status: Redaction approved; ready to run. The platform will generate and verify the package checksum. | Redaction: Approved | Download: Unavailable | 2 schemas | Export | Change scope | Cancel transfer | Local package details | LOCAL ENGINE | Marketplace | Organize | Messages | New export package",
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Shipped garden-coordinator | Coordinator | Coordinator - Organizes events, reviews plant handoffs, coordinates shared items and care shifts, and owns club exports. | 2 available community roles | Documents | Coordinator-owned export scope, redaction, integrity, history, and portability state. Tuned for Coordinator. | Export operation in progress | Mode: Export | 2 schemas selected | Destination: Neighborhood Association archive | Status: Generating export package | Redaction: Approved | Download: Unavailable | 2 schemas | Confirm completion | Record export error | Cancel transfer | Local package details | LOCAL ENGINE | Marketplace | Organize | Messages | New export package",
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Shipped garden-coordinator | Coordinator | Coordinator - Organizes events, reviews plant handoffs, coordinates shared items and care shifts, and owns club exports. | 2 available community roles | Documents | Coordinator-owned export scope, redaction, integrity, history, and portability state. Tuned for Coordinator. | Export operation in progress | Mode: Export | 2 schemas selected | Destination: Neighborhood Association archive | Status: Generating export package | Redaction: Approved | Download: Unavailable | 2 schemas | Confirm completion | Record export error | Cancel transfer | Local package details | LOCAL ENGINE | Marketplace | Organize | Messages | New export package",
+        "No sponsored message right now. | Garden Club | RSVP to seasonal garden events, share plants and tools, coordinate care, and keep club records portable. | Signed in as Shipped garden-coordinator | Coordinator | Coordinator - Organizes events, reviews plant handoffs, coordinates shared items and care shifts, and owns club exports. | 2 available community roles | Documents | Coordinator-owned export scope, redaction, integrity, history, and portability state. Tuned for Coordinator. | Cancelled | This is an off-path export state | Mode: Export | 2 schemas selected | Destination: Neighborhood Association archive | Status: Operation cancelled | Redaction: Approved | Download: Unavailable | 2 schemas | Local package details | LOCAL ENGINE | Marketplace | Organize | Messages | New export package"
+      ],
+      "diagnosticScreenshotPaths": [],
+      "commandOutputPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "deviceName": "emulator-5554",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "platform": "android",
+      "apiLevel": "Android 16 API 36",
+      "pass": false,
+      "captureIntegrityFindings": [
+        {
+          "kind": "byte-identical-frame-informational",
+          "firstScreenshotPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_result.png",
+          "duplicateScreenshotPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_alternate_action.png",
+          "detail": "The frames \"C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_primary_result.png\" and \"C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_coordinator_alternate_action.png\" are byte-for-byte identical. Neither is a declared action-proof frame, so this cannot distinguish a legitimately unchanged screen from a duplicate write; it is recorded for audit only and does not fail the row."
+        }
+      ],
+      "screenshotCount": 5
+    }
+  ],
+  "capturedCommunities": [
+    {
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "phases": [
+        "B13"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc",
+        "sha256": "e82a8b39015268dba34e2782bb81613e247fa7c7f7e94e402a80309c5b439d97",
+        "bytes": 112086,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "1b5c9f70",
+        "lastCommitDate": "2026-09-19",
+        "lastCommitSubject": "fix(garden): seed the five unprovable B25 rows by ADDING instances, never mutating one"
+      }
+    }
+  ]
 }

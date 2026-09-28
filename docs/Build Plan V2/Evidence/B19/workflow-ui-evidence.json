@@ -1,12 +1,63 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "phase": "B19",
-  "status": "pass",
+  "status": "fail",
+  "walkthroughStatus": "fail",
+  "screenshotStatus": "complete",
+  "completionGateEligible": false,
+  "deviceName": "emulator-5554",
   "emulatorName": "emulator-5554",
   "deviceClass": "Android emulator",
+  "platform": "android",
   "apiLevel": "Android 16 API 36",
-  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-  "workflowCount": 1,
+  "commandOutputPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "expectedWorkflowCount": 2,
+  "workflowCount": 2,
+  "b25RowSummary": {
+    "recordedRows": 2,
+    "provenRows": 1,
+    "completedRows": 2,
+    "primaryActionUnavailableRows": 0,
+    "blockedRows": [],
+    "nonProvenRows": [
+      {
+        "outcome": "row_execution_failed",
+        "communityName": "Masjid Nur",
+        "workflowId": "wf_community-persona-aware-ux",
+        "role": "admin",
+        "reason": "After the walkthrough attempted publish-announcement for mosque-announcement instance ext_mosque_mosque-announcement_iut0nnast6ll, the state check did not observe target state sent; the last observed state was previewed. Waited 0m 5s. Transition dispatch and successful completion were not verified."
+      }
+    ],
+    "blockedByAudienceRows": 0,
+    "blockedByAudienceRowsByCommunity": {},
+    "blockedByAudienceReasonGroups": [],
+    "blockedBySelectorSetupRows": 0,
+    "blockedBySelectorSetupRowsByCommunity": {},
+    "blockedBySelectorSetupReasonGroups": [],
+    "blockedByPrerequisiteRows": 0,
+    "blockedByPrerequisiteRowsByCommunity": {},
+    "blockedByPrerequisiteReasonGroups": [],
+    "actionSucceededResultUnverifiedRows": 0,
+    "actionSucceededResultUnverifiedRowsByCommunity": {},
+    "productFindingRows": 0,
+    "productFindingRowsByCommunity": {},
+    "rowExecutionFailedRows": 1,
+    "rowExecutionFailedRowsByCommunity": {
+      "Masjid Nur": 1
+    }
+  },
+  "b25CommunityTraversals": [],
+  "b25CommunityTraversalSummary": {
+    "recordedCommunities": 0,
+    "completelyTraversedCommunities": 0,
+    "incompletelyTraversedCommunities": 0,
+    "incompleteCommunities": [],
+    "finalised": true
+  },
+  "requestedScreenshotCount": 7,
+  "screenshotCount": 7,
+  "missingScreenshotCount": 0,
+  "missingScreenshotNames": [],
   "workflows": [
     {
       "phase": "B19",
@@ -14,29 +65,155 @@
       "communityId": "community_mosque",
       "communityName": "Masjid Nur",
       "workflowId": "wf_community-persona-aware-ux",
+      "role": "member",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "requiredPrimaryActions": [
+        "view member workflow",
+        "receive update",
+        "inspect read-only state"
+      ],
+      "requiredAlternateActions": [
+        "change persona",
+        "request access",
+        "leave unchanged"
+      ],
       "expectedAssertions": [
-        "member persona can create the protected care request",
-        "member persona cannot create the public announcement",
-        "admin persona can create the public announcement"
+        "Member confirms their view contains member-safe workflows and hides/disables admin-only actions with a clear reason.",
+        "Fresh screenshots must show member role, allowed workflows, disabled/hidden admin rows, and explanation."
       ],
       "screenshotNames": [
-        "B19_member_care_request_actor",
-        "B19_admin_announcement_actor"
+        "B19_member_primary_member_workflow",
+        "B19_member_alternate_leave_unchanged"
       ],
-      "status": "pass",
+      "diagnosticScreenshotNames": [],
+      "b25RowOutcome": "attempted",
+      "b25ActionProofStatus": "pass",
+      "visiblePrimaryActions": [
+        "view member workflow"
+      ],
+      "visibleAlternateActions": [
+        "leave unchanged"
+      ],
+      "productFindings": [],
+      "status": "fail",
+      "actionProofFramePairs": [],
+      "actionProofFramePairsRequired": false,
+      "resultUnchangedVerified": true,
+      "recordedRowStatus": "pass",
+      "assertionStatus": "pass",
+      "screenshotStatus": "complete",
       "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B19/screenshots/B19_member_care_request_actor.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B19/screenshots/B19_admin_announcement_actor.png"
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B19/screenshots/B19_member_primary_member_workflow.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B19/screenshots/B19_member_alternate_leave_unchanged.png"
       ],
+      "screenshotPathsByName": {
+        "B19_member_primary_member_workflow": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B19/screenshots/B19_member_primary_member_workflow.png",
+        "B19_member_alternate_leave_unchanged": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B19/screenshots/B19_member_alternate_leave_unchanged.png"
+      },
       "screenshotVisibleTexts": [
-        "No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Community Member | Member - Receives announcements, RSVPs, volunteers, gives, and requests care. | 2 roles | Home | Pinned and unassigned community surfaces. | Friday service and iftar | Friday 7:00 PM at Masjid Nur Hall. RSVP from Calendar. | Donation receipt | Iftar meals donation receipt respects donor visibility preference. | Care request status | Private details stay masked outside the assigned reviewer. | Masjid Nur home | A personalized community home with curated surfaces, theme tokens, and minimized/medium/expanded presentation. | 6 sections | community-icon-badge | comfortable-mobile | Announcements | Updates, reminders, and member notices for Masjid Nur. | Public announcement | Waiting for the announcement to be sent. | Minimized | Tap for expanded view | Member update | Expand | Waiting | Neutral care notification | Upcoming events | Dates, capacity, and attendance actions. | Community event RSVP | Event details include date, location, capacity, RSVP action, and attendance result. | Event details | RSVP to event | Knowledge and search | Cited answers, source visibility, and saved digests. | Announcement search and AI citation | Waiting for the first community action. | Knowledge answer | Giving | Payments, donations, receipts, and member preferences. | Donation payment and receipt | Record a 50.00 USD donation with receipt and privacy choices. | Payment details | Pay and save receipt | Care and volunteers | Private requests, volunteer shifts, and member support. | Volunteer signup | Volunteer details include shift, availability, and protected contact. | Member form | Submit signup | In-focus product surface | Private care request | Meal support request with public summary and protected details. | Submitted details | Public summary | Member-facing text stays neutral and does not reveal sensitive care details. | Protected details | Private notes are visible only to the care team or donor account owner. | Record | Donation receipt, care status, or citation evidence remains available. | Members see the safe notification, receipt, or cited answer in context. | Change option | Update privacy, edit request, withdraw, or open receipt where allowed. | Request queue | Member-visible summary, protected details, receipt or citation, and recipient preview stay visible before sending. | Update privacy | Submit request | Member tools | Useful actions for this community. | Anonymous donor visibility | Member form captures labeled details, privacy choices, and reviewer handoff. | Save visibility | Community discussion thread | Ad preference and sponsored-message behavior are ready to open. | Open ad details | Local package details | Calendar | Care",
-        "No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 roles | Home | Pinned and unassigned community surfaces. | Announcement composer | Draft Ramadan update ready for preview, schedule, or publish. | Volunteer roster | Iftar setup: 2 filled, 4 open spots, protected contact gated. | Care review | Care requests show public summary unless assigned reviewer unlocks private fields. | Masjid Nur home | A personalized community home with curated surfaces, theme tokens, and minimized/medium/expanded presentation. | 6 sections | community-icon-badge | comfortable-mobile | Announcements | Updates, reminders, and member notices for Masjid Nur. | In-focus product surface | Expand | Ramadan community night | Announcement composer for Masjid Nur members. | Confirm the message body, selected audience, sender, delivery timing, and member inbox preview before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Publish announcement | Neutral care notification | Waiting for the announcement to be sent. | Minimized | Tap for expanded view | Member update | Waiting | Upcoming events | Dates, capacity, and attendance actions. | Community event RSVP | Event details include date, location, capacity, RSVP action, and attendance result. | Event details | RSVP to event | Knowledge and search | Cited answers, source visibility, and saved digests. | Announcement search and AI citation | Waiting for the first community action. | Knowledge answer | Giving | Payments, donations, receipts, and member preferences. | Donation payment and receipt | Waiting for the member payment or preference to be saved. | Payment details | Care and volunteers | Private requests, volunteer shifts, and member support. | Volunteer signup | Volunteer details include shift, availability, and protected contact. | Member form | Submit signup | Protected care request | Waiting for the member form to be submitted. | Member tools | Useful actions for this community. | Anonymous donor visibility | Community discussion thread | Ad preference and sponsored-message behavior are ready to open. | Open ad details | Local package details | Calendar | Care"
+        "No sponsored message right now. | Masjid Nur | Announcements, worship, giving, volunteering, and private community care in one respectful hub. | Signed in as Walkthrough community member | Community Member | Member - Reads updates, RSVPs, gives, volunteers, uses resources, joins discussions, and requests care. | 2 available community roles | Home | Pinned and unassigned community surfaces. | Submitted for private review | Public summary: Meal support requested after a recent illness | Privacy: Requester and assigned Masjid care reviewer only | Status history | Status: submitted | By: community-member | At: 2026-08-11T08:30:00-07:00 | Paid — manually recorded | Amount: $ 50 | Fund: Community iftar meals | Privacy: Restricted | Recorded paid 2026-08-10T12:00:00-07:00 | Status: Paid Manual | Receipt: Cash donation recorded by the Masjid office for the iftar meal fund. | Payment history | Status: intent-submitted | At: 2026-08-10T11:50:00-07:00 | Status: offline-payment-recorded | By: masjid-admin | At: 2026-08-10T12:00:00-07:00 | Received — unread | Care request received | From Masjid Admin | For Community Member | Audience: Requester only | Message Body | Your request was received. A care reviewer will follow up privately; no protected details are included in this notice. | Received 2026-08-11T08:30:05-07:00 | Volunteer signup open | Community iftar setup team | Role: Tables, water, and welcome station | 2026-08-14 | 17:30 | Masjid Nur Community Hall | Capacity: 6 | Volunteers: 1 | Signup history | Action: signed-up | Member: community-member | At: 2026-08-11T10:30:00-07:00 | Signed up: 1 | Open spots: 5 | Edit availability | Cancel signup | RSVP open | Friday service and community iftar | 1 / 80 going | Attendees | Going | • Walkthrough community member | 19:00 | Repeats: Every Friday during Ramadan | Published 2026-08-11T09:00:00-07:00 | Open spots: 79 | Sent | Ramadan community night and iftar volunteers | Body | Join us Friday for community iftar. Volunteers are still needed for setup and cleanup, and the meal fund is open for giving. | Audience: All Masjid Nur members | Channel: Home and Messages | Scheduled 2026-08-14T17:00:00-07:00 | Sent 2026-08-14T17:00:00-07:00 | Delivery: Sent | Read by 0 | Delivery history | Status: sent | At: 2026-08-14T17:00:00-07:00 | Revisions | Action: previewed | At: 2026-08-14T16:45:00-07:00 | Readers: 0",
+        "No sponsored message right now. | Masjid Nur | Announcements, worship, giving, volunteering, and private community care in one respectful hub. | Signed in as Walkthrough community member | Community Member | Member - Reads updates, RSVPs, gives, volunteers, uses resources, joins discussions, and requests care. | 2 available community roles | Home | Pinned and unassigned community surfaces. | Submitted for private review | Public summary: Meal support requested after a recent illness | Privacy: Requester and assigned Masjid care reviewer only | Status history | Status: submitted | By: community-member | At: 2026-08-11T08:30:00-07:00 | Paid — manually recorded | Amount: $ 50 | Fund: Community iftar meals | Privacy: Restricted | Recorded paid 2026-08-10T12:00:00-07:00 | Status: Paid Manual | Receipt: Cash donation recorded by the Masjid office for the iftar meal fund. | Payment history | Status: intent-submitted | At: 2026-08-10T11:50:00-07:00 | Status: offline-payment-recorded | By: masjid-admin | At: 2026-08-10T12:00:00-07:00 | Received — unread | Care request received | From Masjid Admin | For Community Member | Audience: Requester only | Message Body | Your request was received. A care reviewer will follow up privately; no protected details are included in this notice. | Received 2026-08-11T08:30:05-07:00 | Volunteer signup open | Community iftar setup team | Role: Tables, water, and welcome station | 2026-08-14 | 17:30 | Masjid Nur Community Hall | Capacity: 6 | Volunteers: 1 | Signup history | Action: signed-up | Member: community-member | At: 2026-08-11T10:30:00-07:00 | Signed up: 1 | Open spots: 5 | Edit availability | Cancel signup | RSVP open | Friday service and community iftar | 1 / 80 going | Attendees | Going | • Walkthrough community member | 19:00 | Repeats: Every Friday during Ramadan | Published 2026-08-11T09:00:00-07:00 | Open spots: 79 | Sent | Ramadan community night and iftar volunteers | Body | Join us Friday for community iftar. Volunteers are still needed for setup and cleanup, and the meal fund is open for giving. | Audience: All Masjid Nur members | Channel: Home and Messages | Scheduled 2026-08-14T17:00:00-07:00 | Sent 2026-08-14T17:00:00-07:00 | Delivery: Sent | Read by 0 | Delivery history | Status: sent | At: 2026-08-14T17:00:00-07:00 | Revisions | Action: previewed | At: 2026-08-14T16:45:00-07:00 | Readers: 0"
       ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Pi Project/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "diagnosticScreenshotPaths": [],
+      "commandOutputPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "deviceName": "emulator-5554",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
+      "platform": "android",
       "apiLevel": "Android 16 API 36",
-      "pass": true
+      "pass": false,
+      "screenshotCount": 2
+    },
+    {
+      "phase": "B19",
+      "appId": "ext_mosque",
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "workflowId": "wf_community-persona-aware-ux",
+      "role": "admin",
+      "productDocPath": "docs/references/communities/masjid-nur-product-experience.md",
+      "requiredPrimaryActions": [
+        "open admin workflow",
+        "publish/update",
+        "inspect receiver target"
+      ],
+      "requiredAlternateActions": [
+        "preview",
+        "save draft",
+        "switch persona"
+      ],
+      "expectedAssertions": [
+        "Admin confirms their view contains publishing/coordination workflows and shows how member receiver state will be created.",
+        "Fresh screenshots must show admin role, admin-capable workflows, preview/receiver state, and switch path."
+      ],
+      "screenshotNames": [],
+      "diagnosticScreenshotNames": [
+        "B19_role_aware_admin_start",
+        "B19_role_aware_admin_action",
+        "B19_role_aware_admin_alternate_action",
+        "B19_role_aware_admin_alternate_result",
+        "B19_role_aware_admin_primary_action"
+      ],
+      "b25RowOutcome": "row_execution_failed",
+      "rowExecutionFailureReason": "After the walkthrough attempted publish-announcement for mosque-announcement instance ext_mosque_mosque-announcement_iut0nnast6ll, the state check did not observe target state sent; the last observed state was previewed. Waited 0m 5s. Transition dispatch and successful completion were not verified.",
+      "b25ActionExecutionEvidence": [
+        {
+          "transitionId": "publish-announcement",
+          "tapReturned": "returned",
+          "handlerEntry": "not_observable",
+          "engineCallCompletion": "not_observable",
+          "errorSurface": "not_observed",
+          "postcondition": "target_state_not_observed"
+        }
+      ],
+      "b25ActionProofStatus": "row_execution_failed",
+      "visiblePrimaryActions": [],
+      "visibleAlternateActions": [],
+      "productFindings": [
+        "After the walkthrough attempted publish-announcement for mosque-announcement instance ext_mosque_mosque-announcement_iut0nnast6ll, the state check did not observe target state sent; the last observed state was previewed. Waited 0m 5s. Transition dispatch and successful completion were not verified."
+      ],
+      "status": "fail",
+      "actionProofFramePairs": [],
+      "actionProofFramePairsRequired": false,
+      "recordedRowStatus": "row_execution_failed",
+      "assertionStatus": "fail",
+      "screenshotStatus": "complete",
+      "screenshotPaths": [],
+      "screenshotPathsByName": {},
+      "screenshotVisibleTexts": [],
+      "diagnosticScreenshotPaths": [
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B19/screenshots/B19_role_aware_admin_start.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B19/screenshots/B19_role_aware_admin_action.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B19/screenshots/B19_role_aware_admin_alternate_action.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B19/screenshots/B19_role_aware_admin_alternate_result.png",
+        "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B19/screenshots/B19_role_aware_admin_primary_action.png"
+      ],
+      "commandOutputPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "deviceName": "emulator-5554",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "platform": "android",
+      "apiLevel": "Android 16 API 36",
+      "pass": false,
+      "screenshotCount": 0
+    }
+  ],
+  "capturedCommunities": [
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "phases": [
+        "B19"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc",
+        "sha256": "7a7b48223d14f7ae50237af3a7c290f646eb84ca2c1efa4c0f54ec9d6b6fe1ff",
+        "bytes": 92769,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "68e4fee8",
+        "lastCommitDate": "2026-09-05",
+        "lastCommitSubject": "fix(masjid-nur): stop mixing formEntry into the calendar tab -- restores the month grid"
+      }
     }
   ]
 }

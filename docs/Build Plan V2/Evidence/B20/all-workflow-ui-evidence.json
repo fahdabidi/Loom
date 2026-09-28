@@ -1,40 +1,216 @@
 {
-  "schemaVersion": 2,
-  "status": "fail",
-  "evidenceMode": "failed",
-  "walkthroughStatus": "fail",
+  "schemaVersion": 1,
+  "status": "pass",
   "screenshotStatus": "complete",
-  "completionGateEligible": false,
-  "failureReason": "The walkthrough assertions did not complete successfully; see commandOutputPath.",
   "phases": [
-    "B16"
+    "B12",
+    "B13",
+    "B14",
+    "B15",
+    "B16",
+    "B17",
+    "B18",
+    "B19",
+    "B20"
   ],
-  "phaseSummaries": [
+  "expectedPhases": [
+    "B12",
+    "B13",
+    "B14",
+    "B15",
+    "B16",
+    "B17",
+    "B18",
+    "B19",
+    "B20"
+  ],
+  "missingPhases": [],
+  "workflowCount": 82,
+  "screenshotCount": 150,
+  "capturedCommunities": [
     {
-      "phase": "B16",
-      "status": "fail",
-      "walkthroughStatus": "fail",
-      "screenshotStatus": "complete",
-      "expectedWorkflowCount": 1,
-      "workflowCount": 0,
-      "requestedScreenshotCount": 2,
-      "screenshotCount": 2
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "phases": [
+        "B16"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_AdFreeCommunity_Example.jsonc",
+        "sha256": "13b894604b5baf0f41a5a6bb75525c871f117848bfe79cb2ec203d0f0db36936",
+        "bytes": 88021,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "38f41976",
+        "lastCommitDate": "2026-09-05",
+        "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
+      }
+    },
+    {
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "phases": [
+        "B15"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc",
+        "sha256": "199913fcc8d76fcb345d889d09631fce09efd6cd0bced6b9cf0d2b5c8fa254f9",
+        "bytes": 61756,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "c6ec6116",
+        "lastCommitDate": "2026-09-05",
+        "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
+      }
+    },
+    {
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "phases": [
+        "B14",
+        "B20"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_CedarCommonsHOA_Example.jsonc",
+        "sha256": "38c70ed08eabe2ef07011658bdea2434008e385b271e4ae6b98a29007369fd7f",
+        "bytes": 112488,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "7061b1e7",
+        "lastCommitDate": "2026-09-07",
+        "lastCommitSubject": "feat(cedar): hoa-document-access-request -- board grant/deny resolution"
+      }
+    },
+    {
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "phases": [
+        "B15"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc",
+        "sha256": "92547b0c0be7292771748ab9c11083ffc5b759d494c5da522290e921b392a609",
+        "bytes": 87738,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "c6ec6116",
+        "lastCommitDate": "2026-09-05",
+        "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
+      }
+    },
+    {
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "phases": [
+        "B16"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_DataPortabilityCommunity_Example.jsonc",
+        "sha256": "f30994c9776871da2a4d48480f1ec83b2e7becaf16f860017dde5733ae0def43",
+        "bytes": 102558,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "38f41976",
+        "lastCommitDate": "2026-09-05",
+        "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
+      }
+    },
+    {
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "phases": [
+        "B13",
+        "B20"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc",
+        "sha256": "e82a8b39015268dba34e2782bb81613e247fa7c7f7e94e402a80309c5b439d97",
+        "bytes": 112086,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "1b5c9f70",
+        "lastCommitDate": "2026-09-19",
+        "lastCommitSubject": "fix(garden): seed the five unprovable B25 rows by ADDING instances, never mutating one"
+      }
+    },
+    {
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "phases": [
+        "B14",
+        "B17",
+        "B18",
+        "B19",
+        "B20"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_MasjidNur_Example.jsonc",
+        "sha256": "7a7b48223d14f7ae50237af3a7c290f646eb84ca2c1efa4c0f54ec9d6b6fe1ff",
+        "bytes": 92769,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "68e4fee8",
+        "lastCommitDate": "2026-09-05",
+        "lastCommitSubject": "fix(masjid-nur): stop mixing formEntry into the calendar tab -- restores the month grid"
+      }
+    },
+    {
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "phases": [
+        "B16"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_MemberSocialSpace_Example.jsonc",
+        "sha256": "3b2081ccf7fd223e5254276f4d70f08411df3a49659b0c00ad417a277d1ea3d5",
+        "bytes": 45258,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "c6ec6116",
+        "lastCommitDate": "2026-09-05",
+        "lastCommitSubject": "spec(skill): introduce skillVersion -- self-enforcing spec-currency for community JSON"
+      }
+    },
+    {
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "phases": [
+        "B14"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_NeighborhoodBookClub_Example.jsonc",
+        "sha256": "23acd52b316458ad10ddc09e1bb4e97101f9443b1b81841ea3c1d2182b8a6532",
+        "bytes": 81493,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "d87f9875",
+        "lastCommitDate": "2026-09-25",
+        "lastCommitSubject": "feat(book-club): release the hold -- access lists, create-time identity, saved binding"
+      }
+    },
+    {
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "phases": [
+        "B14",
+        "B20"
+      ],
+      "packageProvenance": {
+        "packageName": "Loom_Communities_Workflow_Engine_RiversideYouthSoccer_Example.jsonc",
+        "sha256": "e5a732f845dfb677c589b747e012f1e59cba19b9b88986a0ab650a0b86e0581a",
+        "bytes": 106381,
+        "authoredBy": "loom-calendar-experience-authoring",
+        "lastCommit": "0ebd4a60",
+        "lastCommitDate": "2026-09-20",
+        "lastCommitSubject": "fix(soccer): sync the package's docs twin -- I updated one copy of a two-copy contract"
+      }
     }
   ],
-  "expectedWorkflowCount": 1,
-  "workflowCount": 0,
-  "requestedScreenshotCount": 2,
-  "screenshotCount": 2,
-  "missingScreenshotCount": 0,
-  "missingScreenshotNames": [],
+  "invalidScreenshotCount": 0,
   "workflowEvidenceManifestPaths": [
-    "C:\\LoomWin/docs/Build Plan V2/Evidence/B16/workflow-ui-evidence.json"
+    "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B12/workflow-ui-evidence.json",
+    "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B13/workflow-ui-evidence.json",
+    "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B14/workflow-ui-evidence.json",
+    "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B15/workflow-ui-evidence.json",
+    "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B16/workflow-ui-evidence.json",
+    "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B17/workflow-ui-evidence.json",
+    "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B18/workflow-ui-evidence.json",
+    "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B19/workflow-ui-evidence.json",
+    "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B20/workflow-ui-evidence.json"
   ],
-  "deviceName": "emulator-5554",
-  "emulatorName": "emulator-5554",
-  "deviceClass": "Android emulator",
-  "platform": "android",
-  "apiLevel": "Android 16 API 36",
-  "commandOutputPath": "C:\\LoomWin/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-  "recordedAt": "2026-08-25T15:57:18.052243Z"
+  "commandOutputPath": "C:\\Users\\fahd_\\AppData\\Local\\Temp\\b25evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "captureMode": "full-b25",
+  "fullB25Coverage": true,
+  "commitEligible": true,
+  "completionGateEligible": true
 }
