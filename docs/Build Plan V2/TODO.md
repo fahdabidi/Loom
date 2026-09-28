@@ -514,6 +514,26 @@ The effect declares `filter: { "checkoutInstanceId": "{id}", "$state": "active" 
   unreachable. Re-check after any heavy build, because a whole-node stall leaves pods `Running` while
   long-lived connections are already broken.
 
+- [ ] `new-ticket` — **A FAILED judge verdict counts toward the bar exactly as a passing one does, and I have just proven it with five concrete rows.** Found 2026-09-28, immediately after the first real judge campaign.
+
+  `check_b25_status.sh:63` extracts a judged row with `grep -m1 -oE '\*\*Workflow:\*\* \`[a-z0-9-]+\`'` — it reads the **name**, never the **verdict**. The tool says so itself in its own output (*"it does not yet check that artifact's verdict for that row, so treat 62 and 53 as coverage, not as passes"*), so this is a known gap; what is new is that it is no longer hypothetical.
+
+  **The five rows I judged as FAILING on 2026-09-28 are all counted as judged coverage right now:**
+
+  | Row | Why it failed | Named in |
+  |---|---|---|
+  | `book-export-metadata` | result frame shows no evidence the export happened | 2 verdicts |
+  | `soccer-export-metadata` | same | 2 verdicts |
+  | `export-checksum-evidence` | result shows only an unlabeled ISO timestamp chip | 2 verdicts |
+  | `garden-export-custom-schemas` | initiation evidence but no receipt; ends Cancelled | 3 verdicts |
+  | `soccer-waiver-document` | contradicts its own product doc | 1 verdict |
+
+  **And the countability gate I shipped the same day makes this WORSE, which is the part worth sitting with.** Before it, a verdict that omitted its `**Workflow:**` line counted zero — so a sloppy failure was invisible. Now every verdict is reliably countable, which means **failures are now reliably counted as coverage**. The gate is still right; a verdict the bar cannot see is worthless. But it has converted an under-count into a confident over-count, and a confident wrong number is the more dangerous of the two.
+
+  **The fix is to make the counter read the verdict, not the name** — and the honest version needs a decision about what a verdict *is*. These verdicts say "PASS with findings", "FAIL", and "unproven" per row; a row can also be judged on frames that crop the evidence. So the tool needs a per-row outcome it can parse, which means the judge brief must emit one in a fixed shape — the same lesson as the `**Workflow:**` line, one level up. **Do not fix the counter without fixing what it counts.**
+
+  Until then: **53 is coverage, not passes**, and it contains at least five known failures. Do not quote it as a completion figure.
+
 - [ ] `evidence` — **Regenerating Book Club and Ad-Free INVALIDATED 13 of their own live-write manifests, by design. Step 6's walkthrough half is no longer "already current" for those two communities.** Measured 2026-09-25 by comparing each manifest's recorded `sha256` against the current provenance manifest.
 
   | Community | Manifests recording a sha | Recorded | Current | Verdict |
