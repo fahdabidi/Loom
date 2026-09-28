@@ -1,242 +1,239 @@
-# B14 UX judge — Neighborhood Book Club & Riverside Youth Soccer (fresh capture 2026-09-28)
+# B14 UX judge — Neighborhood Book Club & Riverside Youth Soccer (2026-09-28)
 
-Judge pass over the canonical `--mode full-b25` frames at `/home/fahd/b25evidence/B14/screenshots/`,
-three frames per row (start / primary_action / primary_result), reconciled against each community's
-product doc. All 24 frames were readable, non-zero-byte, and every frame carries the app's
-`LOCAL ENGINE` badge — these captures depict the local-engine harness, and nothing below claims any
-backend effect; every statement is about what the pixels show.
+Judge pass over the freshly captured `--mode full-b25` frames at
+`/home/fahd/b25evidence/B14/screenshots/`, eight rows (5 Book Club, 3 Youth Soccer), each judged as
+a start → primary-action → primary-result sequence, reconciled against
+`neighborhood-book-club-product-experience.md` and `riverside-youth-soccer-product-experience.md`
+(persona tables and B25 addendum tables). Where a row's named frames were ambiguous I consulted the
+same run's `alternate_action`/`result_receiver` frames for context and say so explicitly.
 
 ## Overall summary
 
-- **PASS (with noted findings): 5 rows** — `book-nomination`, `book-search-ai-digest`,
-  `book-shared-library-item`, `book-selection-publish`, `soccer-reminder-notification`.
-- **FAIL: 3 rows** — `book-export-metadata` and `soccer-export-metadata` (both result frames show a
-  **cancelled, self-declared "off-path" export state** rather than the result of the primary export
-  action), and `soccer-waiver-document` (acknowledgement — the doc's core guardian job — is absent
-  from the surface, which instead shows placeholder text "Member state unavailable").
-- The most valuable cross-cutting finding: **both portability rows end in `Export cancelled` with
-  the UI's own banner "This is an off-path export state."** In the Youth Soccer row the visible
-  filled primary was `Start export or transfer`, yet the result card's history records "Owner
-  cancelled portability operation" — the captured result is the receipt of a *different* action
-  than the one the action frame presents. Whatever the harness tapped, these frames do not prove
-  the export happy path for either community.
-- State labels (new check): rendered on every Book Club card (`Submitted`, `Selected for ballot`,
-  `Digest open`, `Draft listing`, `In library`, `Published`, `Cancelled`) and on both Soccer export
-  frames (`Minor-data redaction reviewed`, `Export cancelled`). **Not confirmable** for
-  `soccer-waiver-document` and `soccer-reminder-notification` — in all frames for those two rows the
-  card's top (where the state chip renders) is scrolled off-screen. Unproven, not proven-absent.
-- Minor global note: the `Submitted` state chip renders with an orange warning-triangle icon
-  (Book Club nomination, Soccer-styled equivalents). A normal, successful state wearing an alert
-  icon reads as an error to a member.
+**5 PASS, 2 FAIL, 1 UNPROVEN.**
+
+- The two FAILs are **one class, and it is the known portability class**: both `*-export-metadata`
+  rows captured a **cancellation** as the row's outcome. Neither community's frames show an export
+  actually completing, and no frame anywhere shows a **checksum**, which both docs make part of the
+  export contract. The cancel → retry loop itself works and leaves excellent receipts — but that is
+  the docs' *alternate* path, not the primary flow.
+- The state-label feature is broadly working: every card that was fully in frame rendered a
+  declared state label (`Submitted`, `Selected for ballot`, `Published`, `Digest open`,
+  `Draft listing`, `In library`, `Minor-data redaction reviewed`, `Export cancelled`,
+  `Access requested`, `Reminders muted`). No fully-visible card lacked one.
+- Campaign-wide polish findings that recur across rows: **raw ISO-8601 timestamps with microsecond
+  precision shown to end users** (`2026-09-28T21:11:54.703676Z`, three rows across both
+  communities); the **app bar title renders as a single truncated letter** next to the LOCAL ENGINE
+  pill in every frame; and every frame carries the **LOCAL ENGINE** badge — these frames depict the
+  local-engine harness, so per standing evidence rules they support UI/UX claims only, not claims
+  about the remote backend.
 
 ---
 
 ## Neighborhood Book Club
 
-### 1. Book nomination — PASS with findings
-
 **Workflow:** `book-nomination`
+**Outcome:** PASS
 
-- **Decision legible?** Partially. The start frame is the community landing (persona proof:
-  "Signed in as Shipped book-member — Member", Books tab), not the nomination surface. The action
-  frame has scrolled past the form fields; only the `Submit nomination` button and a neighbouring
-  `Selected for ballot` card (The Song of Achilles, by Madeline Miller, Cycle: September 2026) are
-  visible, so the title/author/rationale *being decided* are not themselves in frame.
-- **Primary action semantic?** Yes — `Submit nomination`, the doc's own verb.
-- **Durable receipt?** Yes. The result frame shows a **new** card in state `Submitted` carrying
-  "The Night Watchman", "by Louise Erdrich", "Genre", "Cycle: October 2026", above the pre-existing
-  `Selected for ballot` card. A real new nomination is visible with real content.
-- **State label?** Present (`Submitted`, `Selected for ballot`).
-- **Doc reconciliation.** §6 requires "book title/author/reason and submitted state"; the B25
-  addendum requires "title/author/rationale, ballot state, edit path, submitted result, and member
-  receiver state". Delivered: title, author, ballot state, submitted result. **Not delivered in any
-  of the three frames: the rationale/reason, and the edit/withdraw path** (no edit or withdraw
-  affordance is visible). Those two gaps are why this is a qualified pass, not a clean one.
-
-### 2. Search / AI digest — PASS with findings
+- **Legibility:** Start frame shows the community header and the signed-in member identity with a
+  role description ("Nominates books, votes, RSVPs…"). The action frame shows an existing
+  `Selected for ballot` card (The Song of Achilles, author, genre, cycle) for context.
+- **Primary action:** `Submit nomination` — the exact domain verb the doc's primary list names
+  ("submit nomination, nominate book, save nomination").
+- **Result:** Durable. A new card appears in `Submitted` state — The Night Watchman, by Louise
+  Erdrich, Genre, Cycle: October 2026 — above the pre-existing `Selected for ballot` card. This is
+  a new persisted-looking entity with its own state, not a return to the start screen.
+- **State labels:** `Submitted` and `Selected for ballot` both render.
+- **Doc reconciliation:** The flow row ("member submits a concrete book nomination with
+  title/author/rationale") is substantially delivered. Two of the doc's required elements are *not*
+  visible in the captured frames: the **rationale** (the doc requires "title/author/rationale" and
+  "submit disabled without title, author, and rationale" — no rationale chip renders on either
+  nomination card) and the **edit path** ("edit nomination, withdraw nomination"). Findings, not
+  failures: the captured primary flow itself is proven.
 
 **Workflow:** `book-search-ai-digest`
+**Outcome:** PASS
 
-- **Decision legible?** Yes at the card level. The action frame shows a fully populated existing
-  digest: state `Digest open`, Query "Best discussion questions for The Song of Achilles?",
-  "Waiting for an answer", Sources "Madeline Miller official reading guide" with a real URL and
-  "Added 2026-07-18" — real content, not filler.
-- **Primary action semantic?** The digest card's own actions are semantic (`Save digest`,
-  `Edit query`, `Add citation`, `Report stale citation`, `Withdraw`). But the creation action
-  visible at the top of the action frame is a generic **`Submit`** — the only generic primary label
-  in the Book Club set. The doc's addendum row for this workflow accepts "submit, save, send", so
-  this is doc-conformant, but it is the weakest label on show and worth naming.
-- **Durable receipt?** Yes. The result frame shows a **new** `Digest open` card with the new query
-  "What historical context does Circe draw on?" above the original Achilles digest.
-- **State label?** Present (`Digest open`).
-- **Doc reconciliation.** §7 promises "members receive answer with citations and source visibility"
-  (§6: "query/citations/summary"). The new digest shows the query and "Waiting for an answer" —
-  **no answer, no summary, and no citations are visible on the newly created digest in these
-  frames**. The interaction (ask → durable open digest) is proven; the doc's promised *answer with
-  citations* is not delivered anywhere in this sequence. That is consistent with the known missing
-  external search/AI platform service, but as captured, the receiver-state promise on doc line
-  "members receive answer with citations" is unmet.
-
-### 3. Shared library item — PASS with findings
+- **Legibility:** The action frame shows an existing `Digest open` card with a real query ("Best
+  discussion questions for The Song of Achilles?"), a Sources section naming "Madeline Miller
+  official reading guide" with its URL, and an added date — plenty of context.
+- **Primary action:** The captured button is a generic **`Submit`**. Normally that would be a
+  semantic-verb finding, but the doc's own addendum row for this workflow lists exactly "submit,
+  save, send" as the primary verbs, so the screens match the doc as written. The doc's verb row is
+  itself generic boilerplate — worth tightening doc-side.
+- **Result:** Durable. A **new** `Digest open` card appears ("What historical context does Circe
+  draw on?", "Waiting for an answer") above the earlier one, with Save digest / Edit query / Add
+  citation / Report stale citation / Withdraw actions.
+- **State labels:** `Digest open` renders on both cards.
+- **Doc reconciliation — disagreement to record:** the flow row promises *"members receive answer
+  with citations and source visibility"* (line: "book-search-ai-digest | member asks for cited club
+  digest/search result | members receive answer with citations and source visibility | …"). No
+  frame shows an answer; both digests sit at "Waiting for an answer". The *ask* half is proven; the
+  *answer* half is not shown in any frame of this run. (Consistent with the known missing external
+  search/AI platform service — but that inference is from project records, not from these pixels.)
 
 **Workflow:** `book-shared-library-item`
+**Outcome:** PASS
 
-- **Decision legible?** Yes. Start frame is the landing with the Marketplace tab and a
-  `List an item` FAB; the action frame is the item detail dialog "Circe (hardcover)": state
-  `Draft listing`, chips for title, `Book` format, `Good` condition, `Loan` mode,
-  `Owner: Book Member` — the member is looking at their own draft listing and deciding to publish.
-- **Primary action semantic?** Yes — `Publish listing` ("list item" is in the doc's required
-  primary actions for this persona).
-- **Durable receipt?** Yes. The same dialog transitions to state **`In library`**, and the action
-  set changes to owner controls `Pause listing` / `Delist` — a visible, durable state change.
-- **State label?** Present (`Draft listing` → `In library`).
-- **Findings.**
-  1. The result dialog shows **`Available` and `Overdue` chips simultaneously** — contradictory
-     availability facts on one card. The action frame already showed `Overdue` on a *draft* listing
-     that had never been published or lent, which cannot be a real overdue loan.
-  2. Doc §6 requires "owner/current holder, queue position, due date, loan/giveaway mode, return or
-     transfer state". Delivered: owner, loan mode, condition, format. **Not visible in these
-     frames: queue position, due date, current holder** (the `Overdue` chip appears with no due
-     date behind it). Privacy-safe holder labelling could not be assessed.
-
-### 4. Selection publish — PASS
+- **Legibility:** The action frame is the item detail dialog for "Circe (hardcover)" in
+  `Draft listing` state with format (Book), condition (Good), mode (Loan), and a privacy-safe owner
+  label ("Owner: Book Member") — exactly the decision context a lister needs.
+- **Primary action:** `Publish listing` — domain verb, correct for a draft.
+- **Result:** Durable state change: the same dialog now shows `In library` with an `Available` chip
+  and the follow-on owner actions `Pause listing` and `Delist`. The background grid also shows the
+  card's badge moved from `Draft listing` to `In library`.
+- **State labels:** `Draft listing` → `In library`, both rendered; grid cards labelled too.
+- **Doc reconciliation:** "list item" is in the doc's primary verb list, so this is a legitimate
+  primary flow for the row. Two findings: (1) the dialog shows **`Overdue` alongside `Available`**
+  — a just-published, never-loaned item cannot be overdue, and it shows `Overdue` even in the
+  Draft dialog; contradictory chips on one card. (2) The doc's required "queue position" and
+  "due date" are not visible in these frames (`Overdue` renders with no date). The doc's other
+  required elements (title/format, owner privacy label, custody/condition, loan mode) are present.
 
 **Workflow:** `book-selection-publish`
+**Outcome:** PASS
 
-- **Decision legible?** Yes. Start frame proves the persona ("Signed in as Shipped book-organizer —
-  Organizer", Admin tab: "Role-specific publishing, approvals, and operations. Tuned for
-  Organizer."). The action frame (Admin tab) shows the `Publish announcement` primary above a
-  ballot context that makes the decision concrete: an existing `Published` card (The Song of
-  Achilles → For All members) and a `Submitted` nomination (Circe, by Madeline Miller, Cycle:
-  September 2026) with `Select for ballot`.
-- **Primary action semantic?** Yes — `Publish announcement`.
-- **Durable receipt?** Yes. The result frame shows a **new** `Published` card "Circe — For All
-  members" stacked above the earlier "The Song of Achilles — For All members" one. Audience is
-  explicit on both.
-- **State label?** Present (`Published`, `Submitted`).
-- **Doc reconciliation.** §7: "owner publishes selected book announcement to members" — delivered
-  as far as one persona's frames can show (member receipt and "publish hidden for members" are
-  member-side claims these organizer frames cannot prove, and I do not infer them). Delivery
-  timing/scheduling from the addendum's alternates is not shown but is not required for the primary
-  path. This is the cleanest row of the eight.
-
-### 5. Export metadata — FAIL
+- **Legibility:** Start frame shows the organizer identity ("Curates the ballot, publishes the
+  selection…") and the Admin tab ("Role-specific publishing, approvals, and operations. Tuned for
+  Organizer."). The action frame shows the ballot pipeline: a `Published` selection (The Song of
+  Achilles, For All members) and `Submitted` nominations with `Select for ballot` buttons.
+- **Primary action:** `Publish announcement` — domain verb, matches the doc's primary list
+  ("publish announcement, send announcement, post announcement…").
+- **Result:** Durable. A **new** `Published` card for **Circe — For All members** appears above the
+  earlier Song of Achilles one. Clear receipt that the publish happened, with audience shown.
+- **State labels:** `Published` and `Submitted` render throughout.
+- **Doc reconciliation:** The flow row ("owner publishes selected book announcement to members") is
+  delivered by the organizer persona the addendum table names. One gap: the surface row promises
+  "selected book/audience/timing" — **timing** is not visible on the published card (book and
+  audience are). Receiver state ("members receive selected book and meeting update") was not part
+  of this row's captured frames.
 
 **Workflow:** `book-export-metadata`
+**Outcome:** FAIL
 
-- **What the frames show.** Start: organizer landing (persona proof fine). Action frame: the top of
-  a card cut off, showing only a red **`Cancel`** button — **no export verb is visible anywhere in
-  the action frame** (`export` / `download export` / `start transfer` are the doc's primary verbs).
-  Result frame: the export card in state **`Cancelled`** (faded, top-cropped) with the UI's own
-  orange banner **"This is an off-path export state"**, chips "Scope: Nominations and vote history,
-  Q3 2026", "Export cancelled", timestamp `2026-09-28T21:11:54.703676Z`, and a `Retry` action.
-- **Judgement.** The result is a genuine durable receipt — of a **cancellation**. As a sequence it
-  does not show a member-legible export decision, does not present a semantic export primary, and
-  ends in a state the product itself labels off-path. The doc's B25 row cannot be counted proven by
-  these frames.
-- **Doc reconciliation.** §6 required visible proof is "scope/checksum/redaction"; §7: "export
-  disabled until checksum and redaction preview pass". **Scope is shown; checksum and redaction are
-  never visible in any of the three frames.** That is a direct screens-vs-doc disagreement, quoting
-  the doc's §6 row: "book-export-metadata | organizer | Export status | scope/checksum/redaction".
-- **State label?** Present (`Cancelled`), plus the off-path banner — the banner itself is good UX.
+- **What the frames show:** The action frame's captured primary control is a red **`Cancel`**
+  button. The result frame shows the export card in **`Cancelled`** state with the app's own banner
+  *"This is an off-path export state"*, chips "Scope: Nominations and vote history, Q3 2026",
+  "Export cancelled", a raw timestamp `2026-09-28T21:11:54.703676Z`, and a `Retry` button. The
+  run's receiver frame then shows retry working: state back to `Draft` with "Retry started" and
+  `Preview redaction` / `Cancel` actions.
+- **Why FAIL:** The doc's primary flow for this row is an export, not a cancellation. Flow row:
+  *"book-export-metadata | owner exports book club metadata with redaction/checksum |
+  provider/import reviewer sees verified export status | … | export disabled until checksum and
+  redaction preview pass"*. The addendum row lists "export, download export, start transfer, import
+  data" as primaries and files "cancel transfer … retry" under alternates. The captured sequence
+  exercises only the alternate cancel/retry loop; **no frame shows an export completing, a
+  download, or any checksum**. The result screen itself declares the outcome off-path.
+- **What is honestly proven:** cancel produces a real state change with a timestamped receipt, the
+  off-path state is clearly labelled, and retry restores `Draft`. Good UX on the branch that ran —
+  but the row's documented primary capability is not demonstrated, and this is the same class as
+  the Youth Soccer export row below.
 
 ---
 
 ## Riverside Youth Soccer
 
-### 6. Waiver document — FAIL
-
 **Workflow:** `soccer-waiver-document`
+**Outcome:** UNPROVEN
 
-- **What the frames show.** Start: landing with persona proof ("Signed in as Shipped
-  soccer-guardian — Guardian") and a Documents tab "Waivers, policies, versions, acknowledgement,
-  and access requests. Tuned for Guardian." The action and result frames show the document card
-  mid-scroll: the literal text **"Member state unavailable. Member state is available when
-  connected to a community."** followed by **two identical `Open document` buttons**, then
+- **What the named frames show:** Start is the community landing (guardian identity, Documents tab
+  blurb "Waivers, policies, versions, acknowledgement, and access requests. Tuned for Guardian.").
+  The action frame is the document card's action list — **two identical `Open document` buttons**,
   `Request access`, `Mark unread`, `Publish linked waiver version`, `Download document`,
-  `Ask coach`. The result frame differs only by a chip at top: **"Document history: 2 entries"**.
-- **Findings, in order of severity.**
-  1. **There is no `Acknowledge waiver` action anywhere**, and the acknowledgement state renders as
-     the placeholder "Member state unavailable". The doc's persona row requires primary actions
-     "open document, **acknowledge waiver**, download document" and §6 requires "…acknowledgement,
-     access state, and authorized guardian share set" — quoting §7: "guardian opens and
-     acknowledges a waiver/policy". The core guardian job is missing from the captured surface.
-  2. **Placeholder/error text on a member-facing card.** "Member state is available when connected
-     to a community" is developer-voiced filler in place of the acknowledgement/access state.
-  3. **Two adjacent buttons with the identical label `Open document`.** The doc requires an
-     "embedded/external open" *choice*; two same-named buttons make the choice illegible.
-  4. **`Publish linked waiver version` is offered to a guardian.** The doc's guardian alternates
-     are "request access, open external, mark unread, ask coach" — publish is not a guardian verb
-     and reads as an admin action leaking into this persona's surface.
-  5. Waiver **title/version and the authorized guardian share set are not visible** in any of the
-     three frames, and no state label chip is in frame (top of card cropped) — unproven.
-- **Receipt.** The only visible change is "Document history: 2 entries" — a countable, durable-ish
-  receipt that something was opened, but with the above gaps the row is not proven as the doc's
-  guardian acknowledgement journey.
-
-### 7. Reminder notification — PASS with findings
+  `Ask coach` — with the text *"Member state unavailable. Member state is available when connected
+  to a community."* rendered mid-card. The card's title, version and state label are **above the
+  crop in both the action and result frames**. The result frame is essentially the same surface
+  scrolled slightly, newly revealing a "Document history: 2 entries" chip — **no visible state
+  change, no receipt, no confirmation.**
+- **Why UNPROVEN:** From the named sequence I cannot tell what the primary action did. If it was
+  `Open document`, its effect (an embedded/external viewer) is not captured, and the result frame
+  is indistinguishable from the action frame. That is precisely "a screen that merely returns to
+  where it started". I am not marking FAIL because nothing here contradicts the doc — the run's
+  receiver frame proves the surface is alive: it shows the card in `Access requested` state with
+  "2026 Player Safety and Participation Waiver", "Version: v3.2", embedded/external open chips,
+  "Access: Members may open; acknowledgement is tracked", "Authorized guardians: 1", "Acknowledged
+  2026-08-10T16:50:00-07:00", "Document history: 3 entries" and a `Withdraw access request` action
+  — i.e. the *Request access* alternate produced a durable, state-labelled receipt. But that is an
+  alternate, and the row's primary sequence as captured proves nothing.
+- **Doc reconciliation:** The doc requires *"Fresh screenshots must show title/version/source,
+  embedded/external open options, acknowledgement state, authorized-guardian access proof, access
+  guard, and registration-status linkage"* — the named action/result frames show none of the
+  identity elements (all cropped); the receiver frame shows most of them. Registration-status
+  linkage appears in no frame. Additional findings: (1) duplicated `Open document` button; (2)
+  **`Publish linked waiver version` renders for the guardian persona** — the doc's guardian verb
+  lists ("open document, acknowledge waiver, download document" / "request access, open external,
+  mark unread, ask coach") include no publish verb, so a publish affordance on the guardian's card
+  is a persona-surface disagreement worth checking against the package's guards; (3) the "Member
+  state unavailable…" internal-limitation copy is user-visible.
 
 **Workflow:** `soccer-reminder-notification`
+**Outcome:** PASS
 
-- **Decision legible?** Yes. The action frame shows a rich practice-reminder context: `Upcoming
-  practice` card "Riverside Rapids U12 practice", "0 / 18 going", Time 17:30, Location Riverside
-  Sports Complex, Field North Field 2, session note, "Reminder: In-app remind…", "Reminder text:
-  Practice starts at 5:30 PM on…" — real content a guardian can act on, plus the reminder card's
-  `Open schedule` action at top.
-- **Primary action semantic?** Yes — `Open schedule` is one of the doc's required guardian
-  primaries ("receive reminder, mark read, open schedule").
-- **Durable receipt?** Yes. The result frame's reminder card now carries **"Schedule opened
-  2026-09-28T21:17:48.939249Z"** and "Change requests: 0", with `Mark read` as the filled primary
-  and `Mute reminders` / `Request change` / `Open schedule` beneath — the schedule-opened receipt
-  is recorded on the card with a timestamp, and the read-state continuation (`Mark read`) plus the
-  doc's alternates (mute, request change) are all present.
-- **State label?** Not visible — in both action and result frames the card's top (state chip
-  position) is cropped. Unproven for this row.
-- **Doc reconciliation.** §7/§119-121 require "sender, message body, audience/channel, timestamp,
-  related schedule, and receiver/read state". Delivered: body, channel (In-app), related schedule
-  (with receipt), read state (Mark read). **Not visible in these frames: the sender and the
-  audience.** Partial against the doc's receiver-state row, hence a qualified pass.
-
-### 8. Export metadata — FAIL
+- **Legibility:** Start shows the guardian identity ("…follows schedules, and receives
+  reminders"). The action frame shows the reminder's practice context: "Riverside Rapids U12
+  practice", 0/18 going, Time 17:30, Location Riverside Sports Complex, Field North Field 2,
+  reminder channel and message-text chips, plus the roster row (Jordan R.).
+- **Primary action:** `Open schedule` — one of the doc's named primary verbs ("receive reminder,
+  mark read, open schedule").
+- **Result:** Durable receipt: the card now carries a **"Schedule opened
+  2026-09-28T21:17:48.939249Z"** chip and "Change requests: 0", with `Mark read`,
+  `Mute reminders`, `Request change`, `Open schedule` available. The run's receiver frame further
+  shows the full card in `Reminders muted` state with sender ("Sent by: Soccer Coach"), recipient,
+  audience ("Guardians for this practice"), channel ("In-app reminder center"), message body
+  ("Practice starts at 5:30 PM on North Field 2. Bring water and shin guards."), "Sent
+  2026-08-12T09:00:00-07:00", "Delivery: Sent", and a "Muted …" receipt — everything the doc's
+  "Fresh screenshots must show sender, message body, audience/channel, timestamp, related
+  schedule, and receiver/read state" list demands is visible across the sequence.
+- **State labels:** Not visible in the named action/result frames (card cropped above the action
+  list); `Reminders muted` renders in the receiver frame, and `Upcoming practice` labels the
+  schedule card. Recorded as a cropping finding, not a product one.
+- **Findings:** raw ISO-8601 microsecond timestamps shown to the user ("Schedule opened
+  2026-09-28T21:17:48.939249Z", "Muted 2026-09-28T21:18:07.407199Z"); the read-state verb pair
+  (`Mark read` present) is consistent with the doc's read-state requirement.
 
 **Workflow:** `soccer-export-metadata`
+**Outcome:** FAIL
 
-- **Decision legible?** Emphatically yes — the best decision context in the whole set. Start frame:
-  persona "Evidence soccer-owner — League Owner" with the Coach & Owner tab ("owner export
-  controls. Tuned for League Owner.") and the export card in state **`Minor-data redaction
-  reviewed`**: "Fall 2026 team metadata export", "Scope: Team names, Player display labels,
-  Approval status, Waiver status", "Redacted: Full birth date, Medical notes, Home address, Private
-  receipt". The action frame adds "Redaction approved: Yes" and a History entry "Owner confirmed
-  minor-data redaction preview · soccer-owner · 2026-08-12T07:45:00-07:00", with actions
-  `Change scope`, **`Start export or transfer`** (filled primary), `Cancel export`. This satisfies
-  the doc's "export disabled without scope/redaction preview" context requirement and shows exactly
-  what a protected-youth-data export will and will not contain.
-- **Primary action semantic?** Yes — `Start export or transfer` is precisely the doc's verb set.
-- **The failure.** The result frame shows state **`Export cancelled`** with the banner **"This is
-  an off-path export state"** and a new History entry: **"Owner cancelled portability operation ·
-  soccer-owner-21 · 2026-09-28T21:18:38.765303Z"**, primary now `Retry export`. The action frame's
-  filled primary was *Start export or transfer*, but the receipt on record is a **cancellation** —
-  the result frame documents a different action than the one the sequence presents as primary. The
-  export itself (started/completed status, checksum, transfer status per §6 "redaction/checksum/
-  scope" and §7 "receiving provider sees transfer status") is never shown.
-- **Also noted.** The history attributes the cancellation to actor `soccer-owner-21` while the
-  earlier entry says `soccer-owner` — an inconsistent actor identifier surfaced to the user on the
-  same card.
-- **State label?** Present in both start (`Minor-data redaction reviewed`) and result
-  (`Export cancelled`).
-- **Verdict.** As with Book Club's export row, the frames prove a legible cancel/retry path and
-  excellent redaction disclosure, but they do not prove the export journey the B25 row exists to
-  prove. Not proven.
+- **What the frames show:** Start and action frames give the best decision context of the whole
+  batch: owner identity ("Creates redacted, portable league metadata exports"), card in
+  **`Minor-data redaction reviewed`** state, "Fall 2026 team metadata export", "Scope: Team names,
+  Player display labels, Approval status, Waiver status", "Redacted: Full birth date, Medical
+  notes, Home address, Private receipt", "Redaction approved: Yes", and a History entry ("Owner
+  confirmed minor-data redaction preview · soccer-owner · 2026-08-12T07:45:00-07:00"). The action
+  frame's filled primary button is **`Start export or transfer`**, with `Change scope` and
+  `Cancel export` as alternates.
+- **Why FAIL:** Despite `Start export or transfer` being the rendered primary, the result frame
+  shows the card in **`Export cancelled`** state — banner *"This is an off-path export state"* —
+  and the History has gained *"Owner cancelled portability operation · soccer-owner-21 ·
+  2026-09-28T21:18:38.765303Z"*. The recorded interaction was the **cancel**, not the export. The
+  doc's flow row promises *"owner exports team metadata | receiving provider sees transfer status |
+  export summary readable"* — no frame shows an export completing, a transfer status, or a
+  checksum. Same one-class failure as `book-export-metadata`: the portability primary flow is not
+  demonstrated in either community; only the cancel/retry alternate is.
+- **What is honestly proven:** the redaction-review context is excellent (scope + redacted fields +
+  approval + attributed history); the cancel produced a state-labelled, timestamped, actor-
+  attributed history receipt; `Retry export` is offered from the cancelled state. The off-path
+  branch is well built — it is just not the row's documented capability.
+- **Additional findings:** raw ISO-8601 microsecond timestamp again; the History actor renders as
+  `soccer-owner-21` for the cancel while the earlier entry says `soccer-owner` — two identifier
+  shapes for the same persona in one history list, worth a look at which identity the cancel path
+  stamps.
 
 ---
 
-## Notes for the dispatcher (not verdicts)
+## Cross-row findings (for the tracker, not counted against any single row)
 
-- The two export rows fail the same way in both communities — result = `Export cancelled`,
-  self-labelled off-path, primary export result never captured. That pattern is worth checking in
-  the capture harness's action selection for portability cards before re-running, since the Soccer
-  action frame plainly offered `Start export or transfer` as the filled primary.
-- Extra frames exist in the capture directory beyond the ticketed three per row
-  (`alternate_action`, `result_receiver`, several `*_unavailable` rows for workflows outside this
-  ticket). I judged only the eight ticketed rows on their three ticketed frames.
-- I did not run the app, edit any code, test, or package; this file is the sole deliverable.
+1. **Portability primary flow unproven in both communities (the two FAILs).** Both export rows
+   ended in `Cancelled` with the app's own "off-path" banner. No export completion, download, or
+   checksum appears in any of this run's frames for either community.
+2. **Raw machine timestamps in user-facing chips** across three rows and both communities
+   (microsecond ISO-8601 with `Z`/offset). One formatting pass would clear the whole class.
+3. **App bar title truncated to a single letter** beside the LOCAL ENGINE pill in every frame of
+   both communities.
+4. **`book-shared-library-item` shows `Overdue` on a never-loaned listing** (and alongside
+   `Available` after publish) — contradictory status chips on one card.
+5. **Guardian sees `Publish linked waiver version`** on the waiver card — an affordance the doc
+   does not give that persona.
+6. **"Member state unavailable. Member state is available when connected to a community."** is
+   internal-limitation copy rendered verbatim to the user on the waiver card.
+7. All frames carry the **LOCAL ENGINE** badge: this evidence supports walkthrough-half UI claims
+   only; nothing here proves remote-backend behaviour, per the standing evidence rules.

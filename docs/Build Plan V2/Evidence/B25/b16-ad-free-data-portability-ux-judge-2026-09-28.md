@@ -1,254 +1,217 @@
-# B16 UX judge — Ad-Free Community & Data Portability Community (capture of 2026-09-28)
+# B16 UX judge verdict — Ad-Free Community + Data Portability Community (2026-09-28)
 
-Judge pass over six rows from the canonical `--mode full-b25` run of 2026-09-28. Frames read from
-`/home/fahd/b25evidence/B16/screenshots/` (all 18 required PNGs present, none zero-byte). Each row was
-judged as a three-frame sequence (`start` → `primary_action` → `primary_result`) against the community's
-product doc (§5/§6/§7 and the B25 semantic interaction model addendum).
+Judge pass over six rows from the canonical `--mode full-b25` capture of 2026-09-28.
+Frames read from `/home/fahd/b25evidence/B16/screenshots/` (start / primary_action /
+primary_result per row, plus alternate_action / result_receiver where present). Product docs
+reconciled: `ad-free-community-product-experience.md` and
+`data-portability-community-product-experience.md` (persona tables, §5/§6, B25 addendum).
 
 ## Overall summary
 
-**Five of six rows pass; one fails.**
+**Five of six rows PASS; one (`export-checksum-evidence`) is UNPROVEN.** Every frame carries the
+`LOCAL ENGINE` badge — the known campaign-wide limitation that judge-half frames depict the local
+engine, recorded here once rather than per row.
 
-- **Pass:** `ad-off-member-checkout`, `ad-off-entitlement-status`, `ad-off-ad-suppression`,
-  `export-import-preview`, `export-transfer-rollback`.
-- **Fail:** `export-checksum-evidence` — the result frame's only visible change is a new **unlabeled raw
-  ISO timestamp chip**; no state change, no history entry, no visible exported record, and the
-  doc-required checksum digest is not visible in any of the three frames.
+On the sibling pass's export finding: **I do not inherit it, and for two of my four
+export/transfer rows I reach the opposite conclusion, with a stated reason.** The sibling failed
+`book-export-metadata` and `soccer-export-metadata` because the result frame did not show an
+export had happened. Data Portability's `export-import-preview` and `export-transfer-rollback`
+differ in a way visible in the pixels: their result frames each show an **appended History entry
+with a fresh actor-and-timestamp line** (`transfer started · portability-owner-20 ·
+2026-09-28T21:42:25Z`; `rollback started · portability-owner-20 · 2026-09-28T21:45:54Z`) plus an
+orange running-state chip — a durable receipt of exactly the kind the sibling found missing. So
+the sibling's finding is not campaign-wide across all export-class rows; it is about workflows
+whose result surface renders no receipt. **One of my rows partially reproduces the sibling's
+finding**: `export-checksum-evidence`'s only visible change is a single *unlabeled* ISO-timestamp
+chip — a durable write, but one no member could read as a receipt — and that row I mark UNPROVEN
+rather than FAIL because the card's state header and any checksum chip above the fold are cropped
+out of every frame for this card.
 
-**On the sibling pass's export-row finding** (the B14 judge failed `book-export-metadata` and
-`soccer-export-metadata` because the result frame did not show an export had happened): I reach the
-**same finding for one row and the opposite for two, and the frames themselves explain the split.**
-`export-checksum-evidence` fails on exactly the sibling's grounds — an action that leaves no legible
-receipt. But `export-import-preview` and `export-transfer-rollback` pass because their result frames show
-precisely what the failed rows lacked: a changed state chip (`Operation running` / `Rollback running`)
-**plus a History entry naming the action, the actor, and this run's timestamp** ("transfer started ·
-portability-owner-20 · 2026-09-28T21:42:25Z"; "rollback started · portability-owner-20 ·
-2026-09-28T21:45:54Z"). This is not an echo of the sibling verdict and not a contradiction of it: the
-receipt mechanism exists in this package and renders well on the transfer/rollback cards, and the failing
-row is the one card where it doesn't fire.
-
-Cross-cutting observations (not per-row failures):
-
-1. **Every frame carries the `LOCAL ENGINE` badge.** These are local-engine captures, consistent with the
-   known capture-harness context. Nothing here proves remote-path behavior, and the absence of a
-   platform-computed checksum value cannot be attributed to either the product or the platform service
-   from these frames alone.
-2. **State labels at the primary-action moment are systematically unproven, not failed.** In all six
-   `primary_action` frames the harness has scrolled to the action button and the card's state chip is
-   cropped above the viewport. Per the ticket's rule I record these as *unproven*. Five of six rows prove
-   the state label in the `primary_result` frame instead; `export-checksum-evidence` never shows one.
-3. **Raw backend serialization leaks on Data Portability's verification card.** Its History renders as a
-   literal map — `{result: passed, at: 2026-08-10T08:12:00Z, by: portability-owner}` — while the
-   transfer and rollback cards render the same concept legibly ("rollback started · actor · time").
-   Unlabeled bare-ISO-timestamp chips (`2026-08-10T09:00:00Z`, `2026-09-28T21:44:57.286377Z`) appear on
-   several cards. The doc's §9 names exactly this anti-pattern: "rows that expose backend terms without
-   explaining what the owner should decide."
-4. **The app-bar community title is truncated to a sliver** next to the LOCAL ENGINE chip on every frame
-   (a lone "A"/"E" glyph). Minor, but it costs the start frames some "whose community is this" context.
+Cross-row coherence worth recording: the ad-suppression result shows `Ads suppressed now: No`
+with the linked entitlement's `$state: inactive` and `Cancelled At: 2026-09-28T21:40:15Z` — the
+cancellation written minutes earlier by this same run's entitlement walkthrough. The
+suppression state is being **derived live from the entitlement**, not parroted from seed data,
+which is precisely what the doc requires ("Query-backed entitlement state").
 
 ---
 
-## Ad-Free Community
-
-Doc: `docs/references/communities/ad-free-community-product-experience.md`.
-
-### Row 1 — personal ad-off checkout (member)
+## Row 1 — Ad-Free: member checkout
 
 **Workflow:** `ad-off-member-checkout`
+**Outcome:** PASS
 
-**Verdict: PASS.**
+- **Decision legible:** Yes. Start frame shows the community entry ("Turn off ads with clear
+  purchase, entitlement, receipt, and community-funding proof"), signed in as *Shipped
+  ad-off-member*, Member persona description, Giving tab active, and a `+ Buy ad-off` FAB. Tabs
+  are Home / Giving / Messages — exactly the Member row of doc §3.1.
+- **Primary action:** The action frame shows **"Retry payment"** (with **"Cancel checkout"** as
+  the destructive alternate) — `retry payment` is one of the doc's required primary actions for
+  this row. Domain verb, not a generic Submit.
+- **Result:** The card that offered Retry payment now renders at state **"Review payment"** with
+  `Price: 49.0`, `Plan: Annual ad-off`, `Suppresses eligible ads for one annual term.`,
+  `Paying with Card ending 1123`, and actions Edit payment / **Checkout** / Cancel checkout — the
+  doc's required price / payment method / coverage content, and a real state change
+  (failure-path → review), matching the doc's review/failure/cancel state set. The
+  result_receiver frame additionally shows the editable "Ad-off offer" form with a
+  **"Disclosure accepted"** toggle — the doc's "disclosure is required before submission".
+- **State label:** "Review payment" visible in the result; "Entitlement active" and "Receipt
+  issued" visible on sibling cards. The *pre-action* card's own state chip is cropped above the
+  viewport in the action frame (only its buttons are visible) — that one label is unproven, not
+  failed.
+- **Findings (non-failing):** the FAB reads "Buy ad-off" where doc §3 says "Turn off ads" —
+  same domain verb, different wording. Payer identity appears as "Payer: Ad Off Member" on the
+  receipt card, satisfying the payer requirement.
 
-- **Decision legibility:** the start frame is the community entry surface: community name, promise ("Turn
-  off ads with clear purchase, entitlement, receipt, and community-funding proof."), signed-in persona
-  ("Shipped ad-off-member", role Member with a real job description), Giving tab active, and a
-  **"Buy ad-off"** FAB — the doc §3's "Turn off ads" entry point in domain words. Real content, no filler.
-- **Primary action:** the action frame shows the checkout card in a failure state offering **"Retry
-  payment"** (with "Cancel checkout" as the escape). "Retry payment" is one of the doc's required primary
-  actions for this row and is the domain verb, not a generic Submit.
-- **Result:** a genuine state change: the card now shows the **"Review payment"** state chip with
-  Price: 49.0, Plan: Annual ad-off, the disclosure line "Suppresses eligible ads for one annual term.",
-  "Paying with Card ending 1123", and the doc's required next actions (Edit payment / Checkout / Cancel
-  checkout). Failed → review is exactly the retry semantics §7 describes.
-- **Doc reconciliation:** §6 requires "price, payer, payment method, disclosure, review/…/failure states,
-  linked entitlement continuation". Price, method, disclosure, and the review/failure states are all on
-  screen; the linked continuation is visible as the adjacent **"Entitlement active"** card (renewal
-  2026-09-15, expiry 2026-10-15, plan, affected ad surfaces) and **"Receipt issued"** card (Payer: Ad Off
-  Member, Amount: 4.99). That is the §7 receiver state ("confirmation creates entitlement, receipt, and
-  suppression rows") visible in the same sequence.
-- **State label:** cropped out of the action frame (unproven at that moment); proven in the result frame
-  ("Review payment", plus "Entitlement active" / "Receipt issued" on the sibling cards).
-- **Nit:** "Price: 49.0" is not currency-formatted; the receipt card says "Amount: 4.99" — two adjacent
-  money values in different formats, neither carrying a currency symbol.
-
-### Row 2 — private entitlement status (member)
+## Row 2 — Ad-Free: entitlement status
 
 **Workflow:** `ad-off-entitlement-status`
+**Outcome:** PASS
 
-**Verdict: PASS.**
+- **Decision legible:** Yes. The action frame shows the entitlement card in state
+  **"Entitlement active"** with `Active since 2026-08-15…`, `Renews 2026-09-15`, `Entitlement
+  ends 2026-10-15`, `Plan: Monthly ad-off`, and `Ad-free surfaces: Home feed promotions, Giving
+  surfaces, Community ad slots` — the doc's required active state / renewal / affected surfaces,
+  all present.
+- **Primary action:** **"Manage subscription"** — the doc's first-listed required primary for
+  this row — with "Deactivate ad-off" as the destructive alternate.
+- **Result:** The same card now renders at state **"Plan change requested"** (orange warning
+  chip) with a new field `Requested plan: Evidence requestedPlan` and actions **"Keep current
+  plan"** / "Deactivate ad-off". That is the doc's change-requested state, a durable and legible
+  state transition with the changed data visible.
+- **State label:** Both "Entitlement active" (before) and "Plan change requested" (after) fully
+  visible. Proven.
+- **Findings (non-failing):** the requested-plan value is walkthrough-typed filler
+  ("Evidence requestedPlan"), not a plausible plan name — acceptable as harness input, but it is
+  the one generic-filler value on an otherwise realistic surface.
 
-- **Decision legibility:** same real entry surface; the entitlement card (action frame) shows the doc's
-  required content: active state, Active since / Renews 2026-09-15 / Entitlement ends 2026-10-15,
-  Plan: Monthly ad-off, and the affected ad surfaces list.
-- **Primary action:** **"Manage subscription"** (with **"Deactivate ad-off"** as the destructive
-  alternate). Both are named in the doc's B25 addendum for this row ("manage subscription…" primary;
-  "deactivate ad-off" alternate). Domain verbs, correctly weighted (manage primary, deactivate red).
-- **Result:** a durable, legible state change: the card's chip is now **"Plan change requested"**
-  (warning-styled), a new field "Requested plan: Evidence requestedPlan" records what was asked for, and
-  the follow-up actions are the doc's "keep current plan" and "deactivate ad-off". Active →
-  change-requested is exactly the doc's required state set.
-- **Doc reconciliation:** §7 says "member requests/withdraws plan changes… each management action is
-  available only in its matching lifecycle state" — the frames show precisely that lifecycle step. The
-  "Requested plan" value is the harness's typed evidence string ("Evidence requestedPlan"), which proves
-  the field round-tripped and renders; it also shows the plan change is captured as free text rather than
-  a plan selection, which is worth knowing but is the walkthrough's input, not a rendering defect.
-- **State label:** cropped in the action frame (unproven at that moment); proven in the result frame.
-
-### Row 3 — private ad-suppression proof (member)
+## Row 3 — Ad-Free: ad suppression
 
 **Workflow:** `ad-off-ad-suppression`
+**Outcome:** PASS
 
-**Verdict: PASS, with two real product findings.**
+- **Decision legible:** Yes. The action frame shows the suppression-proof card (suppressed
+  surfaces list, `Ads suppressed now: No` chip partially visible at top) with its two actions,
+  plus a separate "New notification" card ("Ad-off checkout needs another attempt", "Notice:
+  Checkout Retry", **Mark read**) — the doc's notification-delivery promise visibly rendered.
+- **Primary action:** **"Mark reviewed"** — the doc's required primary — with "Restore ad-off"
+  also offered.
+- **Result:** State chip **"Suppression proof reviewed"** (green), suppressed surfaces list, the
+  no-fill reason line, `Ads suppressed now: No`, and alternate **"Review later"** — the doc's
+  required alternate — plus "Restore ad-off". The Linked Entitlements panel shows
+  `$state: inactive`, `Change Requested At: 2026-09-28T21:39:55Z`, `Cancelled At:
+  2026-09-28T21:40:15Z` — this run's own earlier writes, proving the suppression state is
+  **entitlement-derived live**, which is what doc §6 requires ("Query-backed entitlement state").
+  "Restore ad-off" being visible while suppression is inactive matches §7 ("restoration …
+  hidden while entitlement-derived suppression is active" — it is inactive here, so shown is
+  correct). No ad-click action appears anywhere, as §B25 requires.
+- **State label:** "Suppression proof ready" (before, visible in the row-2 action frame) and
+  "Suppression proof reviewed" (after). Proven.
+- **Findings (non-failing):** the static description field still reads "Ads suppressed because
+  this member has an active ad-off entitlement" while the derived chip says `Ads suppressed
+  now: No` — the sentence is stored copy that no longer matches the derived state. Content
+  inconsistency worth a ticket, not a workflow failure; the derived chip is the one the doc
+  binds to the entitlement.
 
-- **Decision legibility:** the suppression card (action frame) shows "Ads suppressed now: No" (partially
-  cropped), the suppressed-surfaces list, and the entitlement linkage — enough for a member to know what
-  they are acknowledging.
-- **Primary action:** **"Mark reviewed"** — the doc's named primary. **"Restore ad-off"** is present
-  (correctly, since suppression is inactive: §7 says restoration is hidden only *while suppression is
-  active*), and the result frame offers **"Review later"**, the doc's named alternate.
-- **Result:** durable receipt: the state chip is now **"Suppression proof reviewed"** (green). The
-  suppressed-surfaces list and the linked-entitlement panel persist below it.
-- **Finding 1 — the suppression "reason" is static, not entitlement-derived.** The card asserts "Ads
-  suppressed because this member has an active ad-off entitlement." directly above "Ads suppressed now:
-  No" and a linked entitlement showing `$state: inactive` (cancelled at 2026-09-28T21:40:15Z, i.e. by an
-  earlier action in this same run). The doc (§6) requires a "live entitlement-derived suppression state"
-  and a no-fill/ad-off *reason*; the live state chip is correctly derived, but the reason sentence
-  contradicts it. A member reading this card is told simultaneously that ads are suppressed because of an
-  active entitlement and that ads are not suppressed. The frames cannot show which layer holds the stale
-  string, only that the rendered card contradicts itself.
-- **Finding 2 — raw internal fields on a member surface.** The "Linked Entitlements" panel renders
-  `Member Fan Id: ad-off-member`, `$state: inactive`, `$id: ad-off-entitlement-active` — dollar-sigil
-  engine keys and a fan-id, verbatim. The doc's identity promise ("What this must not feel like: abstract
-  entitlement and ad-decision status chips") and §9's no-backend-terms standard both argue this panel
-  should be projected, not dumped.
-- **State label:** cropped in the action frame (unproven at that moment); proven in the result frame.
-
----
-
-## Data Portability Community
-
-Doc: `docs/references/communities/data-portability-community-product-experience.md`.
-
-### Row 4 — export/import preview (owner)
+## Row 4 — Data Portability: export/import preview
 
 **Workflow:** `export-import-preview`
+**Outcome:** PASS
 
-**Verdict: PASS.**
+- **Decision legible:** Yes. Start frame: Export and Migration entry, signed in as *Evidence
+  portability-owner*, Owner/Admin persona ("Selects export scope, verifies packages, transfers
+  data, and starts rollbacks"), tabs Admin / Export / Transfer / Documents.
+- **Primary action:** **"Start transfer"** (green), with **"Cancel"** as the reject path — a
+  required primary from the doc's B25 addendum ("export, download export, start transfer,
+  import data").
+- **Result:** The card renders at **"Operation running"** with `Partner provider transfer
+  preview`, `Operation: Transfer`, `3 components selected`, the redaction line "Phone numbers
+  are excluded; member IDs are pseudonymized", `Destination: Northstar Community Cloud`, and a
+  **History** section whose second entry is fresh from this run: `transfer started ·
+  portability-owner-20 · 2026-09-28T21:42:25.723061Z`, followed by continuation actions
+  **Confirm complete** / Record error / Cancel transfer. This is the doc §6 required proof
+  (selected scope, redaction preview, destination) plus the addendum's "status,
+  receipt/history/confirmation" — a genuine durable receipt, the exact thing the sibling pass
+  found missing on its export rows.
+- **State label:** "Operation running" visible in the result. The pre-action card's own state
+  chip is cropped in the action frame (buttons only) — unproven for that single frame, not
+  failed.
+- **Doc reconciliation:** conforms. Change-scope path exists on the surface (a "Change scope"
+  action is visible on the sibling full-bundle card; this card's own alternate is Cancel).
 
-- **Decision legibility:** the start frame shows the Export and Migration entry surface with the owner
-  persona ("Owner - Selects export scope, verifies packages, transfers data, and starts rollbacks") and
-  the owner tab set (Admin/Export/Transfer/Documents — §3.1's required owner tabs, remapped per the doc's
-  own 2026-08-10 correction onto real tab ids). The preview card itself (result frame) carries the doc §6
-  proof: "3 components selected", the redaction preview ("Phone numbers are excluded; member IDs are
-  pseudonymized."), "Destination: Northstar Community Cloud", and the member-facing notice text ("Your
-  profile and event participation are included; private contact details are redacted.").
-- **Primary action:** **"Start transfer"** (green primary; "Cancel" red alternate) — one of the doc's
-  required primary actions, in domain words.
-- **Result:** the strongest receipt in this pass: the state chip flips to **"Operation running"**,
-  "Operation: Transfer" appears, and the **History section gains a new entry — "transfer started ·
-  portability-owner-20 · 2026-09-28T21:42:25.723061Z"** — this run's own write, timestamped, alongside
-  the pre-existing "previewed · portability-owner · 2026-08-09" entry. Follow-up actions (Confirm
-  complete / Record error / Cancel transfer) match the doc's cancel/retry model.
-- **Doc reconciliation:** §6's "change-scope path" is the one required element not visible in this row's
-  three frames (a "Change scope" button exists in this package — it is visible on the full-bundle card in
-  row 5's frames — but not on this card within the captured viewport). Recorded as not shown, not as
-  absent. Everything else the row requires is on screen.
-- **State label:** cropped in the action frame (unproven at that moment); proven in the result frame.
-- **Note:** History records the actor as `portability-owner-20` while the sign-in banner says "Evidence
-  portability-owner" — an id-versus-label mismatch a real owner would find mildly confusing, though the
-  attribution itself is real.
-
-### Row 5 — checksum verification (owner)
+## Row 5 — Data Portability: checksum evidence
 
 **Workflow:** `export-checksum-evidence`
+**Outcome:** UNPROVEN
 
-**Verdict: FAIL — the primary action leaves no legible receipt, and the doc-required checksum is not
-visible in any frame.**
+- **What the frames show:** the verification card with `Four files covering members, events,
+  messages, and documents.`, `Verification: Passed`, `Transfer: Disabled`, a seeded history line
+  `{result: passed, at: 2026-08-10T08:12:00Z, by: portability-owner}`, and actions **"Enable
+  transfer"** / **"Export verification record"**. After the action, exactly one visible change:
+  a new chip reading `2026-09-28T21:44:57.286377Z` — an **unlabeled** ISO timestamp — which does
+  persist (it is still on the card in the next row's start frame), while both actions remain
+  offered and `Transfer: Disabled` is unchanged.
+- **Why UNPROVEN rather than PASS:** the card's **state header is cropped out of frame in every
+  frame** for this card (all three frames start mid-card), so I cannot see its state label or
+  anything above the fold — including whether a **checksum value** is rendered there. Doc §5
+  requires "checksum, counts, pass/fail" on this surface and names "hidden checksum" as the
+  anti-pattern; doc §6 requires "checksum, verification result, retry path". Verification
+  result: proven ✓. Checksum: **not visible in any frame, and not provable absent** — cropping
+  means not-visible ≠ not-rendered. Retry path: not visible. And the one visible result of the
+  action is a chip a member cannot read: no label, no record id, no state change.
+- **Why UNPROVEN rather than FAIL:** unlike the sibling pass's failed export rows, there *is* a
+  visible durable write (the timestamp chip survives into the following row's frames), so "the
+  result frame shows nothing happened" would be inaccurate. I reach a finding **adjacent to the
+  sibling's** — the result does not show a *legible* export receipt — but the decisive evidence
+  (state label, checksum chip) sits above the captured viewport, so the honest verdict is
+  unproven, not failed.
+- **On the checksum-gap caution:** for this community the missing-service explanation does
+  **not** apply — the doc's 2026-08-27 header update says checksum generation *is* implemented
+  ("the workflow service computes a real SHA-256 … a checksum field is `writableBy:
+  \"platform\"`"), with the caveat that this workflow "records the digest of a bundle another
+  workflow produced rather than generating one itself". So if the checksum truly is absent from
+  the card (rather than cropped), that is a real finding against these frames on this community,
+  not an honest declared gap — the declared gap here is the **transfer ID**, not the checksum. I
+  cannot tell from these frames which it is, and say so rather than choosing.
+- **Recapture suggestion:** this card needs one frame scrolled to its top (state chip + any
+  checksum field) for the row to be judgeable.
 
-- **What the frames show:** the verification card (header and state chip cropped in *all three* frames)
-  with "Four files covering members, events, messages, and documents.", **"Verification: Passed"**,
-  "Transfer: Disabled", a date chip, the raw-map History `{result: passed, at: 2026-08-10T08:12:00Z, by:
-  portability-owner}`, and two actions: **"Enable transfer"** and **"Export verification record"**.
-- **What changed after the action:** exactly one thing — a new, **unlabeled** chip reading
-  `2026-09-28T21:44:57.286377Z` (this run's clock) appears among the card's fields. "Transfer: Disabled"
-  is unchanged (so the action taken was not Enable transfer), the History gains no entry, no state chip
-  is visible before or after, and no exported record, confirmation, or checksum surface appears.
-- **Why this fails:** the ticket's own rubric — a result that "merely returns to where it started" is a
-  finding — almost applies; this is one notch above it. The timestamp delta does prove *something
-  persisted* (I am not claiming the write failed; I cannot see the backend either way). But as evidence
-  that an owner "could see that it happened," an unlabeled raw ISO-8601 chip appearing mid-card is not a
-  receipt a real owner could read. Compare rows 4 and 6, where the same package renders "…started · actor
-  · time" History entries for their actions: the mechanism exists and this card does not use it. **This is
-  the same finding the sibling pass recorded against both of its export rows**, reached independently from
-  these frames; the difference here is only that a pixel delta exists at all.
-- **The checksum question, answered as the ticket asks:** no checksum digest is visible in any of the
-  three frames. The doc is unusually specific here: since 2026-08-27 checksum generation **is**
-  implemented ("the workflow service computes a real SHA-256… a checksum field is `writableBy:
-  'platform'`"), §5 lists checksum as required visible content with "hidden checksum" as the named
-  anti-pattern, and §6 requires "checksum, verification result, retry path" for this row. Of those three,
-  only the verification result ("Verification: Passed") is on screen; retry path and checksum are not. **I
-  cannot tell from these frames which of three explanations holds:** (a) the digest field sits in the
-  card's cropped upper region; (b) the field is honestly empty because these are `LOCAL ENGINE` captures
-  and the computing service lives in the workflow service (the doc's caveat also notes this workflow
-  records a digest *another workflow* produced rather than generating one); or (c) it is genuinely
-  unrendered. Per the honesty rules I am not choosing: the row fails on the receipt regardless, and the
-  checksum's visibility is recorded as **unproven** with the three candidate explanations above for
-  whoever re-captures. What these frames *do* establish is that no frame in this row proves the doc's
-  checksum promise.
-- **State label:** never visible in any of the three frames — unproven for the entire row (the only row
-  in this pass where that is true).
-- **Additional finding:** the raw-map History rendering (`{result: passed, at: …, by: …}`) is a
-  serialization leak, inconsistent with the legible History rendering on this same package's transfer and
-  rollback cards.
-
-### Row 6 — transfer rollback (owner)
+## Row 6 — Data Portability: transfer rollback
 
 **Workflow:** `export-transfer-rollback`
+**Outcome:** PASS
 
-**Verdict: PASS.**
-
-- **Decision legibility:** the action frame shows the rollback card's actions in context with the
-  transfer it would unwind visible below ("Awaiting provider verification", "Northstar provider
-  migration", From: Data Portability Community / To: Northstar Community Cloud, "3 components").
-- **Primary action:** **"Roll back transfer"** (green primary; "Cancel rollback" red alternate) — the
-  doc's rollback verb exactly.
-- **Result:** state chip **"Rollback running"**, plus every §6-required element: the rollback reason
-  ("Destination validation found an unexpected document count."), source and destination, availability
-  ("Available: Yes", "Status: Running"), and a **new History entry from this run — "rollback started ·
-  portability-owner-20 · 2026-09-28T21:45:54.502562Z"**. Follow-ups (Confirm rollback complete / Record
-  rollback failure / Cancel rollback) are the doc's confirm/result/audit model.
-- **Doc reconciliation:** §6 also lists "completed state" as required visible proof; these three frames
-  end at "running" — completion sits behind "Confirm rollback complete", which a single-action sequence
-  cannot also take. Recorded as not captured by this row's frame budget rather than as a product gap; the
-  running-state receipt plus the named completion action is what the addendum's "status,
-  receipt/history/confirmation" sentence asks for.
-- **State label:** cropped in the action frame (unproven at that moment); proven in the result frame.
-- Same minor note as row 4: History actor `portability-owner-20` vs sign-in label "Evidence
-  portability-owner"; and this row's start frame already carries row 5's `2026-09-28T21:44:57.286377Z`
-  chip on the verification card — the rows share one mutating surface, which is expected within a single
-  canonical run but means row-start frames are not pristine.
+- **Decision legible:** Yes. The action frame shows **"Roll back transfer"** (green) /
+  **"Cancel rollback"** (red), with the schema-scope card and the "Awaiting provider
+  verification" migration card (`Northstar provider migration`, `From: Data Portability
+  Community`, `To: Northstar Community Cloud`) giving real context for what is being rolled
+  back.
+- **Primary action:** **"Roll back transfer"** — the domain verb, matching the doc's
+  rollback path.
+- **Result:** The rollback card renders at **"Rollback running"** (orange) with `Northstar
+  rollback request`, `From: Data Portability Community`, `To: Northstar Community Cloud`, the
+  rollback reason **"Destination validation found an unexpected document count."**,
+  `Available: Yes`, `Status: Running`, a fresh chip `2026-09-28T21:45:54.502524Z`, and a
+  **History** entry from this run: `rollback started · portability-owner-20 ·
+  2026-09-28T21:45:54.502562Z`, with continuation actions **Confirm rollback complete** /
+  Record rollback failure / Cancel rollback. Doc §6 required proof — rollback reason,
+  source/destination, rollback availability — all visible; durable receipt via the history
+  entry.
+- **State label:** "Rollback running" visible in the result; the pre-action card's own chip is
+  cropped in the action frame (buttons only) — unproven for that frame, not failed.
+- **Findings (non-failing):** the doc's card-registry row also lists a "completed state"; these
+  frames end at Running with "Confirm rollback complete" offered but not exercised, which is
+  consistent with a three-frame arc — noting it so nobody reads this PASS as covering the
+  completed state.
 
 ---
 
 ## Tally
 
-| Row | Workflow | Verdict | State label |
-| --- | --- | --- | --- |
-| 1 | `ad-off-member-checkout` | PASS | unproven at action; proven at result |
-| 2 | `ad-off-entitlement-status` | PASS | unproven at action; proven at result |
-| 3 | `ad-off-ad-suppression` | PASS (2 findings) | unproven at action; proven at result |
-| 4 | `export-import-preview` | PASS | unproven at action; proven at result |
-| 5 | `export-checksum-evidence` | **FAIL** | unproven in all three frames |
-| 6 | `export-transfer-rollback` | PASS | unproven at action; proven at result |
-
-Judged from frames alone; no application code, test, or package was modified. No backend effect is
-claimed anywhere above beyond what a pixel delta can support.
+| Row | Outcome |
+| --- | --- |
+| `ad-off-member-checkout` | PASS |
+| `ad-off-entitlement-status` | PASS |
+| `ad-off-ad-suppression` | PASS |
+| `export-import-preview` | PASS |
+| `export-checksum-evidence` | UNPROVEN |
+| `export-transfer-rollback` | PASS |
