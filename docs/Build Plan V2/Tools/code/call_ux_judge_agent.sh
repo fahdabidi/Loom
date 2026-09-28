@@ -97,7 +97,26 @@ recorded for it is silently discarded. If you judge nine rows and omit the line,
 zero and nothing tells you.
 
 Write the verdict to a file whose name contains \`ux-judge\` and ends in \`.md\`, or it will not be
-found."
+found.
+
+**Immediately after each \`**Workflow:**\` line, on its own line, record that row's outcome in exactly
+this shape:**
+
+    **Outcome:** PASS
+
+Use exactly one of **PASS**, **FAIL** or **UNPROVEN**, uppercase, nothing else on the line:
+
+- **PASS** — the frames show this row working. You may still record findings; a pass with findings is
+  a PASS.
+- **FAIL** — the frames show it not working, or contradicting its product doc.
+- **UNPROVEN** — you could not tell from the frames. A cropped, ambiguous or missing frame is
+  UNPROVEN, **never** PASS and never FAIL. This is a real outcome, not a cop-out, and choosing it
+  honestly is worth more than a confident guess.
+
+**Why this line exists, so you do not treat it as bookkeeping.** Until 2026-09-28 the bar counted a
+row as judged if a verdict merely *named* it — so a row judged FAIL counted exactly like a row judged
+PASS, and five known failures sat inside the reported figure. Your prose verdict is for humans; this
+line is the only part a counter can read. A row without it is not counted as passing."
 
 LOG_DIR="$REPO_ROOT/.codex-logs/ux-judge/$LABEL"
 mkdir -p "$LOG_DIR"

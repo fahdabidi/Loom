@@ -132,6 +132,63 @@ find "$EVID" \( -name '*ux-judge*.md' -o -name 'ux-judge-verdict.md' \) -print0 
   | grep -oE '`[a-z0-9-]+`' | tr -d '`' >> "$WORK/judged.txt"
 sort -u -o "$WORK/judged.txt" "$WORK/judged.txt"
 JUDGED_TYPES=$(wc -l < "$WORK/judged.txt")
+
+# --- the judge half, by OUTCOME rather than by mention ---------------------------------------------
+# Added 2026-09-28, after proving the gap with five concrete rows. Everything above answers "does a
+# verdict NAME this row", which counted a FAILED row exactly like a passing one: on 2026-09-28 five
+# rows judged FAIL (book-export-metadata, soccer-export-metadata, export-checksum-evidence,
+# garden-export-custom-schemas, soccer-waiver-document) all sat inside the reported figure.
+#
+# The judge dispatcher now requires `**Outcome:** PASS|FAIL|UNPROVEN` on the line after each
+# `**Workflow:**`. This reads that pair.
+#
+# DELIBERATELY ADDITIVE, and that is the whole design. The 51 pre-2026-09-28 verdicts carry no
+# outcome line, so requiring PASS would have collapsed the bar to near zero -- technically honest and
+# genuinely misleading, since many of those rows did pass. So the coverage figure is KEPT and
+# relabelled, a confirmed-pass figure is added beside it, and the rows with no parseable outcome are
+# PRINTED. A silently dropped input hides the case that disproves you, and the gap between the two
+# numbers is the actual state of knowledge.
+: > "$WORK/judged_pass.txt"; : > "$WORK/judged_fail.txt"; : > "$WORK/judged_unproven.txt"
+: > "$WORK/judged_nooutcome.txt"
+while IFS= read -r -d '' vf; do
+  awk '
+    # A new Workflow line means the PREVIOUS one never got an outcome. This has to be
+    # handled here rather than in its own rule: awk takes the first matching rule and
+    # this pattern matches too, so a separate `pending != "" && /Workflow/` rule can
+    # never fire. The first version of this counted 7 (one per FILE) where the honest
+    # answer was 59 (one per ROW) -- a count measuring the thing counted rather than
+    # the thing asked about, in the tool built to stop exactly that.
+    /^\*\*Workflow:\*\* `[a-z0-9-]+`/ {
+      if (pending != "") print "NOOUTCOME\t" pending
+      match($0, /`[a-z0-9-]+`/); pending = substr($0, RSTART+1, RLENGTH-2)
+      next
+    }
+    pending != "" && /^\*\*Outcome:\*\*[[:space:]]*(PASS|FAIL|UNPROVEN)/ {
+      o = $0; match(o, /(PASS|FAIL|UNPROVEN)/); print substr(o, RSTART, RLENGTH) "\t" pending
+      pending = ""; next
+    }
+    END { if (pending != "") print "NOOUTCOME\t" pending }
+  ' "$vf"
+done < <(find "$EVID" \( -name '*ux-judge*.md' -o -name 'ux-judge-verdict.md' \) -print0 2>/dev/null) \
+  | while IFS=$'\t' read -r outcome wf; do
+      [ -n "$wf" ] || continue
+      case "$outcome" in
+        PASS)      echo "$wf" >> "$WORK/judged_pass.txt" ;;
+        FAIL)      echo "$wf" >> "$WORK/judged_fail.txt" ;;
+        UNPROVEN)  echo "$wf" >> "$WORK/judged_unproven.txt" ;;
+        *)         echo "$wf" >> "$WORK/judged_nooutcome.txt" ;;
+      esac
+    done
+for f in judged_pass judged_fail judged_unproven judged_nooutcome; do
+  [ -s "$WORK/$f.txt" ] && sort -u -o "$WORK/$f.txt" "$WORK/$f.txt" || : > "$WORK/$f.txt"
+done
+# A row is only "no outcome" if it never got one in ANY verdict.
+if [ -s "$WORK/judged_nooutcome.txt" ]; then
+  comm -23 "$WORK/judged_nooutcome.txt" <(cat "$WORK/judged_pass.txt" "$WORK/judged_fail.txt" \
+    "$WORK/judged_unproven.txt" | sort -u) > "$WORK/nooutcome_only.txt" || true
+else
+  : > "$WORK/nooutcome_only.txt"
+fi
 JUDGE=$(ls "$EVID" 2>/dev/null | grep -icE 'judge|ux-review' || true)
 SCREENS=$(grep -hoE '"screenRowId": "b25-v4-row-[0-9]+' "$EVID"/*.json 2>/dev/null \
   | grep -oE 'row-[0-9]+' | sort -u | wc -l)
@@ -144,10 +201,33 @@ done < "$WORK/rows.tsv"
 
 # Both halves, for the same row.
 BOTH=0
+BOTH_CONFIRMED=0
+JUDGE_PASS_ROWS=0
+JUDGE_FAIL_ROWS=0
+JUDGE_UNPROVEN_ROWS=0
+JUDGE_NOOUTCOME_ROWS=0
 while IFS=$'\t' read -r _c wf; do
   case "$wf" in ⛔*|wf_*) continue;; esac
   if grep -qx "$wf" "$WORK/judged.txt" && grep -qx "$wf" "$WORK/proven.txt"; then
     BOTH=$((BOTH+1))
+  fi
+  grep -qx "$wf" "$WORK/judged_pass.txt"      && JUDGE_PASS_ROWS=$((JUDGE_PASS_ROWS+1))
+  grep -qx "$wf" "$WORK/judged_fail.txt"      && JUDGE_FAIL_ROWS=$((JUDGE_FAIL_ROWS+1))
+  grep -qx "$wf" "$WORK/judged_unproven.txt"  && JUDGE_UNPROVEN_ROWS=$((JUDGE_UNPROVEN_ROWS+1))
+  # UNKNOWN by SUBTRACTION, not by detecting an absent line. The first version emitted a
+  # marker from the markdown parser and counted 23, but many historical artifacts name their
+  # rows in JSON, which that parser never reads -- so they were "named" yet invisible to it,
+  # and 36 rows fell into neither column. Named-minus-outcome is correct whatever the artifact
+  # format, and it cannot silently lose a row: the four columns now sum to the named total.
+  if grep -qx "$wf" "$WORK/judged.txt" \
+     && ! grep -qx "$wf" "$WORK/judged_pass.txt" \
+     && ! grep -qx "$wf" "$WORK/judged_fail.txt" \
+     && ! grep -qx "$wf" "$WORK/judged_unproven.txt"; then
+    JUDGE_NOOUTCOME_ROWS=$((JUDGE_NOOUTCOME_ROWS+1))
+  fi
+  # The strict bar: a confirmed PASS verdict AND a live write, for the same row.
+  if grep -qx "$wf" "$WORK/judged_pass.txt" && grep -qx "$wf" "$WORK/proven.txt"; then
+    BOTH_CONFIRMED=$((BOTH_CONFIRMED+1))
   fi
 done < "$WORK/rows.tsv"
 
@@ -170,11 +250,18 @@ B25 status -- $(date +%Y-%m-%d)
   judge half
     judge/UX-review artifacts         $JUDGE
     distinct workflowId values judged $JUDGED_TYPES
-    REAL ROWS WITH A JUDGE ARTIFACT   $JUDGED_ROWS
+    rows NAMED by a judge artifact    $JUDGED_ROWS   (coverage -- says nothing about the verdict)
     distinct screenRowId values       $SCREENS   (screens, ~3 per row -- NOT a bar key)
 
+  judge half, BY OUTCOME (added 2026-09-28; only verdicts carrying an **Outcome:** line)
+    rows judged PASS                  $JUDGE_PASS_ROWS
+    rows judged FAIL                  $JUDGE_FAIL_ROWS
+    rows judged UNPROVEN              $JUDGE_UNPROVEN_ROWS
+    rows named with NO outcome line   $JUDGE_NOOUTCOME_ROWS   (pre-2026-09-28 verdicts; unknown, not passing)
+
   both halves
-    REAL ROWS WITH WALKTHROUGH+JUDGE  $BOTH   <-- the bar
+    coverage: named + live write      $BOTH   (the OLD figure -- includes FAILED rows)
+    CONFIRMED: PASS + live write      $BOTH_CONFIRMED   <-- the only one that means proven
 
   A row needs BOTH halves. An earlier version of this script called the judge half
   UNCOMPUTABLE because the artifacts are keyed by screenRowId and there are $SCREENS of
@@ -182,9 +269,13 @@ B25 status -- $(date +%Y-%m-%d)
   per row -- and it is derived from workflowId, so its slug resembles a bar key without
   being one. The real key was always there: the artifacts carry "workflowId" and "persona".
 
-  Caveat on the judge column: this counts rows with a judge artifact NAMING the workflow.
-  It does not yet check that artifact's verdict for that row, so treat $JUDGED_ROWS and
-  $BOTH as coverage, not as passes.
+  Caveat on the judge column, NARROWED 2026-09-28: "$JUDGED_ROWS named" and "$BOTH coverage"
+  still say nothing about any verdict -- a row judged FAIL is counted there exactly like a
+  row judged PASS, which was proven with five concrete failures on 2026-09-28. The outcome
+  block above is the one that reads verdicts, and CONFIRMED ($BOTH_CONFIRMED) is the only
+  figure that means proven. The $JUDGE_NOOUTCOME_ROWS rows with no outcome line are
+  pre-2026-09-28 verdicts: unknown, not passing. Re-judging them is what closes that gap;
+  the judge dispatcher now requires an **Outcome:** line so no new verdict can join them.
 
   Manifests written before 2026-09-09 record no package identity, so a match proves the
   row against whatever the package was that day, not against the package today.
