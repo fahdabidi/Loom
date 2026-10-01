@@ -86,6 +86,48 @@ Also found: **7 `fan_passport` rows keyed by UUID** (`fan_<uuid>`) rather than t
 
 ### row-275 — `queryInstances` has no date-window parameter, so every calendar tab pages the whole instance set
 
+**RETAGGED 2026-10-01 — this is NOT a spec decision for the case that actually hurts, and the premise below is false. Read this first.**
+
+This row says the blocker is that *"nothing in the current contract carries that mapping"* — the
+server would need to know which `instance_data` key means "date" for a given `workflowType`. **For
+the calendar archetype that mapping already exists, is contractual, and the engine already depends on
+it.**
+
+- `calendar.md` §3 is titled **Required fields** and states that a `calendar` item **"must declare
+  these two, spelled exactly so"** — `eventDate` (`type: date`, `required: true`) and `eventTime` —
+  and then says outright: *"This is a contract, not a convention: a workflow that calls its date
+  `shiftDate` is not placeable, and the failure is silent."* So the key name is fixed, not per-package.
+- The engine already relies on that spelling by name: the reminder formula composes
+  `combineDateAndTime(eventDate, eventTime)` (`formula_evaluator.dart:436`,
+  `local_workflow_engine_api.dart:912`, `workflow_models.dart:1157`).
+- And the server can tell which workflows are calendars: `cardSurfaceFamily` is a serialized field on
+  the definition model (`workflow_models.dart:895-944`, in both `toJson` and `fromJson`), so a
+  published definition carries its archetype family.
+
+**So the whole mechanism is already present**: family from the definition, key from the archetype
+contract, filter on `instance_data->>'eventDate'`. No grammar key, no `dateField` declaration, and no
+spec decision are required to fix the calendar tab paging its entire instance set. That also respects
+this project's stated preference — *prefer building the service to widening the grammar* — which the
+`dateField` proposal below quietly inverts.
+
+**What genuinely remains a spec question, stated narrowly so it is not confused with the above:** a
+**general-purpose** date-window filter over arbitrary workflow types would still need a
+field→workflowType mapping, because a reminder's `dueAt` is not a calendar's `eventDate` and no
+contract fixes a date key outside the calendar family. **Nothing currently asks for that.** The
+symptom this row records is the calendar tab, and the calendar tab is covered.
+
+**Two cautions that survive the retag intact, so this does not read as "easy":**
+
+- The row's own warning stands: the calendar surface **regressed twice on a much smaller
+  reminder-only change** (two reverted implementation attempts, 2026-08-20). Not-a-spec-decision does
+  not mean low-risk.
+- The archetype guarantees the key is *declared*; it does not guarantee a stored row has a
+  **parseable** value. A server-side filter must decide what happens to a row whose `eventDate` is
+  absent, empty, or unparseable — and per this project's rule, *unresolvable is a third state*, not a
+  silent exclusion. A row dropped from a date window because its date could not be parsed is
+  invisible in exactly the way a missing-row defect is.
+
+
 `needs-spec-decision` — **RE-VERIFIED 2026-09-10 — both load-bearing call sites still read exactly as recorded, so this decision rests on current facts.** `remote_workflow_engine_api.dart`'s `queryInstances` still accepts only `workflowType` / `sortKey` / `limit` / `cursor` and puts only `workflowType` in the query map — **no date-window parameter of any kind** — and `part27_engine_native_binding_dispatcher.dart:~167` is still an unfiltered cursor loop (`String? cursor; while (true) { … queryInstances(limit: pageSize, cursor: cursor) … }`) that pages the entire tab's instance set. No drift since 2026-09-06. **RETAGGED 2026-09-06, confirmed live, not just recalled — this is a spec question, not a plain implementation ticket.** Read the actual call sites: exactly one caller in the whole app-shell constructs a non-empty `SurfaceQuery` at all (`part02_tab_shell.dart:818`, Messages tab, sorts by `subject` — unrelated to dates), the remote engine's `queryInstances` never sends a date-window query parameter (`remote_workflow_engine_api.dart:102-112` sends only `workflowType`/`sortKey`/`limit`/`cursor`), and the calendar's own load path (`part27_engine_native_binding_dispatcher.dart:169`, shared by every tab) pages the *entire* tab's instance set with no query filter at all, looping cursors until `hasMore` is false. So the TODO's original claim is exactly right, confirmed rather than assumed. **Why this can't be a blind implementation ticket:** `instance_data` is a generic per-workflow-type JSON blob with no fixed schema at the DB layer — filtering by date requires the server to know *which* key means "date" for a given `workflowType` (a calendar event's `eventDate` is not a reminder's `dueAt`), and nothing in the current contract carries that mapping. Same failure shape as the two already-recorded specs written this migration that assumed a mechanism the contract didn't carry (`platformDefault`, the change-feed `resyncRequired`) — propose the field→workflowType mapping as a spec addition first (e.g. an archetype-declared `dateField` used by both the query builder and the server-side filter), then dispatch the plumbing. Also worth flagging: the calendar surface has already regressed twice on a much smaller reminder-only change (two reverted implementation attempts, 2026-08-20) — do not treat this as low-risk just because the field is already declared.
 
 ## 3. Ready to ticket
