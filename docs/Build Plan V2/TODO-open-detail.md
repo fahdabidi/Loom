@@ -64,6 +64,44 @@ Also found: **7 `fan_passport` rows keyed by UUID** (`fan_<uuid>`) rather than t
 
 ### row-248 — `deriveInstanceRoles` picks the FIRST `actorEqualsField` guard — array order is not a business-party selector
 
+**RE-VERIFIED 2026-10-01 against the REGENERATED Book Club package — the counterexample still holds, and the defect is LATENT rather than live. Both halves matter.**
+
+Checked because this row's evidence is a Book Club workflow and Book Club was regenerated since
+(`d87f9875`), which is exactly the kind of citation that rots without anyone noticing.
+
+**The counterexample survives.** In `book-shared-library-item` (declared at line 545 of the shipped
+package) the transition guards genuinely mix two keys: `actorEqualsField: ownerFanId` at lines 569,
+578, 596 and 606, and `actorEqualsField: pendingBorrowerFanId` at line 614. So the workflow still has
+two candidate rendering actors and nothing but array order chooses between them.
+
+**And the live behaviour is currently CORRECT, which the row does not say.** `role_resolver` walks
+**transitions** and takes the first declaring `actorEqualsField`; the first such transition here
+carries `ownerFanId`, which is the right rendering actor for a library item. The `pendingBorrowerFanId`
+guard sits last. So this is a **latent** defect — one reordering away from changing who renders as
+actor, with no declaration changing and no test failing. Stating that explicitly matters because this
+project has twice mis-scoped work by not separating "the pattern is wrong" from "this instance is
+currently misbehaving".
+
+**Two consequences for the design, given the user's "no back-compatibility constraint":**
+
+- **The validation rule is the real deliverable, not the resolver change.** Today's packages happen to
+  be ordered benignly, so a resolver fix alone repairs nothing observable; a rule that *refuses* an
+  ambiguous package is what stops the next one being ordered unluckily. That also makes it cheap to
+  land: require the selector where keys differ, and no shipped package needs to change if its
+  inference is unambiguous.
+- **Register the finding code before building the rule, and in the same change.** A new validator code
+  is a documentation change first (`05-validation.md`, under `docs/references/guide/`, plus its
+  authoring-bundle mirror which `chatgpt_bundle_mirror_test` asserts byte-identical). The conformance
+  test runs **both** ways — every emitted code must be documented and every documented code must
+  exist — so registering it in a separate commit turns the suite red. The doc half is mine to write;
+  dispatches are hard-locked out of `docs/references/**`.
+
+The row's own proposal is otherwise sound and is kept as written, including the part that matters most
+and is easy to lose: **a selected-but-null identity resolves to NO actor, never implicitly to the
+creator.** That is the "unresolvable is a third state" rule, and collapsing it into the creator
+fallback is how an availability bug becomes an authorization one.
+
+
 `needs-spec-decision` — **`deriveInstanceRoles` picking the FIRST `actorEqualsField` guard is a real defect wherever the keys differ, and JSON array order is not a defensible business-party selector.** Separate from the row above, which it does not cause (Book Club's two guards both name `nominatorFanId`, so reordering there is harmless). **Concrete counterexample in the same package:** `book-shared-library-item`'s owner transitions use `ownerFanId` while `cancel-loan-request` uses `pendingBorrowerFanId` — moving that transition earlier changes who renders as actor, and with a null pending borrower even a correctly-initialized owner loses actor status. Neither "first non-null field" nor "union of matching fields" fixes the meaning: the first changes ownership with transient data, the second treats owner and borrower as the same rendering relationship. **Proposed:** an explicit workflow-level rendering-actor selector (e.g. `actorField`); infer it only when all guards name one distinct key; keep creator fallback when there are no such keys; **require** the selector where keys differ and emit a validation error rather than choosing by order; and a selected-but-null identity resolves to **no actor**, never implicitly to the creator. Touches model parsing/serialization, grammar validation, the shared resolver, reference docs, the authoring bundle and affected packages (`workflow_models.dart:1308` has no selector today). Do not silently switch existing ambiguous packages to a new inference rule without migrating them.
 
 ### row-251 — A payment-service stub needs a service-backed transition binding specified first — grammar gap, stops and asks
