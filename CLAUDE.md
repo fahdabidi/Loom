@@ -1646,7 +1646,7 @@ Book Club regeneration `d87f9875`.** Use these over every figure below where the
 | Suite | Measured 2026-09-25 | 2026-09-20 | Accounted? |
 |---|---|---|---|
 | UX judges | **525**, exit 0 | 525 | exact match |
-| App shell | **447** (+2 skipped), exit 0 — moved 421 → 435 → 443 → 447 | 421 (+2) | **+26, every case accounted.** `b4b691f9` +14: the state-badge conformance test loops the archetype registry, so 14 archetypes − 1 exempt (`table`) = 13 cases plus 1 standalone. `f7128ba3` +8: 7 in the new field-label humanizer conformance file, 1 added to the calendar end-to-end file. `a3ee44fd` +4: the four declared cases in `binding_kind_summary_readonly_test.dart`. `flutter analyze` clean at all three |
+| App shell | **448** (+2 skipped), exit 0 — moved 421 → 435 → 443 → 447 → 448 | 421 (+2) | **+27, every case accounted.** `b4b691f9` +14: the state-badge conformance test loops the archetype registry, so 14 archetypes − 1 exempt (`table`) = 13 cases plus 1 standalone. `f7128ba3` +8: 7 in the new field-label humanizer conformance file, 1 added to the calendar end-to-end file. `a3ee44fd` +4: the four declared cases in `binding_kind_summary_readonly_test.dart`. `ee8e9483` +1: the test asserting the production-engine gate **fires** rather than silently resolving local. `flutter analyze` clean throughout |
 | Workflow engine | **345** (+1 skipped) = **346 cases**, exit 0 | 341 (+5) = 346 | **total identical**; four PG tests that previously skipped actually ran. Skips going DOWN is the direction that means more was proven |
 | Workflow service | **165** (+1) **−3**, all 3 proven environmental | 168 (+1) = 169 | total 169, exact. See the contention note below |
 | Demo app | **262, exit 0, ZERO failures, zero skipped** | 261 + 1 known | **this suite is now GREEN.** See below |
@@ -2380,6 +2380,42 @@ was accurate and led to a wrong conclusion, because what mattered was how many t
 the whole question. A `pubspec.yaml` dependency edge is not evidence of use either; it is what made
 this look worse than it was. Before treating a count as a risk, ask what would have to be true for
 each counted item to actually reach the surface you care about, and measure *that*.
+
+### A silent fallback is a decision the codebase makes for you — gate it, and the gate will find its own witness
+
+Found 2026-10-01, implementing the user's decision that the UX judge and live walkthrough must run
+against live backend services rather than the in-memory engine.
+
+**The mechanism was a default, not a bug.** `_productionEngineNativeCommunityEngineFactory`
+(`part25_engine_native_community_store.dart`) defaulted to the local engine with a comment saying it
+did so "intentionally". So any host that forgot to install the production factory — including the
+capture harness, which calls `pumpWidget` and never `main()` — ran on an in-memory engine with **no
+signal at all**, and produced screenshots that looked like proof. "Uses the real backend" was a
+property of the build command rather than of the codebase.
+
+The fix is a sentinel default that falls back to local **only** when the process has explicitly said
+it is local (`resolveLoomServiceEnvironment() == null`, i.e. `--dart-define=LOOM_ENV=local` or the
+test-only `debugForceLoomLocalBackend`), and throws a `StateError` otherwise. **Gate the thing that
+decides, not the thing it returns:** gating `WorkflowDatabase.memory()` itself would have broken 45
+engine/service unit tests that construct it as the unit under test and never touch the shell factory.
+
+Three things generalize, and the third is the one worth remembering:
+
+- **A package-wide test opt-in belongs in `flutter_test_config.dart`.** It runs before every test
+  under that package's `test/` root, so 447 tests kept working through **one new file** with zero
+  edits to any of them. When a change looks like it needs N test edits, look for the shared seam
+  first — the count was 72 before that check and 1 after.
+- **A reset-for-testing helper must reset to the NEW default, not the old one.** This one still reset
+  to the local factory, which would have quietly reopened the hole for the remainder of any process
+  that called it. A gate with a reset path has two defaults to fix, and the second is invisible.
+- **A good gate breaks the test that already believed what the gate enforces.** The blanket opt-in
+  broke exactly one of 447: `remote_service_configuration_environment_test`'s *"no remote-service
+  defines uses the default environment, not local"*, whose own comment from 2026-08-26 describes this
+  very defect. That is the **best possible** first failure, and the response is to let that test opt
+  out for its own body (`debugForceLoomLocalBackend = false` + `addTearDown`), never to soften it —
+  relaxing it would have deleted the only assertion that the default is the real backend, in the same
+  change that was enforcing the default is the real backend. **When a gate's first casualty is a test
+  that asserts the gate's own premise, that is confirmation, not conflict.**
 
 ### A commit is not evidence that a `data/` script changed — `data/` is gitignored
 
