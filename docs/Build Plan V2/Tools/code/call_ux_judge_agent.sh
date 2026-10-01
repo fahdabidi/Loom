@@ -138,7 +138,10 @@ echo "Log:         $OUTPUT_CAPTURE"
 echo "Role:        REVIEW ONLY -- reads screenshots and evidence, writes a verdict"
 echo "================================================================"
 
+# Per-label, because concurrent judge runs would otherwise clobber each other's pid
+# file and leave whichever finished last claiming to be "the" dispatch.
 echo $$ > "$REPO_ROOT/.last_dispatch.pid"
+echo $$ > "$REPO_ROOT/.last_dispatch.$LABEL.pid"
 
 set +e
 claude -p "$PROMPT" \
@@ -186,8 +189,27 @@ fi
 # inside those quotes, which would need `-z` to handle properly. No such path
 # exists here, and a mangled name fails loudly at the `grep -q` below rather
 # than passing, so the residual risk is a false alarm, not a false pass.)
-VERDICT_FILES="$(cd "$REPO_ROOT" && git status --porcelain \
-  | sed 's/^...//; s/^"//; s/"$//' | grep -E '(^|/)[^/]*ux-judge[^/]*\.md$' || true)"
+# CONCURRENCY, added 2026-10-01. Several judge runs now run at once to get through
+# the corpus faster, and `git status` is REPO-WIDE: without scoping, run A's gate
+# inspects run B's verdict -- possibly half-written -- and fails A for B's state.
+# That is a false failure caused purely by a sibling, and it would be maddening to
+# diagnose because it depends on timing.
+#
+# So when EXPECTED_VERDICT names this run's own verdict path, the gate checks
+# exactly that file and ignores every other. Unset, it falls back to the repo-wide
+# scan, which stays correct for a single run.
+if [ -n "${EXPECTED_VERDICT:-}" ]; then
+  if [ -f "$REPO_ROOT/$EXPECTED_VERDICT" ]; then
+    VERDICT_FILES="$EXPECTED_VERDICT"
+  else
+    VERDICT_FILES=""
+    echo "NOTE: EXPECTED_VERDICT was set to '$EXPECTED_VERDICT' and that file does not exist."
+    echo "      The agent either wrote it elsewhere or wrote nothing. Treat as NOT countable."
+  fi
+else
+  VERDICT_FILES="$(cd "$REPO_ROOT" && git status --porcelain \
+    | sed 's/^...//; s/^"//; s/"$//' | grep -E '(^|/)[^/]*ux-judge[^/]*\.md$' || true)"
+fi
 if [ -z "$VERDICT_FILES" ]; then
   echo "NOTE: no new or modified *ux-judge*.md file in the working tree."
   echo "      If this run was meant to produce a verdict, it is not where the bar looks."
