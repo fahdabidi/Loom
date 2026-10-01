@@ -1033,6 +1033,46 @@ session that had already re-read the rule. Capture the status from the command i
 `Success` regardless, and the fact worth having is
 `dumpsys package <pkg> | grep POST_NOTIFICATIONS` showing `granted=true`.
 
+### Remote wiring turns a same-frame UI assumption into an async race, and the failure surfaces rows later
+
+Found 2026-10-01, on the first capture run that reached a real device with the live backend forced
+on. Three of five row failures were **one** defect, and the row that named a dialog was the last
+victim rather than the cause.
+
+`_showActorIdentityPicker` (`part01_local_extension_screen.dart:1025`) **awaits
+`authApi.listAccounts(...)` before `showDialog`**. Locally that future completes inside
+`pumpAndSettle`, so the harness's "tap the button, settle, interact with the dialog" shape was
+correct for months. Under production wiring the await is a network round trip, so:
+
+| Row | What it reported | What happened |
+|---|---|---|
+| origin | `No element` | the dialog was not open yet when the caller reached for it |
+| next | tap missed, "obscured… `RenderOffstage`" | the pending `listAccounts` resolved and the dialog opened **mid-row**, over this row's surface |
+| next+1 | "expected community `ext_garden_club`; found `actor-identity-picker-dialog`" | correct refusal, two rows downstream of the cause |
+
+**Any harness step that assumes a tap's UI effect lands within `pumpAndSettle` is a latent race the
+moment that effect's path crosses the network.** The diagnostic signature actively misdirects: the
+origin reports an absence, the victims report an obstruction, and only execution order plus reading
+*who awaits what before showing UI* identifies which row is at fault. Nothing in a failure message
+points backwards.
+
+Three things to carry:
+
+- **The fix is a budgeted wait, and the load-bearing property is where the throw happens.** Waiting
+  for the named surface before touching it fixes the race; throwing *with the dialog closed* is what
+  stops a single honest failure from becoming a three-row cascade. A longer timeout fixes neither.
+- **A frame captured right after the settle is worse than a missing frame.** Three of the five call
+  sites here do `tap → pumpAndSettle → capture(...)`, so under remote wiring they would write a PNG
+  *named* `B18_member_actor_identity_picker_dialog` showing the community route instead. That is
+  evidence wrong in the one field nobody re-reads — the same family as the truncated `payerFanId`.
+- **Make the between-row mismatch name the previous row.** The leaked-surface assert had
+  `lastRowWalked` in scope and did not use it, so the investigation began two rows from the cause.
+  When a guard detects contamination, the cheapest useful thing it can add is *who probably left it*.
+
+This is also the clearest case yet of **why a green suite proves nothing about the shipped adapter**:
+all five suites pass, because every one of them runs the local path where the future is already
+complete. Only a device against the real services can take this branch.
+
 ### A fallback path is where a new capability silently fails to exist
 
 Found 2026-09-13. A fix added `ensureVisible` inside the readiness poll for **primary** action
