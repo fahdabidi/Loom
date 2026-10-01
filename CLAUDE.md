@@ -2764,11 +2764,27 @@ picker for a role". The agent did exactly that, on the branch it was shown. But 
     if (selector.accountId case final accountId?) { ... local seeding, which hard-fails under remote }
     else if (loomAuthSession != null)             { ... the new remote authentication }
 
-`accountId` is derived per row and non-null for most of them, so the new capability landed on the
-**minority** branch and the common path kept the mechanism that now refuses. That is this file's
-"a fallback path is where a new capability silently fails to exist" entry with the polarity reversed
-— I put the capability *in* the fallback — and it was invisible to every suite, because all five are
-green and only a real device reaches the branch.
+`accountId` is non-null only for a **minority** of rows — measured 1 of 5 on the Garden run — so the
+ordering defect is real but narrow, and the common path *does* reach the new remote authentication.
+**An earlier version of this entry said the opposite ("non-null for most of them"), and that was my
+error, caught by a Root Cause Agent I had asked to attack my framing.** The defect is still worth the
+fix: a row with a non-null `accountId` hard-fails under remote, because `accountId` is a
+demo-identity-space value derived from a package *seed*, and remotely the seed does not exist and any
+instance the walkthrough creates prefills `$actor` with the authenticated fan anyway. Remote-active
+must win the branch.
+
+The generalisable half survives the correction intact: **a ticket saying "do X before Y" must
+enumerate every site reaching Y, because a branch is a population too** — and it was invisible to
+every suite, because all five are green and only a real device reaches the branch.
+
+**Then the same rule caught the agent.** It reported "those are the only two sites that tap the picker
+button; I checked." There are **five**: two in the harness and three more in the integration test's
+Mosque B17/B18/B19 rows. And the three it missed are the dangerous ones, because they
+`tap → pumpAndSettle → capture(...)` — so under remote wiring they would bank a frame *named*
+`B18_member_actor_identity_picker_dialog` that actually shows the community route. A mislabelled
+frame is worse than a missing one; it is evidence wrong in the one field nobody re-reads. This file
+already says to verify a scoping report's enumerations before writing them into a ticket, and that is
+twice now it has paid for itself.
 
 **The rule it costs nothing to apply: a ticket that says "do X before Y" must enumerate every site
 that reaches Y.** One `grep` for the call site, before dispatching, lists the branches. This file
