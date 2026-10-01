@@ -514,6 +514,28 @@ The effect declares `filter: { "checkoutInstanceId": "{id}", "$state": "active" 
   unreachable. Re-check after any heavy build, because a whole-node stall leaves pods `Running` while
   long-lived connections are already broken.
 
+- [x] `decision` — ✅ **CLOSED 2026-10-01: local-engine frames DO count for the judge half, because the walkthrough half carries the remote proof. The residual risk is one named class, now ticketed below.** Decided at the user's instruction to close it out; overrule freely, the reasoning is here to be argued with.
+
+  **The question.** The capture harness calls `pumpWidget(LoomCommunitiesDemoApp())` (`workflow_ui_evidence_test.dart:263`) and never calls the demo app's `main()`, where the production wiring lives — `configureLoomRemoteServicesFromEnvironment()` at `main.dart:23` and `configureEngineNativeCommunityEngineFactoryForProduction(...)` at `:32`, both **before** `runApp` at `:40`. Verified at HEAD 2026-10-01, not inherited from the 2026-09-12 note. So the shell keeps its local in-memory engine and every judged frame depicts an engine the product does not ship.
+
+  **Why that is acceptable for the judge half specifically.** The bar requires BOTH halves for the same row, and they prove different things. The walkthrough half is a live-write manifest produced by the live-verification agent driving a real device against the real backend — that **is** the remote proof. The judge half exists to assess rendering and legibility, which local frames support honestly. A row with both halves therefore has its remote behaviour proven by one half and its presentation by the other. Demanding the judge half also prove the remote path would make it a duplicate of the walkthrough half rather than a second kind of evidence.
+
+  **Why making the harness go remote is not the cheap fix.** The remote engine refuses to send a request without a bearer token, and the only token source is a stored OAuth session from a browser Keycloak login; there is no dev-token bypass in the production path. The demo identity picker is *selection*, not authentication. So "just call `main()`" does not work — the harness would authenticate as nobody and prove less than it does now. This is the same trap as the 2026-09-12 near-miss where a capture-harness auth blocker was nearly ticketed before anyone noticed nothing was going remote.
+
+  **What this decision does NOT cover, and it is the part that matters.** A screen that renders correctly on the local engine and incorrectly on the remote path is invisible to both halves as currently run. See the ticket immediately below; that is where the real exposure lives, and it is bounded and fixable rather than open-ended.
+
+- [ ] `new-ticket` — **Remote-only rendering divergence is invisible to the whole bar, and the mechanism is still live.** Opened 2026-10-01 as the carve-out from the decision above.
+
+  **The mechanism, still present:** `part28_engine_native_calendar_surface.dart:449` swallows a failed action load into `catch (_)`, so a load that **failed** is indistinguishable from one that **succeeded and found nothing**. On the remote path a secondary load can genuinely 404 where the local engine happily evaluates supplied synthetic state — that is the recorded `local accepts synthetic state / remote addresses a persisted row` divergence, and it once hid the Publish button on the remote path only.
+
+  **And nothing guards it.** There is no local-vs-remote rendering parity test anywhere. `on_device_remote_backend_proof_test.dart` authenticates and calls the engine **directly**, so it proves the service boundary and not that any UI path reaches it — different claim, similar-looking evidence.
+
+  **Two pieces of work, in this order:**
+  1. **Make a failed load distinguishable from an empty one** — the `catch (_)` must record that it could not find out, so the caller can render a degraded state rather than silently showing nothing. This is the same "resolved to nothing versus could not resolve" rule this repo already records in three other places.
+  2. **One parity check** that renders the same instance through both adapters and asserts the same affordances appear. Scope it narrowly: the calendar RSVP card is the known-divergent surface, so start there rather than attempting a general framework.
+
+  **Do not close this by judging more frames.** More local frames cannot see a remote-only divergence, however many there are — which is exactly why this sits outside the decision above rather than inside it.
+
 - [ ] `blocked` — **The export-receipt failures are the MISSING PLATFORM SERVICE showing through, not a renderer defect. Do not ticket the shell for them.** Diagnosed 2026-09-28, after three independent judge reads agreed on the finding and I went looking for where to aim the fix.
 
   Three rows fail consistently across every pass: `book-export-metadata`, `soccer-export-metadata`, `garden-export-custom-schemas`. All three fail the same way — the action registers but **no receipt of the export ever renders**: no history entry, no checksum, download stays Unavailable.
