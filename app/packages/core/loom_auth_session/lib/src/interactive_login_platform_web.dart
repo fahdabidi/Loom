@@ -7,12 +7,16 @@ export 'interactive_login_web.dart' show InteractiveLoginPlatform;
 
 const String interactiveLoginPlatformKind = 'web';
 
+/// [redirectUri] is accepted only for signature parity with the io variant.
+/// The web implementation always derives its redirect from the current page
+/// location, so this value is ignored.
 InteractiveLoginPlatform createInteractiveLoginPlatform({
   required Uri? issuerUri,
   required String clientId,
   required http.Client httpClient,
   required Future<void> Function(Map<String, dynamic>) persistTokens,
   required LoomAuthSecureStorageBackend pendingTransactionStorage,
+  Uri? redirectUri,
 }) => InteractiveLoginPlatform(
   issuerUri: issuerUri,
   clientId: clientId,

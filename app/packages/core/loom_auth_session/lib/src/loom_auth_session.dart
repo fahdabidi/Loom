@@ -22,6 +22,17 @@ typedef LoomAuthRequestOutcomeRecorder =
 /// automated/local testing with Keycloak-native test accounts; production UI
 /// code must never call it.
 class LoomAuthSession {
+  /// [redirectUri] is the OAuth redirect this app registers for interactive
+  /// login on Android: it becomes the authorization request's
+  /// `redirect_uri`, the `callbackUrlScheme` the platform browser launcher
+  /// listens for, and the value used to recognise a genuine callback. When
+  /// omitted, it defaults to the Communities app's long-registered
+  /// `com.loom.communities:/oauthredirect`. An app embedding this package
+  /// with its own scheme must declare a matching intent filter in its
+  /// Android manifest, and two apps installed on the same device must use
+  /// distinct schemes or they will compete for each other's login
+  /// callbacks. Flutter Web ignores this and derives its redirect from the
+  /// current page instead.
   LoomAuthSession({
     required Uri tokenEndpoint,
     required String clientId,
@@ -31,13 +42,15 @@ class LoomAuthSession {
     DateTime Function()? clock,
     this.refreshSkew = defaultRefreshSkew,
     this.storageKey = defaultStorageKey,
+    Uri? redirectUri,
   }) : _tokenEndpoint = _requireAbsoluteUri(tokenEndpoint),
        _clientId = _requireNonEmpty(clientId, 'clientId'),
        _secureStorage = secureStorage,
        _httpClient = httpClient ?? http.Client(),
        _ownsHttpClient = httpClient == null,
        _clock = clock ?? DateTime.now,
-       _onRequestOutcome = onRequestOutcome {
+       _onRequestOutcome = onRequestOutcome,
+       _redirectUri = redirectUri {
     if (refreshSkew.isNegative) {
       throw ArgumentError.value(
         refreshSkew,
@@ -57,6 +70,7 @@ class LoomAuthSession {
   final http.Client _httpClient;
   final bool _ownsHttpClient;
   final DateTime Function() _clock;
+  final Uri? _redirectUri;
   LoomAuthRequestOutcomeRecorder? _onRequestOutcome;
 
   final Duration refreshSkew;
@@ -194,6 +208,7 @@ class LoomAuthSession {
         httpClient: _httpClient,
         persistTokens: _persistAuthorizationCodeTokens,
         pendingTransactionStorage: _secureStorage,
+        redirectUri: _redirectUri,
       );
 
   Future<void> _persistAuthorizationCodeTokens(

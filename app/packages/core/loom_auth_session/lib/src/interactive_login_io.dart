@@ -13,12 +13,19 @@ import 'secure_storage_backend.dart';
 /// This source file is selected for Dart IO targets. It rejects every IO target
 /// other than Android so unsupported platforms continue to fail explicitly.
 final class InteractiveLoginPlatform {
+  /// [redirectUri] is the OAuth redirect this app registers for interactive
+  /// login: it is sent as the authorization request's `redirect_uri`, used
+  /// as the `callbackUrlScheme` passed to the platform browser launcher, and
+  /// used to recognise which browser callback belongs to this login. When
+  /// omitted, it defaults to [defaultRedirectUri]. An app supplying its own
+  /// scheme must declare a matching intent filter in its Android manifest.
   InteractiveLoginPlatform({
     required Uri? issuerUri,
     required String clientId,
     required http.Client httpClient,
     required Future<void> Function(Map<String, dynamic>) persistTokens,
     required LoomAuthSecureStorageBackend pendingTransactionStorage,
+    Uri? redirectUri,
     Future<Uri> Function(Uri authorizationUri)? authorizationLauncher,
     Future<Uri?> Function()? callbackReader,
   }) : _issuerUri = issuerUri,
@@ -26,13 +33,20 @@ final class InteractiveLoginPlatform {
        _httpClient = httpClient,
        _persistTokens = persistTokens,
        _pendingTransactionStorage = pendingTransactionStorage,
+       _redirectUri = redirectUri ?? defaultRedirectUri,
        _authorizationLauncher =
-           authorizationLauncher ?? _launchAuthorizationInBrowser,
+           authorizationLauncher ??
+           ((Uri authorizationUri) => _launchAuthorizationInBrowser(
+             authorizationUri: authorizationUri,
+             callbackUrlScheme: (redirectUri ?? defaultRedirectUri).scheme,
+           )),
        _callbackReader = callbackReader ?? _noPendingCallback;
 
   static const String transactionStorageKey =
       'loom.auth_session.interactive_login.v1';
-  static final Uri _redirectUri = Uri.parse(
+
+  /// The redirect URI used when a caller does not supply its own.
+  static final Uri defaultRedirectUri = Uri.parse(
     'com.loom.communities:/oauthredirect',
   );
 
@@ -41,6 +55,7 @@ final class InteractiveLoginPlatform {
   final http.Client _httpClient;
   final Future<void> Function(Map<String, dynamic>) _persistTokens;
   final LoomAuthSecureStorageBackend _pendingTransactionStorage;
+  final Uri _redirectUri;
   final Future<Uri> Function(Uri authorizationUri) _authorizationLauncher;
   final Future<Uri?> Function() _callbackReader;
 
@@ -198,17 +213,20 @@ final class InteractiveLoginPlatform {
     return Issuer.discover(issuerUri, httpClient: _httpClient);
   }
 
-  static Future<Uri> _launchAuthorizationInBrowser(Uri authorizationUri) async {
+  static Future<Uri> _launchAuthorizationInBrowser({
+    required Uri authorizationUri,
+    required String callbackUrlScheme,
+  }) async {
     final callback = await FlutterWebAuth2.authenticate(
       url: authorizationUri.toString(),
-      callbackUrlScheme: _redirectUri.scheme,
+      callbackUrlScheme: callbackUrlScheme,
     );
     return Uri.parse(callback);
   }
 
   static Future<Uri?> _noPendingCallback() async => null;
 
-  static bool _isOurRedirectUri(Uri callbackUri) =>
+  bool _isOurRedirectUri(Uri callbackUri) =>
       callbackUri.scheme == _redirectUri.scheme &&
       callbackUri.host == _redirectUri.host &&
       callbackUri.path == _redirectUri.path &&

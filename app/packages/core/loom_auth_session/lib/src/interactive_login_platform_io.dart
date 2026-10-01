@@ -13,10 +13,12 @@ InteractiveLoginPlatform createInteractiveLoginPlatform({
   required http.Client httpClient,
   required Future<void> Function(Map<String, dynamic>) persistTokens,
   required LoomAuthSecureStorageBackend pendingTransactionStorage,
+  Uri? redirectUri,
 }) => InteractiveLoginPlatform(
   issuerUri: issuerUri,
   clientId: clientId,
   httpClient: httpClient,
   persistTokens: persistTokens,
   pendingTransactionStorage: pendingTransactionStorage,
+  redirectUri: redirectUri,
 );
