@@ -2696,6 +2696,39 @@ needed no such corrections — or, after substituting, re-read the result agains
 describes and check every number and state name. Cheapest check: `grep` the finished brief for the
 donor's own identifiers before sending it.
 
+### A ticket's own vocabulary becomes identifiers, so a banned word in a heading ships as public symbols
+
+Found 2026-10-01, by the gate that exists to catch it. Ticket B's §2 heading read *"Authenticate per
+\<retired\>, in-process"*, using a word this codebase has **retired** from its identity vocabulary. The
+implementing agent named its three new public symbols after my heading — which is the correct
+instinct, aimed at the wrong word — and `retired_vocabulary_gate_test.dart` went red, leaving the demo
+suite at 261-1 while the other four stayed green.
+
+**The agent did nothing wrong, and that is the whole point.** A ticket is not only a description of
+work; it is the **naming source** for everything the work creates. Every noun in a heading is a
+candidate identifier, and an agent has no way to know which of my words are load-bearing conventions
+and which are casual prose. So a term that is banned in code must not appear in the ticket either —
+not in a heading, not in a sentence that is merely explaining the task.
+
+Three things worth keeping:
+
+- **Grep the ticket against the repo's own vocabulary gates before dispatching it.** This project has
+  a test enumerating retired identity terms; it took one `grep` of my own ticket to find what it would
+  later find in the code. The check belongs *before* the dispatch, because afterwards it costs a second
+  dispatch plus a five-suite run.
+- **The fix is the rename, never the exemption.** The reflex when a gate blocks new code is to widen
+  the gate's allowlist. Here that would have been the worst available outcome: the word entered through
+  my wording, so exempting the symbols would preserve my error permanently and disarm the gate for
+  everyone after. The gate was right and the names were wrong.
+- **Say in the follow-up ticket where the word came from.** An agent told "these three names are wrong"
+  will reasonably wonder whether the gate is wrong instead. Naming my heading as the source removes that
+  ambiguity, and makes "do not extend the exemption list" an obvious instruction rather than an arbitrary
+  one.
+
+Same family as the brief-by-substitution entry above, and as the human marker that corrupted a machine
+key: **what I write in a document becomes input to something that cannot tell my prose from my
+contract.**
+
 ### I checked one authorization layer and generalised from it — the classic form of this project's worst bug
 
 On 2026-09-09 I re-examined the row saying zero `calendar.*` grants block calendar-workflow creation.

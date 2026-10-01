@@ -11,7 +11,9 @@ Demo app measured at **261 passed, 1 failed** — this is the only failure; the 
 green (app shell 448 +2, judges 525, engine 345 +1, service 168 +1).
 
 **The cause is the ticket's wording, not the agent's judgement.** Ticket B carried a heading reading
-"Authenticate per **persona**, in-process" and used that word throughout. The implementing agent named
+"Authenticate per <retired>, in-process" and used that word throughout -- the exact token is the one
+`retired_vocabulary_gate_test.dart` assembles from fragments so the gate file does not trip itself; read it
+there rather than having it restated here. The implementing agent named
 its identifiers after the ticket, which is the correct instinct, and that word is **retired identity
 vocabulary** in this codebase. The ticket has since been corrected so it stops propagating the term.
 
