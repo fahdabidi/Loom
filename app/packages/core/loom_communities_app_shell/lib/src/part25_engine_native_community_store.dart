@@ -161,15 +161,51 @@ WorkflowEngineApi _createLocalEngineNativeCommunityEngine({
   notificationDeliveryService: LocalNotificationDeliveryService(),
 );
 
+/// The sentinel installed as [_productionEngineNativeCommunityEngineFactory]
+/// until a host configures a real one.
+///
+/// Falls back to the in-memory engine only when the process has explicitly
+/// declared itself local -- [resolveLoomServiceEnvironment] returns `null`
+/// for `--dart-define=LOOM_ENV=local` or the test-only
+/// [debugForceLoomLocalBackend] flag. Every other caller gets a loud
+/// [StateError] instead of a silent local engine: this is the seam a harness
+/// that skips `main()` used to fall through with no signal at all.
+WorkflowEngineApi _throwUnlessExplicitlyLocalEngineNativeCommunityEngine({
+  required WorkflowDatabase database,
+  required String extensionId,
+  required String? communityId,
+}) {
+  if (resolveLoomServiceEnvironment() == null) {
+    return _createLocalEngineNativeCommunityEngine(
+      database: database,
+      extensionId: extensionId,
+      communityId: communityId,
+    );
+  }
+  throw StateError(
+    'No production engine factory is configured for engine-native '
+    'community "$extensionId", and this process has not declared itself '
+    'local. main() must call '
+    'configureEngineNativeCommunityEngineFactoryForProduction(...) -- '
+    'normally with the factory configureLoomRemoteServicesFromEnvironment() '
+    'returns -- before any community experience resolves its engine. If '
+    'this run is deliberately local-only, opt in explicitly: set '
+    'debugForceLoomLocalBackend = true from a flutter_test_config.dart '
+    '(test-only), or build/run with --dart-define=LOOM_ENV=local.',
+  );
+}
+
 /// The factory selected by the production host at app startup.
 ///
-/// It intentionally defaults to the exact local factory used before the
-/// production seam existed. Stores capture the selected factory when they are
-/// installed, so hosts should configure this before resolving any community
-/// experience.
+/// Defaults to [_throwUnlessExplicitlyLocalEngineNativeCommunityEngine]
+/// rather than silently to the in-memory engine: a host that forgets to call
+/// [configureEngineNativeCommunityEngineFactoryForProduction] must fail
+/// loudly, not produce evidence that looks real while running on no backend
+/// at all. Stores capture the selected factory when they are installed, so
+/// hosts should configure this before resolving any community experience.
 EngineNativeCommunityEngineFactory
 _productionEngineNativeCommunityEngineFactory =
-    _createLocalEngineNativeCommunityEngine;
+    _throwUnlessExplicitlyLocalEngineNativeCommunityEngine;
 
 /// Selects the engine factory for newly installed community stores.
 ///
@@ -204,7 +240,7 @@ void resetEngineNativeCommunityEngineFactoryForTesting() {
 @visibleForTesting
 void resetProductionEngineNativeCommunityEngineFactoryForTesting() {
   _productionEngineNativeCommunityEngineFactory =
-      _createLocalEngineNativeCommunityEngine;
+      _throwUnlessExplicitlyLocalEngineNativeCommunityEngine;
 }
 
 void _registerEngineNativeCommunityEngineFactory({

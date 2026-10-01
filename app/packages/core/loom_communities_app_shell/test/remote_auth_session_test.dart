@@ -151,6 +151,29 @@ void main() {
     expect(engines, everyElement(isA<LocalWorkflowEngineApi>()));
   });
 
+  test(
+    'production factory throws instead of silently resolving local when '
+    'the process has not declared itself local',
+    () async {
+      const extensionId = 'production-gate-throws-without-local-optin';
+      debugForceLoomLocalBackend = false;
+      addTearDown(() => debugForceLoomLocalBackend = true);
+
+      _installEngineNativeTestExperience(extensionId);
+
+      await expectLater(
+        workflowEngineForExtensionId(extensionId),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('No production engine factory is configured'),
+          ),
+        ),
+      );
+    },
+  );
+
   test('resetting all registrations restores local routing for all', () async {
     const firstExtensionId = 'per-community-reset-first';
     const secondExtensionId = 'per-community-reset-second';

@@ -49,6 +49,13 @@ void main() {
       // "uses the real backend" a property of the build command rather than of
       // the codebase -- and a capture that forgot the defines proved nothing
       // while looking like proof.
+      //
+      // This test proves the behaviour of a non-local process, so it must
+      // opt out of this package's test-wide local opt-in for its own body
+      // (see flutter_test_config.dart) and restore it afterwards.
+      debugForceLoomLocalBackend = false;
+      addTearDown(() => debugForceLoomLocalBackend = true);
+
       final configuration = configureLoomRemoteServicesFromEnvironment();
       expect(configuration, isNotNull);
 
