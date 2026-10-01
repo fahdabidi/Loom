@@ -1007,6 +1007,32 @@ been invisible, which is the same shape as the stale `79` assert and the equal-d
 files and 88 real ones are indistinguishable in `wc -l`. Here the check was
 `find … -printf "%s\n"` plus `-size 0`, and it mattered enough to run.
 
+**And the guard that refuses those frames needs `ANDROID_SDK_ROOT`, which no capture note said —
+measured 2026-10-01.** `b25_device_dialog_guard.dart:202` looks for `adb` under `ANDROID_SDK_ROOT`
+then `ANDROID_HOME`, then bare `adb` on PATH. With `flutter` on PATH but neither variable set, the
+run binds remote, launches, emits real `LOOM_BINDING` telemetry, reaches the first screenshot — and
+then throws `Bad state: Unable to start Android Debug Bridge (adb)`, having written nothing. The full
+prerequisite set for a Windows-side capture is therefore **five** things, not three:
+
+    cd <repo>/app                                   # repoRoot is Directory.current.parent
+    PATH += C:\Android\flutter\bin                  # it spawns `flutter` by bare name
+    PATH += C:\Android\Sdk\platform-tools           # and `adb`, for the dialog guard
+    ANDROID_SDK_ROOT=C:\Android\Sdk                 # what the guard actually reads
+    adb install -r -g <instrumented.apk>            # or every frame is refused
+
+With all five, the same run reached `screenshotStatus=complete`, 5/5 frames, 258–320 KB each, zero
+zero-byte. **The guard throwing is correct behaviour** — unguarded frames are worse than no frames —
+so this is a missing prerequisite in the recipe, not a tool defect.
+
+**Two things about that run worth more than the fix.** First, **I piped the earlier attempt through
+`tail -60`, so a run that died on an unhandled exception reported `exited with code 0`** — the exit
+status was `tail`'s. That is the grep-gated-commit failure wearing new clothes, committed in a
+session that had already re-read the rule. Capture the status from the command itself
+(`cmd > log 2>&1; echo "exit=$?"`), never through a pipe whose last stage always succeeds. Second,
+**verify the permission on the device, not from the installer's output**: `adb install -r -g` prints
+`Success` regardless, and the fact worth having is
+`dumpsys package <pkg> | grep POST_NOTIFICATIONS` showing `granted=true`.
+
 ### A fallback path is where a new capability silently fails to exist
 
 Found 2026-09-13. A fix added `ensureVisible` inside the readiness poll for **primary** action
@@ -2728,6 +2754,36 @@ Three things worth keeping:
 Same family as the brief-by-substitution entry above, and as the human marker that corrupted a machine
 key: **what I write in a document becomes input to something that cannot tell my prose from my
 contract.**
+
+**SECOND INSTANCE THE SAME DAY, and it is a different failure mode of the same cause: my ticket's
+SCOPE, not its wording.** Ticket B asked the harness to "authenticate before driving the identity
+picker for a role". The agent did exactly that, on the branch it was shown. But the call site has
+**two** branches reaching the picker, discriminated on whether the row's selector carries an
+`accountId`:
+
+    if (selector.accountId case final accountId?) { ... local seeding, which hard-fails under remote }
+    else if (loomAuthSession != null)             { ... the new remote authentication }
+
+`accountId` is derived per row and non-null for most of them, so the new capability landed on the
+**minority** branch and the common path kept the mechanism that now refuses. That is this file's
+"a fallback path is where a new capability silently fails to exist" entry with the polarity reversed
+— I put the capability *in* the fallback — and it was invisible to every suite, because all five are
+green and only a real device reaches the branch.
+
+**The rule it costs nothing to apply: a ticket that says "do X before Y" must enumerate every site
+that reaches Y.** One `grep` for the call site, before dispatching, lists the branches. This file
+already says to scope a ticket by the population rather than by the file you were reading; the
+missing half is that a *branch* is a population too.
+
+**And a separate trap in the same ticket, about SUCCESS CRITERIA.** I wrote B's criterion as "ONE
+authenticated remote frame", deliberately narrow so a run that authenticates and then finds no rows
+still counts as success. But the app persists its OAuth session, and `adb install -r -g` preserves
+app data — so a frame can be captured on a session a *previous* run left behind, and the criterion
+passes with the change contributing nothing. **A criterion stated as an observable end state, with
+no statement of what must have caused it, can be satisfied by the state having been left there
+earlier.** For anything authentication-shaped the fix is cheap: clear app data *and* the browser
+first (this file records that you need both), so the only possible source of a token is the run under
+test.
 
 ### I checked one authorization layer and generalised from it — the classic form of this project's worst bug
 
