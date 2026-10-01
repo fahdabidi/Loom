@@ -144,7 +144,19 @@ void main() {
       final currentRowScreenshotNames = <String>[];
 
       void recordEvidenceEntry(Map<String, Object?> entry) {
-        entries.add(entry);
+        // Derived from the actual resolved factory for this community, never
+        // from a flag a caller passes -- see HARNESS-production-wiring-and-
+        // direct-grant-auth.md "report the engine honestly in the evidence".
+        // A caller-supplied label would be exactly the kind of assertion that
+        // outlives its truth.
+        final appId = entry['appId'];
+        final engineBinding = appId is String
+            ? loomServiceBindingRegistry.find(
+                service: LoomServiceBindingNames.workflowEngine,
+                scope: appId,
+              )
+            : null;
+        entries.add({...entry, 'engine': engineBinding?.mode.name ?? 'unconfigured'});
         binding.reportData!['workflowEvidence'] = List<Map<String, Object?>>.of(
           entries,
         );
@@ -260,6 +272,13 @@ void main() {
         });
       }
 
+      // Installs the real remote-service wiring before any widget is pumped.
+      // Skipping main() here used to leave every community on an unconfigured
+      // engine factory; see CLAUDE.md "the demo app IS wired to the deployed
+      // backend by default" and HARNESS-production-wiring-and-direct-grant-
+      // auth.md. LOOM_ENV defaults to `dev`, so this reaches the live backend
+      // with no additional dart-defines.
+      configureLoomProductionWiring();
       await tester.pumpWidget(const LoomCommunitiesDemoApp());
       await _pumpB25Frames(tester);
 
@@ -2065,6 +2084,18 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       account: displayName,
     );
     await signInEvidenceAccount(tester, displayName);
+  } else if (loomAuthSession != null) {
+    // Production wiring is active: the local role-aliased picker option
+    // (`actor-identity-option-<roleId>`) cannot sign in here, because
+    // RemoteLoomAuthApi.signIn rejects any accountId that is not the
+    // authenticated token's own fanId. Authenticate as the seeded fan that
+    // actually holds this role first -- see HARNESS-production-wiring-and-
+    // direct-grant-auth.md "authenticate per seeded fan, in-process".
+    beatSubstep(
+      WalkthroughSubstep.signingInEvidenceAccount,
+      account: selector.roleId,
+    );
+    await authenticateEvidenceFanForRemote(tester, roleId: selector.roleId);
   } else {
     beatSubstep(
       WalkthroughSubstep.selectingActorIdentity,

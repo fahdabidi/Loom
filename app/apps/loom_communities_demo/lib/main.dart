@@ -18,7 +18,16 @@ const String _offlineReplicaDirectory = String.fromEnvironment(
   'LOOM_OFFLINE_REPLICA_DIRECTORY',
 );
 
-void main() {
+/// Installs the production backend wiring: the remote-service configuration
+/// read from the environment, and the engine-native factory it implies.
+///
+/// `main()` and the capture harness both call this, as the one seam, so the
+/// two entrypoints can never drift apart -- this repo has three recorded
+/// instances of the same wiring logic diverging across call sites because a
+/// harness that skips `main()` re-did (or omitted) part of it independently.
+/// Returns the resolved remote configuration, or `null` when this process has
+/// declared itself local (`--dart-define=LOOM_ENV=local`).
+LoomRemoteServiceConfiguration? configureLoomProductionWiring() {
   configureLoomReplicaSyncPolicyPersistenceForProduction();
   final remoteServices = configureLoomRemoteServicesFromEnvironment();
   if (remoteServices != null) {
@@ -37,6 +46,11 @@ void main() {
       ),
     );
   }
+  return remoteServices;
+}
+
+void main() {
+  configureLoomProductionWiring();
   runApp(const LoomCommunitiesDemoApp());
 }
 

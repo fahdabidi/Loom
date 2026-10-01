@@ -1970,6 +1970,114 @@ Future<void> selectActorIdentity(WidgetTester tester, String fanId) async {
   );
 }
 
+/// Seeded accounts whose Keycloak/fan-id slug does not literally match the
+/// package's declared `roleId`. Every other role id is used as its own slug.
+///
+/// Confirmed live against the deployed realm 2026-10-01 by decoding the
+/// `fanId` claim of a real password-grant token for every role across all
+/// ten shipped packages -- not inferred from the role id's shape. Two
+/// packages declare a role id that is already community-specific and still
+/// got an unrelated, shorter slug (Camera Club); two declare a generic role
+/// id shared with no other package and got a community-prefixed slug instead
+/// (Mosque's `community-member`, Member Social Space's bare `member` and
+/// `moderator`), presumably because a literal `fan-member-1` would collide
+/// with a future community reusing the same generic role id.
+const Map<String, String> seededEvidenceFanSlugOverridesByRoleId = {
+  'camera-club-member': 'camera-member',
+  'camera-club-organizer': 'camera-organizer',
+  'community-member': 'masjid-member',
+  'member': 'social-member',
+  'moderator': 'social-moderator',
+};
+
+/// The shared password every seeded test account uses (`CLAUDE.md`, the
+/// Access Control tracker's seeded-accounts convention, `seed_role_holder.sh`).
+const String seededEvidenceFanPassword = 'LoomTest123!';
+
+/// How many numbered holders of one role to try before giving up.
+///
+/// Several accounts are seeded per role specifically so a single broken
+/// credential is never a blocker (CLAUDE.md: "a broken credential for one
+/// seeded user is a seeding task, never a decision point, when another
+/// holder of the role exists") -- confirmed live 2026-10-01, where
+/// `loom-book-member-1` still 401s and `loom-book-member-2` is the live
+/// holder.
+const List<int> seededEvidenceFanHolderSuffixes = [1, 2, 3];
+
+/// Authenticates the app's real Loom identity-provider session as a seeded
+/// test fan holding [roleId], then drives the identity picker to select that
+/// now-authenticated account.
+///
+/// This is the in-process equivalent of the interactive browser login:
+/// `session.logout()` then `session.loginWithTestCredentials(...)`, before
+/// any identity-picker interaction -- see
+/// `HARNESS-production-wiring-and-direct-grant-auth.md`. Call this instead of
+/// the role-aliased local picker (`selectActorIdentity`), which does not work
+/// once production wiring is active: `RemoteLoomAuthApi.signIn` rejects any
+/// accountId that is not the authenticated token's own fanId, and the local
+/// picker's options are keyed by role id, not by a real fan id.
+///
+/// Throws [B25SelectorSetupFailure] -- recorded by the walkthrough as a
+/// blocked row, never a crash -- only once every known holder of [roleId]
+/// has rejected its credential.
+Future<void> authenticateEvidenceFanForRemote(
+  WidgetTester tester, {
+  required String roleId,
+}) async {
+  final session = loomAuthSession;
+  if (session == null) {
+    throw StateError(
+      'authenticateEvidenceFanForRemote requires a configured remote '
+      'Loom auth session; call configureLoomProductionWiring() before '
+      'pumping the app.',
+    );
+  }
+  final slugBase = seededEvidenceFanSlugOverridesByRoleId[roleId] ?? roleId;
+  final attemptedUsernames = <String>[];
+  for (final suffix in seededEvidenceFanHolderSuffixes) {
+    final slug = '$slugBase-$suffix';
+    final username = 'loom-$slug';
+    attemptedUsernames.add(username);
+    await session.logout();
+    try {
+      await session.loginWithTestCredentials(
+        username: username,
+        password: seededEvidenceFanPassword,
+      );
+    } on Object {
+      // This numbered holder's credential was rejected (wrong password, or
+      // no such seeded account). Try the next one -- see
+      // seededEvidenceFanHolderSuffixes.
+      continue;
+    }
+    // A rejection past this point is a real defect in this row, not a
+    // missing credential, so it is deliberately left to propagate up to the
+    // walkthrough's own row-scoped failure handling rather than being
+    // swallowed here.
+    await signInEvidenceAccount(tester, _seededEvidenceFanDisplayName(slug));
+    return;
+  }
+  throw B25SelectorSetupFailure(
+    'No seeded remote test credential authenticated for role "$roleId". '
+    'Tried: ${attemptedUsernames.join(', ')}.',
+  );
+}
+
+/// Mirrors the seeding convention's own Fan Passport display name: the
+/// slug's hyphenated words, title-cased and space-joined
+/// (`hoa-board-1` -> `Hoa Board 1`).
+///
+/// Confirmed live 2026-10-01 against three seeded Fan Passport records,
+/// including the compound `ad-off-member-1` -> `Ad Off Member 1`, which rules
+/// out any smarter, non-mechanical title-casing.
+String _seededEvidenceFanDisplayName(String slug) => slug
+    .split('-')
+    .map(
+      (word) =>
+          word.isEmpty ? word : '${word[0].toUpperCase()}${word.substring(1)}',
+    )
+    .join(' ');
+
 Future<void> seedEvidenceAccounts(
   WidgetTester tester,
   LoomEvidenceTarget target,
