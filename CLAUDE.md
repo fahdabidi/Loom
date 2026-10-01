@@ -3125,6 +3125,49 @@ writer is honest; a field that implies one is the defect.
 
 ### The app shell has no member directory: it derives "identities" from roles, aliasing `fanId` to `roleId`
 
+**CORRECTED 2026-10-01 — THE MEMBER DIRECTORY EXISTS AND THE CORRUPTING PICKER IS GONE. Read this before acting on anything below, which would have you build a duplicate of shipped code.**
+
+This entry's central claims — *"The shell cannot currently answer 'who are the members of this
+community' at all — there is no directory contract, which is why the fix is a new capability rather
+than swapping one widget for another"* — are false as of today. Traced end to end:
+
+| Link | Where |
+|---|---|
+| the contract | `LoomAuthApi.listCommunityMembers({communityExtensionId})` → `List<LoomCommunityMember>` (`part29_auth_api.dart:146`), documented as *"Lists people without collapsing multi-role memberships into `LoomAccount`'s single-role shape"* — a type built for exactly this |
+| both implementations | `part30_local_auth_api.dart` and `part39_remote_auth_api.dart`; the remote one really enumerates (`_listGroupMembers(groupId)`, called at `:176` and `:222`) over App Access's `listGroupMembers` |
+| the loader | `part01_local_extension_screen.dart:1403`, `communityMemberLoader: () => _authApi.listCommunityMembers(...)`, threaded at `:522` and `:551` |
+| the field editor | `part33_generic_creation_card.dart:206` renders **`FanIdFormPicker(members: widget.communityMembers, selectedFanIds: …)`** |
+
+**So the `fanId[]` corruption described below is repaired.** This entry says `part33:192` renders
+`AudienceMultiSelectPicker` with a parameter *"literally `selectedRoleIds`"*, writing role ids into a
+fan-id array. That call site no longer exists: `AudienceMultiSelectPicker(` has **zero** call sites in
+the shell's `lib/` — only its declaration at `part21:14` survives. A `fanId[]` field is now filled
+from the member directory, keyed on fan ids.
+
+**Two things below remain TRUE and are the reason this entry is corrected rather than deleted:**
+
+- **The aliasing derivation still exists.** `part15_evidence_catalog.dart:397` still constructs
+  `LoomActorIdentity` from package roles, so an *actor identity* is still a role-id-shaped string.
+  That is the identity **picker's** candidate source, which is a different widget from the `fanId[]`
+  field editor. The operational rule below — establish which identity model an artifact runs under
+  before "fixing" a role-id-shaped value — stands unchanged, and so does the warning against a
+  validator rule banning role-id-shaped literals in `fanId` fields.
+- **The stored residue is data, not code.** The shipped Chess row holding
+  `["chess-member", "chess-organizer", "fan-chess-member-1"]` is a historical instance; repairing the
+  writer does not retroactively clean rows it already wrote. Any claim that those seven
+  `actorInList`-guarded transitions now resolve needs re-measuring against the row, not inferred from
+  this fix.
+
+**The lesson about this entry, which is the reusable part.** It was written as a *capability gap* —
+"the fix is a new capability" — and that framing is what kept it deferred, because a new capability
+is expensive and nobody budgets one casually. The capability was already specified, already
+implemented on both paths, and already wired; what was missing was one widget's candidate source, and
+someone has since changed it. **When recording something as missing, record the search that
+established it** — which interface you read, which implementations you checked — because an absence
+claim with no method behind it is the kind that survives its own refutation. Here the check was four
+greps and took a minute.
+
+
 **Traced end to end 2026-09-10. This is not a demo-only quirk — it is the only way the shell can
 produce an actor identity from a package, and it runs in production.**
 
