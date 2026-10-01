@@ -30,7 +30,7 @@ trap 'rm -rf "$WORK"' EXIT
 # nobody justifies stops being a check and becomes a place to hide drift.
 #   cedar_commons_hoa_*  : the UNDERSCORED duplicate group, pending its deletion decision
 #   tabletop-*           : tabletop-club is a test fixture, never a shipped community
-ALLOW_LIVE_ONLY='^loom_communities_cedar_commons_hoa\||^loom_communities_tabletop-club\|'
+ALLOW_LIVE_ONLY='^loom_communities_cedar_commons_hoa\||^loom_communities_tabletop-club\||^loom_communities_b3-e2e-[0-9]+-[0-9]+\|'
 
 # The dispatch host keeps its toolchain in a profile script that a non-interactive
 # shell does not read -- without this, `dart` is simply "command not found".
@@ -79,7 +79,13 @@ echo "control present: $CONTROL"
 
 sort "$WORK/declared.txt" | grep -v '^$' > "$WORK/d.txt"
 comm -13 "$WORK/live.txt" "$WORK/d.txt" > "$WORK/missing.txt"
-comm -23 "$WORK/live.txt" "$WORK/d.txt" | grep -Ev "$ALLOW_LIVE_ONLY" > "$WORK/extra.txt"
+# Split rather than DROP. The previous form piped straight through `grep -Ev`, so an excluded
+# row vanished from the report entirely -- the always-quiet half of the same problem this gate
+# exists to solve. Excluded rows are now PRINTED in their own section, so the reader can see
+# what the exclusion is doing and challenge it. Same shape as check_orphan_summary_bindings.py.
+comm -23 "$WORK/live.txt" "$WORK/d.txt" > "$WORK/extra_all.txt"
+grep -Ev "$ALLOW_LIVE_ONLY" "$WORK/extra_all.txt" > "$WORK/extra.txt" || :
+grep -E  "$ALLOW_LIVE_ONLY" "$WORK/extra_all.txt" > "$WORK/excluded.txt" || :
 
 STATUS=0
 if [ -s "$WORK/missing.txt" ]; then
@@ -97,6 +103,16 @@ if [ -s "$WORK/extra.txt" ]; then
   sed 's/^/  /' "$WORK/extra.txt"
   echo "  A stale role keeps working silently, which is why a rename fails invisibly."
   STATUS=1
+fi
+if [ -s "$WORK/excluded.txt" ]; then
+  echo
+  echo "EXCLUDED from the verdict by ALLOW_LIVE_ONLY -- printed, NOT dropped ($(wc -l < "$WORK/excluded.txt") rows):"
+  sed 's/^/  /' "$WORK/excluded.txt"
+  echo "  Live roles that no package declares, deliberately not failing the gate."
+  echo "  The b3-e2e-<digits>-<digits> groups are disposable E2E residue dated 2026-09-11/12."
+  echo "  They held this gate RED for 19 days, which is why it could not signal real drift:"
+  echo "  an always-noisy guard gets scrolled past, hiding a failure as surely as a quiet one."
+  echo "  If a REAL community handle ever appears here, that IS drift and this pattern is wrong."
 fi
 [ "$STATUS" = "0" ] && echo && echo "OK: package-declared roles and provisioned roles agree."
 exit "$STATUS"
