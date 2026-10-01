@@ -32,6 +32,13 @@ trap 'rm -rf "$WORK"' EXIT
 #   tabletop-*           : tabletop-club is a test fixture, never a shipped community
 ALLOW_LIVE_ONLY='^loom_communities_cedar_commons_hoa\||^loom_communities_tabletop-club\||^loom_communities_b3-e2e-[0-9]+-[0-9]+\|'
 
+# Scope the live read to this gate's own app. app_role is keyed by (app_id, role_id), and a
+# same-named role in another app would otherwise be read as a Loom Communities role -- the exact
+# defect 5fad85e0 fixed in check_permission_parity.sh. Harmless here TODAY (verified: all
+# loom_communities_* groups sit under app_id=loom_communities), which is luck rather than design,
+# so the sibling instance is closed rather than left latent.
+LOOM_APP_ID="${LOOM_APP_ID:-loom_communities}"
+
 # The dispatch host keeps its toolchain in a profile script that a non-interactive
 # shell does not read -- without this, `dart` is simply "command not found".
 [ -f "$HOME/.loom-env.sh" ] && . "$HOME/.loom-env.sh"
@@ -64,7 +71,7 @@ echo "=== reading LIVE roles from app_access ==="
 PW="$(kubectl get secret -n loom postgres-credentials -o jsonpath='{.data.password}' | base64 -d)"
 [ -n "$PW" ] || { echo "FAIL: could not read the postgres password"; exit 1; }
 kubectl exec -n loom postgres-0 -- env PGPASSWORD="$PW" psql -U loom -d loom_app_access -A -t -F'|' \
-  -c "select group_id||'|'||role_id from app_role where group_id like 'loom_communities_%' order by 1;" \
+  -c "select group_id||'|'||role_id from app_role where app_id = '$LOOM_APP_ID' and group_id like 'loom_communities_%' order by 1;" \
   | tr -d ' \r' | grep -v '^$' | sort > "$WORK/live.txt"
 echo "live role rows: $(wc -l < "$WORK/live.txt")"
 
