@@ -206,8 +206,13 @@ done < <(find "$EVID" \( -name '*ux-judge*.md' -o -name 'ux-judge-verdict.md' \)
         UNPROVEN)  echo "$wf" >> "$WORK/judged_unproven.txt" ;;
         *)         echo "$wf" >> "$WORK/judged_nooutcome.txt" ;;
       esac
-      # "live" means the frames are known to come from the deployed services. Anything else --
-      # including an absent line -- is NOT live, and is counted rather than assumed either way.
+      # "live" means the frames are known to come from the deployed services. The accepted set is
+      # NOT a guess: the harness writes `engine` from `LoomServiceBindingMode.name`, and that enum
+      # (part52_service_binding_report.dart:4) has exactly three values -- remote, local,
+      # unconfigured -- which map one-to-one onto the three buckets here. `remote` is live; `local`
+      # and `unconfigured` are not. The synonyms below are tolerated for hand-written verdicts only.
+      # IF THAT ENUM IS RENAMED, THIS GUARD GOES SILENTLY ALWAYS-ZERO, which is the exact failure
+      # this gate was built to stop -- so the coupling is named here rather than left implicit.
       case "$engine" in
         remote|live|remote-backend|liveBackend)  echo "$wf" >> "$WORK/judged_live.txt" ;;
         *)                                       echo "$wf" >> "$WORK/judged_notlive.txt" ;;
