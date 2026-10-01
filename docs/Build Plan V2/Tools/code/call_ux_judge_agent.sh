@@ -116,7 +116,26 @@ Use exactly one of **PASS**, **FAIL** or **UNPROVEN**, uppercase, nothing else o
 **Why this line exists, so you do not treat it as bookkeeping.** Until 2026-09-28 the bar counted a
 row as judged if a verdict merely *named* it — so a row judged FAIL counted exactly like a row judged
 PASS, and five known failures sat inside the reported figure. Your prose verdict is for humans; this
-line is the only part a counter can read. A row without it is not counted as passing."
+line is the only part a counter can read. A row without it is not counted as passing.
+
+**And on its own line in the same block, record which ENGINE produced the frames:**
+
+    **Engine:** remote
+
+Read this from the capture run's own manifest -- the harness records the engine it resolved at
+runtime -- and copy it verbatim. Do **not** infer it from how the frames look, and do **not** guess.
+If the manifest does not say, write:
+
+    **Engine:** unrecorded
+
+**Why, and it decides whether your verdict counts at all.** On 2026-10-01 the user ruled that the UX
+judge and the live walkthrough must both execute against the LIVE BACKEND SERVICES, never the
+in-memory engine. A screen can render correctly on the in-memory engine and be broken on the real
+one -- that has happened here, with a Publish button that is hidden only on the remote path. So a PASS
+over in-memory frames is not evidence about the shipped product, and the bar now counts a row as
+proven only when its verdict records a live engine. \`unrecorded\` is an honest third answer and is
+treated as not-live; it is counted and printed, not discarded. Guessing \`remote\` to make a row count
+would put a false row in the only figure that means proven."
 
 LOG_DIR="$REPO_ROOT/.codex-logs/ux-judge/$LABEL"
 mkdir -p "$LOG_DIR"

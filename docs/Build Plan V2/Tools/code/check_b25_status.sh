@@ -148,29 +148,57 @@ JUDGED_TYPES=$(wc -l < "$WORK/judged.txt")
 # relabelled, a confirmed-pass figure is added beside it, and the rows with no parseable outcome are
 # PRINTED. A silently dropped input hides the case that disproves you, and the gap between the two
 # numbers is the actual state of knowledge.
+# ENGINE PROVENANCE, added 2026-10-01 for the user's live-backend decision. A PASS verdict is only
+# bar-eligible if its frames came from the LIVE BACKEND; the 21 rows judged 2026-09-28 were judged on
+# in-memory-engine frames, so their judge half does not count under that decision. The script used to
+# print CONFIRMED=10 with no idea which engine produced the pixels -- a figure that was correct under a
+# superseded standard and would have gone on being quoted. So the verdict must now SAY, in an
+# `**Engine:**` line beside its `**Outcome:**` line, and a verdict that does not say lands in its own
+# printed bucket rather than in the proven column. Same additive design as the outcome block above:
+# nothing is dropped, the gap between the columns is the state of knowledge.
+#
+# The parser was restructured to buffer per row block and flush at the NEXT Workflow line, because the
+# earlier version cleared `pending` the moment it saw an Outcome -- which would have silently discarded
+# any Engine line written AFTER the outcome, and nothing guarantees the order. A/B'd against the
+# previous implementation: PASS/FAIL/UNPROVEN/no-outcome counts are identical, so the restructure
+# changes nothing about the outcome half.
 : > "$WORK/judged_pass.txt"; : > "$WORK/judged_fail.txt"; : > "$WORK/judged_unproven.txt"
-: > "$WORK/judged_nooutcome.txt"
+: > "$WORK/judged_nooutcome.txt"; : > "$WORK/judged_live.txt"; : > "$WORK/judged_notlive.txt"
 while IFS= read -r -d '' vf; do
   awk '
-    # A new Workflow line means the PREVIOUS one never got an outcome. This has to be
-    # handled here rather than in its own rule: awk takes the first matching rule and
-    # this pattern matches too, so a separate `pending != "" && /Workflow/` rule can
-    # never fire. The first version of this counted 7 (one per FILE) where the honest
-    # answer was 59 (one per ROW) -- a count measuring the thing counted rather than
-    # the thing asked about, in the tool built to stop exactly that.
+    function flush() {
+      if (pending != "") {
+        print (out == "" ? "NOOUTCOME" : out) "\t" (eng == "" ? "UNRECORDED" : eng) "\t" pending
+      }
+      pending = ""; out = ""; eng = ""
+    }
+    # A new Workflow line flushes the PREVIOUS block. This has to be handled here rather than in
+    # its own rule: awk takes the first matching rule and this pattern matches too, so a separate
+    # `pending != "" && /Workflow/` rule can never fire. The first version of this counted 7 (one
+    # per FILE) where the honest answer was 59 (one per ROW) -- a count measuring the thing counted
+    # rather than the thing asked about, in the tool built to stop exactly that.
     /^\*\*Workflow:\*\* `[a-z0-9-]+`/ {
-      if (pending != "") print "NOOUTCOME\t" pending
+      flush()
       match($0, /`[a-z0-9-]+`/); pending = substr($0, RSTART+1, RLENGTH-2)
       next
     }
+    # First outcome and first engine per block win. Neither clears `pending`, so the two lines may
+    # appear in either order.
     pending != "" && /^\*\*Outcome:\*\*[[:space:]]*(PASS|FAIL|UNPROVEN)/ {
-      o = $0; match(o, /(PASS|FAIL|UNPROVEN)/); print substr(o, RSTART, RLENGTH) "\t" pending
-      pending = ""; next
+      if (out == "") { o = $0; match(o, /(PASS|FAIL|UNPROVEN)/); out = substr(o, RSTART, RLENGTH) }
+      next
     }
-    END { if (pending != "") print "NOOUTCOME\t" pending }
+    pending != "" && /^\*\*Engine:\*\*/ {
+      if (eng == "") {
+        e = $0; sub(/^\*\*Engine:\*\*[[:space:]]*/, "", e); gsub(/[^A-Za-z_-]/, "", e)
+        eng = (e == "" ? "UNRECORDED" : e)
+      }
+      next
+    }
+    END { flush() }
   ' "$vf"
 done < <(find "$EVID" \( -name '*ux-judge*.md' -o -name 'ux-judge-verdict.md' \) -print0 2>/dev/null) \
-  | while IFS=$'\t' read -r outcome wf; do
+  | while IFS=$'\t' read -r outcome engine wf; do
       [ -n "$wf" ] || continue
       case "$outcome" in
         PASS)      echo "$wf" >> "$WORK/judged_pass.txt" ;;
@@ -178,8 +206,14 @@ done < <(find "$EVID" \( -name '*ux-judge*.md' -o -name 'ux-judge-verdict.md' \)
         UNPROVEN)  echo "$wf" >> "$WORK/judged_unproven.txt" ;;
         *)         echo "$wf" >> "$WORK/judged_nooutcome.txt" ;;
       esac
+      # "live" means the frames are known to come from the deployed services. Anything else --
+      # including an absent line -- is NOT live, and is counted rather than assumed either way.
+      case "$engine" in
+        remote|live|remote-backend|liveBackend)  echo "$wf" >> "$WORK/judged_live.txt" ;;
+        *)                                       echo "$wf" >> "$WORK/judged_notlive.txt" ;;
+      esac
     done
-for f in judged_pass judged_fail judged_unproven judged_nooutcome; do
+for f in judged_pass judged_fail judged_unproven judged_nooutcome judged_live judged_notlive; do
   [ -s "$WORK/$f.txt" ] && sort -u -o "$WORK/$f.txt" "$WORK/$f.txt" || : > "$WORK/$f.txt"
 done
 # A row is only "no outcome" if it never got one in ANY verdict.
@@ -206,6 +240,7 @@ JUDGE_PASS_ROWS=0
 JUDGE_FAIL_ROWS=0
 JUDGE_UNPROVEN_ROWS=0
 JUDGE_NOOUTCOME_ROWS=0
+JUDGE_PASS_NOT_LIVE_ROWS=0
 while IFS=$'\t' read -r _c wf; do
   case "$wf" in ⛔*|wf_*) continue;; esac
   if grep -qx "$wf" "$WORK/judged.txt" && grep -qx "$wf" "$WORK/proven.txt"; then
@@ -225,9 +260,13 @@ while IFS=$'\t' read -r _c wf; do
      && ! grep -qx "$wf" "$WORK/judged_unproven.txt"; then
     JUDGE_NOOUTCOME_ROWS=$((JUDGE_NOOUTCOME_ROWS+1))
   fi
-  # The strict bar: a confirmed PASS verdict AND a live write, for the same row.
-  if grep -qx "$wf" "$WORK/judged_pass.txt" && grep -qx "$wf" "$WORK/proven.txt"; then
+  # The strict bar, NARROWED 2026-10-01: a confirmed PASS verdict, a live write, AND frames whose
+  # verdict records a LIVE-BACKEND engine -- all three, for the same row. Without the third clause
+  # this printed 10 for rows judged entirely on in-memory-engine frames.
+  if grep -qx "$wf" "$WORK/judged_pass.txt" && grep -qx "$wf" "$WORK/proven.txt" && grep -qx "$wf" "$WORK/judged_live.txt"; then
     BOTH_CONFIRMED=$((BOTH_CONFIRMED+1))
+  elif grep -qx "$wf" "$WORK/judged_pass.txt" && grep -qx "$wf" "$WORK/proven.txt"; then
+    JUDGE_PASS_NOT_LIVE_ROWS=$((JUDGE_PASS_NOT_LIVE_ROWS+1))
   fi
 done < "$WORK/rows.tsv"
 
@@ -261,7 +300,8 @@ B25 status -- $(date +%Y-%m-%d)
 
   both halves
     coverage: named + live write      $BOTH   (the OLD figure -- includes FAILED rows)
-    CONFIRMED: PASS + live write      $BOTH_CONFIRMED   <-- the only one that means proven
+    PASS + live write, engine NOT live $JUDGE_PASS_NOT_LIVE_ROWS   (judged on in-memory frames, or the verdict never said)
+    CONFIRMED: PASS + live write + live engine  $BOTH_CONFIRMED   <-- the only one that means proven
 
   A row needs BOTH halves. An earlier version of this script called the judge half
   UNCOMPUTABLE because the artifacts are keyed by screenRowId and there are $SCREENS of
