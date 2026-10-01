@@ -155,10 +155,19 @@ to everyone rather than to no one — see `CONTRACTS.md` §3's "all models fail 
 the `owner` check, so declaring `fields` can only grant reads, never revoke one the default already
 allowed.
 
-> **Identity spelling during the straddle (D8).** These names are the specVersion 4 `*FanId`/`*FanIds`
-> forms. The corpus still carries `*PersonaId`/`*PersonaIds` in 129 places, and the rename is Phase F,
-> which is sequenced *after* the engine work — so the engine reads both spellings behind a single
-> helper, deleted in one edit at Phase F's closeout.
+> **Identity spelling (D8) — the straddle is OVER, measured 2026-10-01.** These names are the
+> specVersion 4 `*FanId`/`*FanIds` forms, and they are now the **only** legal spelling. The retired
+> `*PersonaId`/`*PersonaIds` forms are gone from the corpus: **zero** live occurrences across the
+> shipped packages (the one textual hit is inside a historical comment in the Phase 1 Tabletop
+> fixture, naming a field that no longer exists), and zero in both the engine and the app shell libs —
+> so the dual-spelling helper this note used to describe has already been deleted. Do not author the
+> retired spelling, and do not expect the engine to accept it.
+>
+> This note previously said the corpus "still carries `*PersonaId`/`*PersonaIds` in 129 places" with
+> the rename pending as Phase F. That was true when written and is now false in every part. It is
+> corrected rather than removed because a normative doc describing a straddle is exactly the kind of
+> statement an author would reasonably rely on — and a reference doc that keeps a retired spelling
+> alive teaches it to every future package.
 
 **The requirement is conditional on this workflow's own visibility.** A mapping is required only when
 the workflow actually engages the identity-scoped layer — that is, when `visibility.default` is
