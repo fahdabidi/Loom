@@ -19,6 +19,7 @@ class LiveRoleGrantsReader {
     this.database = 'loom_app_access',
     this.username = 'loom',
     this.groupPrefix = 'loom_communities_',
+    this.appId = 'loom_communities',
   });
 
   final String kubectl;
@@ -27,6 +28,12 @@ class LiveRoleGrantsReader {
   final String database;
   final String username;
   final String groupPrefix;
+
+  /// The app whose roles this reads -- `app_role` and `role_permission` are
+  /// both keyed by `(app_id, role_id)`, and the same `role_id` can exist
+  /// under more than one app. Threaded through to [buildLiveRoleGrantsSql],
+  /// which validates it before it is interpolated into SQL.
+  final String appId;
 
   /// Reads every grant for every community group in one query.
   Map<String, List<LiveRoleGrants>> readAll() {
@@ -41,15 +48,12 @@ class LiveRoleGrantsReader {
 
   /// The live grant rows, one per (group, role) with its permission-id set.
   List<LiveRoleGrants> _readGrantRows(String password) {
-    // `role_permission` has no `group_id`; the group lives on `app_role`. The
-    // join is on `role_id`, which is how `check_role_parity.sh` already reads
-    // role existence from the same pair of tables.
-    const sql =
-        "select r.group_id, r.role_id, rp.permission_id "
-        "from app_role r "
-        "left join role_permission rp on rp.role_id = r.role_id "
-        "where r.group_id like 'loom_communities_%' "
-        "order by r.group_id, r.role_id, rp.permission_id;";
+    // `role_permission` has no `group_id`; the group lives on `app_role`.
+    // Both tables are keyed by `(app_id, role_id)`, so the join matches both
+    // columns and the read is scoped to this one app -- see
+    // `buildLiveRoleGrantsSql`'s doc for why joining on `role_id` alone is
+    // wrong.
+    final sql = buildLiveRoleGrantsSql(appId);
     final result = Process.runSync(kubectl, [
       'exec',
       '-n',
@@ -138,4 +142,40 @@ class LiveRoleGrantsReader {
     }
     return utf8.decode(base64.decode(encoded));
   }
+}
+
+/// The allowed shape for an app id that is about to be interpolated into
+/// live SQL. Deliberately narrow -- it is the thing standing between a bad
+/// value and a broken `psql -c` invocation.
+final RegExp appIdPattern = RegExp(r'^[a-z0-9_]+$');
+
+/// Builds the SQL that reads live grant rows for exactly one app.
+///
+/// `app_role` and `role_permission` are both keyed by `(app_id, role_id)`.
+/// Joining on `role_id` alone -- the bug found live 2026-10-01 -- attributes
+/// a same-named role's grants in a DIFFERENT app to this one: a second app,
+/// `ai_controller`, has its own `member` role holding `profile.read`, Loom
+/// Communities also has a role `member`, and the unqualified join merged the
+/// two. Fixing just the join is not enough on its own: `app_role` is not
+/// otherwise filtered by app, so the `where` clause scopes `r` to the one
+/// app being checked, and the join then matches `role_permission` rows for
+/// that same app.
+///
+/// [appId] is interpolated directly into the query text run through `psql`,
+/// so it is validated against [appIdPattern] rather than merely trusted.
+String buildLiveRoleGrantsSql(String appId) {
+  if (!appIdPattern.hasMatch(appId)) {
+    throw ArgumentError.value(
+      appId,
+      'appId',
+      'must match ${appIdPattern.pattern} to be safely interpolated into SQL',
+    );
+  }
+  return "select r.group_id, r.role_id, rp.permission_id "
+      "from app_role r "
+      "left join role_permission rp "
+      "on rp.app_id = r.app_id and rp.role_id = r.role_id "
+      "where r.app_id = '$appId' "
+      "and r.group_id like 'loom_communities_%' "
+      "order by r.group_id, r.role_id, rp.permission_id;";
 }

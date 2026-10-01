@@ -61,7 +61,7 @@ Future<int> runPermissionParityGate(
         clientSecret: config.clientSecret,
         appId: config.appId,
       );
-  final reader = liveReader ?? const LiveRoleGrantsReader();
+  final reader = liveReader ?? LiveRoleGrantsReader(appId: config.appId);
 
   final unprocessed = <UnprocessedCommunity>[];
   final exports = <String, CommunityPermissionExport>{};
