@@ -37,9 +37,9 @@ extraction proves awkward; say which you did and why.
 falls back to those when the defines are empty. (An earlier draft of this ticket claimed
 `LOOM_AUTH_CLIENT_ID` was newly required. That was wrong — verified at `part40:80` and `part37:247`.)
 
-### 2. Authenticate per persona, in-process
+### 2. Authenticate per seeded FAN, in-process
 
-Before driving the identity picker for a persona: `session.logout()`, then
+Before driving the identity picker for a role: `session.logout()`, then
 `loginWithTestCredentials` as the matching fan. Seeded accounts follow the recorded convention —
 Keycloak `loom-<slug>`, fan id `fan-<slug>`, shared test password in the Access Control tracker.
 **Look the credentials up; never create or reset one.**
@@ -78,8 +78,8 @@ ticket and the expected outcome — say so plainly in the report rather than tre
 - A capture invocation reaches the live backend: evidence or logs show
   `mode=remote endpoint=http://192.168.56.10:30083/` rather than `mode=local`, for a real request.
 - At least one frame captured with an authenticated session, and the recorded engine field says remote.
-- `logout()` → `loginWithTestCredentials` as a *second* persona works in the same run, since every
-  multi-persona row depends on switching identity cleanly.
+- `logout()` → `loginWithTestCredentials` as a *second* seeded fan works in the same run, since every
+  multi-fan row depends on switching identity cleanly.
 - All five suites still green (demo 262, app shell 447 (+2), judges 525, engine 345 (+1), service 168 (+1)).
 - **Do not weaken, skip or delete any existing capture test** to make this pass. If a test blocks the
   change, report it and stop.
