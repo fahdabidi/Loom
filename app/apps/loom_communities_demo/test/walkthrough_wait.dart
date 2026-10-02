@@ -161,7 +161,7 @@ class WalkthroughBodyWatch {
   String _attemptedStep;
   String _waitingFor;
 
-  late final Completer<Never> _deadline;
+  late Completer<Never> _deadline;
   Timer? _timer;
   DateTime _lastBeat = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
   bool _fired = false;
@@ -225,6 +225,24 @@ class WalkthroughBodyWatch {
     _cancelled = true;
     _timer?.cancel();
     _timer = null;
+  }
+
+  /// Clears a fired deadline and restarts the timer, so a caller that has
+  /// already caught and RECORDED a stall (see `runB25WorkflowRowScope`'s
+  /// `bodyWatch` support) can keep using this same watch to protect later
+  /// work.
+  ///
+  /// [deadline] is a single [Completer] that, once it fires, stays completed
+  /// forever -- a Dart `Future` cannot be "un-resolved". A caller that wants
+  /// to treat a fired deadline as recovered (rather than fatal) must replace
+  /// it with a fresh one, which is what this does. Call it before racing a
+  /// new unit of work, never after -- racing against an already-fired
+  /// deadline resolves instantly with the stale error.
+  void rearm() {
+    if (_cancelled) return;
+    _fired = false;
+    _deadline = Completer<Never>();
+    beat();
   }
 }
 

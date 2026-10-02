@@ -4,6 +4,7 @@ import 'b25_actor_audience_resolution.dart';
 import 'b25_remote_arrangement.dart';
 import 'b25_shipped_state_postcondition.dart';
 import 'b25_workflow_row_selection.dart';
+import 'walkthrough_wait.dart';
 
 void main() {
   group('B25 workflow row scope', () {
@@ -703,5 +704,96 @@ void main() {
         'Direct navigation did not land on the community list.',
       );
     });
+  });
+
+  group('a stalled row does not abort the batch', () {
+    // Reproduces CLAUDE.md "HARNESS -- beat the watchdog across the
+    // two-identity steps, and stop a stall aborting the batch": a row whose
+    // work exceeds the watchdog's bound must record ITS OWN outcome and let
+    // the next row run, rather than the stall propagating past the row
+    // scope and aborting everything after it.
+    test(
+      'a row whose work exceeds the watchdog records row_stalled_inconclusive '
+      'and the next row still runs',
+      () async {
+        final bodyWatch = WalkthroughBodyWatch(
+          timeout: const Duration(milliseconds: 50),
+          lastCompletedStep: 'garden-tool-loan row started',
+          attemptedStep: 'authenticating the creator',
+          waitingFor: 'the remote session to authenticate',
+        );
+        final attemptedRows = <String>[];
+
+        final stalled = await runB25WorkflowRowScope<String>(
+          () async {
+            attemptedRows.add('garden-tool-loan');
+            // Never beats bodyWatch and outlasts its timeout -- the
+            // two-identity dance with its beats removed.
+            await Future<void>.delayed(const Duration(milliseconds: 300));
+            return 'unreachable';
+          },
+          bodyWatch: bodyWatch,
+        );
+        final next = await runB25WorkflowRowScope<String>(() async {
+          attemptedRows.add('garden-volunteer-shift');
+          return 'continued';
+        }, bodyWatch: bodyWatch);
+
+        expect(attemptedRows, ['garden-tool-loan', 'garden-volunteer-shift']);
+        expect(stalled.completed, isFalse);
+        expect(stalled.failure!.rowOutcome, 'row_stalled_inconclusive');
+        expect(
+          stalled.failure!.actionProofStatus,
+          'row_stalled_inconclusive',
+        );
+        expect(stalled.failure!.reason, contains('Walkthrough stalled'));
+        expect(
+          stalled.failure!.reason,
+          contains('authenticating the creator'),
+        );
+        expect(next.completed, isTrue);
+        expect(next.value, 'continued');
+      },
+    );
+
+    test(
+      'a stalled row keeps the frames it had already captured as diagnostic '
+      'evidence',
+      () async {
+        final bodyWatch = WalkthroughBodyWatch(
+          timeout: const Duration(milliseconds: 50),
+          lastCompletedStep: 'start captured',
+          attemptedStep: 'waiting for the primary action',
+          waitingFor: 'a tappable primary action',
+        );
+
+        final stalled = await runB25WorkflowRowScope<String>(
+          () async {
+            await Future<void>.delayed(const Duration(milliseconds: 300));
+            return 'unreachable';
+          },
+          bodyWatch: bodyWatch,
+          capturedScreenshotNames: () => const <String>['start'],
+        );
+
+        expect(stalled.failure!.rowOutcome, 'row_stalled_inconclusive');
+        expect(stalled.failure!.screenshotNames, ['start']);
+      },
+    );
+
+    test(
+      'without a bodyWatch, runB25WorkflowRowScope behaves exactly as before',
+      () async {
+        final attemptedRows = <String>[];
+        final completed = await runB25WorkflowRowScope<String>(() async {
+          attemptedRows.add('book-vote');
+          return 'continued';
+        });
+
+        expect(attemptedRows, ['book-vote']);
+        expect(completed.completed, isTrue);
+        expect(completed.value, 'continued');
+      },
+    );
   });
 }

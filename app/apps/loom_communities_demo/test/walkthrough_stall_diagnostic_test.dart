@@ -1677,6 +1677,206 @@ void main() {
       );
     }
   });
+
+  group('beating across several steps that individually stay in budget', () {
+    // Mirrors the shape `arrangeRemoteInstanceFor` introduced for two-
+    // identity arrangement: four sequential steps (resolve the fan ids,
+    // authenticate the creator, create the instance, re-authenticate the
+    // actor), each comfortably under the watchdog's timeout on its own, but
+    // summing past it. See CLAUDE.md "HARNESS -- beat the watchdog across
+    // the two-identity steps, and stop a stall aborting the batch".
+    const stepDelay = Duration(seconds: 2);
+    const watchTimeout = Duration(seconds: 5);
+
+    Future<String> fourStepDanceWithNoBeats() async {
+      Future<void> step() => Future<void>.delayed(stepDelay);
+
+      await step(); // (1) resolve the fan ids
+      await step(); // (2) authenticate the creator
+      await step(); // (3) create the instance and capture its id
+      await step(); // (4) re-authenticate the actor
+      return 'arranged';
+    }
+
+    test(
+      'four individually-fine steps survive when each is beaten',
+      () {
+        fakeAsync((async) {
+          final clock = async.getClock(DateTime.utc(2026, 1, 1));
+          final watch = WalkthroughBodyWatch(
+            timeout: watchTimeout,
+            now: clock.now,
+            lastCompletedStep: 'actor authenticated',
+            attemptedStep: 'resolving the creator identity',
+            waitingFor: 'the creator role to be determined',
+          );
+
+          Future<String> beatenDance() async {
+            Future<void> step() => Future<void>.delayed(stepDelay);
+            await step();
+            watch.beat(attemptedStep: 'authenticating the creator');
+            await step();
+            watch.beat(attemptedStep: 'creating the instance');
+            await step();
+            watch.beat(attemptedStep: 're-authenticating the actor');
+            await step();
+            watch.beat(attemptedStep: 'returning the arranged instance');
+            return 'arranged';
+          }
+
+          final result = watchWalkthroughBodyWith<String>(
+            beatenDance(),
+            watch,
+          );
+          String? outcome;
+          Object? failure;
+          result.then<void>(
+            (value) => outcome = value,
+            onError: (Object error, StackTrace _) => failure = error,
+          );
+
+          // Four steps of stepDelay each sum to well past watchTimeout, but
+          // no SINGLE gap between beats does.
+          async.elapse(stepDelay * 4);
+
+          expect(failure, isNull);
+          expect(outcome, 'arranged');
+        });
+      },
+    );
+
+    test(
+      'the same four steps stall the watchdog when none of them beat it',
+      () {
+        fakeAsync((async) {
+          final clock = async.getClock(DateTime.utc(2026, 1, 1));
+          final watch = WalkthroughBodyWatch(
+            timeout: watchTimeout,
+            now: clock.now,
+            lastCompletedStep: 'actor authenticated',
+            attemptedStep: 'resolving the creator identity',
+            waitingFor: 'the creator role to be determined',
+          );
+
+          final result = watchWalkthroughBodyWith<String>(
+            fourStepDanceWithNoBeats(),
+            watch,
+          );
+          String? outcome;
+          Object? failure;
+          result.then<void>(
+            (value) => outcome = value,
+            onError: (Object error, StackTrace _) => failure = error,
+          );
+
+          async.elapse(stepDelay * 4);
+
+          expect(outcome, isNull);
+          expect(failure, isA<WalkthroughStallFailure>());
+          expect(
+            (failure as WalkthroughStallFailure).message,
+            contains('resolving the creator identity'),
+          );
+        });
+      },
+    );
+  });
+
+  group('WalkthroughBodyWatch.rearm', () {
+    test(
+      'a fired watch rearmed before a new race protects later work instead '
+      'of resolving instantly with the stale error',
+      () {
+        fakeAsync((async) {
+          final clock = async.getClock(DateTime.utc(2026, 1, 1));
+          final watch = WalkthroughBodyWatch(
+            timeout: const Duration(seconds: 5),
+            now: clock.now,
+            lastCompletedStep: 'row 1 started',
+            attemptedStep: 'row 1 working',
+            waitingFor: 'row 1 to finish',
+          );
+          Object? firstFireError;
+          watch.deadline.then<void>(
+            (_) {},
+            onError: (Object error, StackTrace _) {
+              firstFireError = error;
+            },
+          );
+
+          // Fire it once, as a prior row's genuine stall would.
+          async.elapse(const Duration(seconds: 5));
+          expect(firstFireError, isA<WalkthroughStallFailure>());
+
+          // A caller that recorded that stall and moved on rearms before
+          // racing the next row's own work.
+          watch.rearm();
+
+          Object? secondRaceFailure;
+          String? secondRaceValue;
+          Future.any<String>([
+            Future<String>.delayed(
+              const Duration(seconds: 2),
+              () => 'row 2 completed',
+            ),
+            watch.deadline,
+          ]).then(
+            (value) => secondRaceValue = value,
+            onError: (Object e, _) => secondRaceFailure = e,
+          );
+
+          async.elapse(const Duration(seconds: 2));
+
+          expect(
+            secondRaceFailure,
+            isNull,
+            reason:
+                'rearm must replace the fired deadline, not merely leave the '
+                'stale, already-resolved one in place',
+          );
+          expect(secondRaceValue, 'row 2 completed');
+        });
+      },
+    );
+
+    test('rearm restarts the clock rather than firing immediately', () {
+      fakeAsync((async) {
+        final clock = async.getClock(DateTime.utc(2026, 1, 1));
+        final watch = WalkthroughBodyWatch(
+          timeout: const Duration(seconds: 5),
+          now: clock.now,
+          lastCompletedStep: 'row 1 started',
+          attemptedStep: 'row 1 working',
+          waitingFor: 'row 1 to finish',
+        );
+        // Listened-to before it fires, same as any real caller racing it --
+        // an error completed on a Completer nobody ever listens to is an
+        // unhandled async error, not a quiet no-op.
+        watch.deadline.then<void>(
+          (_) {},
+          onError: (Object ignoredError, StackTrace ignoredStack) {},
+        );
+        async.elapse(const Duration(seconds: 5));
+        watch.rearm();
+
+        Object? failure;
+        watch.deadline.then<void>(
+          (_) {},
+          onError: (Object error, StackTrace _) {
+            failure = error;
+          },
+        );
+
+        // Short of the FULL timeout since the rearm -- must still be quiet.
+        async.elapse(const Duration(seconds: 4));
+        expect(failure, isNull);
+
+        // Now past a full timeout since the rearm.
+        async.elapse(const Duration(seconds: 2));
+        expect(failure, isA<WalkthroughStallFailure>());
+      });
+    });
+  });
 }
 
 class _TemporarilyIgnoredWalkthroughTarget extends StatefulWidget {

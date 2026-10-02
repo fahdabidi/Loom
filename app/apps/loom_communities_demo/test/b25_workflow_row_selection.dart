@@ -1,5 +1,6 @@
 import 'b25_actor_audience_resolution.dart';
 import 'b25_remote_arrangement.dart';
+import 'walkthrough_wait.dart';
 
 /// What the walkthrough actually observed around one visible action attempt.
 ///
@@ -247,12 +248,35 @@ class B25CommunityTraversalRecord {
 /// The caller defines the structural boundary: exceptions thrown inside
 /// [run] are recorded as this row's outcome, while exceptions thrown before
 /// or after this call remain global failures and abort the walkthrough.
+///
+/// When [bodyWatch] is supplied, [run] is additionally raced against the
+/// watch's own deadline -- see `WalkthroughBodyWatch.deadline`'s doc comment
+/// on why a single no-progress gap that spans several individually-fine
+/// steps still needs to fire. A watch that fires here is a THIRD fact,
+/// distinct from a confirmed `row_execution_failed` defect and from a
+/// principled `blocked_by_*` outcome: the row was attempted and genuinely
+/// inconclusive, not proven broken -- see CLAUDE.md "HARNESS -- beat the
+/// watchdog ... and stop a stall aborting the batch". [bodyWatch] is rearmed
+/// before racing, so a stale, already-fired deadline left over from earlier
+/// work can never falsely resolve this row's own race, and it stays armed
+/// afterward so later rows remain protected -- this is why this function,
+/// not the single top-level race `watchWalkthroughBodyWith` is built for,
+/// is where a stall must be caught to keep the batch going: an outer race
+/// wrapping the WHOLE walkthrough body against the SAME deadline would also
+/// resolve the instant it fires, aborting everything regardless of what this
+/// function does with it, because a Dart `Future` cannot be "un-resolved"
+/// once multiple listeners are already awaiting it.
 Future<B25WorkflowRowScopeResult<T>> runB25WorkflowRowScope<T>(
   Future<T> Function() run, {
+  WalkthroughBodyWatch? bodyWatch,
   List<String> Function()? capturedScreenshotNames,
 }) async {
+  bodyWatch?.rearm();
   try {
-    return B25WorkflowRowScopeResult<T>.completed(await run());
+    final value = bodyWatch == null
+        ? await run()
+        : await Future.any<T>([run(), bodyWatch.deadline]);
+    return B25WorkflowRowScopeResult<T>.completed(value);
   } catch (error) {
     return B25WorkflowRowScopeResult<T>.failed(
       _b25RowScopedFailureFor(
@@ -360,6 +384,18 @@ B25RowScopedFailure _b25RowScopedFailureFor(
       rowOutcome: 'product_finding',
       actionProofStatus: 'product_finding',
       reason: error.reason,
+      screenshotNames: capturedScreenshotNames,
+    );
+  }
+  if (error is WalkthroughStallFailure) {
+    // Attempted and inconclusive, not a confirmed defect: see
+    // runB25WorkflowRowScope's doc comment. Frames captured before the
+    // stall ARE kept, same as row_execution_failed -- unlike a blocked row,
+    // this one genuinely started executing.
+    return B25RowScopedFailure(
+      rowOutcome: 'row_stalled_inconclusive',
+      actionProofStatus: 'row_stalled_inconclusive',
+      reason: error.message,
       screenshotNames: capturedScreenshotNames,
     );
   }

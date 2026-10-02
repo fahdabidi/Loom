@@ -135,6 +135,7 @@ void main() {
       var actionSucceededResultUnverifiedWorkflowEvidenceEntries = 0;
       var productFindingWorkflowEvidenceEntries = 0;
       var rowExecutionFailedWorkflowEvidenceEntries = 0;
+      var rowStalledInconclusiveWorkflowEvidenceEntries = 0;
 
       // Frames `capture` has written for the row currently in flight.
       // Cleared at the start of every `runB25WorkflowRowScope` call so a
@@ -196,6 +197,8 @@ void main() {
               productFindingWorkflowEvidenceEntries += 1;
             case 'row_execution_failed':
               rowExecutionFailedWorkflowEvidenceEntries += 1;
+            case 'row_stalled_inconclusive':
+              rowStalledInconclusiveWorkflowEvidenceEntries += 1;
             case null:
               completedWorkflowEvidenceEntries += 1;
             default:
@@ -240,6 +243,8 @@ void main() {
           'productFindingWorkflows': productFindingWorkflowEvidenceEntries,
           'rowExecutionFailedWorkflows':
               rowExecutionFailedWorkflowEvidenceEntries,
+          'rowStalledInconclusiveWorkflows':
+              rowStalledInconclusiveWorkflowEvidenceEntries,
           'totalWorkflows': totalWorkflowEvidenceEntries,
         });
       }
@@ -263,6 +268,8 @@ void main() {
           'productFindingWorkflows': productFindingWorkflowEvidenceEntries,
           'rowExecutionFailedWorkflows':
               rowExecutionFailedWorkflowEvidenceEntries,
+          'rowStalledInconclusiveWorkflows':
+              rowStalledInconclusiveWorkflowEvidenceEntries,
           'totalWorkflows': totalWorkflowEvidenceEntries,
         });
         return _capture(
@@ -462,6 +469,7 @@ void main() {
                 );
                 return walkthroughResult;
               },
+              bodyWatch: bodyWatch,
               capturedScreenshotNames: () =>
                   List<String>.of(currentRowScreenshotNames),
             );
@@ -510,6 +518,9 @@ void main() {
               if (walkthroughResult.rowExecutionFailureReason != null)
                 'rowExecutionFailureReason':
                     walkthroughResult.rowExecutionFailureReason,
+              if (walkthroughResult.rowStalledInconclusiveReason != null)
+                'rowStalledInconclusiveReason':
+                    walkthroughResult.rowStalledInconclusiveReason,
               if (walkthroughResult.actionExecutionEvidence.isNotEmpty)
                 'b25ActionExecutionEvidence': [
                   for (final evidence
@@ -628,6 +639,8 @@ void main() {
               result.actionSucceededResultUnverifiedReason,
         if (result.rowExecutionFailureReason != null)
           'rowExecutionFailureReason': result.rowExecutionFailureReason,
+        if (result.rowStalledInconclusiveReason != null)
+          'rowStalledInconclusiveReason': result.rowStalledInconclusiveReason,
         if (result.actionExecutionEvidence.isNotEmpty)
           'b25ActionExecutionEvidence': [
             for (final evidence in result.actionExecutionEvidence)
@@ -727,6 +740,7 @@ void main() {
             currentRowScreenshotNames.clear();
             final scoped = await runB25WorkflowRowScope(
               walk,
+              bodyWatch: bodyWatch,
               capturedScreenshotNames: () =>
                   List<String>.of(currentRowScreenshotNames),
             );
@@ -1183,6 +1197,7 @@ void main() {
               }
               return prepare(segmentSetup);
             },
+            bodyWatch: bodyWatch,
             capturedScreenshotNames: () =>
                 List<String>.of(currentRowScreenshotNames),
           );
@@ -1429,11 +1444,25 @@ void main() {
         'productFindingWorkflows': productFindingWorkflowEvidenceEntries,
         'rowExecutionFailedWorkflows':
             rowExecutionFailedWorkflowEvidenceEntries,
+        'rowStalledInconclusiveWorkflows':
+            rowStalledInconclusiveWorkflowEvidenceEntries,
         'totalWorkflows': totalWorkflowEvidenceEntries,
       });
     }
 
-    await watchWalkthroughBodyWith<void>(runWalkthrough(), bodyWatch);
+    // NOT wrapped in watchWalkthroughBodyWith any more: runB25WorkflowRowScope
+    // now races each row's own work against bodyWatch.deadline so a stall can
+    // be caught and recorded at the row boundary (see its doc comment and
+    // CLAUDE.md "HARNESS -- beat the watchdog ... and stop a stall aborting
+    // the batch"). A Dart Future cannot be "un-resolved" once more than one
+    // listener is awaiting it, so an OUTER race against the SAME deadline
+    // here would also fire and abort the whole walkthrough the instant any
+    // row's race does, regardless of that row having already recovered --
+    // nesting the two is unsafe, not merely redundant. Work outside any row
+    // scope (community open/close, final cleanup) keeps the protection its
+    // own bounded inner waits already give it; it is no longer covered by a
+    // single whole-body timer.
+    await runWalkthrough();
   });
 }
 
@@ -1807,6 +1836,9 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
   final rowExecutionFailedRows = rows
       .where((entry) => entry['b25RowOutcome'] == 'row_execution_failed')
       .toList(growable: false);
+  final rowStalledInconclusiveRows = rows
+      .where((entry) => entry['b25RowOutcome'] == 'row_stalled_inconclusive')
+      .toList(growable: false);
   final provenRows = rows
       .where(
         (entry) =>
@@ -1878,6 +1910,9 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
         break;
       case 'row_execution_failed':
         reason = row['rowExecutionFailureReason'] as String?;
+        break;
+      case 'row_stalled_inconclusive':
+        reason = row['rowStalledInconclusiveReason'] as String?;
         break;
     }
     if (reason == null) {
@@ -1991,6 +2026,10 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
     'rowExecutionFailedRows': rowExecutionFailedRows.length,
     'rowExecutionFailedRowsByCommunity': countByCommunity(
       rowExecutionFailedRows,
+    ),
+    'rowStalledInconclusiveRows': rowStalledInconclusiveRows.length,
+    'rowStalledInconclusiveRowsByCommunity': countByCommunity(
+      rowStalledInconclusiveRows,
     ),
   };
 }
@@ -2136,6 +2175,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       tester,
       target: target,
       package: package,
+      bodyWatch: bodyWatch,
       selector: selector,
       actorFanId: actorFanId,
       b25Model: b25Model,
@@ -3263,6 +3303,7 @@ class _B25WalkthroughResult {
     this.blockedByArrangementReason,
     this.actionSucceededResultUnverifiedReason,
     this.rowExecutionFailureReason,
+    this.rowStalledInconclusiveReason,
     this.actionExecutionEvidence = const <B25ActionExecutionEvidence>[],
     this.actionProofFramePairs = const <List<String>>[],
     this.actionProofFramePairsRequired = false,
@@ -3292,6 +3333,7 @@ class _B25WalkthroughResult {
   final String? blockedByArrangementReason;
   final String? actionSucceededResultUnverifiedReason;
   final String? rowExecutionFailureReason;
+  final String? rowStalledInconclusiveReason;
   final List<B25ActionExecutionEvidence> actionExecutionEvidence;
 
   /// Pairs of screenshot NAMES (not paths) that have a declared tap between
@@ -3327,11 +3369,17 @@ class _B25WalkthroughResult {
       isBlockedBySelectorSetup ||
       isBlockedByPrerequisite ||
       isBlockedByArrangement;
+  // Attempted and inconclusive, not blocked -- see CLAUDE.md "HARNESS --
+  // beat the watchdog ... and stop a stall aborting the batch". A stall
+  // genuinely started executing the row, unlike every isBlocked outcome,
+  // which never gets that far.
+  bool get isStalledInconclusive => rowOutcome == 'row_stalled_inconclusive';
   bool get isRecordedFailure =>
       isBlocked ||
       rowOutcome == 'action_succeeded_result_unverified' ||
       rowOutcome == 'product_finding' ||
-      rowOutcome == 'row_execution_failed';
+      rowOutcome == 'row_execution_failed' ||
+      isStalledInconclusive;
 }
 
 _B25WalkthroughResult _recordB25RowScopedFailure(B25RowScopedFailure failure) {
@@ -3367,6 +3415,10 @@ _B25WalkthroughResult _recordB25RowScopedFailure(B25RowScopedFailure failure) {
     actionSucceededResultUnverifiedReason:
         failure.actionSucceededButResultUnverified ? failure.reason : null,
     rowExecutionFailureReason: failure.rowOutcome == 'row_execution_failed'
+        ? failure.reason
+        : null,
+    rowStalledInconclusiveReason:
+        failure.rowOutcome == 'row_stalled_inconclusive'
         ? failure.reason
         : null,
     actionExecutionEvidence: failure.actionExecutionEvidence,
@@ -5047,6 +5099,7 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
   WidgetTester tester, {
   required LoomEvidenceTarget target,
   required ShippedEvidencePackage package,
+  required WalkthroughBodyWatch bodyWatch,
   required _ShippedWorkflowSelector selector,
   required String actorFanId,
   required B25ProductDocInteractionModel b25Model,
@@ -5081,6 +5134,22 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
   final creatorRoleId = b25CreatorRoleIdFor(
     machine: selector.machine,
     roleId: selector.roleId,
+  );
+  // Beat before the two-identity dance below: `7e263a94` added the whole
+  // creator/actor arrangement (potentially two live authentications, tab
+  // selection, a form submission, and a re-authentication) between here and
+  // the caller's last beat with ZERO beats of its own, so several
+  // individually-fine steps could sum past the body watchdog's single
+  // no-progress budget even though nothing was actually stuck -- see
+  // CLAUDE.md "HARNESS -- beat the watchdog ... and stop a stall aborting
+  // the batch".
+  bodyWatch.beat(
+    attemptedStep:
+        'resolving the creator identity for '
+        '${selector.machine.workflowType} (actor ${selector.roleId})',
+    waitingFor:
+        'whether a different creator role must authenticate before '
+        'arranging a remote instance',
   );
 
   var creatorFanId = actorFanId;
@@ -5122,6 +5191,15 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
       plan = buildPlan(creatorFanId);
     }
   }
+  bodyWatch.beat(
+    lastCompletedStep:
+        'authenticated creator $creatorFanId for '
+        '${selector.machine.workflowType}',
+    attemptedStep:
+        'opening the creation tab for ${selector.machine.workflowType} as '
+        '${creatorRoleId ?? selector.roleId}',
+    waitingFor: 'the shipped creation form to become available',
+  );
 
   final creatingRoleId = creatorRoleId ?? selector.roleId;
   await _selectPackageTab(
@@ -5196,6 +5274,19 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
     tabId: plan.creationBinding.tabId,
     existingInstanceIds: existingInstanceIds,
   );
+  bodyWatch.beat(
+    lastCompletedStep:
+        'created $workflowType instance $instanceId as creator $creatorFanId',
+    attemptedStep:
+        creatorFanId != actorFanId
+            ? 're-authenticating as actor $actorFanId after creation'
+            : 'finishing remote arrangement for $instanceId',
+    waitingFor:
+        creatorFanId != actorFanId
+            ? 'community content to load after re-authenticating as '
+                  '$actorFanId'
+            : 'the arranged selector to be returned to the caller',
+  );
 
   if (creatorFanId != actorFanId) {
     // Hand the instance off: re-authenticate as the acting fan (B) before
@@ -5209,6 +5300,13 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
       target: target,
       diagnosticFrameName: diagnosticFrameName,
       captureDiagnostic: captureDiagnostic,
+    );
+    bodyWatch.beat(
+      lastCompletedStep: 're-authenticated as actor $actorFanId',
+      attemptedStep:
+          'returning the arranged $workflowType instance $instanceId to the '
+          'walkthrough',
+      waitingFor: 'the next walkthrough step after remote arrangement',
     );
   }
 
