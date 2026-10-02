@@ -107,6 +107,34 @@ pass by selecting whatever happens to contain the string, which on an identity c
 most dangerous shortcut available — this repo already records a stale session banking evidence under
 the wrong fan, and the `signIn` `fanId` guard is the only reason it surfaced.
 
+### The known-good counterexample in this same repo, which is the best brief available
+
+**`signInEvidenceAccount` works — locally.** `test/b33_messages_thread_test.dart:48` calls
+`signInEvidenceAccount(tester, 'Riley Member')` and the demo-app suite is **green at 264**. So the
+finder `find.ancestor(of: find.text(name), matching: find.byType(ListTile))` is correct against this
+screen, and the widget structure is not the problem. Whatever differs, differs on the remote path
+only.
+
+**And the chooser groups accounts by role before rendering** (`part31_auth_screens.dart:233-234`,
+`grouped.putIfAbsent(account.roleId, ...)`, rendered per group at `:269`). That is worth knowing
+because it means an account can be fetched successfully and still not appear where expected if its
+`roleId` lands it in a group the surface does not show — a shape this repo has hit before, where the
+remote `roleId` space and the shell's role-derived one are not the same thing.
+
+**So the three candidate explanations, in the order I would test them:**
+
+1. The list rendered, but the account's `roleId` grouped it somewhere the step does not look.
+2. The list rendered empty or partially despite the 200s — e.g. scoped to a different community, or
+   filtered by a membership state the seeded fans do not have.
+3. A different surface rendered entirely (the signup form at `part31:721` is reachable from the same
+   tap, and the harness waits for *its* key before looking for the account row).
+
+**Test them with the frame, not by reasoning.** This investigation has already overturned three of my
+own confident explanations — the display name, the empty list, and the missing passport — each refuted
+by one query. The remaining question is about pixels and a widget tree, so the instrument is a
+captured frame plus a dump of what the chooser actually built, which is why closing the
+`Diagnostic frame: (not captured)` gap comes first.
+
 ## FIRST: establish which of two causes this is. They are indistinguishable from the evidence above.
 
 A timeout waiting for that text is produced equally by both of these, and **this run does not
