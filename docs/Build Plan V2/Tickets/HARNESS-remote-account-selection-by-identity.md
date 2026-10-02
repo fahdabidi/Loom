@@ -4,6 +4,58 @@
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Follows** [HARNESS-remote-picker-race-and-auth-branch.md](HARNESS-remote-picker-race-and-auth-branch.md), whose fixes are confirmed working on-device — see "What this run proved".
 
+## ANSWERED 2026-10-01 by the instrument this ticket asked for — the cause is a token obtained but no session STORED. Everything above is superseded as a diagnosis.
+
+The instrumented stall carries the answer verbatim:
+
+    Attempted step: seeded account Garden Member 1
+    Waiting for: widgets with type "ListTile" that are ancestors of widgets with text "Garden Member 1".
+      Visible screen: markers=[communityEntryGate=1, localExtensionScreen=1, loomAuthScreen=1,
+                               scaffold=2, scrollable=1],
+      extensionIds=[ext_garden_club],
+      texts=[Welcome to Loom,
+             Choose an account below or create a new one.,
+             LoomAuthNotLoggedInException: No Loom authentication session is stored; login is required.,
+             Retry, Continue to secure sign-in,
+             Choose an active account or create one to continue to Garden Club.,
+             Check membership status]
+      Diagnostic frame: B13_ext_garden_club_garden-event-rsvp_member_STALL_DIAGNOSTIC (captured at the point of failure)
+
+**Against the three candidates this ticket ranked:**
+
+| Candidate | Verdict |
+|---|---|
+| a different surface rendered | **dead** — `loomAuthScreen=1`, the chooser is mounted |
+| rows rendered but grouped where the step does not look | **dead** — there are no rows at all; no `listTile` count appears |
+| the list rendered empty despite the 200s | **confirmed, and now with its cause** |
+
+**The cause, stated as narrowly as the evidence allows:** `RemoteLoomAuthApi.listAccounts` begins with
+`_fanIdFromCurrentSession()`, which throws `LoomAuthNotLoggedInException` because **no session is
+stored** at the moment the chooser renders. The screen then shows that exception, a `Retry`, and a
+`Continue to secure sign-in` — it is behaving correctly for a caller with no session.
+
+**This separates two states the harness treats as one.** Earlier telemetry proved the token endpoint
+answered `200` three times, so a token *was* obtained by `loginWithTestCredentials`. Obtaining a token
+and **persisting a session that `RemoteLoomAuthApi` can read** are different things, and only the first
+was ever measured. This repo already records the sharper form of the same mistake: *a cached community
+`currentSession` is a selection, not a token* — this is its mirror image, a token that never became a
+stored session.
+
+**So the fix belongs at the session-persistence seam, not in account selection** — which is why
+selection logic was correctly left alone, and why editing it would have been repairing something that
+works. The open question for the implementer is whether `loginWithTestCredentials` is expected to
+persist, and if so where `RemoteLoomAuthApi` reads it from, since those two must name the same store.
+
+**What this does NOT establish:** whether persistence is missing, is written somewhere else, or is
+written and then cleared before the chooser builds. Three different fixes. Instrument that seam before
+choosing — the same discipline that produced this answer after three of my own hypotheses died.
+
+**And a note on the instrument's value, since it was built in place of a guess:** it cost one dispatch
+and one device run, and it replaced an investigation in which the display name, the empty list, the
+missing passport, and a startup-hang theory were each refuted in turn. The decisive line was not a
+widget type or a count — it was an exception message the app had been printing on screen all along,
+which no amount of reasoning about finders would have surfaced.
+
 ## The defect
 
 `authenticateEvidenceFanForRemote` (`test/workflow_ui_test_harness.dart:2071`) authenticates the
