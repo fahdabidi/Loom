@@ -2139,6 +2139,8 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       selector: selector,
       actorFanId: actorFanId,
       b25Model: b25Model,
+      diagnosticFrameName: stallDiagnosticName,
+      captureDiagnostic: capture,
     );
   } else if (selector.accountId case final accountId?) {
     final displayName = 'Shipped $accountId';
@@ -2375,6 +2377,11 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
         package: package,
         selector: selector,
         sourceInstance: sourceInstance,
+      );
+      _expectB25ActorStampedEffect(
+        transition: transition,
+        selector: selector,
+        persisted: persisted,
       );
       final confirmedPrimaryAction = primaryActionExecutionEvidence
           .withPostcondition('instance_data_changed');
@@ -4355,6 +4362,45 @@ bool _fanIdMatchesRole(String fanId, String roleId) =>
     fanId.startsWith('$roleId-') ||
     fanId.startsWith('${roleId}_');
 
+/// Which of [knownFanIds] a transition's actor-identifying guard
+/// (`actorEqualsField`/`actorInList`) names on [instanceData], matched
+/// EXACTLY rather than through [_fanIdMatchesRole]'s role-id-prefix
+/// heuristic.
+///
+/// [_transitionAccountId] (above) is correct only against seed/demo-space
+/// data, where a role id and its holders' aliased fan ids share a prefix --
+/// `garden-member-rina`. A real seeded fan (`fan-garden-member-2`) can never
+/// prefix-match a role id, so that heuristic silently returns null against
+/// real data. This exact-match variant exists for the one call site that
+/// runs AFTER two-identity arrangement, over the real, known fanA/fanB --
+/// see the between-identities protocol's post-transition assertion in
+/// `arrangeRemoteInstanceFor`. The five seed-based selection call sites
+/// above are unaffected and continue to use [_fanIdMatchesRole]: they run
+/// once per row, before any arrangement, over the seed's own demo-space
+/// data, where the prefix heuristic is the correct one.
+String? _transitionAccountIdAmongKnownFans({
+  required LoomWorkflowTransition transition,
+  required Map<String, dynamic> instanceData,
+  required Set<String> knownFanIds,
+}) {
+  final guard = transition.guard;
+  final actorField = guard.actorEqualsField;
+  if (actorField != null) {
+    final fanId = instanceData[actorField.key];
+    return fanId is String && knownFanIds.contains(fanId) ? fanId : null;
+  }
+  final actorList = guard.actorInList;
+  if (actorList?.present == true) {
+    final values = instanceData[actorList!.key];
+    if (values is List) {
+      for (final fanId in values.whereType<String>()) {
+        if (knownFanIds.contains(fanId)) return fanId;
+      }
+    }
+  }
+  return null;
+}
+
 Future<void> _completeShippedTransitionInputs({
   required WidgetTester tester,
   required LoomWorkflowTransition transition,
@@ -4846,6 +4892,8 @@ class _ShippedWorkflowSelector {
     required this.roleId,
     required this.accountId,
     required this.transitions,
+    this.creatorFanId,
+    this.actorFanId,
   });
 
   final LoomWorkflowStateMachine machine;
@@ -4857,6 +4905,18 @@ class _ShippedWorkflowSelector {
   final String roleId;
   final String? accountId;
   final List<_ShippedTransitionCandidate> transitions;
+
+  /// The real fan id that created [instance] through the product, and the
+  /// real fan id that goes on to act -- set only once
+  /// `arrangeRemoteInstanceFor` has arranged a remote instance. Both null
+  /// before arrangement (local-engine or not-yet-arranged rows); equal to
+  /// each other for a true single-identity row; different for a two-identity
+  /// row (Garden's `garden-tool-loan`/`garden-tool-giveaway`,
+  /// `garden-volunteer-shift`), which is what lets a post-action check
+  /// assert the RIGHT fan's identity was recorded, not merely that some data
+  /// changed -- see [_expectB25ActorStampedEffect].
+  final String? creatorFanId;
+  final String? actorFanId;
 }
 
 String _packageRoleId({
@@ -4966,13 +5026,23 @@ Future<void> _selectPackageTab({
 /// This replaces addressing a row by its seeded instance id, which cannot
 /// exist on the remote path (package `workflowInstances` seed only the local
 /// engine -- see CLAUDE.md "HARNESS -- stop addressing seeded instance ids").
-/// It is scoped to initial-state, single-identity rows: [actorFanId] both
-/// creates the instance and is the identity the row goes on to act as.
-/// Everything a row needs beyond that -- a different creator, intermediate
-/// transitions, an effect-born instance, or a required field of a type this
-/// seam does not fill -- throws [B25ArrangementOutOfScopeFailure], which the
-/// caller's row scope records as its own outcome and continues to the next
-/// row (see `runB25WorkflowRowScope`), never a crash.
+///
+/// [actorFanId] is the identity the row goes on to act as, already
+/// authenticated by the caller. For a true single-identity row that is also
+/// who creates the instance -- the common case, and the only one this
+/// function used to support. For a two-identity row (Garden's
+/// `garden-tool-loan`/`garden-tool-giveaway`: a formula denies the actor
+/// claiming their own listing; `garden-volunteer-shift`: only the
+/// coordinator may create a shift the member signs up for), this
+/// authenticates a second, different fan as the creator, drives the
+/// creation form under THAT session, then re-authenticates as [actorFanId]
+/// before returning -- so the caller's subsequent action-tapping runs under
+/// the same session it already expects. Everything beyond that -- an
+/// effect-born instance, intermediate transitions, a denied read-visibility
+/// guard, or a required field of a type this seam does not fill -- throws
+/// [B25ArrangementOutOfScopeFailure], which the caller's row scope records
+/// as its own outcome and continues to the next row (see
+/// `runB25WorkflowRowScope`), never a crash.
 Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
   WidgetTester tester, {
   required LoomEvidenceTarget target,
@@ -4980,28 +5050,85 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
   required _ShippedWorkflowSelector selector,
   required String actorFanId,
   required B25ProductDocInteractionModel b25Model,
+  String? diagnosticFrameName,
+  Future<void> Function(String name)? captureDiagnostic,
 }) async {
-  final plan = planB25RemoteArrangement(
+  final candidateTransitions = selector.transitions
+      .map((candidate) => candidate.transition)
+      .toList(growable: false);
+  bool matchesPrimary(LoomWorkflowTransition transition) =>
+      matchB25TransitionAgainstTerms(
+        transition,
+        primaryTerms: b25Model.requiredPrimaryActions,
+        alternateTerms: b25Model.requiredAlternateActions,
+      ).primary;
+  B25ArrangementPlan buildPlan(String creatorFanId) => planB25RemoteArrangement(
     machine: selector.machine,
     currentState: selector.instance.currentState,
     roleId: selector.roleId,
+    creatorFanId: creatorFanId,
     actorFanId: actorFanId,
     seedInstanceData: selector.instance.instanceData,
-    candidateTransitions: selector.transitions
-        .map((candidate) => candidate.transition)
-        .toList(growable: false),
-    matchesPrimaryTerm: (transition) => matchB25TransitionAgainstTerms(
-      transition,
-      primaryTerms: b25Model.requiredPrimaryActions,
-      alternateTerms: b25Model.requiredAlternateActions,
-    ).primary,
+    candidateTransitions: candidateTransitions,
+    matchesPrimaryTerm: matchesPrimary,
   );
 
+  // Who must create is a property of the package alone, resolvable with no
+  // fan id -- see b25CreatorRoleIdFor. Learning it before attempting a plan
+  // means a row whose creator must be a different ROLE authenticates that
+  // role directly, rather than wastefully failing a same-identity attempt
+  // first.
+  final creatorRoleId = b25CreatorRoleIdFor(
+    machine: selector.machine,
+    roleId: selector.roleId,
+  );
+
+  var creatorFanId = actorFanId;
+  B25ArrangementPlan plan;
+  if (creatorRoleId != null && creatorRoleId != selector.roleId) {
+    creatorFanId = await authenticateEvidenceFanForRemote(
+      tester,
+      roleId: creatorRoleId,
+      target: target,
+      diagnosticFrameName: diagnosticFrameName,
+      captureDiagnostic: captureDiagnostic,
+    );
+    plan = buildPlan(creatorFanId);
+  } else {
+    try {
+      plan = buildPlan(creatorFanId);
+    } on B25ArrangementOutOfScopeFailure catch (selfCreationFailure) {
+      // Only a formula requiring a second, different identity can possibly
+      // be rescued by re-authenticating as a different holder of the SAME
+      // role -- every other category (an unsupported field type, a missing
+      // seed value, a later-state row, an effect-born row, a denied
+      // readGuard) is identity-independent and would fail again for the
+      // identical reason, so this never retries them.
+      if (creatorRoleId == null ||
+          selfCreationFailure.category !=
+              B25ArrangementOutOfScopeCategory.selfCreationDenied) {
+        rethrow;
+      }
+      creatorFanId = await authenticateEvidenceFanForRemote(
+        tester,
+        roleId: creatorRoleId,
+        target: target,
+        excludeFanIds: {actorFanId},
+        diagnosticFrameName: diagnosticFrameName,
+        captureDiagnostic: captureDiagnostic,
+      );
+      // A second failure here is a genuine, different-creator denial and is
+      // left to propagate -- the row is out of scope.
+      plan = buildPlan(creatorFanId);
+    }
+  }
+
+  final creatingRoleId = creatorRoleId ?? selector.roleId;
   await _selectPackageTab(
     tester: tester,
     target: target,
     package: package,
-    roleId: selector.roleId,
+    roleId: creatingRoleId,
     tabId: plan.creationBinding.tabId,
   );
 
@@ -5013,13 +5140,13 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
     createFab: createFab,
     speedDial: speedDial,
     workflowType: workflowType,
-    roleId: selector.roleId,
+    roleId: creatingRoleId,
   );
   await waitForEngineNativeWidget(
     tester,
     createFab,
     description:
-        'shipped $workflowType create action for ${selector.roleId} '
+        'shipped $workflowType create action for $creatingRoleId '
         '(remote arrangement)',
   );
   await tester.ensureVisible(createFab.first);
@@ -5044,7 +5171,16 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
           'Shipped $workflowType declared required creation field '
           '"${entry.key}" but did not render its package-driven editor.',
     );
-    await tester.enterText(editor, entry.value);
+    if (plan.dateTimeFields.contains(entry.key)) {
+      await _fillB25DateOrTimeField(
+        tester,
+        editor: editor,
+        fieldType: selector.machine.instanceDataSchema[entry.key]!.type,
+        requiresFutureValue: plan.clockConstrainedFields.contains(entry.key),
+      );
+    } else {
+      await tester.enterText(editor, entry.value);
+    }
   }
 
   final submit = find.byKey(ValueKey('$keyPrefix-submit'));
@@ -5060,6 +5196,21 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
     tabId: plan.creationBinding.tabId,
     existingInstanceIds: existingInstanceIds,
   );
+
+  if (creatorFanId != actorFanId) {
+    // Hand the instance off: re-authenticate as the acting fan (B) before
+    // returning, so the caller's subsequent action-tapping runs under the
+    // session it already expects, not the creator's (A). No extra
+    // route-reopen step is needed -- authenticateEvidenceFanForRemote
+    // already reopens the community route after every successful login.
+    await authenticateEvidenceFanForRemote(
+      tester,
+      roleId: selector.roleId,
+      target: target,
+      diagnosticFrameName: diagnosticFrameName,
+      captureDiagnostic: captureDiagnostic,
+    );
+  }
 
   return _ShippedWorkflowSelector(
     machine: selector.machine,
@@ -5077,12 +5228,125 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
       // carries from the moment it is created.
       currentState: plan.arrangedState,
       instanceData: plan.syntheticInstanceData,
-      createdByFanId: actorFanId,
+      // The real CREATOR, not necessarily the acting fan -- see
+      // creatorFanId/actorFanId on _ShippedWorkflowSelector. Before
+      // two-identity support these were always the same fan, so this fixes
+      // what would otherwise have been a latent mislabel for any row whose
+      // creator and actor differ.
+      createdByFanId: creatorFanId,
     ),
     binding: selector.binding,
     roleId: selector.roleId,
     accountId: selector.accountId,
     transitions: selector.transitions,
+    creatorFanId: creatorFanId,
+    actorFanId: actorFanId,
+  );
+}
+
+/// Fills one `date`/`time` creation-form field through its own picker
+/// dialog (`part33_generic_creation_card.dart`'s `_picker`), never through
+/// `tester.enterText` -- the editor is an `InkWell`, not a text field.
+///
+/// The picker defaults to `DateTime.now()`/`TimeOfDay.now()` when the field
+/// starts empty, and tapping its OK button accepts that default -- correct
+/// for every field no guard clock-compares, since nothing requires anything
+/// more specific of it (Garden's `shiftDate`/`shiftTime`/`eventDate`/
+/// `eventTime` are all this shape: no guard on any of Garden's primary
+/// candidates references them). [requiresFutureValue] is for the one shape
+/// where "now" is wrong: a guard comparing the field against `now()` at
+/// verification time would be denied by the instant that elapses between
+/// this tap and that check, so it switches the date picker to keyboard
+/// entry and types a value a year out instead.
+///
+/// Verified against the Flutter SDK's own `DatePickerDialog`/
+/// `TimePickerDialog` sources for the OK button's widget type and the entry-
+/// mode toggle icon (`Icons.edit_outlined`); NOT verified against a running
+/// device -- no Garden row exercises [requiresFutureValue], and this seam's
+/// own standing instructions are not to run a capture to find out.
+/// [requiresFutureValue] on a `time` field throws rather than guess at
+/// Material's multi-field (hour/minute) keyboard-entry layout, which no
+/// shipped row needs today.
+Future<void> _fillB25DateOrTimeField(
+  WidgetTester tester, {
+  required Finder editor,
+  required String fieldType,
+  required bool requiresFutureValue,
+}) async {
+  await tester.ensureVisible(editor);
+  await tester.tap(editor, warnIfMissed: false);
+  await tester.pumpAndSettle();
+
+  if (!requiresFutureValue) {
+    await tester.tap(
+      find.widgetWithText(TextButton, 'OK').first,
+      warnIfMissed: false,
+    );
+    await tester.pumpAndSettle();
+    return;
+  }
+  if (fieldType != 'date') {
+    throw B25ArrangementOutOfScopeFailure(
+      'A clock-constrained "$fieldType" field needs a strictly-future value, '
+      'but this dispatch only fills a future DATE through the picker\'s '
+      'keyboard-entry mode; a future TIME is not implemented.',
+      B25ArrangementOutOfScopeCategory.unsupportedFieldType,
+    );
+  }
+  final toggle = find.byIcon(Icons.edit_outlined);
+  if (toggle.evaluate().isNotEmpty) {
+    await tester.tap(toggle.first, warnIfMissed: false);
+    await tester.pumpAndSettle();
+  }
+  final future = DateTime.now().add(const Duration(days: 365));
+  final input =
+      '${future.month.toString().padLeft(2, '0')}/'
+      '${future.day.toString().padLeft(2, '0')}/'
+      '${future.year}';
+  final inputField = find.descendant(
+    of: find.byType(DatePickerDialog),
+    matching: find.byType(TextField),
+  );
+  await tester.enterText(inputField.first, input);
+  await tester.pumpAndSettle();
+  await tester.tap(
+    find.widgetWithText(TextButton, 'OK').first,
+    warnIfMissed: false,
+  );
+  await tester.pumpAndSettle();
+}
+
+/// For a two-identity row (`selector.creatorFanId != selector.actorFanId`),
+/// asserts [transition]'s actor-identifying guard field in [persisted] now
+/// names the real acting fan (B), not merely that some data changed -- see
+/// "assert the actor-stamped effect field rather than the target state" in
+/// `HARNESS-two-identity-arrangement-and-date-time-fields.md`. A no-op for a
+/// single-identity row, and for a transition whose guard carries neither
+/// `actorEqualsField` nor `actorInList` (it records no actor identity at
+/// all).
+void _expectB25ActorStampedEffect({
+  required LoomWorkflowTransition transition,
+  required _ShippedWorkflowSelector selector,
+  required WorkflowInstance persisted,
+}) {
+  final creatorFanId = selector.creatorFanId;
+  final actorFanId = selector.actorFanId;
+  if (creatorFanId == null || actorFanId == null || creatorFanId == actorFanId) {
+    return;
+  }
+  final recordedFanId = _transitionAccountIdAmongKnownFans(
+    transition: transition,
+    instanceData: persisted.instanceData,
+    knownFanIds: {creatorFanId, actorFanId},
+  );
+  if (recordedFanId == null) return;
+  expect(
+    recordedFanId,
+    actorFanId,
+    reason:
+        'Shipped ${selector.machine.workflowType} transition ${transition.id} '
+        'recorded fan "$recordedFanId" as its actor, not the real acting fan '
+        '"$actorFanId" (created by "$creatorFanId").',
   );
 }
 

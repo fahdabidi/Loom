@@ -249,7 +249,10 @@ void main() {
             'does not arrange.';
         final blocked = await runB25WorkflowRowScope<String>(() async {
           attemptedRows.add('garden-tool-loan');
-          throw B25ArrangementOutOfScopeFailure(reason);
+          throw B25ArrangementOutOfScopeFailure(
+            reason,
+            B25ArrangementOutOfScopeCategory.selfCreationDenied,
+          );
         });
         final next = await runB25WorkflowRowScope<String>(() async {
           attemptedRows.add('garden-volunteer-shift');
@@ -272,6 +275,7 @@ void main() {
         final blocked = await runB25WorkflowRowScope<String>(
           () async => throw B25ArrangementOutOfScopeFailure(
             'out of scope for this dispatch',
+            B25ArrangementOutOfScopeCategory.effectBorn,
           ),
           capturedScreenshotNames: () => const <String>['start'],
         );

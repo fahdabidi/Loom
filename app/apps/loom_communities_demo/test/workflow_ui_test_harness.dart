@@ -2071,13 +2071,23 @@ const List<int> seededEvidenceFanHolderSuffixes = [1, 2, 3];
 /// identity that is actually signed in, rather than the seed's demo-space
 /// role alias.
 ///
+/// [excludeFanIds], when non-empty, skips every numbered holder whose
+/// resulting fan id (`fan-$slug`) is already in the set -- so a second call
+/// for the SAME [roleId] resolves to a genuinely different fan rather than
+/// re-authenticating the one already in hand. This is what makes a
+/// same-role two-identity row (Garden's `garden-tool-loan`/
+/// `garden-tool-giveaway`: both the creator and the acting claimant are
+/// `garden-member`) arrange a real second identity instead of recreating the
+/// self-creator wall with extra steps.
+///
 /// Throws [B25SelectorSetupFailure] -- recorded by the walkthrough as a
 /// blocked row, never a crash -- only once every known holder of [roleId]
-/// has rejected its credential.
+/// not in [excludeFanIds] has rejected its credential.
 Future<String> authenticateEvidenceFanForRemote(
   WidgetTester tester, {
   required String roleId,
   required LoomEvidenceTarget target,
+  Set<String> excludeFanIds = const <String>{},
   String? diagnosticFrameName,
   Future<void> Function(String name)? captureDiagnostic,
 }) async {
@@ -2093,6 +2103,7 @@ Future<String> authenticateEvidenceFanForRemote(
   final attemptedUsernames = <String>[];
   for (final suffix in seededEvidenceFanHolderSuffixes) {
     final slug = '$slugBase-$suffix';
+    if (excludeFanIds.contains('fan-$slug')) continue;
     final username = 'loom-$slug';
     attemptedUsernames.add(username);
     await session.logout();
