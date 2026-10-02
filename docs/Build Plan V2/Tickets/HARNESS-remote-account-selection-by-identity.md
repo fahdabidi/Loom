@@ -149,19 +149,17 @@ separate them**:
 `accountId` — and say which case it is in your reply before changing selection logic. If it is (b),
 stop and report; that is a different ticket.
 
-## If it is (a): select by identity
+## ~~If it is (a): select by identity~~ — STRUCK 2026-10-01, superseded by the correction above
 
-The authenticated fan's own id is already the only legal choice, because `RemoteLoomAuthApi.signIn`
-rejects any `accountId` that is not the token's `fanId` — this repo records that guard as the reason
-nine communities' evidence is attributed to the right person. So matching on display text is both
-fragile and unnecessary: under remote, pick the account whose `accountId` equals the authenticated
-`fanId`.
+**Do not implement this. It was refuted by the live query recorded above**, which showed the passport
+display name matching character-for-character and all five memberships holding passports. The
+prescription survived only because I appended corrections instead of striking it, leaving this ticket
+asserting a fix and disproving it in the same document.
 
-**Keep the local path exactly as it is.** `signInEvidenceAccount(displayName)` is correct for
-`LocalAuthApi`, where the harness itself seeded those display names and they are authoritative. The
-change belongs on the remote branch only — and remember the sibling lesson from the predecessor
-ticket: when you add a capability to one path, grep for the other path that answers the same
-question, and prefer one shared helper over two implementations.
+**The implementing agent caught that and declined** — *"Implementing it would have been fixing
+something the ticket itself proved isn't broken."* That refusal was correct and is worth more than
+compliance would have been. The original text is removed rather than left struck-through inline,
+because a selection-logic prescription is exactly the kind of thing a reader skims and acts on.
 
 ## What this run proved, so it is not re-litigated
 

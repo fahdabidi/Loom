@@ -2442,6 +2442,18 @@ trackers, fix every copy — a migrated row is a duplicated claim, and correctin
 asserting the opposite with equal authority. When you cannot strike it, say in the new text which
 earlier statement it supersedes, by name, so a reader arriving at either one is pointed at the other.
 
+**And this applies to TICKETS, not just tracker rows — 2026-10-01, caught by the agent rather than by
+me.** I wrote a ticket proposing a fix, then queried the backend, refuted my own hypothesis, and
+**appended** the refutation instead of striking the prescription. The ticket then asserted a fix and
+disproved it in the same document, and the implementing agent had to resolve the contradiction:
+*"Implementing it would have been fixing something the ticket itself proved isn't broken."* It chose
+correctly, and that is luck I should not spend twice — an agent that skimmed to the prescription
+would have edited working selection logic on an identity chooser, which is the one surface where a
+wrong "fix" banks evidence under the wrong person. **A tracker row is read by someone deciding what
+to do; a ticket is read by someone about to do it, so a stale prescription in a ticket is strictly
+more dangerous.** Delete the superseded instruction outright rather than striking it through inline —
+a reader skims a ticket for the imperative.
+
 **And re-test stale PROHIBITIONS first, because they cost capability rather than time.** A stale fact
 costs a re-derivation. A stale "do not do X" stops the next person from trying at all, and it never
 surfaces as a failure — nobody reports the thing they correctly declined to attempt. The
