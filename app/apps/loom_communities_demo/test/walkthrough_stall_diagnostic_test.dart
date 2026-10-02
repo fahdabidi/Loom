@@ -415,6 +415,131 @@ void main() {
   );
 
   testWidgets(
+    'a recorded row failure that leaked a dialog is restored to a clean '
+    'surface for the next row',
+    (WidgetTester tester) async {
+      final target = loomEvidenceTargets.firstWhere(
+        (target) => target.extensionId == 'ext_garden_club',
+      );
+      final capturedDiagnostics = <String>[];
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await installMetadataEvidenceTarget(tester, target);
+      await openEvidenceTarget(tester, target);
+
+      // Simulates the leak: a row stalled (or otherwise failed) with its own
+      // dialog still open, never reaching its `boundary: 'after'` check.
+      unawaited(
+        showDialog<void>(
+          context: tester.element(evidenceTargetRoute(target)),
+          builder: (context) => const AlertDialog(
+            key: ValueKey('actor-identity-picker-dialog'),
+            title: Text('Account role and permissions'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('actor-identity-picker-dialog')),
+        findsOneWidget,
+      );
+
+      await restoreB25SurfaceAfterRowFailure(
+        tester: tester,
+        target: target,
+        workflowId: 'garden-event-rsvp',
+        role: 'member',
+        originalFailureReason: 'row_stalled_inconclusive: simulated stall',
+        captureDiagnostic: (name) async => capturedDiagnostics.add(name),
+      );
+
+      expect(
+        find.byKey(const ValueKey('actor-identity-picker-dialog')),
+        findsNothing,
+      );
+      expect(capturedDiagnostics, isEmpty);
+      // Proves the NEXT row would not blame itself: the same boundary check
+      // the next row's own walkthrough runs now passes cleanly.
+      await assertB25CommunityRowSurface(
+        tester: tester,
+        target: target,
+        workflowId: 'plant-exchange-submission',
+        role: 'member',
+        boundary: 'before',
+        captureDiagnostic: (name) async => capturedDiagnostics.add(name),
+        previousRowWalked: 'garden-event-rsvp/member',
+      );
+      expect(capturedDiagnostics, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'a leaked surface that cannot be dismissed names the original row '
+    'failure instead of continuing into a dirty surface',
+    (WidgetTester tester) async {
+      final target = loomEvidenceTargets.firstWhere(
+        (target) => target.extensionId == 'ext_garden_club',
+      );
+      final capturedDiagnostics = <String>[];
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await installMetadataEvidenceTarget(tester, target);
+      await openEvidenceTarget(tester, target);
+
+      // A dialog route that refuses to pop (`canPop: false`, no callback
+      // that forces it through) -- unlike every real dialog in this app
+      // shell, which pops cleanly via `Navigator.maybePop`, this is what an
+      // UNRECOVERABLE leak looks like: the route stays current no matter how
+      // many times restoration tries to dismiss it.
+      unawaited(
+        showDialog<void>(
+          context: tester.element(evidenceTargetRoute(target)),
+          builder: (context) => PopScope(
+            canPop: false,
+            child: AlertDialog(
+              key: const ValueKey('actor-identity-picker-dialog'),
+              title: const Text('Account role and permissions'),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('actor-identity-picker-dialog')),
+        findsOneWidget,
+      );
+
+      await expectLater(
+        () => restoreB25SurfaceAfterRowFailure(
+          tester: tester,
+          target: target,
+          workflowId: 'garden-event-rsvp',
+          role: 'member',
+          originalFailureReason: 'row_stalled_inconclusive: simulated stall',
+          captureDiagnostic: (name) async => capturedDiagnostics.add(name),
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message.toString(),
+            'restoration failure',
+            allOf(
+              contains('B25 surface restoration failed'),
+              contains('garden-event-rsvp/member'),
+              contains('row_stalled_inconclusive: simulated stall'),
+              contains('Stopping this community walkthrough here'),
+            ),
+          ),
+        ),
+      );
+      expect(
+        capturedDiagnostics,
+        contains(
+          '${target.phase}_${target.extensionId}_garden-event-rsvp_member_'
+          'SURFACE_RESTORATION_FAILED',
+        ),
+      );
+    },
+  );
+
+  testWidgets(
     'a B25 community teardown names its last row, Back control, and current '
     'dialog surface without dismissing it',
     (WidgetTester tester) async {

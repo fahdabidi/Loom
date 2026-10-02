@@ -1719,6 +1719,142 @@ String describeB25CommunitySurface(LoomEvidenceTarget target) {
       );
 }
 
+/// Whether something currently covers [target]'s expected surface: a leaked
+/// dialog, a different community, or anything else stacked on top of it.
+///
+/// This is deliberately NOT "is a `ModalBarrier` present" -- every pushed
+/// route, including [target]'s own healthy page route, renders one (plain
+/// `MaterialPageRoute`s build an invisible, non-dismissible barrier as part
+/// of being a `ModalRoute`), so that count is never zero even when nothing
+/// has leaked. Measured live: a freshly opened, perfectly healthy community
+/// screen already carries one `ModalBarrier`, and a dialog on top of it
+/// carries two -- a bare count cannot tell those apart, and a naive
+/// `isNotEmpty` check on it mistook the healthy screen for a leak and popped
+/// the real target route out from under itself.
+///
+/// The reliable signal is whether [target]'s own route is still the CURRENT
+/// one. Anything stacked on top -- a dialog, a different community pushed by
+/// mistake -- makes it not current, which is exactly what
+/// [_isExpectedB25CommunitySurfaceCurrent] already answers. This also
+/// deliberately does NOT treat a missing picker as needing restoration: that
+/// is a readiness question the next row's own `boundary: 'before'` check
+/// already owns, with its own wait budget -- this function's job is only to
+/// notice an overlay a failed row left behind, never to wait for the
+/// community to finish loading.
+bool _b25SurfaceNeedsRestoration(LoomEvidenceTarget target) {
+  if (_currentUnexpectedB25SurfaceDescription(
+        expectedExtensionId: target.extensionId,
+      ) !=
+      null) {
+    return true;
+  }
+  return !_isExpectedB25CommunitySurfaceCurrent(_evidenceTargetRoute(target));
+}
+
+/// Dismisses the current topmost route via `Navigator.maybePop`, the same
+/// mechanism a barrier tap or a Back press would use. `showDialog` in this
+/// app shell always uses the root navigator (its default), and this app has
+/// a single `Navigator`, so popping from the root navigator reaches whatever
+/// is actually on top regardless of which widget's context is used to reach
+/// it.
+Future<bool> _maybePopTopmostB25Route(WidgetTester tester) async {
+  final navigators = find.byType(Navigator);
+  if (navigators.evaluate().isEmpty) {
+    return false;
+  }
+  final didPop = await Navigator.of(
+    tester.element(navigators.first),
+    rootNavigator: true,
+  ).maybePop();
+  if (didPop) {
+    await tester.pumpAndSettle();
+  }
+  return didPop;
+}
+
+/// Restores the expected B25 community surface after a row's outcome was
+/// RECORDED (a stall, an arrangement failure, anything
+/// `runB25WorkflowRowScope` caught) rather than thrown out of the
+/// walkthrough.
+///
+/// A row that fails partway through never reaches its own `boundary: 'after'`
+/// check -- that is the last thing `_runB25ShippedWorkflowWalkthrough`'s `run`
+/// callback does, and a thrown failure skips it entirely. So a dialog or
+/// picker the row opened (the actor identity picker, the account chooser) can
+/// still be on screen when the next row begins, and that next row's own
+/// `boundary: 'before'` check then reports a surface mismatch attributed to
+/// ITSELF, when the actual leak belongs to the row that failed before it
+/// (see CLAUDE.md "a recorded row failure must restore the surface").
+///
+/// This dismisses at most [maxDismissAttempts] topmost routes via
+/// [_maybePopTopmostB25Route] and stops as soon as
+/// [_b25SurfaceNeedsRestoration] no longer reports a leaked dialog or
+/// different-community route. It never hunts for a Back button --
+/// `returnToCommunityListDirectly`'s doc comment explains why a Back control
+/// retained below a covering surface is not a usable recovery path -- and it
+/// never pops an overlay it cannot positively name: an unidentified
+/// interactability problem (a missing picker, a route that never finished
+/// loading) is left for the next row's own boundary check, which already has
+/// the right wait budget for that question.
+///
+/// The final state requires BOTH that nothing is left needing restoration
+/// AND that [target]'s own route is current -- not merely the absence of a
+/// leaked surface -- so a pop that overshoots the leaked overlay and lands
+/// short of the target community is still reported as a failure rather than
+/// a false success. If that final check fails, the thrown [StateError] names
+/// the ORIGINAL row's recorded [originalFailureReason] as context, so the
+/// enclosing community scope's own failure explains why the walkthrough
+/// stopped here instead of silently continuing into a dirty surface for the
+/// next row.
+Future<void> restoreB25SurfaceAfterRowFailure({
+  required WidgetTester tester,
+  required LoomEvidenceTarget target,
+  required String workflowId,
+  required String role,
+  required String originalFailureReason,
+  required Future<void> Function(String name) captureDiagnostic,
+  int maxDismissAttempts = 5,
+}) async {
+  await tester.pumpAndSettle();
+  var popsAttempted = 0;
+  for (var attempt = 0; attempt < maxDismissAttempts; attempt += 1) {
+    if (!_b25SurfaceNeedsRestoration(target)) {
+      break;
+    }
+    popsAttempted += 1;
+    final didPop = await _maybePopTopmostB25Route(tester);
+    if (!didPop) {
+      break;
+    }
+  }
+  final stillLeaked = _b25SurfaceNeedsRestoration(target);
+  final targetSurfaceCurrent = _isExpectedB25CommunitySurfaceCurrent(
+    _evidenceTargetRoute(target),
+  );
+  if (!stillLeaked && targetSurfaceCurrent) {
+    return;
+  }
+
+  final remainingSurface = describeB25CommunitySurface(target);
+  final diagnosticName =
+      '${target.phase}_${target.extensionId}_${workflowId}_${role}_'
+      'SURFACE_RESTORATION_FAILED';
+  try {
+    await captureDiagnostic(diagnosticName);
+  } on Object {
+    // Best-effort only: a failed diagnostic capture must not hide the real
+    // restoration failure below.
+  }
+  throw StateError(
+    'B25 surface restoration failed after row $workflowId/$role recorded '
+    'its own outcome ("$originalFailureReason"): a leaked surface '
+    '($remainingSurface) survived $popsAttempted Navigator.maybePop '
+    'attempt(s) (of $maxDismissAttempts allowed). Stopping this community '
+    'walkthrough here rather than continuing into a dirty surface for the '
+    'next row.',
+  );
+}
+
 /// Leaves one B25 community after its row walkthrough has finished.
 ///
 /// This checks the named Back affordance exactly once. An absent Back control
@@ -2192,7 +2328,13 @@ Future<void> signInEvidenceAccount(
   String? diagnosticFrameName,
   Future<void> Function(String name)? captureDiagnostic,
 }) async {
-  await _waitForCommunityEntryResolution(tester);
+  await _waitForCommunityEntryResolution(
+    tester,
+    timeout: timeout,
+    now: now,
+    diagnosticFrameName: diagnosticFrameName,
+    captureDiagnostic: captureDiagnostic,
+  );
   if (find.byKey(const ValueKey('community-entry-gate')).evaluate().isEmpty) {
     await openActorIdentityPickerDialog(
       tester,
@@ -2238,6 +2380,8 @@ Future<void> signInEvidenceAccount(
     description: 'community content after signing in as $displayName',
     timeout: timeout,
     now: now,
+    diagnosticFrameName: diagnosticFrameName,
+    captureDiagnostic: captureDiagnostic,
   );
 }
 
@@ -2246,6 +2390,8 @@ Future<void> _waitForCommunityEntryResolution(
   Duration? timeout,
   String? lastCompletedStep,
   DateTime Function()? now,
+  String? diagnosticFrameName,
+  Future<void> Function(String name)? captureDiagnostic,
 }) async {
   final budget = WalkthroughWaitBudget(
     timeout: timeout ?? WalkthroughWaitBudget.defaultInnerWaitTimeout,
@@ -2258,6 +2404,9 @@ Future<void> _waitForCommunityEntryResolution(
     }
     await tester.pump(const Duration(milliseconds: 50));
   }
+  if (diagnosticFrameName != null && captureDiagnostic != null) {
+    await captureDiagnostic(diagnosticFrameName);
+  }
   throw WalkthroughStallFailure(
     buildWalkthroughStallMessage(
       lastCompletedStep: lastCompletedStep,
@@ -2266,6 +2415,7 @@ Future<void> _waitForCommunityEntryResolution(
           '${finder.describeMatch(Plurality.many)} to disappear. '
           '${_visibleScreenDescription()}',
       budget: budget,
+      diagnosticFrameName: diagnosticFrameName,
     ),
   );
 }
@@ -2418,6 +2568,24 @@ String _visibleScreenDescription() {
       )
       .toSet()
       .toList(growable: false);
+  // Names whether the login/identity round trip actually reached the
+  // mounted screen's own auth provider, distinguishing "the UI is slow to
+  // render" from "the session never arrived here" -- a stall in this
+  // neighbourhood has repeatedly been blamed on account selection when the
+  // real question was whether authentication completed at all (see CLAUDE.md
+  // "a recorded row failure must restore the surface... instrument the
+  // Garden sign-in wait").
+  final authSessionAccountIds = find
+      .byType(LocalExtensionScreen)
+      .evaluate()
+      .map(
+        (element) => (element.widget as LocalExtensionScreen)
+            .authApi
+            ?.currentSession
+            ?.account
+            .accountId,
+      )
+      .toList(growable: false);
   final visibleTexts = <String>{};
   for (final element in find.byType(Text).evaluate()) {
     final widget = element.widget as Text;
@@ -2429,7 +2597,8 @@ String _visibleScreenDescription() {
     if (visibleTexts.length == 16) break;
   }
   return 'Visible screen: markers=[${markers.join(', ')}], '
-      'extensionIds=$extensionIds, texts=${visibleTexts.toList()}';
+      'extensionIds=$extensionIds, authSession=$authSessionAccountIds, '
+      'texts=${visibleTexts.toList()}';
 }
 
 Future<void> selectWorkflowTab(

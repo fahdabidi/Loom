@@ -554,6 +554,24 @@ void main() {
                   ? walkthroughResult.rowOutcome
                   : null,
             );
+            if (rowScope.failure != null) {
+              // This row's own `boundary: 'after'` check never ran -- the
+              // failure that was just recorded happened before reaching it.
+              // Restore the surface now, before the next row's `before`
+              // check blames itself for a dialog or picker THIS row leaked.
+              // See CLAUDE.md "a recorded row failure must restore the
+              // surface".
+              await restoreB25SurfaceAfterRowFailure(
+                tester: tester,
+                target: target,
+                workflowId: productDocRow.workflowId,
+                role: productDocRow.role,
+                originalFailureReason:
+                    '${rowScope.failure!.rowOutcome}: '
+                    '${rowScope.failure!.reason}',
+                captureDiagnostic: capture,
+              );
+            }
           }
 
           await tearDownB25CommunityWalkthrough(
@@ -760,6 +778,21 @@ void main() {
                   ? result.rowOutcome
                   : null,
             );
+            if (scoped.failure != null) {
+              // Same cascade risk as the main community loop: this row's own
+              // `boundary` check never ran, so restore the surface before
+              // the NEXT dedicated Mosque row (B17-B20 run sequentially here)
+              // blames itself for a leak that belongs to this one.
+              await restoreB25SurfaceAfterRowFailure(
+                tester: tester,
+                target: mosqueTarget,
+                workflowId: workflowId,
+                role: role,
+                originalFailureReason:
+                    '${scoped.failure!.rowOutcome}: ${scoped.failure!.reason}',
+                captureDiagnostic: capture,
+              );
+            }
             return result;
           }
 
