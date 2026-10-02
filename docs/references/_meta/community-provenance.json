@@ -21,9 +21,9 @@
       "sha256": "13b894604b5baf0f41a5a6bb75525c871f117848bfe79cb2ec203d0f0db36936",
       "bytes": 88021,
       "authoredBy": "loom-calendar-experience-authoring",
-      "lastCommit": "38f41976",
-      "lastCommitDate": "2026-09-05",
-      "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
+      "lastCommit": "a8c01fe5",
+      "lastCommitDate": "2026-09-25",
+      "lastCommitSubject": "feat(ad-free): move funded out of the summary binding into the primary"
     },
     "Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc": {
       "sha256": "199913fcc8d76fcb345d889d09631fce09efd6cd0bced6b9cf0d2b5c8fa254f9",
@@ -58,8 +58,8 @@
       "lastCommitSubject": "feat(validator): harden stale_skill_version into a machine check, fix baseline stamps"
     },
     "Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc": {
-      "sha256": "e82a8b39015268dba34e2782bb81613e247fa7c7f7e94e402a80309c5b439d97",
-      "bytes": 112086,
+      "sha256": "dc53f610fbd8dbb59dae41d784e1b545d9284649ed2f7424f51b3769a7e78c88",
+      "bytes": 112472,
       "authoredBy": "loom-calendar-experience-authoring",
       "lastCommit": "1b5c9f70",
       "lastCommitDate": "2026-09-19",

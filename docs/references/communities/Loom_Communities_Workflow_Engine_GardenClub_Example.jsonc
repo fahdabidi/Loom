@@ -2834,6 +2834,17 @@
         }
       },
       {
+        "instanceId": "spring-workshop-response-jordan",
+        "workflowType": "garden-event-rsvp-response",
+        "currentState": "waitlisted",
+        "createdByFanId": "garden-coordinator",
+        "instanceData": {
+          "eventId": "spring-workshop",
+          "fanId": "garden-member-jordan",
+          "respondedAt": "2026-08-07T11:20:00-07:00"
+        }
+      },
+      {
         "instanceId": "spring-workshop-reminder-maya",
         "workflowType": "garden-notification",
         "currentState": "unread",
