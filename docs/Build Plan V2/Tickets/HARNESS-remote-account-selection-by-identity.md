@@ -28,6 +28,48 @@ each burning its full 2m 45s — roughly sixteen minutes of one run — with thi
       Attempted step: seeded account Garden Member 1
       Waiting for: widgets with type "ListTile" that are ancestors of widgets with text "Garden Member 1"
 
+## CORRECTION 2026-10-01, BEFORE ANYONE ACTS ON THIS — both causes above are REFUTED by the live data. Read this first.
+
+I queried the backend rather than leaving the two causes open, and **neither is what happened.** The
+display name the harness waits for is exactly the one the backend holds:
+
+    loom_fan_passport:
+      fan-garden-member-1       | Garden Member 1
+      fan-garden-coordinator-1  | Garden Coordinator 1
+
+All **five** Garden group members (`fan-garden-admin`, `-coordinator-1`, `-coordinator-2`,
+`-member-1`, `-member-2`) exist in `group_membership_role` **and** every one has a `fan_passport`
+row. So:
+
+- **(a) is false** — the label is not different; it is character-for-character what the title-cased
+  slug produces.
+- **(b) is false** — the list is not empty, and remote `listAccounts`
+  (`part39_remote_auth_api.dart:211`) throws only when a membership has no passport, which cannot
+  happen here because all five have one.
+
+**So the selector was looking for the right text, and the right text exists.** The defect is
+therefore *not* in how the account is identified, and **changing the selection logic would be fixing
+something that is not broken** — the exact shape this project records as an agent "fixing" what was
+never wrong.
+
+**What the evidence does establish**, and all it establishes: the walkthrough got past the identity
+picker and the specific-person chooser (its stall names the step *after* those), then found no
+`ListTile` containing a name the backend does hold. Four states are collapsed in that sentence and
+only the first is measured:
+
+    authenticated → listAccounts called → listAccounts returned → the rows rendered
+
+**So the FIRST instruction below stands and is now the whole job: instrument before diagnosing.**
+Capture what the app actually saw — whether `listAccounts` was called, whether it threw, what it
+returned, and what the chooser rendered — and report that. Do not change selection logic in the same
+change. If the list did return five accounts and the row still did not render, that is a rendering or
+navigation defect and belongs in its own ticket.
+
+**Note also that `signInEvidenceAccount` has two paths** — an existing-account row, and an
+open-signup form keyed `open-signup-display-name`. Which of those the remote chooser presents is not
+established either, and it matters: one selects an existing identity, the other creates one, and
+creating one under remote auth would be a different and worse outcome than failing.
+
 ## FIRST: establish which of two causes this is. They are indistinguishable from the evidence above.
 
 A timeout waiting for that text is produced equally by both of these, and **this run does not
