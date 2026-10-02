@@ -56,6 +56,52 @@ missing passport, and a startup-hang theory were each refuted in turn. The decis
 widget type or a count — it was an exception message the app had been printing on screen all along,
 which no amount of reasoning about finders would have surfaced.
 
+## CONFIRMED 2026-10-01 by the capture log's own timeline — the chooser evaluates BEFORE the harness authenticates, and nothing re-runs it
+
+The ordering test named below was answerable from telemetry already captured. It confirms the
+hypothesis and the margin is not subtle.
+
+**Six successful logins, spaced at exactly the stall budget:**
+
+    auth-token-endpoint outcome=ok status=200   06:09:07, 06:12:02, 06:14:56,
+                                                06:17:50, 06:20:44, 06:23:38
+    first app-access  success                   06:26:43
+    first fan-passport success                  06:26:45
+
+Six logins, ~2m54s apart, for the six rows that stalled at a 2m45s budget. One login per stalled row.
+
+**The decisive fact: no identity HTTP call occurs during any stall window.** The first app-access and
+fan-passport successes land at 06:26:43/45 — *after the last stall* — in the seventh row, the one that
+did not stall. So during each stalling row `listAccounts` never reached the network at all. It threw
+at `_fanIdFromCurrentSession()` **before** issuing a request, which happens only when no session is
+stored at that instant.
+
+**So the sequence per stalled row is:**
+
+    auth screen mounts → listAccounts throws LoomAuthNotLoggedInException (no session yet)
+      → the screen renders the error, Retry, and Continue to secure sign-in
+      → the harness logs in (token 200) → a session is now persisted
+      → nothing re-runs listAccounts → the harness waits out 2m45s for rows that will never appear
+
+And the seventh row succeeded because by then a session persisted from an earlier login, so *that*
+screen mount found one — which is also why `_persistSession` is demonstrably working and why
+persistence was correctly eliminated as the gap.
+
+**This is two recorded rules meeting.** *Authentication recovery must never be gated on an error* —
+the only escape here is a `Retry` button nobody presses. And *a failed secondary load must not discard
+a successful primary one* — a single early failure becomes permanent for the life of the screen.
+
+**The fix therefore belongs in the ordering, not in selection, not in persistence, and not in the
+budget.** Either authenticate before the surface that reads the session is built, or make that surface
+re-fetch when a session appears. Both are small; choosing between them is a product question about
+whether the shipped app should also recover from this, since a real user meets the identical dead end
+— which is worth deciding deliberately rather than as a test fix.
+
+**Five explanations died to reach this one** — the display name, the empty list, the missing passport,
+a startup hang, and missing persistence — each refuted by a single cheap check. The instrument that
+settled it was built in one dispatch and read in one device run, and the conclusive evidence was
+timestamps already sitting in a log I had been reading all along.
+
 ### Narrowed once more by code read: persistence is NOT the gap — the leading hypothesis is ORDERING
 
 Both ends of the session seam use the same store, so two of the three sub-cases above are eliminated:
