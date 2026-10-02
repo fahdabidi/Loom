@@ -56,6 +56,38 @@ missing passport, and a startup-hang theory were each refuted in turn. The decis
 widget type or a count — it was an exception message the app had been printing on screen all along,
 which no amount of reasoning about finders would have surfaced.
 
+### Narrowed once more by code read: persistence is NOT the gap — the leading hypothesis is ORDERING
+
+Both ends of the session seam use the same store, so two of the three sub-cases above are eliminated:
+
+- `loginWithTestCredentials` **does** persist — it ends `final session = _sessionFromTokenResponse(...); await _persistSession(session);` (`loom_auth_session.dart:164+`).
+- `currentAccessToken()` **reads that same store** — `final session = await _loadStoredSession(); if (session == null) throw const LoomAuthNotLoggedInException();`.
+
+So persistence is neither missing nor written elsewhere. **That leaves the third sub-case: the session
+is absent at the moment the chooser evaluates, not absent overall.**
+
+**Leading hypothesis, and the screen's own contents argue for it.** The auth screen mounted and called
+`listAccounts` **before** the harness logged in; that call threw `LoomAuthNotLoggedInException`, the
+screen rendered the error, and **nothing re-ran it afterwards**. The captured texts are exactly an
+error state waiting for a human: the exception, a **`Retry`**, a **`Continue to secure sign-in`**, and
+`Check membership status`. The harness then waits 2m45s for account rows behind an error that a
+successful login never cleared.
+
+This is the family this repo already records — *authentication recovery must never be gated on an
+error*, and *a failed secondary load must not discard a successful primary one*. Here a load that
+failed once becomes permanent because the only recovery is a button nobody presses.
+
+**The test that would confirm or kill it, and it is cheap:** establish the ORDER. The token-endpoint
+binding is timestamped in the capture log; the auth screen's `listAccounts` attempt is not. Log the
+chooser's fetch attempt and outcome with a timestamp, then compare. If the fetch precedes the token
+call, this is confirmed and the fix is to make the harness re-trigger the fetch after authenticating
+(or to make the screen re-fetch when a session appears) — **not** to touch selection, and **not** to
+lengthen the wait.
+
+**Marked as a hypothesis deliberately.** Four explanations have already died here — the display name,
+the empty list, the missing passport, and a startup hang — and this one is consistent with every
+observation without yet being proven by one. The ordering log is what would make it a fact.
+
 ## The defect
 
 `authenticateEvidenceFanForRemote` (`test/workflow_ui_test_harness.dart:2071`) authenticates the
