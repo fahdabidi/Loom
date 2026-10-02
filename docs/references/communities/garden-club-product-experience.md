@@ -84,6 +84,23 @@ this week, what help or exchange is needed, and what records are available.
 Use real event names, dates, capacity, plant names, privacy labels, reviewer names, redaction/checksum
 values, tool/item names, pickup windows, loan/giveaway mode, and before/after RSVP/submission states.
 
+**Two calendar events, not one — one at capacity and one with a free place.** Both are ordinary
+member experiences and the community should show both: a gardener deciding whether to come to a
+workshop that still has room, and a gardener meeting one that is already full and putting their name
+down instead. A single event cannot present both, because the waitlist offer exists only while the
+event is full — so a seed set with one event always hides one of the two experiences, whichever way
+its capacity is set. Give the full event at least one gardener already on the waitlist, so the
+"you're on the list" state is visible and not just the act of joining.
+
+**The tool giveaway is listed by the garden coordinator, not by the gardener browsing it.** A member
+looking at the shared-tool shelf should find something they can actually claim. An owner cannot loan
+or claim their own listing — that is correct and deliberate, since the only sensible actions on your
+own listing are to cancel or withdraw it — so a giveaway owned by the person browsing shows an empty
+set of actions and reads as a broken shelf. Seed the giveaway under the coordinator and leave the
+member as a potential claimant. Keep at least one listing owned by a gardener too, so the owner's own
+view (cancel or withdraw, and nothing else) is also represented.
+
+
 ## 9. Visual And Interaction Standard
 
 Use garden-specific hierarchy, seasonal accents, readable event/detail surfaces, and form sections with
