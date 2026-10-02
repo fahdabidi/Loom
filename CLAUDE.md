@@ -1287,6 +1287,16 @@ was built to find.
 - Process checks lie in both directions: `pgrep -c qemu-system-x86_64` returns 0 when it IS
   running (15-char `comm` truncation), and `pgrep -fc` returns 1 when nothing is (it matches its
   own command line). Use `adb devices` plus a bracketed `pgrep -fc '[q]emu...'`.
+  **And `kill -0` cannot tell "gone" from "not yours" — found 2026-10-01, by scaring myself.** It
+  fails with `ESRCH` for a dead pid and `EPERM` for a live one you may not signal, and shell `kill -0`
+  reports both as a non-zero exit. A k3s container process shows up in the VM's `ps` under a mapped
+  uid (`/app/workflow_service` runs as `dhcpcd`), so a liveness check written as
+  `kill -0 $p || echo "ERROR: killed the service"` prints that alarming line while the service is
+  perfectly healthy — which is exactly what mine did seconds after I killed two unrelated leftovers,
+  implicating me in a failure that had not happened. **Use `ps -p <pid>` for existence**, and for a
+  deployed service use the pod and a real request rather than anything in the process table. Same
+  family as the two traps above: a check whose failure mode is indistinguishable from the thing it
+  claims to detect, and whose wording invites the wrong repair.
 - **A stale Keycloak SSO cookie silently re-authenticates the PREVIOUS user, and the app says
   "signed in".** On 2026-09-08 a walkthrough holding a `fan-hoa-board-1` session tried to sign in as
   `fan-camera-member-1`; "Sign in securely with Loom…" showed **no login form at all** and returned a
