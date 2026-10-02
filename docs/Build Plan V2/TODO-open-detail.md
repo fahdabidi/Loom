@@ -310,6 +310,50 @@ plus a `createInstance` into `hoa-owner-notification`. The package does not wait
 
 ### row-357 — Garden's two "unprovable" rows are a FIXTURE gap, not a product defect — user-confirmed 2026-09-17
 
+**RESOLVED 2026-10-01 — and most of what this row asked for was ALREADY SHIPPED. Read this before acting on the prescription below.**
+
+Dispatched the Skill against Garden's product doc (label `garden-fixtures`) after amending §8 to state
+the seed requirements. The outcome was one seed, not the three changes this row and the loop
+instruction implied:
+
+- **"A second event seed, one full one open" was already satisfied.** `spring-workshop` (capacity 2,
+  full) and `autumn-work-day` (a free place) both already existed in the shipped package. The
+  correction appended to this row on 2026-09-19 — that the fix is a second seed rather than a mutated
+  capacity — was right about the mechanism and wrong that the seed was missing.
+- **"Giveaway owned by garden-coordinator" was already satisfied** — the package already carried five
+  coordinator-owned listings alongside four gardener-owned, so both the claimant's view and the
+  owner's own cancel/withdraw view were already representable.
+- **The one real gap was a `waitlisted` response**, which only existed as a requirement once §8 asked
+  for the "you're on the list" state to be visible. Closed by `spring-workshop-response-jordan`
+  (commit `e20afb83`): +11 lines, purely additive, nothing removed.
+
+**Why a third member fan rather than reusing one.** `spring-workshop`'s two capacity slots are held by
+`garden-coordinator` and `garden-member-rina` (both `going`), with `garden-member-maya` sitting
+`pending`. Turning maya into the waitlisted member would have **mutated** a seed, which
+`solved-patterns.md` §26's amendment forbids; a new fan adds without disturbing maya's own scenario.
+
+**Verified with my own oracle, not the dispatch's report:** `POST /validate` returned `status: pass`,
+`errorCount: 0`, `warningCount: 11` from a validator started fresh that day, and all five suites came
+back green — app shell 448 (+2), demo 264, judges 525, engine 345 (+1), service 168 (+1). The
+demo-app result is the load-bearing one, because `b41_garden_engine_migration_test` taps
+`respond-waitlist` on this exact event and the event stays full, so the waitlist offer still renders.
+
+**Two things the dispatch found that this row did not ask about, both kept:**
+
+- **The package exists as TWINS** — `docs/references/communities/` and
+  `app/packages/core/loom_communities_app_shell/assets/` — byte-identical, and the asset is the copy
+  the app actually renders. Updating only the doc would leave the app on the old package while the
+  record claimed otherwise. Both updated; the provenance manifest regenerated (bytes 112086 →
+  112472), which was the only thing that went red.
+- **`garden-volunteer-shift` had no B25 row** despite the doc's own coverage table demanding `B25` for
+  it. Added, which moves the production bar's denominator from **72 to 73**. Tracked separately as
+  [SHELL-b25-row-count-77-to-78.md](Tickets/SHELL-b25-row-count-77-to-78.md), since the hardcoded
+  count lives in Dart and three suites assert it.
+
+**What remains of this row: nothing for the Skill.** The two rows it was opened about are no longer
+fixture-blocked; proving them is a capture-and-judge question, which is the live-backend programme.
+
+
 `needs-skill-dispatch` — **The behaviour is correct and must not be changed.** User, 2026-09-17: *"it appears
 for this workflow the behavior is correct and different from other workflows. I.e the owner should not be
 able to 'loan' a tool they own. They can cancel the listing. Same with a giveaway."* And on the full event:
