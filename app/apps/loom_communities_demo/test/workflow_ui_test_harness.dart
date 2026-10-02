@@ -2071,6 +2071,7 @@ const List<int> seededEvidenceFanHolderSuffixes = [1, 2, 3];
 Future<void> authenticateEvidenceFanForRemote(
   WidgetTester tester, {
   required String roleId,
+  required LoomEvidenceTarget target,
   String? diagnosticFrameName,
   Future<void> Function(String name)? captureDiagnostic,
 }) async {
@@ -2100,6 +2101,13 @@ Future<void> authenticateEvidenceFanForRemote(
       // seededEvidenceFanHolderSuffixes.
       continue;
     }
+    // The auth screen may already have evaluated `listAccounts` before this
+    // login persisted a session -- it mounted when the community route
+    // first opened, well before this authentication completed. Reopen the
+    // route so the real auth UI re-reads the now-stored session, exactly as
+    // seedEvidenceAccounts already does for the local path and for the same
+    // reason (see HARNESS-remote-account-selection-by-identity.md).
+    await openEvidenceTarget(tester, target);
     // A rejection past this point is a real defect in this row, not a
     // missing credential, so it is deliberately left to propagate up to the
     // walkthrough's own row-scoped failure handling rather than being

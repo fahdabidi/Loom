@@ -2091,6 +2091,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
     await authenticateEvidenceFanForRemote(
       tester,
       roleId: selector.roleId,
+      target: target,
       diagnosticFrameName: stallDiagnosticName,
       captureDiagnostic: capture,
     );
