@@ -2732,6 +2732,31 @@ The general form, worth applying past B25: **before planning a two-pass workflow
 pass leaves behind.** If its output is gitignored, written to `/tmp`, or otherwise transient, the two
 passes are really one pass that must not be split.
 
+**And the diagnostic mode DESTROYS canonical evidence — measured 2026-10-02, so check the tree after
+every precheck run.** `--mode targeted-precheck --phases B12,B13` left **19 tracked files under
+`docs/Build Plan V2/Evidence/` modified**, including phases never named on the command line:
+`B14/workflow-ui-evidence.json` went **3097 lines → 70**, all 35 workflow rows replaced by
+`"phaseOutcome": "no_workflows_recorded"`. Recovered with `git checkout --` scoped to that directory
+alone (B14 back to 3081 lines).
+
+Three things make this worth remembering rather than just fixing:
+
+- **The tool disclaims its own output and still writes it to the canonical path.** Its error text says
+  precheck output "must not be committed as canonical B25 evidence", so the disclaimer exists — and the
+  only enforcement is an operator noticing 19 modified files. **A mode that disclaims its output must
+  not write where canonical output lives.**
+- **The gate cannot see it.** `check_b25_status.sh` re-run against the contaminated tree reported the
+  bar *unchanged* (73 real rows, 54 live-write, CONFIRMED 0), because it counts live-write manifests
+  from the walkthrough agent, not these phase manifests. So a tree with 3027 lines of evidence deleted
+  looks perfectly healthy to the one check anyone runs — the always-quiet guard again, this time
+  guarding something it was never pointed at.
+- **The effect is measured; the mechanism is not.** The plausible reading is that the tool emits a
+  manifest for its whole phase set regardless of `--phases`. Nobody has read that path, so it stays a
+  hypothesis — the same discipline as not calling a failed state check a persistence bug.
+
+**Operationally: `git status -- "docs/Build Plan V2/Evidence"` after any precheck run, before
+committing anything.** And prefer pointing `--evidence-root` at a scratch directory for diagnostics.
+
 ### Interpolation tokens resolve differently in different contexts — measure each one
 
 Found 2026-09-12 by contrast rather than by reading, and it explains a defect that had been filed as
