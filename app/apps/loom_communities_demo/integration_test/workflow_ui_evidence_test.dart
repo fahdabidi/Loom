@@ -2138,6 +2138,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       package: package,
       selector: selector,
       actorFanId: actorFanId,
+      b25Model: b25Model,
     );
   } else if (selector.accountId case final accountId?) {
     final displayName = 'Shipped $accountId';
@@ -4978,6 +4979,7 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
   required ShippedEvidencePackage package,
   required _ShippedWorkflowSelector selector,
   required String actorFanId,
+  required B25ProductDocInteractionModel b25Model,
 }) async {
   final plan = planB25RemoteArrangement(
     machine: selector.machine,
@@ -4988,6 +4990,11 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
     candidateTransitions: selector.transitions
         .map((candidate) => candidate.transition)
         .toList(growable: false),
+    matchesPrimaryTerm: (transition) => matchB25TransitionAgainstTerms(
+      transition,
+      primaryTerms: b25Model.requiredPrimaryActions,
+      alternateTerms: b25Model.requiredAlternateActions,
+    ).primary,
   );
 
   await _selectPackageTab(
@@ -5062,8 +5069,14 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
     instance: LoomWorkflowSeedInstance(
       instanceId: instanceId,
       workflowType: selector.instance.workflowType,
-      currentState: selector.instance.currentState,
-      instanceData: selector.instance.instanceData,
+      // The created row's real state and data -- never the seed's. The
+      // seed's `currentState` may be later than `plan.arrangedState`
+      // (`machine.initialState`, where this instance was actually created),
+      // and its untouched `instanceData` lacks the creation action's
+      // resolved `prefill` (e.g. a real `ownerFanId`), which the real row
+      // carries from the moment it is created.
+      currentState: plan.arrangedState,
+      instanceData: plan.syntheticInstanceData,
       createdByFanId: actorFanId,
     ),
     binding: selector.binding,

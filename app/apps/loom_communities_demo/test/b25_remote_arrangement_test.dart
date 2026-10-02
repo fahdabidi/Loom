@@ -22,6 +22,10 @@ void main() {
             actorFanId: 'fan-garden-coordinator-1',
             seedInstanceData: const {},
             candidateTransitions: const [],
+            // This machine declares no transitions at all, so no primary
+            // match can ever be found from the initial state regardless of
+            // this predicate -- it genuinely is a later-state row.
+            matchesPrimaryTerm: (_) => true,
           );
         } catch (error) {
           caught = error;
@@ -42,6 +46,41 @@ void main() {
     );
 
     test(
+      'a later-state seed whose primary action fires from the initial '
+      'state is arranged there, not thrown as later-state (mosque-'
+      'announcement: the seed sits at "sent" while send-announcement fires '
+      'from "draft")',
+      () {
+        final machine = _mosqueAnnouncementLikeMachine();
+        final plan = planB25RemoteArrangement(
+          machine: machine,
+          // The real shipped seed sits at a later state than the workflow's
+          // own initial state -- the seed is a DATA authority, not a STATE
+          // authority, and the row's real primary action fires from "draft"
+          // regardless of where the seed happens to sit.
+          currentState: 'sent',
+          roleId: 'masjid-admin',
+          actorFanId: 'fan-masjid-admin-1',
+          seedInstanceData: const {
+            'title': 'Friday reminder',
+            'body': "Jumu'ah starts at 1pm.",
+          },
+          candidateTransitions: const [],
+          matchesPrimaryTerm: (transition) =>
+              transition.id == 'send-announcement',
+        );
+
+        expect(plan.arrangedState, 'draft');
+        expect(plan.creationBinding.tabId, 'announcements');
+        expect(plan.fieldValues, {
+          'title': 'Friday reminder',
+          'body': "Jumu'ah starts at 1pm.",
+        });
+        expect(plan.syntheticInstanceData['authorFanId'], 'fan-masjid-admin-1');
+      },
+    );
+
+    test(
       'a creation role that excludes the acting role is out of scope '
       '(garden-volunteer-shift: coordinator creates, member signs up)',
       () {
@@ -56,6 +95,7 @@ void main() {
             actorFanId: 'fan-garden-member-1',
             seedInstanceData: const {'shiftTitle': 'Mulch delivery'},
             candidateTransitions: const [],
+            matchesPrimaryTerm: (_) => true,
           );
           fail('expected B25ArrangementOutOfScopeFailure');
         } catch (error) {
@@ -94,6 +134,7 @@ void main() {
               'ownerContactInfo': 'Private club message to member Alex',
             },
             candidateTransitions: [requestLoan],
+            matchesPrimaryTerm: (transition) => transition.id == 'request-loan',
           );
           fail('expected B25ArrangementOutOfScopeFailure');
         } catch (error) {
@@ -106,6 +147,53 @@ void main() {
             contains('garden-tool-loan'),
             contains('request-loan'),
             contains('second, different identity'),
+          ),
+        );
+      },
+    );
+
+    test(
+      'a non-primary candidate with an unknown formula verdict must not '
+      'rescue a genuinely denied primary match (garden-tool-loan sits '
+      'beside an unrelated, formula-less leave-queue)',
+      () {
+        final machine = _gardenToolLoanWithUnrelatedQueueTransitionMachine();
+        final requestLoan = machine.transitions.singleWhere(
+          (transition) => transition.id == 'request-loan',
+        );
+        final leaveQueue = machine.transitions.singleWhere(
+          (transition) => transition.id == 'leave-queue',
+        );
+        Object? caught;
+        try {
+          planB25RemoteArrangement(
+            machine: machine,
+            currentState: 'published',
+            roleId: 'garden-member',
+            actorFanId: 'fan-garden-member-1',
+            seedInstanceData: const {
+              'title': 'Steel wheelbarrow',
+              'toolDescription': 'Sturdy wheelbarrow for moving mulch.',
+            },
+            // leave-queue has no `formula` guard at all, so its verdict is
+            // FormulaGuardVerdict.unknown. Before this fix, running
+            // `.every(denied)` over BOTH candidates meant unknown != denied
+            // defeated the whole check, and a genuinely, permanently denied
+            // request-loan was never caught.
+            candidateTransitions: [requestLoan, leaveQueue],
+            matchesPrimaryTerm: (transition) => transition.id == 'request-loan',
+          );
+          fail('expected B25ArrangementOutOfScopeFailure');
+        } catch (error) {
+          caught = error;
+        }
+        expect(caught, isA<B25ArrangementOutOfScopeFailure>());
+        expect(
+          (caught as B25ArrangementOutOfScopeFailure).reason,
+          allOf(
+            contains('garden-tool-loan'),
+            contains('request-loan'),
+            isNot(contains('leave-queue')),
           ),
         );
       },
@@ -127,6 +215,7 @@ void main() {
               'pickupWindow': 'Saturday mornings',
             },
             candidateTransitions: const [],
+            matchesPrimaryTerm: (_) => true,
           );
           fail('expected B25ArrangementOutOfScopeFailure');
         } catch (error) {
@@ -156,6 +245,7 @@ void main() {
             // Missing "itemDescription", which the schema requires.
             seedInstanceData: const {'title': 'Spare trowel'},
             candidateTransitions: const [],
+            matchesPrimaryTerm: (_) => true,
           );
           fail('expected B25ArrangementOutOfScopeFailure');
         } catch (error) {
@@ -170,7 +260,9 @@ void main() {
     );
 
     test(
-      'a true single-identity, initial-state, text-only row is in scope', () {
+      'a true single-identity, initial-state, text-only row is in scope '
+      '(and a primary match with an unknown formula verdict -- '
+      'pause-listing has no `formula` clause -- does not throw)', () {
         final machine = _syntheticSingleIdentityMachine();
         final pauseListing = machine.transitions.singleWhere(
           (transition) => transition.id == 'pause-listing',
@@ -185,8 +277,10 @@ void main() {
             'itemDescription': 'A well-used trowel, still sharp.',
           },
           candidateTransitions: [pauseListing],
+          matchesPrimaryTerm: (transition) => transition.id == 'pause-listing',
         );
 
+        expect(plan.arrangedState, 'published');
         expect(plan.creationBinding.tabId, 'marketplace');
         expect(plan.creationAction.kind, 'create');
         expect(plan.fieldValues, {
@@ -265,6 +359,136 @@ LoomWorkflowStateMachine _gardenToolLoanMachine() =>
         },
       },
     }, 'garden-tool-loan');
+
+/// Same shape as [_gardenToolLoanMachine], plus an unrelated `leave-queue`
+/// transition that declares no `formula` guard at all -- its verdict is
+/// [FormulaGuardVerdict.unknown], never denied. Exists to prove the
+/// all-denied check is scoped to primary-matching candidates: before this
+/// fix, `candidateTransitions.every(denied)` over BOTH transitions together
+/// was defeated by `leave-queue`'s unknown verdict, masking the fact that
+/// `request-loan` -- the row's real primary action -- is genuinely,
+/// permanently denied.
+LoomWorkflowStateMachine _gardenToolLoanWithUnrelatedQueueTransitionMachine() =>
+    LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+      'initialState': 'published',
+      'states': <String, dynamic>{
+        'published': <String, dynamic>{
+          'label': 'Listed for loan',
+          'editableFields': <String>['title', 'toolDescription'],
+        },
+      },
+      'transitions': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'id': 'request-loan',
+          'label': 'Request loan',
+          'from': <String>['published'],
+          'to': null,
+          'guard': <String, dynamic>{
+            'allowedRoleIds': <String>['garden-member'],
+            'formula': 'if(ownerFanId == \$actor, false, true)',
+          },
+        },
+        <String, dynamic>{
+          'id': 'leave-queue',
+          'label': 'Leave waitlist',
+          'from': <String>['published'],
+          'to': null,
+          'guard': <String, dynamic>{
+            'allowedRoleIds': <String>['garden-member'],
+          },
+        },
+      ],
+      'renderBindings': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'states': <String>['published'],
+          'audience': 'any',
+          'tabId': 'marketplace',
+          'cardSurfaceFamily': 'equipment-loan',
+          'bindingKind': 'primary',
+          'actions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'kind': 'create',
+              'label': 'List a garden tool',
+              'byRoleIds': <String>['garden-member'],
+              'prefill': <String, dynamic>{
+                'ownerFanId': '\$actor',
+                'availabilityState': 'available',
+              },
+            },
+          ],
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{
+        'title': <String, dynamic>{
+          'type': 'text',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+        'toolDescription': <String, dynamic>{
+          'type': 'textarea',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+      },
+    }, 'garden-tool-loan');
+
+/// Mirrors `mosque-announcement`'s shape: its only shipped seed sits at
+/// "sent", a later state than the workflow's own initial state "draft", yet
+/// the row's real primary action (`send-announcement`) fires from "draft".
+/// Exists to prove a later-state seed is arranged at the initial state
+/// rather than thrown as out of scope, whenever a primary match genuinely
+/// fires from there.
+LoomWorkflowStateMachine _mosqueAnnouncementLikeMachine() =>
+    LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+      'initialState': 'draft',
+      'states': <String, dynamic>{
+        'draft': <String, dynamic>{
+          'label': 'Draft',
+          'editableFields': <String>['title', 'body'],
+        },
+        'sent': <String, dynamic>{'label': 'Sent'},
+      },
+      'transitions': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'id': 'send-announcement',
+          'label': 'Send announcement',
+          'from': <String>['draft'],
+          'to': 'sent',
+          'guard': <String, dynamic>{
+            'allowedRoleIds': <String>['masjid-admin'],
+          },
+        },
+      ],
+      'renderBindings': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'states': <String>['draft'],
+          'audience': 'any',
+          'tabId': 'announcements',
+          'cardSurfaceFamily': 'formEntry',
+          'bindingKind': 'primary',
+          'actions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'kind': 'create',
+              'label': 'Draft an announcement',
+              'byRoleIds': <String>['masjid-admin'],
+              'prefill': <String, dynamic>{'authorFanId': '\$actor'},
+            },
+          ],
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{
+        'title': <String, dynamic>{
+          'type': 'text',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+        'body': <String, dynamic>{
+          'type': 'textarea',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+      },
+    }, 'mosque-announcement-like');
 
 /// Mirrors `garden-volunteer-shift`: only `garden-coordinator` may create a
 /// shift, but the B25 row proves `garden-member`'s "sign up" transition.
