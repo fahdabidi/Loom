@@ -1895,6 +1895,29 @@ change made its premise false. The baseline rule ("identified by its FAILURE MES
 name") is what made this quick; the missing half is that a **newly** red test can also be a success
 signal.
 
+**`b25_capture_prebuilt_binary_test.dart` is FLAKY, and a different test in it fails each time — do not chase the name.** Measured across three full-suite runs on 2026-10-02, all at different commits:
+
+| Run | Test that failed | Mode |
+|---|---|---|
+| 1 | "full B25 refuses byte-identical frames" | `TimeoutException` after 30s |
+| 2 | "full B25 refuses a low screenshot result" | timeout, then a failed `expect(result.exitCode, 65)` → got 1 |
+| 3 | "a missing prebuilt APK fails before flutter drive launches" | `TimeoutException` after 30s |
+
+**The third run was SEQUENTIAL** — judges ran with nothing else on the box — so contention is not the
+whole story, and the file passed **9/9 isolated** after each failure. The mechanism: every test in it
+spawns the capture tool as a **real subprocess** through `_FakeCaptureHarness` against a 30s per-test
+budget, so whichever subprocess happens to be slowest that run trips the limit. The rotating name is
+the tell.
+
+**So judges is 525 only when that file's subprocess tests all come in under 30s.** Treat a single
+timeout there as environmental *after* confirming two things — that it is a `TimeoutException` and
+that the file passes isolated — and do **not** record a judges baseline from a run where it fired.
+**Run 2 is the one to study**: its retry produced `Expected: <65>, Actual: <1>`, a *failed assertion*,
+because the assertion is about a **spawned child's exit code** and the starved child died before
+reaching its refuse path. So "a failed `expect` is a different matter" holds only for **in-process**
+assertions; when a test asserts on a subprocess's exit status, load-induced failure is
+indistinguishable from a logic error. I nearly filed that one as a real regression.
+
 **Three service PostgreSQL tests time out under concurrency, not just the RLS one.** Measured
 2026-09-25: `postgres_transaction_rollback_integration_test`,
 `postgres_guard_refusal_integration_test` and `postgres_idempotency_race_integration_test` all failed
