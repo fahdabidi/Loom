@@ -1259,6 +1259,7 @@ Future<void> assertB25CommunityRowSurface({
   required Future<void> Function(String name) captureDiagnostic,
   DateTime Function()? now,
   VoidCallback? onReadinessPoll,
+  String? previousRowWalked,
 }) async {
   final expectedSurface = _evidenceTargetRoute(target);
   final picker = find.descendant(
@@ -1280,6 +1281,7 @@ Future<void> assertB25CommunityRowSurface({
       boundary: boundary,
       foundSurface: initialUnexpectedSurface,
       captureDiagnostic: captureDiagnostic,
+      previousRowWalked: previousRowWalked,
     );
   }
 
@@ -1325,6 +1327,7 @@ Future<void> assertB25CommunityRowSurface({
             picker: picker,
           ),
       captureDiagnostic: captureDiagnostic,
+      previousRowWalked: previousRowWalked,
     );
   }
 
@@ -1386,17 +1389,25 @@ Future<void> _failB25SurfaceMismatch({
   required String boundary,
   required String foundSurface,
   required Future<void> Function(String name) captureDiagnostic,
+  String? previousRowWalked,
 }) async {
   final diagnosticName =
       '${target.phase}_${target.extensionId}_${workflowId}_${role}_'
       'SURFACE_MISMATCH_${boundary.toUpperCase()}';
+  // A surface left over from the previous row (an un-dismissed dialog, a
+  // picker that opened late) is the likeliest source of a mismatch at a row
+  // boundary. Naming the row candidate here, rather than only the current
+  // one, points the next investigation at the row that actually leaked it.
+  final likelyLeakSuffix = previousRowWalked == null
+      ? ''
+      : '\nLikely leaked from the previous row: $previousRowWalked.';
   try {
     await captureDiagnostic(diagnosticName);
   } catch (error) {
     fail(
       'B25 surface mismatch $boundary $workflowId/$role:\n'
       'expected community ${target.extensionId};\n'
-      'found $foundSurface.\n'
+      'found $foundSurface.$likelyLeakSuffix\n'
       'Additionally failed to capture diagnostic frame $diagnosticName: '
       '$error',
     );
@@ -1404,7 +1415,7 @@ Future<void> _failB25SurfaceMismatch({
   fail(
     'B25 surface mismatch $boundary $workflowId/$role:\n'
     'expected community ${target.extensionId};\n'
-    'found $foundSurface.',
+    'found $foundSurface.$likelyLeakSuffix',
   );
 }
 
@@ -1876,6 +1887,54 @@ void _expectCommunityListReady(WidgetTester tester) {
   }
 }
 
+/// Taps the actor-identity-picker button and waits until its dialog is
+/// actually open, rather than assuming a single `pumpAndSettle` already
+/// settled it.
+///
+/// `_showActorIdentityPicker` (`part01_local_extension_screen.dart`) awaits
+/// `authApi.listAccounts(...)` before calling `showDialog`. That await
+/// resolves instantly against the local engine, which is why a bare tap +
+/// `pumpAndSettle` worked for months -- but under production wiring it is a
+/// real network round trip, so the dialog is not open yet when a caller
+/// reaches for it immediately afterward. The pending call does not go away
+/// just because the caller stopped waiting: if a caller gives up too early,
+/// the dialog opens later anyway, during whatever row happens to be running
+/// when the response arrives, leaking into a row that never asked for it.
+///
+/// This waits for the dialog with a budget before returning. If it never
+/// opens, it throws with the dialog still closed, so a genuine stall becomes
+/// one honest row failure rather than a cascade into the next row.
+Future<void> openActorIdentityPickerDialog(
+  WidgetTester tester, {
+  required String description,
+  Duration? timeout,
+  String? lastCompletedStep,
+  DateTime Function()? now,
+}) async {
+  final pickerButton = find.byKey(
+    const ValueKey('actor-identity-picker-button'),
+  );
+  await _waitForEvidenceFinder(
+    tester,
+    pickerButton,
+    description: description,
+    timeout: timeout,
+    lastCompletedStep: lastCompletedStep,
+    now: now,
+  );
+  await tapWhenVisible(tester, pickerButton, description: description);
+  await waitForEngineNativeWidget(
+    tester,
+    find.byKey(const ValueKey('actor-identity-picker-dialog')),
+    description:
+        'the actor identity picker dialog to open after tapping the picker '
+        'button ($description)',
+    timeout: timeout,
+    lastCompletedStep: lastCompletedStep,
+    now: now,
+  );
+}
+
 Future<void> selectActorIdentity(WidgetTester tester, String fanId) async {
   await _waitForCommunityEntryResolution(tester);
   // Shipped engine-native packages bind role policy to an active account, so
@@ -1897,20 +1956,9 @@ Future<void> selectActorIdentity(WidgetTester tester, String fanId) async {
   final pickerButton = find.byKey(
     const ValueKey('actor-identity-picker-button'),
   );
-  await _waitForEvidenceFinder(
+  await openActorIdentityPickerDialog(
     tester,
-    pickerButton,
     description: 'actor identity picker while selecting $fanId',
-  );
-  await tapWhenVisible(
-    tester,
-    pickerButton,
-    description: 'actor identity picker while selecting $fanId',
-  );
-  await tester.pumpAndSettle();
-  expect(
-    find.byKey(const ValueKey('actor-identity-picker-dialog')),
-    findsOneWidget,
   );
 
   final actorIdentityOption = find.byKey(
@@ -2110,20 +2158,10 @@ Future<void> signInEvidenceAccount(
 ) async {
   await _waitForCommunityEntryResolution(tester);
   if (find.byKey(const ValueKey('community-entry-gate')).evaluate().isEmpty) {
-    final pickerButton = find.byKey(
-      const ValueKey('actor-identity-picker-button'),
-    );
-    await _waitForEvidenceFinder(
+    await openActorIdentityPickerDialog(
       tester,
-      pickerButton,
       description: 'actor identity picker before signing in as $displayName',
     );
-    await tapWhenVisible(
-      tester,
-      pickerButton,
-      description: 'actor identity picker before signing in as $displayName',
-    );
-    await tester.pumpAndSettle();
     final specificPerson = find.byKey(
       const ValueKey('actor-identity-sign-in-specific-person'),
     );

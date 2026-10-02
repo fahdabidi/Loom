@@ -381,6 +381,7 @@ void main() {
           await openEvidenceTarget(tester, target);
           final shippedPackage = await readShippedEvidencePackage(target);
           for (final productDocRow in selectedProductDocRows) {
+            final previousRowWalked = lastRowWalked;
             lastRowWalked = '${productDocRow.workflowId}/${productDocRow.role}';
             emitProgress(
               'workflow-start',
@@ -402,6 +403,7 @@ void main() {
                     bodyWatch: bodyWatch,
                     b25Model: productDocRow,
                     capture: capture,
+                    previousRowWalked: previousRowWalked,
                   );
                 } else {
                   final rowSelection = selectB25WorkflowRow(
@@ -439,6 +441,7 @@ void main() {
                           selector: selector,
                           b25Model: productDocRow,
                           capture: capture,
+                          previousRowWalked: previousRowWalked,
                         );
                 }
                 await assertB25CommunityRowSurface(
@@ -753,10 +756,10 @@ void main() {
                 await ensureTargetOpen(mosqueTarget);
                 await selectActorIdentity(tester, mosqueAdminRoleId);
                 await capture('B17_actor_identity_inventory_active_admin');
-                await tester.tap(
-                  find.byKey(const ValueKey('actor-identity-picker-button')),
+                await openActorIdentityPickerDialog(
+                  tester,
+                  description: 'actor identity picker during B17 capture',
                 );
-                await tester.pumpAndSettle();
                 await capture('B17_actor_identity_inventory_picker');
                 await tester.tap(find.text('Cancel'));
                 await tester.pumpAndSettle();
@@ -781,10 +784,10 @@ void main() {
               entry: productDocEntry(row),
               walk: () async {
                 await ensureTargetOpen(mosqueTarget);
-                await tester.tap(
-                  find.byKey(const ValueKey('actor-identity-picker-button')),
+                await openActorIdentityPickerDialog(
+                  tester,
+                  description: 'actor identity picker during B18 capture',
                 );
-                await tester.pumpAndSettle();
                 await capture('B18_member_actor_identity_picker_dialog');
                 await tester.tap(find.text('Cancel'));
                 await tester.pumpAndSettle();
@@ -845,10 +848,10 @@ void main() {
                 );
                 await capture('B19_member_primary_member_workflow');
                 final beforeCancelVisibleText = _visibleTextFor(tester);
-                await tester.tap(
-                  find.byKey(const ValueKey('actor-identity-picker-button')),
+                await openActorIdentityPickerDialog(
+                  tester,
+                  description: 'actor identity picker during B19 capture',
                 );
-                await tester.pumpAndSettle();
                 await capture('B19_member_alternate_leave_unchanged');
                 await tester.tap(find.text('Cancel'));
                 await tester.pumpAndSettle();
@@ -2034,6 +2037,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
   required _ShippedWorkflowSelector selector,
   required B25ProductDocInteractionModel b25Model,
   required Future<void> Function(String name) capture,
+  String? previousRowWalked,
 }) async {
   await assertB25CommunityRowSurface(
     tester: tester,
@@ -2042,6 +2046,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
     role: b25Model.role,
     boundary: 'before',
     captureDiagnostic: capture,
+    previousRowWalked: previousRowWalked,
   );
   final communitySurface = evidenceTargetRoute(target);
   void beatSubstep(
@@ -2065,7 +2070,23 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
     );
   }
 
-  if (selector.accountId case final accountId?) {
+  if (loomAuthSession != null) {
+    // Production wiring is active: `selector.accountId`, when present, is a
+    // demo-identity-space value derived from a package seed and has no
+    // remote meaning -- the seed does not exist remotely, and the local
+    // role-aliased picker option (`actor-identity-option-<roleId>`) cannot
+    // sign in here either, because RemoteLoomAuthApi.signIn rejects any
+    // accountId that is not the authenticated token's own fanId. So the
+    // remote check must win this branch regardless of `accountId`.
+    // Authenticate as the seeded fan that actually holds this role instead
+    // -- see HARNESS-production-wiring-and-direct-grant-auth.md "authenticate
+    // per seeded fan, in-process".
+    beatSubstep(
+      WalkthroughSubstep.signingInEvidenceAccount,
+      account: selector.roleId,
+    );
+    await authenticateEvidenceFanForRemote(tester, roleId: selector.roleId);
+  } else if (selector.accountId case final accountId?) {
     final displayName = 'Shipped $accountId';
     beatSubstep(
       WalkthroughSubstep.seedingEvidenceAccounts,
@@ -2084,18 +2105,6 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       account: displayName,
     );
     await signInEvidenceAccount(tester, displayName);
-  } else if (loomAuthSession != null) {
-    // Production wiring is active: the local role-aliased picker option
-    // (`actor-identity-option-<roleId>`) cannot sign in here, because
-    // RemoteLoomAuthApi.signIn rejects any accountId that is not the
-    // authenticated token's own fanId. Authenticate as the seeded fan that
-    // actually holds this role first -- see HARNESS-production-wiring-and-
-    // direct-grant-auth.md "authenticate per seeded fan, in-process".
-    beatSubstep(
-      WalkthroughSubstep.signingInEvidenceAccount,
-      account: selector.roleId,
-    );
-    await authenticateEvidenceFanForRemote(tester, roleId: selector.roleId);
   } else {
     beatSubstep(
       WalkthroughSubstep.selectingActorIdentity,
@@ -3398,6 +3407,7 @@ Future<_B25WalkthroughResult> _captureMissingB25PackageWorkflow({
   required WalkthroughBodyWatch bodyWatch,
   required B25ProductDocInteractionModel b25Model,
   required Future<void> Function(String name) capture,
+  String? previousRowWalked,
 }) async {
   await assertB25CommunityRowSurface(
     tester: tester,
@@ -3406,6 +3416,7 @@ Future<_B25WalkthroughResult> _captureMissingB25PackageWorkflow({
     role: b25Model.role,
     boundary: 'before',
     captureDiagnostic: capture,
+    previousRowWalked: previousRowWalked,
   );
   void beatSubstep(WalkthroughSubstep substep, {String? role, String? tabId}) {
     final progress = buildWalkthroughSubstepProgress(
