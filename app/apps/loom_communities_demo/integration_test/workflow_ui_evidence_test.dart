@@ -5279,6 +5279,7 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
   );
 
   final creatingRoleId = creatorRoleId ?? selector.roleId;
+  final workflowType = selector.machine.workflowType;
   await _selectPackageTab(
     tester: tester,
     target: target,
@@ -5286,8 +5287,24 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
     roleId: creatingRoleId,
     tabId: plan.creationBinding.tabId,
   );
+  // Beat after EACH of the several individually-fine waits between here and
+  // the created-instance beat below: the create FAB appearing, the form
+  // rendering, each field being filled, and the created instance appearing
+  // all carry their own ~2m45s inner budget (see `waitForEngineNativeWidget`,
+  // `waitForCreatedEngineNativeInstanceId`), and this dance can stack several
+  // of them in sequence. Before this fix the whole span shared ONE beat
+  // ("opening the creation tab"), so individually-fine waits could sum past
+  // the watchdog's single no-progress budget even though nothing was stuck
+  // -- see CLAUDE.md "HARNESS -- the arrangement seam must beat its own
+  // steps".
+  bodyWatch.beat(
+    lastCompletedStep:
+        'opened tab ${plan.creationBinding.tabId} for $workflowType as '
+        '$creatingRoleId',
+    attemptedStep: 'opening the create action for $workflowType',
+    waitingFor: 'the create FAB for $workflowType to become tappable',
+  );
 
-  final workflowType = selector.machine.workflowType;
   final createFab = find.byKey(ValueKey('creatable-fab-$workflowType'));
   final speedDial = find.byKey(const ValueKey('creatable-fab-speed-dial'));
   await prepareCreatableFabForTap(
@@ -5319,14 +5336,36 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
       plan.creationBinding.cardSurfaceFamily == 'event-rsvp' &&
       plan.creationBinding.responseTable != null;
   final keyPrefix = usesEventRsvpCreation ? 'new-event' : 'new-$workflowType';
-  if (plan.fieldValues.isNotEmpty) {
+  final fieldEntries = plan.fieldValues.entries.toList(growable: false);
+  bodyWatch.beat(
+    lastCompletedStep: 'opened the create action for $workflowType',
+    attemptedStep: fieldEntries.isEmpty
+        ? 'waiting for the $workflowType creation form to render'
+        : 'waiting for the $workflowType creation form to render field '
+              '"${fieldEntries.first.key}"',
+    waitingFor: fieldEntries.isEmpty
+        ? 'the $workflowType creation form submit control'
+        : 'the editor for "${fieldEntries.first.key}" to render',
+  );
+  if (fieldEntries.isNotEmpty) {
     await waitForEngineNativeWidget(
       tester,
-      find.byKey(ValueKey('$keyPrefix-editor-${plan.fieldValues.keys.first}')),
+      find.byKey(ValueKey('$keyPrefix-editor-${fieldEntries.first.key}')),
       description: 'shipped $workflowType creation form (remote arrangement)',
     );
   }
-  for (final entry in plan.fieldValues.entries) {
+  bodyWatch.beat(
+    lastCompletedStep: 'the $workflowType creation form is rendered',
+    attemptedStep: fieldEntries.isEmpty
+        ? 'submitting the creation form for $workflowType'
+        : 'filling creation field "${fieldEntries.first.key}" for '
+              '$workflowType',
+    waitingFor: fieldEntries.isEmpty
+        ? 'the submit control for $workflowType to become tappable'
+        : 'the editor for "${fieldEntries.first.key}" to accept input',
+  );
+  for (var i = 0; i < fieldEntries.length; i++) {
+    final entry = fieldEntries[i];
     final editor = find.byKey(ValueKey('$keyPrefix-editor-${entry.key}'));
     expect(
       editor,
@@ -5343,7 +5382,7 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
         requiresFutureValue: plan.clockConstrainedFields.contains(entry.key),
       );
     } else if (plan.boolFields.contains(entry.key)) {
-      await _fillB25BoolField(
+      await fillB25BoolField(
         tester,
         editor: editor,
         requiredValue:
@@ -5352,6 +5391,19 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
     } else {
       await tester.enterText(editor, entry.value);
     }
+    final nextField = i + 1 < fieldEntries.length
+        ? fieldEntries[i + 1].key
+        : null;
+    bodyWatch.beat(
+      lastCompletedStep:
+          'filled creation field "${entry.key}" for $workflowType',
+      attemptedStep: nextField == null
+          ? 'submitting the creation form for $workflowType'
+          : 'filling creation field "$nextField" for $workflowType',
+      waitingFor: nextField == null
+          ? 'the submit control for $workflowType to become tappable'
+          : 'the editor for "$nextField" to accept input',
+    );
   }
 
   final submit = find.byKey(ValueKey('$keyPrefix-submit'));
@@ -5361,6 +5413,13 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
     tabId: plan.creationBinding.tabId,
   );
   await tester.tap(submit, warnIfMissed: false);
+  bodyWatch.beat(
+    lastCompletedStep: 'submitted the creation form for $workflowType',
+    attemptedStep: 'identifying the created $workflowType instance',
+    waitingFor:
+        'a new $workflowType instance id to appear in tab '
+        '${plan.creationBinding.tabId}',
+  );
   final instanceId = await waitForCreatedEngineNativeInstanceId(
     tester,
     workflowType: workflowType,
@@ -5506,25 +5565,6 @@ Future<void> _fillB25DateOrTimeField(
     warnIfMissed: false,
   );
   await tester.pumpAndSettle();
-}
-
-/// Fills one required `bool` creation-form field by tapping its
-/// `SwitchListTile` (`part33_generic_creation_card.dart`'s `_editor`) only
-/// when its rendered value does not already match [requiredValue] -- a
-/// `SwitchListTile` has no direct setter, only `onChanged`'s toggle, so
-/// reading the rendered value first is what makes this idempotent rather
-/// than always flipping it (and potentially flipping it the wrong way).
-Future<void> _fillB25BoolField(
-  WidgetTester tester, {
-  required Finder editor,
-  required bool requiredValue,
-}) async {
-  await tester.ensureVisible(editor);
-  final current = tester.widget<SwitchListTile>(editor).value;
-  if (current != requiredValue) {
-    await tester.tap(editor, warnIfMissed: false);
-    await tester.pumpAndSettle();
-  }
 }
 
 /// For a two-identity row (`selector.creatorFanId != selector.actorFanId`),

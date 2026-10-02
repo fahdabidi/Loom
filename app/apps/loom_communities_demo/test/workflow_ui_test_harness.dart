@@ -391,6 +391,42 @@ Future<void> prepareCreatableFabForTap({
   }
 }
 
+/// Fills one required `bool` creation-form field by tapping its
+/// `SwitchListTile` (`part33_generic_creation_card.dart`'s `_editor`) only
+/// when its rendered value does not already match [requiredValue] -- a
+/// `SwitchListTile` has no direct setter, only `onChanged`'s toggle, so
+/// reading the rendered value first is what makes this idempotent rather
+/// than always flipping it (and potentially flipping it the wrong way).
+///
+/// Re-reads the rendered value after tapping and fails loudly if it still
+/// does not match [requiredValue]. `warnIfMissed: false` suppresses
+/// Flutter's own missed-tap warning, so without this postcondition a tap
+/// that does not land would leave the field silently wrong -- and a
+/// required bool is often a consent/acknowledgment guard, so a silently
+/// unset value can present as a legitimate product block rather than the
+/// harness fault it actually is. See CLAUDE.md "HARNESS -- the arrangement
+/// seam must beat its own steps".
+Future<void> fillB25BoolField(
+  WidgetTester tester, {
+  required Finder editor,
+  required bool requiredValue,
+}) async {
+  await tester.ensureVisible(editor);
+  final current = tester.widget<SwitchListTile>(editor).value;
+  if (current != requiredValue) {
+    await tester.tap(editor, warnIfMissed: false);
+    await tester.pumpAndSettle();
+  }
+  final observed = tester.widget<SwitchListTile>(editor).value;
+  if (observed != requiredValue) {
+    fail(
+      'B25 bool field tap did not land: expected the SwitchListTile at '
+      '$editor to read $requiredValue after toggling, but it still reads '
+      '$observed.',
+    );
+  }
+}
+
 /// A named primary-action candidate and the precise finder scoped to its
 /// current workflow surface.
 class PrimaryActionCandidate<T> {

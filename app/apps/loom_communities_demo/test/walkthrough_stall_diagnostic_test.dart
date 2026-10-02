@@ -2002,6 +2002,239 @@ void main() {
       });
     });
   });
+
+  group(
+    "beating across the arrangement seam's own create-instance steps",
+    () {
+      // Mirrors the shape `arrangeRemoteInstanceFor` actually executes while
+      // arranging a remote instance: select the creation tab, open the
+      // create action, wait for the form to render, fill the required
+      // field, submit, then identify the created instance -- six steps,
+      // each individually comfortably under the watchdog's timeout, that
+      // used to share ONE beat between "opening the creation tab" and
+      // "created ... instance". See CLAUDE.md "HARNESS -- the arrangement
+      // seam must beat its own steps".
+      const stepDelay = Duration(seconds: 2);
+      const watchTimeout = Duration(seconds: 5);
+
+      Future<String> sixStepCreationDanceWithNoBeats() async {
+        Future<void> step() => Future<void>.delayed(stepDelay);
+
+        await step(); // (1) select the creation tab
+        await step(); // (2) open the create action
+        await step(); // (3) wait for the creation form to render
+        await step(); // (4) fill the required field
+        await step(); // (5) submit the form
+        await step(); // (6) identify the created instance
+        return 'arranged';
+      }
+
+      test(
+        'six individually-fine steps survive when each one beats',
+        () {
+          fakeAsync((async) {
+            final clock = async.getClock(DateTime.utc(2026, 1, 1));
+            final watch = WalkthroughBodyWatch(
+              timeout: watchTimeout,
+              now: clock.now,
+              lastCompletedStep: 'authenticated creator',
+              attemptedStep: 'opening the creation tab',
+              waitingFor: 'the shipped creation form to become available',
+            );
+
+            Future<String> beatenDance() async {
+              Future<void> step() => Future<void>.delayed(stepDelay);
+              await step();
+              watch.beat(attemptedStep: 'opening the create action');
+              await step();
+              watch.beat(
+                attemptedStep: 'waiting for the creation form to render',
+              );
+              await step();
+              watch.beat(attemptedStep: 'filling creation field "title"');
+              await step();
+              watch.beat(attemptedStep: 'submitting the creation form');
+              await step();
+              watch.beat(
+                attemptedStep: 'identifying the created instance',
+              );
+              await step();
+              watch.beat(attemptedStep: 'finishing remote arrangement');
+              return 'arranged';
+            }
+
+            final result = watchWalkthroughBodyWith<String>(
+              beatenDance(),
+              watch,
+            );
+            String? outcome;
+            Object? failure;
+            result.then<void>(
+              (value) => outcome = value,
+              onError: (Object error, StackTrace _) => failure = error,
+            );
+
+            // Six steps of stepDelay each sum to well past watchTimeout, but
+            // no SINGLE gap between beats does.
+            async.elapse(stepDelay * 6);
+
+            expect(failure, isNull);
+            expect(outcome, 'arranged');
+          });
+        },
+      );
+
+      test(
+        'the same six steps stall the watchdog when none of them beat it',
+        () {
+          fakeAsync((async) {
+            final clock = async.getClock(DateTime.utc(2026, 1, 1));
+            final watch = WalkthroughBodyWatch(
+              timeout: watchTimeout,
+              now: clock.now,
+              lastCompletedStep: 'authenticated creator',
+              attemptedStep: 'opening the creation tab',
+              waitingFor: 'the shipped creation form to become available',
+            );
+
+            final result = watchWalkthroughBodyWith<String>(
+              sixStepCreationDanceWithNoBeats(),
+              watch,
+            );
+            String? outcome;
+            Object? failure;
+            result.then<void>(
+              (value) => outcome = value,
+              onError: (Object error, StackTrace _) => failure = error,
+            );
+
+            async.elapse(stepDelay * 6);
+
+            expect(outcome, isNull);
+            expect(failure, isA<WalkthroughStallFailure>());
+            expect(
+              (failure as WalkthroughStallFailure).message,
+              contains('opening the creation tab'),
+            );
+          });
+        },
+      );
+    },
+  );
+
+  group('fillB25BoolField postcondition', () {
+    testWidgets(
+      'a bool field already at the required value is left untouched',
+      (WidgetTester tester) async {
+        const key = ValueKey('consent-switch');
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SwitchListTile(
+                key: key,
+                title: const Text('Consent'),
+                value: true,
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+        );
+
+        await fillB25BoolField(
+          tester,
+          editor: find.byKey(key),
+          requiredValue: true,
+        );
+
+        expect(tester.widget<SwitchListTile>(find.byKey(key)).value, isTrue);
+      },
+    );
+
+    testWidgets(
+      'a landed tap toggles the switch and satisfies the postcondition',
+      (WidgetTester tester) async {
+        const key = ValueKey('consent-switch');
+        var value = false;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: StatefulBuilder(
+                builder: (context, setState) => SwitchListTile(
+                  key: key,
+                  title: const Text('Consent'),
+                  value: value,
+                  onChanged: (next) => setState(() => value = next),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await fillB25BoolField(
+          tester,
+          editor: find.byKey(key),
+          requiredValue: true,
+        );
+
+        expect(tester.widget<SwitchListTile>(find.byKey(key)).value, isTrue);
+      },
+    );
+
+    testWidgets(
+      'a missed tap fails loudly instead of silently submitting the wrong '
+      'value',
+      (WidgetTester tester) async {
+        const key = ValueKey('consent-switch');
+        var value = false;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Stack(
+                children: [
+                  StatefulBuilder(
+                    builder: (context, setState) => SwitchListTile(
+                      key: key,
+                      title: const Text('Consent'),
+                      value: value,
+                      onChanged: (next) => setState(() => value = next),
+                    ),
+                  ),
+                  // Covers the switch exactly like the obscured-target
+                  // fixtures above: `tester.tap(..., warnIfMissed: false)`
+                  // hit-tests this instead, so the switch's value never
+                  // changes -- the same shape a missed real-device tap
+                  // produces.
+                  const Positioned.fill(
+                    child: AbsorbPointer(child: SizedBox.expand()),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        await expectLater(
+          () => fillB25BoolField(
+            tester,
+            editor: find.byKey(key),
+            requiredValue: true,
+          ),
+          throwsA(
+            isA<Object>().having(
+              (error) => error.toString(),
+              'postcondition failure',
+              allOf(
+                contains('B25 bool field tap did not land'),
+                contains('true'),
+                contains('false'),
+              ),
+            ),
+          ),
+        );
+        expect(tester.widget<SwitchListTile>(find.byKey(key)).value, isFalse);
+      },
+    );
+  });
 }
 
 class _TemporarilyIgnoredWalkthroughTarget extends StatefulWidget {
