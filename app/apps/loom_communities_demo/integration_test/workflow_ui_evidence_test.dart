@@ -250,6 +250,20 @@ void main() {
       }
 
       Future<void> capture(String name) {
+        if (screenshotCapture.finished) {
+          // `finish()` has already run, so the walkthrough has finalised its
+          // report and `flutter drive` teardown may begin at any moment.
+          // This call is an abandoned row's stall-diagnostic capture still
+          // in flight (see `runB25WorkflowRowScope`'s `Future.any` race,
+          // which never cancels the loser) -- emitting `screenshot-start`
+          // here would drive the host capture CLI to reach for a real
+          // device frame at exactly the moment teardown is uninstalling the
+          // app, which the device-dialog guard then correctly refuses as a
+          // foreign-focused-window frame. See CLAUDE.md "HARNESS -- a
+          // stall's diagnostic frame races teardown".
+          screenshotCapture.recordSkippedAfterFinish(name);
+          return Future<void>.value();
+        }
         _emitCaptureProgress({
           'status': 'screenshot-start',
           'phase': _phaseForScreenshotName(name),
@@ -1527,8 +1541,30 @@ class _ScreenshotCaptureRecorder {
   final List<String> _requestedNames = <String>[];
   final List<String> _completedNames = <String>[];
   final List<String> _unavailableNames = <String>[];
+  final List<String> _skippedAfterFinishNames = <String>[];
   String? _unavailableReason;
   bool _finished = false;
+
+  /// Whether [finish] has already run. `runB25WorkflowRowScope` races each
+  /// row's work against `WalkthroughBodyWatch.deadline` with `Future.any`,
+  /// which never cancels the loser -- a row whose race the deadline wins
+  /// keeps executing in the background, including any stall-diagnostic
+  /// `capture` call still ahead of it. Once this is true the walkthrough has
+  /// already finalised its report and `flutter drive` teardown may begin at
+  /// any moment, so a caller must not start a fresh capture attempt -- see
+  /// [capture]'s own `_finished` check.
+  bool get finished => _finished;
+
+  /// Records that [name] was never attempted because [finished] was already
+  /// true, without emitting the `screenshot-start` progress event that would
+  /// otherwise drive the host capture CLI to reach for a real device frame
+  /// (see CLAUDE.md "HARNESS -- a stall's diagnostic frame races teardown").
+  /// Call this instead of [capture] once [finished] is observed true.
+  void recordSkippedAfterFinish(String name) {
+    _requestedNames.add(name);
+    _skippedAfterFinishNames.add(name);
+    _syncReportData();
+  }
 
   Future<void> capture(String name) async {
     _requestedNames.add(name);
@@ -1592,8 +1628,13 @@ class _ScreenshotCaptureRecorder {
       'requestedCount': _requestedNames.length,
       'completedCount': _completedNames.length,
       'unavailableCount': _unavailableNames.length,
+      'skippedAfterFinishCount': _skippedAfterFinishNames.length,
       'requestedScreenshotNames': List<String>.of(_requestedNames),
       'unavailableScreenshotNames': List<String>.of(_unavailableNames),
+      if (_skippedAfterFinishNames.isNotEmpty)
+        'skippedAfterFinishScreenshotNames': List<String>.of(
+          _skippedAfterFinishNames,
+        ),
       if (_unavailableReason != null) 'reason': _unavailableReason,
     };
   }
@@ -2197,6 +2238,7 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       target: target,
       diagnosticFrameName: stallDiagnosticName,
       captureDiagnostic: capture,
+      bodyWatch: bodyWatch,
     );
     // The seed's instance id is a local-engine fixture id and cannot exist
     // remotely (package `workflowInstances` seed only the local engine --
@@ -5194,6 +5236,7 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
       target: target,
       diagnosticFrameName: diagnosticFrameName,
       captureDiagnostic: captureDiagnostic,
+      bodyWatch: bodyWatch,
     );
     plan = buildPlan(creatorFanId);
   } else {
@@ -5218,6 +5261,7 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
         excludeFanIds: {actorFanId},
         diagnosticFrameName: diagnosticFrameName,
         captureDiagnostic: captureDiagnostic,
+        bodyWatch: bodyWatch,
       );
       // A second failure here is a genuine, different-creator denial and is
       // left to propagate -- the row is out of scope.
@@ -5265,7 +5309,16 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
   await tester.tap(createFab.first, warnIfMissed: false);
   await tester.pumpAndSettle();
 
-  final keyPrefix = 'new-$workflowType';
+  // `_creationContentFor` (part01_local_extension_screen.dart) collapses
+  // EVERY event-rsvp-family workflow onto the shared literal prefix
+  // `new-event`, not `new-$workflowType` -- so garden-event-rsvp's own form
+  // renders keys like `new-event-editor-title`, never
+  // `new-garden-event-rsvp-editor-title`. Mirror that exact condition rather
+  // than assuming the per-workflow-type pattern holds for every card family.
+  final usesEventRsvpCreation =
+      plan.creationBinding.cardSurfaceFamily == 'event-rsvp' &&
+      plan.creationBinding.responseTable != null;
+  final keyPrefix = usesEventRsvpCreation ? 'new-event' : 'new-$workflowType';
   if (plan.fieldValues.isNotEmpty) {
     await waitForEngineNativeWidget(
       tester,
@@ -5288,6 +5341,13 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
         editor: editor,
         fieldType: selector.machine.instanceDataSchema[entry.key]!.type,
         requiresFutureValue: plan.clockConstrainedFields.contains(entry.key),
+      );
+    } else if (plan.boolFields.contains(entry.key)) {
+      await _fillB25BoolField(
+        tester,
+        editor: editor,
+        requiredValue:
+            plan.requiredBoolValues[entry.key] ?? entry.value == 'true',
       );
     } else {
       await tester.enterText(editor, entry.value);
@@ -5333,6 +5393,7 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
       target: target,
       diagnosticFrameName: diagnosticFrameName,
       captureDiagnostic: captureDiagnostic,
+      bodyWatch: bodyWatch,
     );
     bodyWatch.beat(
       lastCompletedStep: 're-authenticated as actor $actorFanId',
@@ -5445,6 +5506,25 @@ Future<void> _fillB25DateOrTimeField(
     warnIfMissed: false,
   );
   await tester.pumpAndSettle();
+}
+
+/// Fills one required `bool` creation-form field by tapping its
+/// `SwitchListTile` (`part33_generic_creation_card.dart`'s `_editor`) only
+/// when its rendered value does not already match [requiredValue] -- a
+/// `SwitchListTile` has no direct setter, only `onChanged`'s toggle, so
+/// reading the rendered value first is what makes this idempotent rather
+/// than always flipping it (and potentially flipping it the wrong way).
+Future<void> _fillB25BoolField(
+  WidgetTester tester, {
+  required Finder editor,
+  required bool requiredValue,
+}) async {
+  await tester.ensureVisible(editor);
+  final current = tester.widget<SwitchListTile>(editor).value;
+  if (current != requiredValue) {
+    await tester.tap(editor, warnIfMissed: false);
+    await tester.pumpAndSettle();
+  }
 }
 
 /// For a two-identity row (`selector.creatorFanId != selector.actorFanId`),

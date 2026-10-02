@@ -2226,6 +2226,7 @@ Future<String> authenticateEvidenceFanForRemote(
   Set<String> excludeFanIds = const <String>{},
   String? diagnosticFrameName,
   Future<void> Function(String name)? captureDiagnostic,
+  WalkthroughBodyWatch? bodyWatch,
 }) async {
   final session = loomAuthSession;
   if (session == null) {
@@ -2242,6 +2243,18 @@ Future<String> authenticateEvidenceFanForRemote(
     if (excludeFanIds.contains('fan-$slug')) continue;
     final username = 'loom-$slug';
     attemptedUsernames.add(username);
+    // This whole function is one un-beaten stretch from the caller's own
+    // point of view (see CLAUDE.md "HARNESS -- beat the watchdog ... and
+    // stop a stall aborting the batch") -- a full login round trip plus the
+    // multi-step identity-picker flow below is legitimate work that can
+    // genuinely exceed the body watchdog's single no-progress budget on a
+    // slow box, especially across more than one numbered-holder attempt.
+    // Beat at each internal checkpoint so that work is never mistaken for a
+    // stall.
+    bodyWatch?.beat(
+      attemptedStep: 'authenticating seeded fan $username for role $roleId',
+      waitingFor: 'a Keycloak session for $username',
+    );
     await session.logout();
     try {
       await session.loginWithTestCredentials(
@@ -2254,6 +2267,12 @@ Future<String> authenticateEvidenceFanForRemote(
       // seededEvidenceFanHolderSuffixes.
       continue;
     }
+    bodyWatch?.beat(
+      lastCompletedStep: 'authenticated $username',
+      attemptedStep: 'reopening the community route for $username',
+      waitingFor:
+          'the real auth UI to read the now-stored session for $username',
+    );
     // The auth screen may already have evaluated `listAccounts` before this
     // login persisted a session -- it mounted when the community route
     // first opened, well before this authentication completed. Reopen the
@@ -2261,6 +2280,14 @@ Future<String> authenticateEvidenceFanForRemote(
     // seedEvidenceAccounts already does for the local path and for the same
     // reason (see HARNESS-remote-account-selection-by-identity.md).
     await openEvidenceTarget(tester, target);
+    bodyWatch?.beat(
+      attemptedStep:
+          'signing in as ${_seededEvidenceFanDisplayName(slug)} through the '
+          'identity picker',
+      waitingFor:
+          'community content to load after signing in as '
+          '${_seededEvidenceFanDisplayName(slug)}',
+    );
     // A rejection past this point is a real defect in this row, not a
     // missing credential, so it is deliberately left to propagate up to the
     // walkthrough's own row-scoped failure handling rather than being

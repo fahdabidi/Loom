@@ -6,10 +6,12 @@ import 'b25_formula_guard_reachability.dart';
 /// plain text entry, mirroring exactly what
 /// `_createAndPublishShippedAnnouncement` already does for Masjid's
 /// announcement form -- plus `date`/`time`, filled through their own picker
-/// interaction (see `arrangeRemoteInstanceFor`'s date/time handling), not a
-/// text entry. Every other declared type -- `bool`, `fanId`, `fanId[]`,
-/// `list`, `url` -- needs its own widget interaction this dispatch does not
-/// build; a required field of any other type throws
+/// interaction (see `arrangeRemoteInstanceFor`'s date/time handling), and
+/// `bool`, filled by toggling a `SwitchListTile` only when its rendered value
+/// does not already match what the row needs (see
+/// [b25RequiredBoolFieldValues]). Every other declared type -- `fanId`,
+/// `fanId[]`, `list`, `url` -- needs its own widget interaction this dispatch
+/// does not build; a required field of any other type throws
 /// [B25ArrangementOutOfScopeFailure] naming it, rather than guessing at an
 /// interaction nobody has verified.
 const b25ArrangeableFieldTypes = <String>{
@@ -18,11 +20,16 @@ const b25ArrangeableFieldTypes = <String>{
   'number',
   'date',
   'time',
+  'bool',
 };
 
 /// Date/time field types, named separately from [b25ArrangeableFieldTypes]
 /// because they need a picker interaction rather than `tester.enterText`.
 const b25DateTimeFieldTypes = <String>{'date', 'time'};
+
+/// Bool field types, named separately from [b25ArrangeableFieldTypes] because
+/// they need a `SwitchListTile` toggle rather than `tester.enterText`.
+const b25BoolFieldTypes = <String>{'bool'};
 
 /// Clock functions whose presence beside a field's name in a `formula`
 /// guard marks that field as bounded relative to the clock at verification
@@ -51,6 +58,36 @@ Set<String> b25ClockConstrainedFields({
     for (final field in dateTimeFields) {
       if (formula.contains(field)) result.add(field);
     }
+  }
+  return result;
+}
+
+/// For each of [boolFields] required at creation, the literal value a
+/// candidate transition's `instanceDataEquals` guard requires it to equal --
+/// e.g. Garden's `submit-exchange` requires `privacyAcknowledged == true`.
+///
+/// A required bool field is a consent/acknowledgment checkbox more often
+/// than not, but this project has already been burned once by defaulting an
+/// unknown boolean instead of deriving it (CLAUDE.md "An unknown boolean
+/// defaulted to `false` can AUTHORIZE the thing it was meant to deny"), and a
+/// corpus sweep confirms at least one shipped guard requires `false` on a
+/// bool field (`autopayEnabled`). So this never guesses a default: a field
+/// with no entry here is left to the seed's own recorded value, exactly like
+/// every other arrangeable field type -- see `arrangeRemoteInstanceFor`'s
+/// bool field handling for what an absent entry means in practice.
+Map<String, bool> b25RequiredBoolFieldValues({
+  required Iterable<LoomWorkflowTransition> candidateTransitions,
+  required Set<String> boolFields,
+}) {
+  if (boolFields.isEmpty) return const <String, bool>{};
+  final result = <String, bool>{};
+  for (final transition in candidateTransitions) {
+    final equals = transition.guard.instanceDataEquals;
+    if (equals == null) continue;
+    if (!boolFields.contains(equals.key)) continue;
+    final value = equals.value;
+    if (value is! bool) continue;
+    result[equals.key] = value;
   }
   return result;
 }
@@ -168,6 +205,8 @@ class B25ArrangementPlan {
     required this.fieldValues,
     required this.dateTimeFields,
     required this.clockConstrainedFields,
+    required this.boolFields,
+    required this.requiredBoolValues,
     required this.arrangedState,
     required this.syntheticInstanceData,
   });
@@ -200,6 +239,18 @@ class B25ArrangementPlan {
   /// may accept the picker's "now" default, which satisfies the package
   /// precisely because nothing clock-compares it.
   final Set<String> clockConstrainedFields;
+
+  /// The subset of [fieldValues]' keys whose schema type is `bool`, so the
+  /// caller knows to toggle a `SwitchListTile` rather than enter text.
+  final Set<String> boolFields;
+
+  /// For each of [boolFields] a candidate transition's `instanceDataEquals`
+  /// guard constrains -- see [b25RequiredBoolFieldValues] -- the literal
+  /// value the caller must leave the switch at, overriding whatever the seed
+  /// itself recorded (a seed may illustrate a row whose checkbox was later
+  /// toggled). A bool field with no entry here keeps the seed's own value,
+  /// exactly like every other arrangeable field type.
+  final Map<String, bool> requiredBoolValues;
 
   /// The state the created instance will actually be in: always
   /// `machine.initialState`, never the seed's own recorded `currentState`.
@@ -393,6 +444,7 @@ B25ArrangementPlan planB25RemoteArrangement({
       machine.states[machine.initialState]?.editableFields ??
       const <String>[];
   final dateTimeFields = <String>{};
+  final boolFields = <String>{};
   final fieldValues = <String, String>{};
   for (final field in editableFields) {
     final schema = machine.instanceDataSchema[field];
@@ -411,6 +463,9 @@ B25ArrangementPlan planB25RemoteArrangement({
     if (b25DateTimeFieldTypes.contains(schema.type)) {
       dateTimeFields.add(field);
     }
+    if (b25BoolFieldTypes.contains(schema.type)) {
+      boolFields.add(field);
+    }
     final seedValue = seedInstanceData[field];
     if (seedValue == null) {
       throw B25ArrangementOutOfScopeFailure(
@@ -427,6 +482,10 @@ B25ArrangementPlan planB25RemoteArrangement({
     candidateTransitions: denialCheckCandidates,
     dateTimeFields: dateTimeFields,
   );
+  final requiredBoolValues = b25RequiredBoolFieldValues(
+    candidateTransitions: denialCheckCandidates,
+    boolFields: boolFields,
+  );
 
   return B25ArrangementPlan(
     creationBinding: creationBinding,
@@ -435,6 +494,8 @@ B25ArrangementPlan planB25RemoteArrangement({
     fieldValues: fieldValues,
     dateTimeFields: dateTimeFields,
     clockConstrainedFields: clockConstrainedFields,
+    boolFields: boolFields,
+    requiredBoolValues: requiredBoolValues,
     arrangedState: machine.initialState,
     syntheticInstanceData: syntheticInstanceData,
   );
