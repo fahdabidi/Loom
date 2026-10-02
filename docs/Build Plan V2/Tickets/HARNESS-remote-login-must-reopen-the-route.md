@@ -5,6 +5,53 @@
 **Size:** one call, mirroring the sibling path that already does it.
 **Diagnosis:** fully established in [HARNESS-remote-account-selection-by-identity.md](HARNESS-remote-account-selection-by-identity.md) — read its CONFIRMED section; do not re-derive it.
 
+## PROVEN ON-DEVICE 2026-10-02 — sign-in now completes, and the failures moved to the data layer
+
+The route-reopen fix (`ea169ea7`) was verified on a real device against the deployed backend. It works,
+and it revealed the next layer rather than curing the campaign — the documented pattern.
+
+**The quantitative proof, pre-fix against post-fix on the same rows:**
+
+| Measure | before | after |
+|---|---|---|
+| token-endpoint `200`s | 6 | 6 |
+| `app-access outcome=ok` | **4** | **87** |
+| `fan-passport outcome=ok` | **15** | **411** |
+
+Same six logins; `listAccounts` now succeeds throughout instead of throwing before it reached the
+network. The pre-fix 4 and 15 came entirely from the one row that happened not to stall.
+
+**And the stalls MOVED, which is the finding.** Every pre-fix stall read
+`Attempted step: seeded account Garden Member 1`. Now they read:
+
+    shipped plant-exchange-submission instance basil-start-request on home
+    shipped garden-volunteer-shift   instance mulch-delivery-shift on care
+    shipped garden-tool-loan         instance compact-tiller on marketplace
+    shipped garden-tool-giveaway     instance cedar-compost-bin-giveaway on marketplace
+    ... waiting for: widgets with engine-native widget for <instance-id>
+
+**Those are all seeded instance ids, and remote communities start empty by design** (the 2026-09-07
+decision: package `workflowInstances` seed only the local engine). So the harness is now authenticating
+correctly and then addressing rows that cannot exist on the remote path. **That is ticket C's residue,
+already scoped**: the capture harness addresses a seeded instance *by id*, while the live-verification
+walkthroughs *create* the instance they then act on.
+
+**Read the message, not the outcome name.** All six rows still record `row_execution_failed` with
+"Walkthrough stalled", so a count of failures is unchanged at six and would say the fix did nothing.
+The step name is what changed, and it changed from an auth problem to a data problem. A completion
+figure built on outcome names would have hidden an entire layer being cleared.
+
+**One separate finding, not Garden's:** Book Club's row stalls at
+`Waiting for: community content to load after signing in as book-member` — past sign-in, so not the
+fixed defect, and at a 3m budget rather than 2m45s, so a different wait site. It needs its own
+investigation and must not be folded into either the auth fix or the data gap.
+
+**What this does and does not change about the bar.** The walkthrough half is unaffected (54 rows,
+proven by the live-verification agent, which creates its own rows). The judge half remains
+**CONFIRMED 0** under the live-backend standard. No row became provable today; what became true is
+that the capture harness can authenticate against live services and reach real surfaces, which was the
+precondition for everything else.
+
 ## The change
 
 In `authenticateEvidenceFanForRemote` (`test/workflow_ui_test_harness.dart`), after
