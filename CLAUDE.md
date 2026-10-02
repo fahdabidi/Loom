@@ -1236,6 +1236,45 @@ prompt text, which states the number to the model and would have gone on asserti
 constant moved. **Verify a scoping report's enumerations before writing them into a ticket** — an
 undercounted population is exactly how a fix lands on some instances of a class and not the rest.
 
+### The device flow and the in-process flow have OPPOSITE identity hazards — do not carry a trap across them
+
+Found 2026-10-02 while scoping two-identity arrangement. I flagged the stale-Keycloak-SSO-cookie
+trap as a risk for the in-process harness, because this file records it costing real evidence. **It
+structurally cannot occur there**, and I verified why: `loginWithTestCredentials` is Keycloak's
+**direct access grant** — a bare POST with `grant_type: 'password'` plus username and password
+(`loom_auth_session.dart:164-202`). No browser, so no cookie, so nothing to go stale; the token can
+only belong to the posted username. The 2026-09-08 near-miss was the **device** walkthrough through
+Chrome, which genuinely does have that hazard.
+
+So the same system has two authentication paths whose identity risks are opposite, and a warning
+written for one is **wasted work** applied to the other. **Before porting a hazard between paths,
+check the mechanism, not the resemblance.** This is the precedent-transfers-on-its-discriminator rule
+arriving in the auth layer.
+
+What *does* prove acting identity in-process, since the cookie check is moot: `RemoteLoomAuthApi.signIn`
+rejects `accountId != token.fanId` (`part39_remote_auth_api.dart:242-252`), so a successful selection
+already establishes whose token is active. And **assert the actor-stamped effect field rather than the
+target state** — `sign-up` appends `$actor` to `signedUpFanIds`, so asserting that the read-back
+*contains fan B* is what distinguishes "B acted" from "someone acted". A state change alone cannot.
+
+Three more from the same scoping, each a shape worth recognising:
+
+- **One `$actor` is two different fans the moment creator ≠ actor.** A planner carrying a single
+  `actorFanId` cannot be right for both jobs: prefill `"$actor"` must resolve to the **creator** (the
+  product stamps them), while guard formulas must evaluate against the **actor**. With one id,
+  tool-loan's `if(ownerFanId == $actor, false, true)` is wrongly denied — or wrongly passed on
+  mis-synthesized data, which is worse because it banks false evidence silently.
+- **Seed dates rot, and only clock-compared fields care.** A seed is the data authority, but it carries
+  absolute dates authored weeks ago. Copying a stale `expiresAt` into a guard like
+  `isBefore(now(), expiresAt)` denies today what the package legitimately allows. Synthesize
+  relative-to-now **only** for clock-compared fields, so the seed stays authoritative everywhere else.
+- **A prefix-matching identity heuristic written for demo aliases returns null for real ids.**
+  `_fanIdMatchesRole` accepts `fanId == roleId` or `startsWith('<roleId>-')` — fine for
+  `garden-member-rina`, and never true for `fan-garden-member-2`. It was harmless while it only saw
+  seed data; the arrangement seam is where the demo and production identifier spaces now meet in one
+  function, so a real fan id silently drops a transition rather than erroring. **When two identifier
+  spaces start flowing through one function, every heuristic in it becomes a latent defect.**
+
 ### Fixing the cheapest-looking wall first can convert a crisp block into false evidence
 
 Found 2026-10-02. The B25 arrangement seam reported six distinct `blocked_by_arrangement` reasons for
