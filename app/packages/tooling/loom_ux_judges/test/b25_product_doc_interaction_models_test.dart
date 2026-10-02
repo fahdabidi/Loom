@@ -11,7 +11,7 @@ void main() {
     );
   });
 
-  test('loads all 77 B25 rows from the ten owning product docs', () {
+  test('loads all 78 B25 rows from the ten owning product docs', () {
     expect(catalog.models, hasLength(kB25ProductDocInteractionRowCount));
     expect(
       {

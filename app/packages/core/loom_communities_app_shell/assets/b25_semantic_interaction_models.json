@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "source": "B25 Semantic Interaction Models product-doc tables",
-  "rowCount": 77,
+  "rowCount": 78,
   "communities": [
     {
       "communityId": "community_ad_off",
@@ -904,6 +904,27 @@
         "redaction preview"
       ],
       "resultAndReceiverState": "Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona."
+    },
+    {
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "extensionId": "ext_garden_club",
+      "productDocPath": "docs/references/communities/garden-club-product-experience.md",
+      "workflowId": "garden-volunteer-shift",
+      "role": "member",
+      "expectedDecision": "Member decides whether to sign up for a named, dated volunteer shift with a stated capacity, and the coordinator closes the shift once it is done.",
+      "requiredPrimaryActions": [
+        "sign up",
+        "volunteer",
+        "join shift",
+        "confirm spot"
+      ],
+      "requiredAlternateActions": [
+        "cancel sign-up",
+        "leave shift",
+        "withdraw"
+      ],
+      "resultAndReceiverState": "Fresh screenshots must show the open-spot count, the member's signed-up state, the coordinator's roster view, and the closed or full state once capacity or closure is reached."
     },
     {
       "communityId": "community_mosque",

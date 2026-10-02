@@ -21,8 +21,8 @@ const b25InteractionModelFlutterAssetPath =
 /// `wf_multi-persona-workflow-evidence`); two of those IDs occur twice under
 /// different personas. They are literal `testWidgets` names with no
 /// [LoomWorkflowDefinition] behind them, so the real B25 production bar is
-/// 77 - 5 = 72 rows. This constant is the asset row count, not that bar.
-const kB25ProductDocInteractionRowCount = 77;
+/// 78 - 5 = 73 rows. This constant is the asset row count, not that bar.
+const kB25ProductDocInteractionRowCount = 78;
 
 const b25DisallowedGenericSubstitutes = <String>[
   'accept',
