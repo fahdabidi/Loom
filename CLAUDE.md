@@ -1236,6 +1236,52 @@ prompt text, which states the number to the model and would have gone on asserti
 constant moved. **Verify a scoping report's enumerations before writing them into a ticket** — an
 undercounted population is exactly how a fix lands on some instances of a class and not the rest.
 
+### Fixing the cheapest-looking wall first can convert a crisp block into false evidence
+
+Found 2026-10-02. The B25 arrangement seam reported six distinct `blocked_by_arrangement` reasons for
+Garden, and I picked the one that looked like wiring an existing widget — `garden-tool-loan` needs a
+`fanId` creation field, and the member directory already exists. A root cause agent I dispatched to
+attack that framing destroyed it in one trace, and I then verified every line myself:
+
+`"List a tool to loan"` is creatable by `garden-member` and its create action prefills
+**`ownerFanId: "$actor"`** (Garden `:1444`), while `request-loan`'s guard is
+**`if(ownerFanId == $actor, false, true)`** (`:1043`) — written precisely to deny the listing's own
+creator. So filling the field lets the plan proceed, creates the listing with the actor as owner, and
+waits for a button the product **correctly refuses to render**. The row banks an "unavailable"-shaped
+outcome meaning *"the primary was not offered"* when the truth is *"the harness made the actor the one
+identity the guard excludes."*
+
+**So the order in which walls are reported is not the order to fix them.** A diagnostic that stops at
+the first blocker tells you what it hit, not what is behind it — and the wall behind can make the fix
+actively harmful. Before building the increment a diagnosis suggests, trace **one row end to end past
+the wall** and ask what the next refusal would be.
+
+Three further things from it, each a shape worth its own recognition:
+
+- **A fixture's recorded state is its DATA authority, not its STATE authority.** The planner threw
+  "later-state" whenever the selected seed's `currentState != initialState` — but a seed's state is an
+  artifact of what the package author chose to illustrate. Measured: ~32 rows have no initial-state
+  seed while ~53 rows' primary actions fire from the initial state, so most of those walls were an
+  accident of seed choice. The nearly-free fix (arrange at `initialState`, keep the seed for its data)
+  dissolves far more rows than any new capability would.
+- **A gate written as "every candidate is denied" is defeated by one `unknown`.** The all-denied check
+  received *every* actionable transition rather than the primary-matching ones, so a formula-less
+  candidate returned `unknown`, `unknown != denied`, and `.every(denied)` never fired. That is why two
+  rows with the *same* underlying defect reported two different walls — the one whose candidates
+  happened to carry formulas was diagnosed correctly and the other was not. **Scope a candidate set
+  deliberately, and keep `unknown` a third state** rather than collapsing it either way.
+- **Filling an identity field is DIRECTIONAL, and "pick any member" fails both ways.**
+  `hoa-dues-payment` is board-created and every member transition guards `actorEqualsField: payerFanId`,
+  so that field must hold *the acting fan*; tool-loan's owner, `chess-match-meetup.opponentFanId` and
+  `platform-connection.inviteeFanId` must hold *a different* one. Derive each value from the row's own
+  candidate guards, never from a convenient default.
+
+**And I reproduced a trap this file already records, in the course of checking the agent's work.** My
+`grep` for `"prefill": { "ownerFanId": "$actor" }` found one instance and missed the load-bearing one,
+because that block spans multiple lines — the exact multi-line-prefill failure recorded above. The
+agent's citation was right and my verification query was broken. **When your check disagrees with a
+report that cites a line number, open the line before disputing it.**
+
 ### Predicting a runtime decision offline: evaluate only the clauses whose context you can reproduce
 
 Found 2026-09-19 while scoping a fix I had already framed wrongly. The B25 selector chooses which
