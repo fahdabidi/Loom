@@ -102,6 +102,34 @@ a startup hang, and missing persistence — each refuted by a single cheap check
 settled it was built in one dispatch and read in one device run, and the conclusive evidence was
 timestamps already sitting in a log I had been reading all along.
 
+### NOT a product defect, and NOT a decision for the user — checked rather than surfaced
+
+I was about to raise "should the shipped surface re-fetch when a session appears?" as a product
+question. It is not one, and raising it would have withheld work for an answer nobody owed.
+
+**A real user has a working route out.** The error branch's `Continue to secure sign-in` is
+`onPressed: _startRemoteLogin` behind key `remote-auth-login-button`
+(`part31_auth_screens.dart:200`, `part38_production_login_screen.dart:153`), and the surrounding
+comment shows the placement is deliberate. A person meeting this screen taps it and logs in through
+the browser. **No dead end exists in the shipped app**, which is precisely the difference from the
+recorded case where "Continue to secure sign-in" lived *only* in an error branch a happy-path user
+could never reach.
+
+**The harness is stuck for reasons that are specific to the harness:**
+
+- it authenticates with Keycloak's Direct Access Grant, headless, because there is no browser to drive;
+- so the offered recovery is useless *to it* even though it works for a user;
+- and it authenticates **after** the surface that reads the session has already built.
+
+**So the fix is harness-side ordering only: authenticate before the surface that reads the session is
+built.** No product change, no validator rule, no new capability — and specifically not "make the
+screen re-fetch", which would be changing the product to suit the test, something this project
+forbids and which would be unnecessary here anyway.
+
+That also keeps the two rules this ticket invoked in their proper place: they describe a *real* hazard,
+and this instance is not an example of it. An error-gated recovery is a defect when it is the only
+route; here it is one route among two, and the harness simply cannot use that one.
+
 ### Narrowed once more by code read: persistence is NOT the gap — the leading hypothesis is ORDERING
 
 Both ends of the session seam use the same store, so two of the three sub-cases above are eliminated:
