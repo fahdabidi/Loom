@@ -32,6 +32,7 @@ import '../test/b25_actor_audience_resolution.dart';
 import '../test/b25_created_instance_identity.dart';
 import '../test/b25_formula_guard_reachability.dart';
 import '../test/b25_product_doc_role_resolution.dart';
+import '../test/b25_remote_arrangement.dart';
 import '../test/b25_shipped_state_postcondition.dart';
 import '../test/b25_workflow_row_selection.dart';
 import '../test/workflow_ui_test_harness.dart';
@@ -130,6 +131,7 @@ void main() {
       var blockedByAudienceWorkflowEvidenceEntries = 0;
       var blockedBySelectorSetupWorkflowEvidenceEntries = 0;
       var blockedByPrerequisiteWorkflowEvidenceEntries = 0;
+      var blockedByArrangementWorkflowEvidenceEntries = 0;
       var actionSucceededResultUnverifiedWorkflowEvidenceEntries = 0;
       var productFindingWorkflowEvidenceEntries = 0;
       var rowExecutionFailedWorkflowEvidenceEntries = 0;
@@ -186,6 +188,8 @@ void main() {
               blockedBySelectorSetupWorkflowEvidenceEntries += 1;
             case 'blocked_by_prerequisite':
               blockedByPrerequisiteWorkflowEvidenceEntries += 1;
+            case 'blocked_by_arrangement':
+              blockedByArrangementWorkflowEvidenceEntries += 1;
             case 'action_succeeded_result_unverified':
               actionSucceededResultUnverifiedWorkflowEvidenceEntries += 1;
             case 'product_finding':
@@ -229,6 +233,8 @@ void main() {
               blockedBySelectorSetupWorkflowEvidenceEntries,
           'blockedByPrerequisiteWorkflows':
               blockedByPrerequisiteWorkflowEvidenceEntries,
+          'blockedByArrangementWorkflows':
+              blockedByArrangementWorkflowEvidenceEntries,
           'actionSucceededResultUnverifiedWorkflows':
               actionSucceededResultUnverifiedWorkflowEvidenceEntries,
           'productFindingWorkflows': productFindingWorkflowEvidenceEntries,
@@ -250,6 +256,8 @@ void main() {
               blockedBySelectorSetupWorkflowEvidenceEntries,
           'blockedByPrerequisiteWorkflows':
               blockedByPrerequisiteWorkflowEvidenceEntries,
+          'blockedByArrangementWorkflows':
+              blockedByArrangementWorkflowEvidenceEntries,
           'actionSucceededResultUnverifiedWorkflows':
               actionSucceededResultUnverifiedWorkflowEvidenceEntries,
           'productFindingWorkflows': productFindingWorkflowEvidenceEntries,
@@ -492,6 +500,9 @@ void main() {
               if (walkthroughResult.blockedBySelectorSetupCause != null)
                 'blockedBySelectorSetupCause':
                     walkthroughResult.blockedBySelectorSetupCause,
+              if (walkthroughResult.blockedByArrangementReason != null)
+                'blockedByArrangementReason':
+                    walkthroughResult.blockedByArrangementReason,
               if (walkthroughResult.actionSucceededResultUnverifiedReason !=
                   null)
                 'actionSucceededResultUnverifiedReason':
@@ -610,6 +621,8 @@ void main() {
           'blockedBySelectorSetupCause': result.blockedBySelectorSetupCause,
         if (result.blockedByPrerequisiteReason != null)
           'blockedByPrerequisiteReason': result.blockedByPrerequisiteReason,
+        if (result.blockedByArrangementReason != null)
+          'blockedByArrangementReason': result.blockedByArrangementReason,
         if (result.actionSucceededResultUnverifiedReason != null)
           'actionSucceededResultUnverifiedReason':
               result.actionSucceededResultUnverifiedReason,
@@ -1759,6 +1772,7 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
     'blocked_by_audience',
     'blocked_by_selector_setup',
     'blocked_by_prerequisite',
+    'blocked_by_arrangement',
   };
   final rows = entries
       .where((entry) => entry['b25RowOutcome'] is String)
@@ -1774,6 +1788,9 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
       .toList(growable: false);
   final blockedByPrerequisiteRows = blockedRows
       .where((entry) => entry['b25RowOutcome'] == 'blocked_by_prerequisite')
+      .toList(growable: false);
+  final blockedByArrangementRows = blockedRows
+      .where((entry) => entry['b25RowOutcome'] == 'blocked_by_arrangement')
       .toList(growable: false);
   final primaryUnavailableRows = rows
       .where((entry) => entry['b25RowOutcome'] == 'primary_action_unavailable')
@@ -1853,6 +1870,9 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
       case 'blocked_by_prerequisite':
         reason = row['blockedByPrerequisiteReason'] as String?;
         break;
+      case 'blocked_by_arrangement':
+        reason = row['blockedByArrangementReason'] as String?;
+        break;
       case 'action_succeeded_result_unverified':
         reason = row['actionSucceededResultUnverifiedReason'] as String?;
         break;
@@ -1887,6 +1907,8 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
                 ? row['blockedByAudienceReason']
                 : row['b25RowOutcome'] == 'blocked_by_selector_setup'
                 ? row['blockedBySelectorSetupReason']
+                : row['b25RowOutcome'] == 'blocked_by_arrangement'
+                ? row['blockedByArrangementReason']
                 : row['blockedByPrerequisiteReason'],
           },
       ]..sort(
@@ -1949,6 +1971,15 @@ Map<String, Object?> _summarizeB25WalkthroughRows(
       blockedByPrerequisiteRows,
       causeField: 'b25RowOutcome',
       reasonField: 'blockedByPrerequisiteReason',
+    ),
+    'blockedByArrangementRows': blockedByArrangementRows.length,
+    'blockedByArrangementRowsByCommunity': countByCommunity(
+      blockedByArrangementRows,
+    ),
+    'blockedByArrangementReasonGroups': reasonGroups(
+      blockedByArrangementRows,
+      causeField: 'b25RowOutcome',
+      reasonField: 'blockedByArrangementReason',
     ),
     'actionSucceededResultUnverifiedRows':
         actionSucceededResultUnverifiedRows.length,
@@ -2088,12 +2119,25 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       WalkthroughSubstep.signingInEvidenceAccount,
       account: selector.roleId,
     );
-    await authenticateEvidenceFanForRemote(
+    final actorFanId = await authenticateEvidenceFanForRemote(
       tester,
       roleId: selector.roleId,
       target: target,
       diagnosticFrameName: stallDiagnosticName,
       captureDiagnostic: capture,
+    );
+    // The seed's instance id is a local-engine fixture id and cannot exist
+    // remotely (package `workflowInstances` seed only the local engine --
+    // CLAUDE.md "HARNESS -- stop addressing seeded instance ids"). Arrange a
+    // real instance through the product and address that instead. Out of
+    // scope throws B25ArrangementOutOfScopeFailure, which the row scope
+    // records as its own outcome and moves on to the next row.
+    selector = await arrangeRemoteInstanceFor(
+      tester,
+      target: target,
+      package: package,
+      selector: selector,
+      actorFanId: actorFanId,
     );
   } else if (selector.accountId case final accountId?) {
     final displayName = 'Shipped $accountId';
@@ -3208,6 +3252,7 @@ class _B25WalkthroughResult {
     this.blockedBySelectorSetupReason,
     this.blockedBySelectorSetupCause,
     this.blockedByPrerequisiteReason,
+    this.blockedByArrangementReason,
     this.actionSucceededResultUnverifiedReason,
     this.rowExecutionFailureReason,
     this.actionExecutionEvidence = const <B25ActionExecutionEvidence>[],
@@ -3236,6 +3281,7 @@ class _B25WalkthroughResult {
   final String? blockedBySelectorSetupReason;
   final String? blockedBySelectorSetupCause;
   final String? blockedByPrerequisiteReason;
+  final String? blockedByArrangementReason;
   final String? actionSucceededResultUnverifiedReason;
   final String? rowExecutionFailureReason;
   final List<B25ActionExecutionEvidence> actionExecutionEvidence;
@@ -3267,10 +3313,12 @@ class _B25WalkthroughResult {
   bool get isBlockedBySelectorSetup =>
       rowOutcome == 'blocked_by_selector_setup';
   bool get isBlockedByPrerequisite => rowOutcome == 'blocked_by_prerequisite';
+  bool get isBlockedByArrangement => rowOutcome == 'blocked_by_arrangement';
   bool get isBlocked =>
       isBlockedByAudience ||
       isBlockedBySelectorSetup ||
-      isBlockedByPrerequisite;
+      isBlockedByPrerequisite ||
+      isBlockedByArrangement;
   bool get isRecordedFailure =>
       isBlocked ||
       rowOutcome == 'action_succeeded_result_unverified' ||
@@ -3303,6 +3351,9 @@ _B25WalkthroughResult _recordB25RowScopedFailure(B25RowScopedFailure failure) {
         ? failure.selectorSetupCause ?? B25SelectorSetupFailure.defaultCause
         : null,
     blockedByPrerequisiteReason: failure.rowOutcome == 'blocked_by_prerequisite'
+        ? failure.reason
+        : null,
+    blockedByArrangementReason: failure.rowOutcome == 'blocked_by_arrangement'
         ? failure.reason
         : null,
     actionSucceededResultUnverifiedReason:
@@ -4903,6 +4954,123 @@ Future<void> _selectPackageTab({
         'for role $roleId. Package tabs for that role: $packageTabIds.',
   );
   await _selectCommunityTab(tester, tabId);
+}
+
+/// Arranges a real, remote-addressable instance for [selector] by creating
+/// it through the product -- the create FAB, the package-declared creation
+/// form, submit -- using the row's own seed `instanceData` as the form's
+/// input, then returns a selector whose `instance` carries the created
+/// instance's real id instead of the seed's.
+///
+/// This replaces addressing a row by its seeded instance id, which cannot
+/// exist on the remote path (package `workflowInstances` seed only the local
+/// engine -- see CLAUDE.md "HARNESS -- stop addressing seeded instance ids").
+/// It is scoped to initial-state, single-identity rows: [actorFanId] both
+/// creates the instance and is the identity the row goes on to act as.
+/// Everything a row needs beyond that -- a different creator, intermediate
+/// transitions, an effect-born instance, or a required field of a type this
+/// seam does not fill -- throws [B25ArrangementOutOfScopeFailure], which the
+/// caller's row scope records as its own outcome and continues to the next
+/// row (see `runB25WorkflowRowScope`), never a crash.
+Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
+  WidgetTester tester, {
+  required LoomEvidenceTarget target,
+  required ShippedEvidencePackage package,
+  required _ShippedWorkflowSelector selector,
+  required String actorFanId,
+}) async {
+  final plan = planB25RemoteArrangement(
+    machine: selector.machine,
+    currentState: selector.instance.currentState,
+    roleId: selector.roleId,
+    actorFanId: actorFanId,
+    seedInstanceData: selector.instance.instanceData,
+    candidateTransitions: selector.transitions
+        .map((candidate) => candidate.transition)
+        .toList(growable: false),
+  );
+
+  await _selectPackageTab(
+    tester: tester,
+    target: target,
+    package: package,
+    roleId: selector.roleId,
+    tabId: plan.creationBinding.tabId,
+  );
+
+  final workflowType = selector.machine.workflowType;
+  final createFab = find.byKey(ValueKey('creatable-fab-$workflowType'));
+  final speedDial = find.byKey(const ValueKey('creatable-fab-speed-dial'));
+  await prepareCreatableFabForTap(
+    tester: tester,
+    createFab: createFab,
+    speedDial: speedDial,
+    workflowType: workflowType,
+    roleId: selector.roleId,
+  );
+  await waitForEngineNativeWidget(
+    tester,
+    createFab,
+    description:
+        'shipped $workflowType create action for ${selector.roleId} '
+        '(remote arrangement)',
+  );
+  await tester.ensureVisible(createFab.first);
+  await tester.pumpAndSettle();
+  await tester.tap(createFab.first, warnIfMissed: false);
+  await tester.pumpAndSettle();
+
+  final keyPrefix = 'new-$workflowType';
+  if (plan.fieldValues.isNotEmpty) {
+    await waitForEngineNativeWidget(
+      tester,
+      find.byKey(ValueKey('$keyPrefix-editor-${plan.fieldValues.keys.first}')),
+      description: 'shipped $workflowType creation form (remote arrangement)',
+    );
+  }
+  for (final entry in plan.fieldValues.entries) {
+    final editor = find.byKey(ValueKey('$keyPrefix-editor-${entry.key}'));
+    expect(
+      editor,
+      findsOneWidget,
+      reason:
+          'Shipped $workflowType declared required creation field '
+          '"${entry.key}" but did not render its package-driven editor.',
+    );
+    await tester.enterText(editor, entry.value);
+  }
+
+  final submit = find.byKey(ValueKey('$keyPrefix-submit'));
+  await tester.ensureVisible(submit);
+  final existingInstanceIds = engineNativeInstanceIdsForTab(
+    tester,
+    tabId: plan.creationBinding.tabId,
+  );
+  await tester.tap(submit, warnIfMissed: false);
+  final instanceId = await waitForCreatedEngineNativeInstanceId(
+    tester,
+    workflowType: workflowType,
+    tabId: plan.creationBinding.tabId,
+    existingInstanceIds: existingInstanceIds,
+  );
+
+  return _ShippedWorkflowSelector(
+    machine: selector.machine,
+    actionMachine: selector.actionMachine,
+    actionSourceState: selector.actionSourceState,
+    actionArchetypeFamily: selector.actionArchetypeFamily,
+    instance: LoomWorkflowSeedInstance(
+      instanceId: instanceId,
+      workflowType: selector.instance.workflowType,
+      currentState: selector.instance.currentState,
+      instanceData: selector.instance.instanceData,
+      createdByFanId: actorFanId,
+    ),
+    binding: selector.binding,
+    roleId: selector.roleId,
+    accountId: selector.accountId,
+    transitions: selector.transitions,
+  );
 }
 
 class _PublishedShippedAnnouncement {

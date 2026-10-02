@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'b25_actor_audience_resolution.dart';
+import 'b25_remote_arrangement.dart';
 import 'b25_shipped_state_postcondition.dart';
 import 'b25_workflow_row_selection.dart';
 
@@ -231,6 +232,51 @@ void main() {
         );
 
         expect(blocked.failure!.rowOutcome, 'blocked_by_selector_setup');
+        expect(blocked.failure!.screenshotNames, isEmpty);
+      },
+    );
+
+    test(
+      'an out-of-scope arrangement failure is recorded verbatim and the '
+      'next row runs',
+      () async {
+        final attemptedRows = <String>[];
+        const reason =
+            'Shipped workflow garden-tool-loan candidate transition(s) '
+            'request-loan would deny garden-member once garden-member also '
+            'becomes the instance\'s own creator -- a formula guard '
+            'requires a second, different identity, which this dispatch '
+            'does not arrange.';
+        final blocked = await runB25WorkflowRowScope<String>(() async {
+          attemptedRows.add('garden-tool-loan');
+          throw B25ArrangementOutOfScopeFailure(reason);
+        });
+        final next = await runB25WorkflowRowScope<String>(() async {
+          attemptedRows.add('garden-volunteer-shift');
+          return 'continued';
+        });
+
+        expect(attemptedRows, ['garden-tool-loan', 'garden-volunteer-shift']);
+        expect(blocked.completed, isFalse);
+        expect(blocked.failure!.rowOutcome, 'blocked_by_arrangement');
+        expect(blocked.failure!.actionProofStatus, 'blocked_by_arrangement');
+        expect(blocked.failure!.reason, reason);
+        expect(next.completed, isTrue);
+        expect(next.value, 'continued');
+      },
+    );
+
+    test(
+      'a blocked_by_arrangement row never carries captured frames',
+      () async {
+        final blocked = await runB25WorkflowRowScope<String>(
+          () async => throw B25ArrangementOutOfScopeFailure(
+            'out of scope for this dispatch',
+          ),
+          capturedScreenshotNames: () => const <String>['start'],
+        );
+
+        expect(blocked.failure!.rowOutcome, 'blocked_by_arrangement');
         expect(blocked.failure!.screenshotNames, isEmpty);
       },
     );

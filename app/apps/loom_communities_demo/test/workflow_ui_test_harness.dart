@@ -2065,10 +2065,16 @@ const List<int> seededEvidenceFanHolderSuffixes = [1, 2, 3];
 /// accountId that is not the authenticated token's own fanId, and the local
 /// picker's options are keyed by role id, not by a real fan id.
 ///
+/// Returns the real fan id of the holder that authenticated (`fan-<slug>`,
+/// the seeded-accounts convention), so a caller that goes on to create an
+/// instance through the product can prefill its own `$actor` fields with the
+/// identity that is actually signed in, rather than the seed's demo-space
+/// role alias.
+///
 /// Throws [B25SelectorSetupFailure] -- recorded by the walkthrough as a
 /// blocked row, never a crash -- only once every known holder of [roleId]
 /// has rejected its credential.
-Future<void> authenticateEvidenceFanForRemote(
+Future<String> authenticateEvidenceFanForRemote(
   WidgetTester tester, {
   required String roleId,
   required LoomEvidenceTarget target,
@@ -2118,7 +2124,7 @@ Future<void> authenticateEvidenceFanForRemote(
       diagnosticFrameName: diagnosticFrameName,
       captureDiagnostic: captureDiagnostic,
     );
-    return;
+    return 'fan-$slug';
   }
   throw B25SelectorSetupFailure(
     'No seeded remote test credential authenticated for role "$roleId". '

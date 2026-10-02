@@ -1,4 +1,5 @@
 import 'b25_actor_audience_resolution.dart';
+import 'b25_remote_arrangement.dart';
 
 /// What the walkthrough actually observed around one visible action attempt.
 ///
@@ -341,6 +342,16 @@ B25RowScopedFailure _b25RowScopedFailureFor(
     return B25RowScopedFailure(
       rowOutcome: 'blocked_by_prerequisite',
       actionProofStatus: 'blocked_by_prerequisite',
+      reason: error.reason,
+    );
+  }
+  if (error is B25ArrangementOutOfScopeFailure) {
+    // Blocked rows capture nothing before they fail: this fires before the
+    // row ever opens a package tab -- see the sibling `blocked_by_audience`
+    // comment above.
+    return B25RowScopedFailure(
+      rowOutcome: 'blocked_by_arrangement',
+      actionProofStatus: 'blocked_by_arrangement',
       reason: error.reason,
     );
   }
