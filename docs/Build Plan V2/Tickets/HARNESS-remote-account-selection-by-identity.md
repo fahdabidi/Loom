@@ -70,6 +70,43 @@ open-signup form keyed `open-signup-display-name`. Which of those the remote cho
 established either, and it matters: one selects an existing identity, the other creates one, and
 creating one under remote auth would be a different and worse outcome than failing.
 
+### Narrowed again, same day: three of the four states are now PROVEN OK, from the run's own telemetry
+
+The capture log carries binding telemetry for the identity services across those Garden rows:
+
+    service=fan-passport mode=remote scope=ext_garden_club outcome=ok status=200   x15
+    service=app-access   mode=remote scope=ext_garden_club outcome=ok status=200   x4
+    (plus one never-called each, from registration before first use)
+
+So, against the four states this ticket listed:
+
+| State | Verdict |
+|---|---|
+| authenticated | **proven** — the token endpoint answered 200 and the engine calls carry a bearer |
+| `listAccounts` called | **proven** — 4 app-access calls (resolve membership, list group members) |
+| `listAccounts` returned | **proven** — 15 fan-passport fetches, every one 200, zero failures |
+| the rows rendered findably | **the only unproven state, and therefore the defect** |
+
+**So this is a rendering or finder problem, not auth, not data, and not a service call.** The harness
+looks for `find.ancestor(of: find.text(displayName), matching: find.byType(ListTile))`. Two
+possibilities remain and the stall message cannot separate them, because an absent text and a text
+outside a `ListTile` produce the identical diagnostic:
+
+- the account text renders, but **not inside a `ListTile`** — the remote chooser may build a different
+  widget than the local one the finder was written against;
+- the account text does not render at all despite the data being present and fetched — e.g. the
+  chooser is showing a different surface, or the rows are off-viewport and never scrolled to.
+
+**The one concrete gap worth closing first, because it would have answered this already:** the stall
+reported `Diagnostic frame: (not captured)`. A stall at an account chooser should capture a frame —
+without it, every investigation of this class starts from a text description of an absent widget.
+Make the stall capture a frame, and dump the candidate widget types around the expected text.
+
+**Do not widen the finder to `byType(Widget)` or match the text alone.** That would make the step
+pass by selecting whatever happens to contain the string, which on an identity chooser is the single
+most dangerous shortcut available — this repo already records a stale session banking evidence under
+the wrong fan, and the `signIn` `fanId` guard is the only reason it surfaced.
+
 ## FIRST: establish which of two causes this is. They are indistinguishable from the evidence above.
 
 A timeout waiting for that text is produced equally by both of these, and **this run does not
