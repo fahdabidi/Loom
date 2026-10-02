@@ -29,7 +29,7 @@ void main() {
         'community_platform_social': 6,
         'community_hoa': 8,
         'community_ad_off': 6,
-        'community_garden_club': 5,
+        'community_garden_club': 6,
         'community_camera_club': 3,
       }),
     );
