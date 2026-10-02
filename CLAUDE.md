@@ -1771,7 +1771,7 @@ Book Club regeneration `d87f9875`.** Use these over every figure below where the
 | App shell | **448** (+2 skipped), exit 0 — moved 421 → 435 → 443 → 447 → 448 | 421 (+2) | **+27, every case accounted.** `b4b691f9` +14: the state-badge conformance test loops the archetype registry, so 14 archetypes − 1 exempt (`table`) = 13 cases plus 1 standalone. `f7128ba3` +8: 7 in the new field-label humanizer conformance file, 1 added to the calendar end-to-end file. `a3ee44fd` +4: the four declared cases in `binding_kind_summary_readonly_test.dart`. `ee8e9483` +1: the test asserting the production-engine gate **fires** rather than silently resolving local. `flutter analyze` clean throughout |
 | Workflow engine | **345** (+1 skipped) = **346 cases**, exit 0 | 341 (+5) = 346 | **total identical**; four PG tests that previously skipped actually ran. Skips going DOWN is the direction that means more was proven |
 | Workflow service | **165** (+1) **−3**, all 3 proven environmental | 168 (+1) = 169 | total 169, exact. See the contention note below |
-| Demo app | **274**, exit 0, ZERO failures, zero skipped — re-measured 2026-10-02 by me on a quiet box (94.5% idle), after the remote-arrangement dispatch. **Read the ±1 note below before treating either 274 or the old 265 as exact.** | 265 | **+3 across the day to reach the superseded 265, every case accounted:** `36734297` +2 (`b25_actor_identity_picker_async_open_test.dart`, the async picker-open race), `3cb47f8e` +1 (`remote_account_chooser_stall_diagnostic_test.dart`, the stall-diagnostic instrument). The declared-count check ran at each step and showed tracked files unchanged both times — 254/254, then 256/256, delta 0 — so every increment is a new file and nothing existing was deleted or renumbered. **This suite is GREEN and any failure in it is new.** See below |
+| Demo app | **276**, exit 0, ZERO failures, zero skipped — re-measured 2026-10-02 by me after the provable-source-state dispatch (`9dac864f`); was **274** earlier the same day after `a8845f57`. **Read the ±1 note below before treating 276 or the old 265 as exact.** | 274 | **+3 across the day to reach the superseded 265, every case accounted:** `36734297` +2 (`b25_actor_identity_picker_async_open_test.dart`, the async picker-open race), `3cb47f8e` +1 (`remote_account_chooser_stall_diagnostic_test.dart`, the stall-diagnostic instrument). The declared-count check ran at each step and showed tracked files unchanged both times — 254/254, then 256/256, delta 0 — so every increment is a new file and nothing existing was deleted or renumbered. **This suite is GREEN and any failure in it is new.** See below |
 
 **The demo baseline carries an unreconciled ±1, recorded rather than smoothed over.** Measured
 2026-10-02: the suite runs **274** green, and the declared-test delta from `HEAD` to the working tree
@@ -1784,12 +1784,20 @@ so two tracked tests arrived from other work in between — which predicts **267
 is unexplained in that chain, and I did not resolve it**: doing so means running the suite at a clean
 `HEAD`, which was not safe with six files of unverified work in the tree.
 
-So: **274 is measured and trustworthy; 266 is derived; the old 265 and the predicted 267 cannot both
+So: **276 is measured and trustworthy; 266 is derived; the old 265 and the predicted 267 cannot both
 be right.** Treat this row as a *change* detector until someone runs a clean `HEAD`. And note the
 declared-vs-runtime offset for this package is **8**, from parameterised and looped cases elsewhere in
 it — so a declared count is never an absolute cross-check here, only a delta check. Writing down the
 ±1 is the point: a baseline that quietly absorbs an unexplained case is exactly how the app-shell row
 sat at 375 while the suite ran 403.
+
+**The offset is now confirmed stable at 8 across two independent measurements**, which strengthens the
+derivation above without closing it: 266 declared → 274 runtime after `a8845f57`, then 268 declared →
+276 runtime after `9dac864f`. Both deltas were +2 declared and +2 runtime, each accounted to a named
+file (`b25_workflow_row_scope_test.dart` 18→20, then `b25_remote_arrangement_test.dart` 6→8), with no
+tracked file losing a test in either step. A stable offset means a declared-count delta is a reliable
+*change* detector for this package — and it still cannot settle the historical ±1, because the 265
+figure may have been taken at a commit whose offset was 9.
 
 **The demo app suite is green for the first time — so ANY failure in it is now new.** For months this
 row told you to expect exactly one failure and to identify it by its message. That is no longer true:
