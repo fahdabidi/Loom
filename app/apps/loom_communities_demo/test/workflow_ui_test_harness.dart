@@ -2071,6 +2071,8 @@ const List<int> seededEvidenceFanHolderSuffixes = [1, 2, 3];
 Future<void> authenticateEvidenceFanForRemote(
   WidgetTester tester, {
   required String roleId,
+  String? diagnosticFrameName,
+  Future<void> Function(String name)? captureDiagnostic,
 }) async {
   final session = loomAuthSession;
   if (session == null) {
@@ -2102,7 +2104,12 @@ Future<void> authenticateEvidenceFanForRemote(
     // missing credential, so it is deliberately left to propagate up to the
     // walkthrough's own row-scoped failure handling rather than being
     // swallowed here.
-    await signInEvidenceAccount(tester, _seededEvidenceFanDisplayName(slug));
+    await signInEvidenceAccount(
+      tester,
+      _seededEvidenceFanDisplayName(slug),
+      diagnosticFrameName: diagnosticFrameName,
+      captureDiagnostic: captureDiagnostic,
+    );
     return;
   }
   throw B25SelectorSetupFailure(
@@ -2154,13 +2161,19 @@ Future<void> seedEvidenceAccounts(
 
 Future<void> signInEvidenceAccount(
   WidgetTester tester,
-  String displayName,
-) async {
+  String displayName, {
+  Duration? timeout,
+  DateTime Function()? now,
+  String? diagnosticFrameName,
+  Future<void> Function(String name)? captureDiagnostic,
+}) async {
   await _waitForCommunityEntryResolution(tester);
   if (find.byKey(const ValueKey('community-entry-gate')).evaluate().isEmpty) {
     await openActorIdentityPickerDialog(
       tester,
       description: 'actor identity picker before signing in as $displayName',
+      timeout: timeout,
+      now: now,
     );
     final specificPerson = find.byKey(
       const ValueKey('actor-identity-sign-in-specific-person'),
@@ -2172,6 +2185,10 @@ Future<void> signInEvidenceAccount(
       tester,
       find.byKey(const ValueKey('open-signup-display-name')),
       description: 'specific-person account chooser for $displayName',
+      timeout: timeout,
+      now: now,
+      diagnosticFrameName: diagnosticFrameName,
+      captureDiagnostic: captureDiagnostic,
     );
   }
 
@@ -2183,6 +2200,10 @@ Future<void> signInEvidenceAccount(
     tester,
     accountRow,
     description: 'seeded account $displayName',
+    timeout: timeout,
+    now: now,
+    diagnosticFrameName: diagnosticFrameName,
+    captureDiagnostic: captureDiagnostic,
   );
   await tester.ensureVisible(accountRow.first);
   await tester.tap(accountRow.first, warnIfMissed: false);
@@ -2190,6 +2211,8 @@ Future<void> signInEvidenceAccount(
     tester,
     find.byKey(const ValueKey('actor-identity-picker-button')),
     description: 'community content after signing in as $displayName',
+    timeout: timeout,
+    now: now,
   );
 }
 
@@ -2267,6 +2290,8 @@ Future<void> _waitForEvidenceFinder(
   Duration? timeout,
   String? lastCompletedStep,
   DateTime Function()? now,
+  String? diagnosticFrameName,
+  Future<void> Function(String name)? captureDiagnostic,
 }) async {
   final budget = WalkthroughWaitBudget(
     timeout: timeout ?? WalkthroughWaitBudget.defaultInnerWaitTimeout,
@@ -2278,12 +2303,22 @@ Future<void> _waitForEvidenceFinder(
     }
     await tester.pump(const Duration(milliseconds: 50));
   }
+  if (diagnosticFrameName != null && captureDiagnostic != null) {
+    await captureDiagnostic(diagnosticFrameName);
+  }
   throw WalkthroughStallFailure(
     buildWalkthroughStallMessage(
       lastCompletedStep: lastCompletedStep,
       attemptedStep: description,
-      waitingFor: finder.describeMatch(Plurality.many),
+      // The bare finder description only names what was absent. A stall here
+      // has repeatedly been mistaken for an account-selection defect when it
+      // was actually unproven rendering -- dumping what IS on screen lets the
+      // next stall tell those apart instead of guessing (see
+      // HARNESS-remote-account-display-name-selection.md).
+      waitingFor:
+          '${finder.describeMatch(Plurality.many)}. ${_visibleScreenDescription()}',
       budget: budget,
+      diagnosticFrameName: diagnosticFrameName,
     ),
   );
 }
@@ -2343,6 +2378,8 @@ String _visibleScreenDescription() {
     find.byKey(const ValueKey('actor-identity-picker-dialog')),
   );
   addMarker('localExtensionScreen', find.byType(LocalExtensionScreen));
+  addMarker('loomAuthScreen', find.byType(LoomAuthScreen));
+  addMarker('listTile', find.byType(ListTile));
   addMarker('alertDialog', find.byType(AlertDialog));
   addMarker('scaffold', find.byType(Scaffold));
   addMarker('scrollable', find.byType(Scrollable));

@@ -2049,6 +2049,9 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
     previousRowWalked: previousRowWalked,
   );
   final communitySurface = evidenceTargetRoute(target);
+  final stallDiagnosticName =
+      '${target.phase}_${target.extensionId}_'
+      '${b25Model.workflowId}_${b25Model.role}_STALL_DIAGNOSTIC';
   void beatSubstep(
     WalkthroughSubstep substep, {
     String? account,
@@ -2085,7 +2088,12 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       WalkthroughSubstep.signingInEvidenceAccount,
       account: selector.roleId,
     );
-    await authenticateEvidenceFanForRemote(tester, roleId: selector.roleId);
+    await authenticateEvidenceFanForRemote(
+      tester,
+      roleId: selector.roleId,
+      diagnosticFrameName: stallDiagnosticName,
+      captureDiagnostic: capture,
+    );
   } else if (selector.accountId case final accountId?) {
     final displayName = 'Shipped $accountId';
     beatSubstep(
@@ -2162,9 +2170,6 @@ Future<_B25WalkthroughResult> _runB25ShippedWorkflowWalkthrough({
       'waiting for a tappable shipped workflow action for '
       '${b25Model.workflowId} instance ${selector.instance.instanceId} '
       'on the ${selector.binding.tabId} tab';
-  final stallDiagnosticName =
-      '${target.phase}_${target.extensionId}_'
-      '${b25Model.workflowId}_${b25Model.role}_STALL_DIAGNOSTIC';
 
   final primaryCandidates = selector.transitions
       .where(
