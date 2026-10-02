@@ -1723,10 +1723,33 @@ row told you to expect exactly one failure and to identify it by its message. Th
 still existed. **The bar for this suite is now 262 passed, 0 failed, 0 skipped.** A single failure is
 a regression, not a known quantity, and there is no longer any failure you should read past.
 
-`flutter analyze` on `app/apps/loom_communities_demo` reports **2 pre-existing issues** — a
-`flutter_lints` include that cannot be resolved when analyzing from the `app/` root, and an unused
-`_availableIdentitiesDiagnostic` in `b25_product_doc_role_resolution_test.dart:263`. Both were
-A/B'd against HEAD (2 with the change, 2 without), so a **third** issue here is yours.
+**`flutter analyze` on `app/apps/loom_communities_demo` reports THREE pre-existing issues — re-measured 2026-10-01, and read the counting note below before trusting any figure here.** Take the count from flutter's own `N issues found` summary line, never from a grep over its output:
+
+    warning • The URI 'package:flutter_lints/flutter.yaml' included in
+              apps/loom_communities_demo/analysis_options.yaml can't be found
+    info    • The import of 'package:loom_communities_app_shell/…' is unnecessary
+              (load_all_communities_test.dart)
+    warning • The declaration '_availableIdentitiesDiagnostic' isn't referenced
+              (b25_product_doc_role_resolution_test.dart:263)
+
+So a **fourth** issue here is yours. The `unnecessary_import` is the one this note previously missed;
+an implementation agent flagged it and A/B'd it by stashing its own changes (same three appeared), and
+I re-measured independently.
+
+**Two corrections to how this was recorded.** The `flutter_lints` warning appears **from the package
+directory too** — this note used to say it only shows up "when analyzing from the `app/` root", and
+that is wrong. And the whole-workspace figure is different again: from `app/` root flutter reports
+**14 issues**, of which **3** are in the demo app. A count with no working directory attached is not
+a baseline, so state the directory alongside the number.
+
+**And the method, because I got this wrong twice in one tick while checking it.** I grepped the
+output with `^\s+(info|warning|error)` and got 1, then 2, and reported both as contradicting the
+agent — who was right at 3. The pattern failed because `flutter analyze` prefixes its real findings
+with `warning •` / `info •` at column zero while burying them under `flutter pub` dependency chatter,
+so a leading-whitespace anchor matches almost nothing. **Use the tool's own total; if you must
+enumerate, match on the `•` separator, not on indentation.** This is the same family as reading a
+suite's own summary rather than counting lines — and the embarrassing part is that I invoked exactly
+that rule on the way to breaking it.
 
 **The demo app's long-standing known failure is fixed, and a different test went red in the same run.
 Do not read that as a wash.** `b43_book_engine_migration_test.dart`'s owner-visibility check —
