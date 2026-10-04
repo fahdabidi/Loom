@@ -44,6 +44,18 @@ paths:
     post:
       operationId: registerApp
       summary: Register an app that will own a permission catalog and groups.
+      description: >-
+        A policy write, like publishing a catalog or creating a role: it requires a provisioning
+        principal, never a fan token.
+
+
+        **Provisioning principals are scoped.** A policy write on `/v1/apps/{appId}/…` (and this
+        operation, for the `appId` in its body) is accepted from a non-fan token that carries either
+        the platform-wide Keycloak realm role `app-access-provisioner`, or the per-app realm role
+        `app-access-provisioner:{appId}` for exactly that app. A per-app principal that names another
+        app is refused with `403 provisioning_principal_required`, before the app's existence is
+        checked, so a refusal never reveals whether the other app exists. Each app's own setup holds
+        only its per-app role; the platform-wide role is for platform operations.
       parameters:
         - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
         - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
@@ -62,6 +74,8 @@ paths:
                 $ref: '#/components/schemas/App'
         '400':
           $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
         '409':
           $ref: '../_shared/errors.yaml#/components/responses/Conflict'
 
