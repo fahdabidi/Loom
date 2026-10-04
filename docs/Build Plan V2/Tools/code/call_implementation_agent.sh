@@ -229,6 +229,121 @@
 
 set -euo pipefail
 
+# --- Verification marker gate -------------------------------------------
+# WHY THIS EXISTS. Across nine consecutive dispatches (2026-10-02), EIGHT
+# exited with status 0 having reported only their INTENT -- "I'll wait for the
+# suite to finish and report then", "I'll stop checking now" -- and produced no
+# suite total at all. One of those tickets named the behaviour and forbade it in
+# writing; it happened anyway. dispatch_preamble.md has asked for "exact test
+# TOTALS for every suite you ran" since August. So prose does not fix this, and
+# the wrapper printed those replies under a normal completion banner, which made
+# "I verified, here are the numbers" and "I described what I was about to do"
+# indistinguishable to whoever read the log.
+#
+# This is the same shape as the Patterns Agent wrapper printing "no entries --
+# a legitimate outcome" over a run that had read nothing, and it takes the same
+# fix: require a marker naming what actually happened, and treat a MISSING
+# marker as a FAILED dispatch rather than a completed one.
+#
+# THREE outcomes, not two -- "could not run it" is a third state and must not
+# collapse into either of the others. The ninth dispatch was the good one
+# precisely because it reported numbers AND named two suites it could not run
+# (no Postgres credentials in its sandbox). A gate that punished that would
+# push the next agent toward inventing numbers, which is far worse than an
+# honest gap. So:
+#
+#   failed      no marker, or the marker omits/mangles a required suite
+#   red         marker present, a suite reports failing tests
+#   incomplete  marker present, some suites honestly NOT_RUN(reason)
+#   verified    all five suites reported, zero failures
+#
+# Only `failed` overrides the exit status. `incomplete` is an honest answer and
+# must stay exit-clean, or the gate teaches the wrong lesson.
+#
+# Self-test (this is how the gate was proven able to BOTH fail and pass, rather
+# than assumed -- a guard whose output never changes is not a guard):
+#   bash data/call_implementation_agent.sh --check-verification <file-with-reply>
+# Sets GATE_VERDICT and GATE_DETAIL as globals rather than echoing the verdict.
+# That is deliberate: `v="$(evaluate_suites_marker ...)"` runs the function in a
+# SUBSHELL, so a GATE_DETAIL set inside it never reaches the caller. The first
+# version of this gate did exactly that, and every verdict came back with an
+# empty explanation -- the verdict half worked, the "why" half was silently
+# gone, which is the weaker half to lose in a guard.
+GATE_VERDICT=""
+GATE_DETAIL=""
+evaluate_suites_marker() {
+  local marker="${1:-}"
+  local required="demo shell judges engine service"
+  local missing="" notrun="" red="" s entry val failed_count
+  GATE_VERDICT=""
+  GATE_DETAIL=""
+  if [ -z "$(printf '%s' "$marker" | tr -d '[:space:]')" ]; then
+    GATE_DETAIL="no <<<SUITES_RUN:...>>> marker in the agent's reply"
+    GATE_VERDICT=failed
+    return 0
+  fi
+  for s in $required; do
+    # `|| true` on every grep: this runs under `set -e`, where a non-matching
+    # grep inside a command substitution would kill the script outright.
+    entry="$(printf '%s\n' "$marker" | tr ' ,' '\n\n' | grep -E "^${s}=" | head -1 || true)"
+    if [ -z "$entry" ]; then
+      missing="$missing $s"
+      continue
+    fi
+    val="${entry#*=}"
+    case "$val" in
+      NOT_RUN*) notrun="$notrun $s" ;;
+      */*/*)
+        failed_count="$(printf '%s' "$val" | cut -d/ -f2)"
+        case "$failed_count" in
+          ''|0) : ;;
+          *) red="$red ${s}=${failed_count}failed" ;;
+        esac
+        ;;
+      *) missing="$missing ${s}(unparseable:${val})" ;;
+    esac
+  done
+  if [ -n "$missing" ]; then
+    GATE_DETAIL="marker omits or mangles:$missing"
+    GATE_VERDICT=failed
+    return 0
+  fi
+  if [ -n "$red" ]; then
+    GATE_DETAIL="suite(s) reported FAILING tests:$red"
+    GATE_VERDICT=red
+    return 0
+  fi
+  if [ -n "$notrun" ]; then
+    GATE_DETAIL="honest but INCOMPLETE -- not run:$notrun"
+    GATE_VERDICT=incomplete
+    return 0
+  fi
+  GATE_DETAIL="all five suites reported, zero failures"
+  GATE_VERDICT=verified
+  return 0
+}
+
+extract_suites_marker() {
+  # One extractor, used by the self-test and by the live path, so the thing
+  # tested is the thing that runs.
+  sed -n 's/.*<<<SUITES_RUN:\(.*\)>>>.*/\1/p' "$1" 2>/dev/null | head -1 || true
+}
+
+if [ "${1:-}" = "--check-verification" ]; then
+  CHECK_FILE="${2:?usage: call_implementation_agent.sh --check-verification <file-with-agent-reply>}"
+  [ -f "$CHECK_FILE" ] || { echo "no such file: $CHECK_FILE" >&2; exit 64; }
+  CHECK_MARKER="$(extract_suites_marker "$CHECK_FILE")"
+  evaluate_suites_marker "$CHECK_MARKER"
+  CHECK_VERDICT="$GATE_VERDICT"
+  echo "file=$CHECK_FILE"
+  echo "verdict=$CHECK_VERDICT"
+  echo "detail=$GATE_DETAIL"
+  case "$CHECK_VERDICT" in
+    failed) exit 2 ;;
+    *) exit 0 ;;
+  esac
+fi
+
 PROMPT_FILE="${1:?usage: call_implementation_agent.sh <prompt-file> [--fresh]}"
 MODE="${2:-}"
 
@@ -621,6 +736,16 @@ else
   echo "$ENGINE exec exited with status $STATUS"
 fi
 
+# Pull the verification marker out BEFORE the capture is deleted. Read it from
+# the capture rather than from a per-engine reply variable, so this works for
+# claude, codex and muse alike -- whatever the agent said lands here regardless
+# of engine, and for claude's stream-json the marker still appears contiguously
+# inside the JSON string.
+SUITES_RUN_MARKER=""
+if [ -f "$CODEX_OUTPUT_CAPTURE" ]; then
+  SUITES_RUN_MARKER="$(extract_suites_marker "$CODEX_OUTPUT_CAPTURE")"
+fi
+
 rm -f "$CODEX_OUTPUT_CAPTURE"
 
 DIRTY="$(git status --porcelain)"
@@ -659,7 +784,54 @@ if [ "$POST_HEAD" != "$PRE_HEAD" ] && [ "$PRE_TRACKED_COUNT" -gt 0 ]; then
   fi
 fi
 
-echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) DISPATCH_FINISHED status=$STATUS" >> "$TODO_LOG"
+# --- Verification marker gate (see the long note at the top) -------------
+evaluate_suites_marker "$SUITES_RUN_MARKER"
+VERIFICATION_VERDICT="$GATE_VERDICT"
+EXIT_OVERRIDE=""
+echo "===================================================="
+echo "DISPATCH_VERIFICATION: $VERIFICATION_VERDICT"
+echo "  $GATE_DETAIL"
+if [ -n "$(printf '%s' "$SUITES_RUN_MARKER" | tr -d '[:space:]')" ]; then
+  echo "  marker: $SUITES_RUN_MARKER"
+fi
+case "$VERIFICATION_VERDICT" in
+  failed)
+    echo "##################################################################"
+    echo "# FAILED DISPATCH: the agent never reported what it verified.    #"
+    echo "# This is NOT a completed run. Do not fold it into the tracker,  #"
+    echo "# and do not commit its work until you have run the suites        #"
+    echo "# yourself. Read the agent's reply above to see what it did      #"
+    echo "# instead -- eight of nine dispatches on 2026-10-02 replied with #"
+    echo "# their intent and no totals, which is what this gate catches.   #"
+    echo "##################################################################"
+    # Override only a SUCCESSFUL agent status. A real crash status is more
+    # informative than this gate's, so never overwrite it.
+    if [ "$STATUS" = "0" ]; then
+      EXIT_OVERRIDE=2
+      echo "NOTE: the agent itself exited 0; this script exits 2 because"
+      echo "      verification was never reported. The '$ENGINE exited with"
+      echo "      status 0' line above is the AGENT's status and stays truthful."
+    fi
+    ;;
+  red)
+    echo "ATTENTION: the agent reported FAILING tests. Re-run the named suite(s)"
+    echo "           yourself before concluding anything -- and check for a"
+    echo "           TimeoutException, which is environmental, versus a failed"
+    echo "           expect, which is not. Note the exception to that rule:"
+    echo "           an assertion about a SPAWNED process's exit code fails"
+    echo "           exactly like a logic error when the child was starved."
+    ;;
+  incomplete)
+    echo "This is an HONEST partial result, not a failure: the agent named what it"
+    echo "could not run. Run those suites yourself before trusting the whole set."
+    ;;
+  verified)
+    echo "Re-derive these numbers yourself anyway -- the agent's report is never"
+    echo "the oracle, and a total that moved needs its reason named."
+    ;;
+esac
+
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) DISPATCH_FINISHED status=$STATUS verification=$VERIFICATION_VERDICT" >> "$TODO_LOG"
 echo "##################################################################"
 echo "# NEXT STEP: fold this dispatch's outcome into the TODO record. #"
 echo "##################################################################"
@@ -672,4 +844,4 @@ else
   echo "for this dispatch's outcome."
 fi
 
-exit "$STATUS"
+exit "${EXIT_OVERRIDE:-$STATUS}"

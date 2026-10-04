@@ -2718,9 +2718,55 @@ So when a lesson can be made mechanical, make it mechanical, and treat the note 
 the gate rather than the safeguard itself. Today's durable artifacts are the ones that run:
 `check_role_parity.sh` (declared vs provisioned roles, proven to fail as well as pass),
 `check_b25_status.sh` (recomputes the bar and refuses to print a combined figure), the
-`make_b25_brief.sh` requirement that every walkthrough record `skillVersion` + `sha256`, and the three
-older parity gates. The prose entries above are worth keeping, but they are reminders; these are
-checks.
+`make_b25_brief.sh` requirement that every walkthrough record `skillVersion` + `sha256`, the three
+older parity gates, and the `<<<SUITES_RUN:...>>>` gate below. The prose entries above are worth
+keeping, but they are reminders; these are checks.
+
+### The implementation dispatcher now refuses a run that never says what it verified
+
+**Built 2026-10-04 after eight of nine dispatches reported intent as result.** They exited status 0
+saying "I'll wait for the suite to finish and report then", "I'll stop checking now", and produced no
+suite total at all. One of those tickets **named the behaviour and forbade it in writing**; it
+happened anyway. And `dispatch_preamble.md` had asked for "exact test TOTALS for every suite you ran"
+since August. **So this is settled: prose in the ticket or the preamble does not fix it.**
+
+The mechanism is the Patterns-Agent fix, one layer across: the preamble now requires a marker, and
+`call_implementation_agent.sh` treats a **missing** marker as a FAILED dispatch rather than a
+completed one, printing a banner and exiting **2** even when the agent itself exited 0 (the agent's
+own `exited with status` line stays truthful, because `watch_dispatch_log.sh` matches it).
+
+    <<<SUITES_RUN: demo=P/F/S shell=P/F/S judges=P/F/S engine=P/F/S service=P/F/S analyze=N>>>
+
+**It has FOUR outcomes, and the third one is the point.** `failed` (no marker, or a marker omitting a
+required suite), `red` (a suite reports failing tests), `incomplete` (some suites honestly
+`NOT_RUN(reason)`), `verified`. **Only `failed` overrides the exit status** — `incomplete` stays
+exit-clean deliberately, because the one good dispatch of the nine was good *precisely* because it
+reported numbers **and** named two suites it could not run. A gate that punished that would push the
+next agent toward inventing numbers, which is far worse than an honest gap. Same shape as "unknown is
+a third state, not a denial".
+
+**Proven able to fail AND to pass, because a guard whose output never changes is not a guard.** Run
+the gate standalone against any reply:
+
+    bash data/call_implementation_agent.sh --check-verification <file-with-reply>
+
+Measured: the **seven real historical dispatch logs** all return `failed` rc=2; synthetic replies
+return `verified`, `incomplete`, `red` and `failed` correctly; a marker **omitting** suites fails; and
+**prose containing the numbers but no marker still fails**, which is the easiest accidental bypass.
+Extraction was also tested against a real **stream-json** capture, since that is how the live path
+actually sees the reply.
+
+Two things this cost, both worth keeping:
+
+- **The historical logs can only prove the gate FIRES.** None of them carries a marker, including the
+  *good* ninth dispatch, so they are evidence about the contract's absence, not about the gate
+  distinguishing a good report from a bad one. Only the synthetic positives prove that half. When a
+  corpus predates the thing you are testing, say which half of the claim it can support.
+- **The first version returned the verdict via `echo` and set its explanation in a global** — so
+  `v="$(evaluate_suites_marker ...)"` ran it in a subshell and every `detail=` came back **empty**.
+  The verdict half worked and the "why" half was silently gone, which is the weaker half to lose. It
+  was caught only by reading the detail column of the test output rather than just the verdict
+  column. **Check every column your own test prints, not only the one you were looking for.**
 
 Two corollaries. **A report should say what it could not process** — the "unparsed: 3" line is what
 sent me to the file whose title read `**BLOCKED**`, which is how the counting flaw surfaced at all; a
