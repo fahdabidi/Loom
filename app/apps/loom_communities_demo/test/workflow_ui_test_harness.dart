@@ -2316,13 +2316,15 @@ Future<String> authenticateEvidenceFanForRemote(
     // seedEvidenceAccounts already does for the local path and for the same
     // reason (see HARNESS-remote-account-selection-by-identity.md).
     await openEvidenceTarget(tester, target);
+    final fanId = 'fan-$slug';
+    final displayName = await _lookUpSeededFanDisplayName(
+      tester,
+      target,
+      fanId,
+    );
     bodyWatch?.beat(
-      attemptedStep:
-          'signing in as ${_seededEvidenceFanDisplayName(slug)} through the '
-          'identity picker',
-      waitingFor:
-          'community content to load after signing in as '
-          '${_seededEvidenceFanDisplayName(slug)}',
+      attemptedStep: 'signing in as $displayName through the identity picker',
+      waitingFor: 'community content to load after signing in as $displayName',
     );
     // A rejection past this point is a real defect in this row, not a
     // missing credential, so it is deliberately left to propagate up to the
@@ -2330,11 +2332,11 @@ Future<String> authenticateEvidenceFanForRemote(
     // swallowed here.
     await signInEvidenceAccount(
       tester,
-      _seededEvidenceFanDisplayName(slug),
+      displayName,
       diagnosticFrameName: diagnosticFrameName,
       captureDiagnostic: captureDiagnostic,
     );
-    return 'fan-$slug';
+    return fanId;
   }
   throw B25SelectorSetupFailure(
     'No seeded remote test credential authenticated for role "$roleId". '
@@ -2342,20 +2344,55 @@ Future<String> authenticateEvidenceFanForRemote(
   );
 }
 
-/// Mirrors the seeding convention's own Fan Passport display name: the
-/// slug's hyphenated words, title-cased and space-joined
-/// (`hoa-board-1` -> `Hoa Board 1`).
+/// Looks up [fanId]'s real display name from the account directory the
+/// identity picker itself renders (`authApi.listAccounts`), rather than
+/// deriving it from the slug.
 ///
-/// Confirmed live 2026-10-01 against three seeded Fan Passport records,
-/// including the compound `ad-off-member-1` -> `Ad Off Member 1`, which rules
-/// out any smarter, non-mechanical title-casing.
-String _seededEvidenceFanDisplayName(String slug) => slug
-    .split('-')
-    .map(
-      (word) =>
-          word.isEmpty ? word : '${word[0].toUpperCase()}${word.substring(1)}',
-    )
-    .join(' ');
+/// The two can disagree: confirmed live 2026-10-05 against
+/// `loom_fan_passport`, several seeded second holders are stored as
+/// `Test <slug>` rather than the title-cased convention the first holder of
+/// each role happens to follow. A derived name that does not match the
+/// stored one never finds a matching `ListTile`, so the mismatch shows up as
+/// a multi-minute UI stall rather than as the seeding disagreement it
+/// actually is.
+///
+/// Fails immediately, naming [fanId], when the directory has no such
+/// account -- a missing account is a seeding gap, not a UI defect, and must
+/// not be left to look like a stall either.
+Future<String> _lookUpSeededFanDisplayName(
+  WidgetTester tester,
+  LoomEvidenceTarget target,
+  String fanId,
+) async {
+  final route = _evidenceTargetRoute(target);
+  await _waitForEvidenceFinder(
+    tester,
+    route,
+    description:
+        'local extension route before resolving the display name for '
+        '$fanId',
+  );
+  final authApi = tester.widget<LocalExtensionScreen>(route).authApi;
+  if (authApi == null) {
+    fail(
+      'Cannot resolve the seeded display name for $fanId: '
+      '${target.extensionId} has no authApi configured.',
+    );
+  }
+  final accounts = await authApi.listAccounts(
+    communityExtensionId: target.extensionId,
+  );
+  for (final account in accounts) {
+    if (account.accountId == fanId) {
+      return account.displayName;
+    }
+  }
+  fail(
+    'No seeded account for fan id "$fanId" was found in the account '
+    'directory for ${target.extensionId}. Known accounts: '
+    '${accounts.map((account) => account.accountId).toList()}.',
+  );
+}
 
 Future<void> seedEvidenceAccounts(
   WidgetTester tester,
