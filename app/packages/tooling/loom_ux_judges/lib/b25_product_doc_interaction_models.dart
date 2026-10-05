@@ -57,7 +57,7 @@ class B25ProductCommunitySource {
 
 const b25ProductCommunitySources = <B25ProductCommunitySource>[
   B25ProductCommunitySource(
-    communityId: 'community_ad_off',
+    communityId: 'community_ad_free_community',
     communityName: 'Ad-Free Community',
     extensionId: 'ext_ad_free_community',
     productDocPath:
@@ -71,7 +71,7 @@ const b25ProductCommunitySources = <B25ProductCommunitySource>[
         'docs/references/communities/camera-club-product-experience.md',
   ),
   B25ProductCommunitySource(
-    communityId: 'community_hoa',
+    communityId: 'community_cedar_commons_hoa',
     communityName: 'Cedar Commons HOA',
     extensionId: 'ext_cedar_commons_hoa',
     productDocPath:
@@ -85,7 +85,7 @@ const b25ProductCommunitySources = <B25ProductCommunitySource>[
         'docs/references/communities/chess-club-product-experience.md',
   ),
   B25ProductCommunitySource(
-    communityId: 'community_export_migration',
+    communityId: 'community_data_portability',
     communityName: 'Data Portability Community',
     extensionId: 'ext_data_portability_community',
     productDocPath:
@@ -106,21 +106,21 @@ const b25ProductCommunitySources = <B25ProductCommunitySource>[
         'docs/references/communities/masjid-nur-product-experience.md',
   ),
   B25ProductCommunitySource(
-    communityId: 'community_platform_social',
+    communityId: 'community_member_social_space',
     communityName: 'Member Social Space',
     extensionId: 'ext_member_social_space',
     productDocPath:
         'docs/references/communities/member-social-space-product-experience.md',
   ),
   B25ProductCommunitySource(
-    communityId: 'community_book_club',
+    communityId: 'community_neighborhood_book_club',
     communityName: 'Neighborhood Book Club',
     extensionId: 'ext_neighborhood_book_club',
     productDocPath:
         'docs/references/communities/neighborhood-book-club-product-experience.md',
   ),
   B25ProductCommunitySource(
-    communityId: 'community_youth_soccer',
+    communityId: 'community_riverside_youth_soccer',
     communityName: 'Riverside Youth Soccer',
     extensionId: 'ext_youth_soccer',
     productDocPath:

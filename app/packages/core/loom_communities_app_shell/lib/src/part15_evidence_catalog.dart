@@ -439,7 +439,7 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
   ),
   LoomEvidenceTarget(
     phase: 'B14',
-    communityId: 'community_book_club',
+    communityId: 'community_neighborhood_book_club',
     communityName: 'Neighborhood Book Club',
     handle: 'book-club',
     extensionId: 'ext_neighborhood_book_club',
@@ -448,7 +448,7 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
   ),
   LoomEvidenceTarget(
     phase: 'B14',
-    communityId: 'community_youth_soccer',
+    communityId: 'community_riverside_youth_soccer',
     communityName: 'Riverside Youth Soccer',
     handle: 'youth-soccer',
     extensionId: 'ext_youth_soccer',
@@ -461,7 +461,7 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
   ),
   LoomEvidenceTarget(
     phase: 'B14',
-    communityId: 'community_hoa',
+    communityId: 'community_cedar_commons_hoa',
     communityName: 'Cedar Commons HOA',
     handle: 'cedar-hoa',
     extensionId: 'ext_cedar_commons_hoa',
@@ -509,7 +509,7 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
   ),
   LoomEvidenceTarget(
     phase: 'B16',
-    communityId: 'community_platform_social',
+    communityId: 'community_member_social_space',
     communityName: 'Member Social Space',
     handle: 'platform-social',
     extensionId: 'ext_member_social_space',
@@ -518,7 +518,7 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
   ),
   LoomEvidenceTarget(
     phase: 'B16',
-    communityId: 'community_ad_off',
+    communityId: 'community_ad_free_community',
     communityName: 'Ad-Free Community',
     handle: 'ad-off-demo',
     extensionId: 'ext_ad_free_community',
@@ -527,7 +527,7 @@ const List<LoomEvidenceTarget> loomEvidenceTargets = [
   ),
   LoomEvidenceTarget(
     phase: 'B16',
-    communityId: 'community_export_migration',
+    communityId: 'community_data_portability',
     communityName: 'Data Portability Community',
     handle: 'portability-demo',
     extensionId: 'ext_data_portability_community',

@@ -36,7 +36,7 @@ void main() {
         evidenceRoot,
         phase: 'B14',
         workflowId: 'book-vote',
-        communityId: 'community_book_club',
+        communityId: 'community_neighborhood_book_club',
         communityName: 'Neighborhood Book Club',
         role: 'member',
         screenshots: 5,

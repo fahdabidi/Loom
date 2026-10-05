@@ -2958,12 +2958,17 @@ Future<EvidencePackagePair> writeEvidencePackagePair(
   final initializationFile = File(
     '${tempDir.path}/${target.handle}.loom-init.zip',
   );
-  final initialization = Map<String, dynamic>.from(decoded)
-    // Keep the package's genuine experience and appShell while hydrating the
-    // demo catalog entry. The shipped soccer corpus uses a different
-    // communityId; its existing package generator performs the same
-    // normalization for local sideloads.
-    ..['communityId'] = target.communityId;
+  final shippedCommunityId = decoded['communityId'];
+  if (shippedCommunityId != target.communityId) {
+    throw StateError(
+      'Shipped package for ${target.extensionId} declares communityId '
+      '"$shippedCommunityId", but the evidence catalog expects '
+      '"${target.communityId}". These must match exactly: the remote '
+      'engine namespaces every instance by the shipped communityId, so a '
+      'mismatch here is a catalog bug, not a case for normalization.',
+    );
+  }
+  final initialization = Map<String, dynamic>.from(decoded);
   extensionFile.writeAsStringSync(
     jsonEncode({
       'specVersion': currentCommunitySpecVersion,
