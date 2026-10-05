@@ -48,10 +48,23 @@ data this code does not control.
 
 ## The change
 
-**Look the name up instead of deriving it.** The shell already exposes the directory:
-`LoomAuthApi.listCommunityMembers({communityExtensionId})` returns `LoomCommunityMember` values
-carrying real display names (`part29_auth_api.dart:146`), implemented on both the local and remote
-paths. Resolve the row's fan id → its stored display name, and use **that** as the finder text.
+**Look the name up instead of deriving it — and look it up from the list the chooser itself renders.**
+
+Use **`authApi.listAccounts(...)`**, not `listCommunityMembers`. That matters: `listAccounts` is the
+*writer* of the rows being searched (`_showActorIdentityPicker` awaits it before `showDialog`), and
+`LoomAccount` already carries both halves of the join —
+
+    class LoomAccount { final String accountId; final String displayName;
+                        final String roleId; final MembershipStatus status; }
+
+— so match `accountId` against the row's fan id and use that entry's `displayName` as the finder
+text. `listCommunityMembers` is a *parallel* directory; joining against it would re-introduce the
+same hazard one layer over, because nothing guarantees the two sources render the same string. Find
+the writer, read what it puts there, then join.
+
+**The handle already exists:** `screen.authApi` (`test/workflow_ui_test_harness.dart:2372, :2646`).
+Note `:2372-2379` is the **local** path and deliberately throws unless the api `is LocalAuthApi`, so
+the remote path needs its own access rather than reusing that block.
 
 - **Keep the slug as the identity key.** Only the *display* string comes from the directory; the fan
   id stays authoritative for who is acting, and the existing `signIn` accountId-vs-token-`fanId`
