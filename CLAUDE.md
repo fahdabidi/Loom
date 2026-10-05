@@ -1412,6 +1412,33 @@ must treat the rest as unknown rather than as false.* Failing closed on a clause
 converts "I don't know" into "no", and that is how a predictor quietly disqualifies the exact case it
 was built to find.
 
+**AMENDED 2026-10-05 — that rule has a second half, and the same planner broke it: enumerate the
+decision's OTHER ADMITTING BRANCHES before refusing, and never omit context you actually hold.**
+The engine's read decision is a three-way OR (`local_workflow_engine_api.dart:596-626`): the creator
+always reads their own instance, an archetype identity field admits, *or* the `readGuard` passes —
+and its own comment says "an author can always read their own draft". The planner reproduced **only
+the third branch**, and called `evaluateGuard` with no roles, while `evaluateGuard` **fails closed on
+`allowedRoleIds` when roles are omitted** (documented `guard_evaluator.dart:56`, implemented
+`:79-81`). So every role-shaped readGuard refused unconditionally — *including when the acting role
+was literally in the list* — and `roleId` and `creatorFanId` were **required parameters of the very
+same function**, with `roleId` interpolated into the refusal message two lines below the call.
+
+**Measured cost: 15 of 45 "blocked" rows were false refusals of capabilities the product offers.**
+Acting on the bucket counts would have built machinery to "work around" guards that never blocked
+anyone.
+
+Three things to carry, and the third is the one that generalises furthest:
+
+- **A predictor that mimics one branch of a disjunction fails closed on the whole decision.** Find
+  the runtime decision function and count its `return true` paths before writing the offline check.
+- **Distinguish "context I cannot compute" from "context I did not pass."** The first is a genuine
+  unknown; the second is a bug wearing its costume. The cheap test is to read the predictor's own
+  parameter list — if the missing input is already there, it is the second.
+- **A fix here is dangerous in the permissive direction, which is the opposite of the usual
+  worry.** Admitting everything would "unblock" all 15 rows and bank evidence for refusals the
+  product makes correctly, so the honesty test is that a genuinely-denied case must STAY denied.
+  When you relax a check, the test that proves the fix is the one that still fails.
+
 ## Evidence rules
 
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A
