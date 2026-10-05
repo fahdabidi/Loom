@@ -876,6 +876,56 @@ confirm which binary and which entrypoint produced it** — and note that the ch
 for first (comparing grep counts across the two outputs) was invalid anyway, because one output was
 a `tail -45` and startup lines are exactly what truncation removes.
 
+### A harness that rewrites an identifier at the install seam makes every later check measure the rewrite
+
+Found 2026-10-05, by the first capture run that got far enough into Book Club to hit it — and it
+was only reachable *because* the display-name fix landed, so this is the "fixing a defect exposes
+the next one" shape again.
+
+`writeEvidencePackagePair` (`workflow_ui_test_harness.dart:2966`) decoded the shipped package and
+then did `..['communityId'] = target.communityId`, **stamping the evidence catalog's legacy demo id
+over the package's correct canonical one.** The importer read that value
+(`loom_demo_local_backend.dart:222`), the screen carried it into the remote engine factory verbatim
+— there is no translation layer — and `fallbackGroupIdForCommunity` then missed, because
+`part40`'s map is keyed on the **backend's** ids. The run died with
+`"…neither listFanCommunities nor LOOM_COMMUNITY_GROUP_IDS provides an App Access group id for
+it"`, which reads like an auth or cluster fault and is nothing of the kind.
+
+**The package was perfectly correct the whole time.** So was the group-id map. The defect lived
+entirely in the seam that copied one over the other, and it was justified by a comment whose
+premise ("the shipped soccer corpus uses a different communityId") had died with the legacy
+fixtures. A stale comment froze a dead assumption into running code — the `deliberately` shape
+recorded below, wearing a different word.
+
+Four things worth keeping:
+
+- **A coincidental match is not a control.** Six of ten catalog ids disagreed with the backend;
+  the four that "worked" (garden, mosque, chess, camera) matched only because their legacy and
+  canonical names happen to be identical. Nothing was wired correctly — and because Garden is one
+  of the four, every earlier Garden-only precheck passed this seam without touching the bug. **When
+  a narrow run is green, check whether the sample contains the failing case at all.**
+- **Half-migrated is worse than unmigrated.** The catalog's `extensionId`s were updated to shipped
+  values while its `communityId`s were left legacy, and `LoomExperienceDefinition.communityId`
+  documents itself as the "Canonical server-side identifier" — so the values violated their own
+  field's contract with nothing to notice. Local runs could not notice either, because the local
+  engine namespaces on `extensionId`; the field became load-bearing only when the remote path
+  started reading it.
+- **When two artifacts must share an id, assert parity at the seam instead of copying.** A silent
+  "normalization" is exactly what made this invisible for months; an assertion that fails loudly
+  naming both values would have surfaced it the first time either side moved.
+- **A grep for an index assignment misses a map literal.** My `['communityId']` sweep found one
+  site; the root cause agent named two, and the second
+  (`harness:3138-3139`, `_writeMetadataEvidencePackagePair`) builds the id as a literal key. Its
+  enumeration beat my check — which is the second time this file records that verifying a scoping
+  report's enumerations pays, and the first time the report was the more complete one.
+
+**And the reassuring half is worth stating as loudly as the alarming one: production was never
+affected.** `preloadBundledExampleCommunities` (`part15:596-665`) installs the byte-identical
+bundled JSONC and reads all identity from it. I checked that myself rather than taking it on
+report, because "6 of 10 communities cannot resolve a group" is the kind of claim that becomes an
+incident if repeated without its scope. The corruption was confined to the test-harness install
+seam.
+
 ### Two deadlines with the same value are a race, and the outer one always wins
 
 The B25 walkthrough's inner action wait opened `WalkthroughWaitBudget()` with no argument, whose
