@@ -232,22 +232,54 @@ void main() {
     );
 
     test(
-      'a required field of an unsupported type is out of scope '
-      '(plant-exchange-submission: assignedCoordinatorFanId is a fanId '
-      'field, mirroring the real, still-unsupported garden-tool-loan/'
-      'garden-tool-giveaway coordinatorFanId gap)',
+      'a required fanId field with no guard naming it is unconstrained and '
+      'filled with the acting fan, never the seed (plant-exchange-'
+      'submission: assignedCoordinatorFanId, mirroring the real, now-'
+      'resolved garden-tool-loan/garden-tool-giveaway coordinatorFanId gap)',
+      () {
+        final plan = planB25RemoteArrangement(
+          machine: _plantExchangeSubmissionMachine(),
+          currentState: 'draft',
+          roleId: 'garden-member',
+          creatorFanId: 'fan-garden-member-1',
+          actorFanId: 'fan-garden-member-1',
+          seedInstanceData: const {
+            'plantVariety': 'Tomato seedlings',
+            'pickupWindow': 'Saturday mornings',
+            // A demo-space, role-id-shaped value -- exactly the kind of
+            // seed contamination this field type must never copy verbatim.
+            'assignedCoordinatorFanId': 'garden-coordinator',
+          },
+          candidateTransitions: const [],
+          matchesPrimaryTerm: (_) => true,
+        );
+
+        expect(plan.fanIdFields, {'assignedCoordinatorFanId'});
+        expect(
+          plan.fieldValues['assignedCoordinatorFanId'],
+          'fan-garden-member-1',
+        );
+      },
+    );
+
+    test(
+      'a required field of a type this dispatch still does not know how to '
+      'fill stays out of scope (camera-club-like critique-submission: '
+      'photoImage declares storage: "reference" -- typing the seed\'s '
+      'reference string would mint an instance claiming an upload that '
+      'never happened, so this type is deliberately excluded)',
       () {
         Object? caught;
         try {
           planB25RemoteArrangement(
-            machine: _plantExchangeSubmissionMachine(),
+            machine: _photoCritiqueSubmissionMachine(),
             currentState: 'draft',
-            roleId: 'garden-member',
-            creatorFanId: 'fan-garden-member-1',
-            actorFanId: 'fan-garden-member-1',
+            roleId: 'camera-member',
+            creatorFanId: 'fan-camera-member-1',
+            actorFanId: 'fan-camera-member-1',
             seedInstanceData: const {
-              'plantVariety': 'Tomato seedlings',
-              'pickupWindow': 'Saturday mornings',
+              'critiqueNote': 'Great use of leading lines.',
+              'photoImage': 'ref://uploads/photo-123.jpg',
             },
             candidateTransitions: const [],
             matchesPrimaryTerm: (_) => true,
@@ -260,10 +292,169 @@ void main() {
         expect(
           (caught as B25ArrangementOutOfScopeFailure).reason,
           allOf(
-            contains('plant-exchange-submission'),
-            contains('"assignedCoordinatorFanId"'),
-            contains('"fanId"'),
+            contains('photo-critique-submission'),
+            contains('"photoImage"'),
+            contains('"image"'),
           ),
+        );
+      },
+    );
+
+    test(
+      'a required url field is now in scope and copies the seed verbatim '
+      '(chess-rules-documents: documentUrl)',
+      () {
+        final plan = planB25RemoteArrangement(
+          machine: _chessRulesDocumentMachine(),
+          currentState: 'available',
+          roleId: 'chess-organizer',
+          creatorFanId: 'fan-chess-organizer-1',
+          actorFanId: 'fan-chess-organizer-1',
+          seedInstanceData: const {
+            'documentTitle': 'Club rapid and ladder rules',
+            'documentUrl': 'https://example.org/chess-club/rules/2026-2',
+          },
+          candidateTransitions: const [],
+          matchesPrimaryTerm: (_) => true,
+        );
+
+        expect(plan.fieldValues, {
+          'documentTitle': 'Club rapid and ladder rules',
+          'documentUrl': 'https://example.org/chess-club/rules/2026-2',
+        });
+        expect(plan.dateTimeFields, isEmpty);
+        expect(plan.boolFields, isEmpty);
+        expect(plan.fanIdFields, isEmpty);
+      },
+    );
+
+    test(
+      'a required list field is now in scope and joins the seed\'s list '
+      'with ", " for the generic creation card\'s own comma-split '
+      'normalizer (chess-export-package: exportScope)',
+      () {
+        final plan = planB25RemoteArrangement(
+          machine: _chessExportPackageMachine(),
+          currentState: 'ready',
+          roleId: 'chess-organizer',
+          creatorFanId: 'fan-chess-organizer-1',
+          actorFanId: 'fan-chess-organizer-1',
+          seedInstanceData: const {
+            'exportLabel': 'August ladder and match archive',
+            'exportScope': [
+              'match results',
+              'ranking rows',
+              'pairing history',
+            ],
+          },
+          candidateTransitions: const [],
+          matchesPrimaryTerm: (_) => true,
+        );
+
+        expect(plan.fieldValues, {
+          'exportLabel': 'August ladder and match archive',
+          'exportScope': 'match results, ranking rows, pairing history',
+        });
+      },
+    );
+
+    test(
+      'a scalar fanId field guarded by actorEqualsField resolves to the '
+      'ACTING fan, never a different member, even though the row is a '
+      'two-identity row (hoa-owner-notification: recipientFanId -- board '
+      'creates, the member marks their own notice read)',
+      () {
+        final machine = _hoaOwnerNotificationMachine();
+        final markRead = machine.transitions.singleWhere(
+          (transition) => transition.id == 'mark-notification-read',
+        );
+        final plan = planB25RemoteArrangement(
+          machine: machine,
+          currentState: 'sent',
+          roleId: 'hoa-member',
+          creatorFanId: 'fan-hoa-board-1',
+          actorFanId: 'fan-hoa-member-1',
+          seedInstanceData: const {
+            'title': 'Landscaping notice',
+            // A stale seed value from a different fan entirely -- proof
+            // the plan never copies it for this field type.
+            'recipientFanId': 'fan-hoa-member-9',
+          },
+          candidateTransitions: [markRead],
+          matchesPrimaryTerm: (transition) =>
+              transition.id == 'mark-notification-read',
+        );
+
+        expect(plan.fanIdFields, {'recipientFanId'});
+        expect(plan.fieldValues['recipientFanId'], 'fan-hoa-member-1');
+      },
+    );
+
+    test(
+      'a fanId[] field guarded by actorInList(present: true) resolves to a '
+      'set containing the ACTING fan, never the seed\'s legacy role-id-'
+      'shaped values (chess-match-result: participantFanIds)',
+      () {
+        final machine = _chessMatchResultMachine();
+        final submitResult = machine.transitions.singleWhere(
+          (transition) => transition.id == 'submit-result',
+        );
+        final plan = planB25RemoteArrangement(
+          machine: machine,
+          currentState: 'draft',
+          roleId: 'chess-member',
+          creatorFanId: 'fan-chess-member-1',
+          actorFanId: 'fan-chess-member-1',
+          seedInstanceData: const {
+            'resultTitle': 'Round 3',
+            // Exactly the real, shipped contamination this field type has
+            // suffered from an older picker: role ids, not fan ids.
+            'participantFanIds': ['chess-member', 'chess-organizer'],
+          },
+          candidateTransitions: [submitResult],
+          matchesPrimaryTerm: (transition) =>
+              transition.id == 'submit-result',
+        );
+
+        expect(plan.fanIdFields, {'participantFanIds'});
+        expect(plan.fieldValues['participantFanIds'], 'fan-chess-member-1');
+      },
+    );
+
+    test(
+      'a fanId field a formula guard names alongside \$actor cannot be '
+      'resolved offline and is reported out of scope rather than guessed',
+      () {
+        final machine = _formulaGatedFanIdFieldMachine();
+        final approve = machine.transitions.singleWhere(
+          (transition) => transition.id == 'approve-request',
+        );
+        Object? caught;
+        try {
+          planB25RemoteArrangement(
+            machine: machine,
+            currentState: 'pending',
+            roleId: 'garden-member',
+            creatorFanId: 'fan-garden-member-1',
+            actorFanId: 'fan-garden-member-1',
+            seedInstanceData: const {'title': 'Fence repair'},
+            candidateTransitions: [approve],
+            matchesPrimaryTerm: (transition) =>
+                transition.id == 'approve-request',
+          );
+          fail('expected B25ArrangementOutOfScopeFailure');
+        } catch (error) {
+          caught = error;
+        }
+        expect(caught, isA<B25ArrangementOutOfScopeFailure>());
+        final failure = caught as B25ArrangementOutOfScopeFailure;
+        expect(
+          failure.category,
+          B25ArrangementOutOfScopeCategory.fanIdFieldRequiresDifferentMember,
+        );
+        expect(
+          failure.reason,
+          allOf(contains('approve-request'), contains('"approverFanId"')),
         );
       },
     );
@@ -984,11 +1175,11 @@ LoomWorkflowStateMachine _gardenEventRsvpResponseLikeMachine() =>
     }, 'garden-event-rsvp-response');
 
 /// Mirrors `plant-exchange-submission`'s `draft` state: a single-identity
-/// row (the submitter later fires `submit-exchange` on their own draft) that
-/// this dispatch still cannot arrange, because `assignedCoordinatorFanId` is
-/// a `fanId` field -- the same type as the real, shipped
-/// `garden-tool-loan`/`garden-tool-giveaway` `coordinatorFanId` gap, which
-/// this dispatch's date/time work does not address.
+/// row (the submitter later fires `submit-exchange` on their own draft)
+/// whose `assignedCoordinatorFanId` is a `fanId` field with no guard naming
+/// it anywhere -- the same shape as the real, shipped
+/// `garden-tool-loan`/`garden-tool-giveaway` `coordinatorFanId` gap, now
+/// resolved as unconstrained (filled with the acting fan).
 LoomWorkflowStateMachine _plantExchangeSubmissionMachine() =>
     LoomWorkflowStateMachine.fromJson(<String, dynamic>{
       'initialState': 'draft',
@@ -1043,6 +1234,322 @@ LoomWorkflowStateMachine _plantExchangeSubmissionMachine() =>
         },
       },
     }, 'plant-exchange-submission');
+
+/// Mirrors `critique-submission`'s shape: `photoImage` declares
+/// `storage: "reference"`, a type this dispatch deliberately still refuses
+/// -- typing the seed's reference string would mint an instance claiming an
+/// upload that was never performed, which is the placeholder shape this
+/// project forbids outright.
+LoomWorkflowStateMachine _photoCritiqueSubmissionMachine() =>
+    LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+      'initialState': 'draft',
+      'states': <String, dynamic>{
+        'draft': <String, dynamic>{
+          'label': 'Draft',
+          'editableFields': <String>['critiqueNote', 'photoImage'],
+        },
+      },
+      'transitions': <Map<String, dynamic>>[],
+      'renderBindings': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'states': <String>['draft'],
+          'audience': 'any',
+          'tabId': 'critiques',
+          'cardSurfaceFamily': 'formEntry',
+          'bindingKind': 'primary',
+          'actions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'kind': 'create',
+              'label': 'Submit a critique photo',
+              'byRoleIds': <String>['camera-member'],
+              'prefill': <String, dynamic>{},
+            },
+          ],
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{
+        'critiqueNote': <String, dynamic>{
+          'type': 'text',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+        'photoImage': <String, dynamic>{
+          'type': 'image',
+          'required': true,
+          'writableBy': 'formEntry',
+          'storage': 'reference',
+        },
+      },
+    }, 'photo-critique-submission');
+
+/// Mirrors `chess-rules-documents`'s `available` state: a single-identity
+/// row whose required `documentUrl` is a `url` field, filled with a plain
+/// `TextField` exactly like `text`/`textarea`.
+LoomWorkflowStateMachine _chessRulesDocumentMachine() =>
+    LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+      'initialState': 'available',
+      'states': <String, dynamic>{
+        'available': <String, dynamic>{
+          'label': 'Available',
+          'editableFields': <String>['documentTitle', 'documentUrl'],
+        },
+      },
+      'transitions': <Map<String, dynamic>>[],
+      'renderBindings': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'states': <String>['available'],
+          'audience': 'any',
+          'tabId': 'documents',
+          'cardSurfaceFamily': 'formEntry',
+          'bindingKind': 'primary',
+          'actions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'kind': 'create',
+              'label': 'Add a club document',
+              'byRoleIds': <String>['chess-organizer'],
+              'prefill': <String, dynamic>{},
+            },
+          ],
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{
+        'documentTitle': <String, dynamic>{
+          'type': 'text',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+        'documentUrl': <String, dynamic>{
+          'type': 'url',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+      },
+    }, 'chess-rules-documents');
+
+/// Mirrors `chess-export-package`'s `ready` state (its own `initialState`):
+/// a single-identity row whose required `exportScope` is a `list` field,
+/// joined with ", " for the generic creation card's own comma-split
+/// normalizer.
+LoomWorkflowStateMachine _chessExportPackageMachine() =>
+    LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+      'initialState': 'ready',
+      'states': <String, dynamic>{
+        'ready': <String, dynamic>{
+          'label': 'Ready for export',
+          'editableFields': <String>['exportLabel', 'exportScope'],
+        },
+      },
+      'transitions': <Map<String, dynamic>>[],
+      'renderBindings': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'states': <String>['ready'],
+          'audience': 'any',
+          'tabId': 'export',
+          'cardSurfaceFamily': 'formEntry',
+          'bindingKind': 'primary',
+          'actions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'kind': 'create',
+              'label': 'Prepare an export package',
+              'byRoleIds': <String>['chess-organizer'],
+              'prefill': <String, dynamic>{},
+            },
+          ],
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{
+        'exportLabel': <String, dynamic>{
+          'type': 'text',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+        'exportScope': <String, dynamic>{
+          'type': 'list',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+      },
+    }, 'chess-export-package');
+
+/// Mirrors `hoa-owner-notification`'s shape: only `hoa-board` may create,
+/// while `mark-notification-read`'s guard requires the acting `hoa-member`
+/// to equal `recipientFanId` -- a two-identity row whose own
+/// `recipientFanId` resolves to the ACTING fan, not the creator.
+LoomWorkflowStateMachine _hoaOwnerNotificationMachine() =>
+    LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+      'initialState': 'sent',
+      'states': <String, dynamic>{
+        'sent': <String, dynamic>{
+          'label': 'Sent',
+          'editableFields': <String>['title', 'recipientFanId'],
+        },
+      },
+      'transitions': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'id': 'mark-notification-read',
+          'label': 'Mark read',
+          'from': <String>['sent'],
+          'to': null,
+          'guard': <String, dynamic>{
+            'allowedRoleIds': <String>['hoa-member'],
+            'actorEqualsField': <String, dynamic>{'key': 'recipientFanId'},
+          },
+        },
+      ],
+      'renderBindings': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'states': <String>['sent'],
+          'audience': 'any',
+          'tabId': 'admin',
+          'cardSurfaceFamily': 'notificationInbox',
+          'bindingKind': 'primary',
+          'actions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'kind': 'create',
+              'label': 'Send owner notice',
+              'byRoleIds': <String>['hoa-board'],
+              'prefill': <String, dynamic>{'senderFanId': '\$actor'},
+            },
+          ],
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{
+        'title': <String, dynamic>{
+          'type': 'text',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+        'recipientFanId': <String, dynamic>{
+          'type': 'fanId',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+        'senderFanId': <String, dynamic>{
+          'type': 'fanId',
+          'required': true,
+          'writableBy': 'platform',
+        },
+      },
+    }, 'hoa-owner-notification');
+
+/// Mirrors `chess-match-result`'s `draft` state: `participantFanIds` is a
+/// required `fanId[]` field whose own create-action `prefill` already
+/// seeds it with `["$actor"]`, and `submit-result`'s guard requires the
+/// acting fan to be present in it (`actorInList`, `present: true`).
+LoomWorkflowStateMachine _chessMatchResultMachine() =>
+    LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+      'initialState': 'draft',
+      'states': <String, dynamic>{
+        'draft': <String, dynamic>{
+          'label': 'Draft result',
+          'editableFields': <String>['resultTitle', 'participantFanIds'],
+        },
+      },
+      'transitions': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'id': 'submit-result',
+          'label': 'Submit score',
+          'from': <String>['draft'],
+          'to': 'submitted',
+          'guard': <String, dynamic>{
+            'allowedRoleIds': <String>['chess-member'],
+            'actorInList': <String, dynamic>{
+              'key': 'participantFanIds',
+              'present': true,
+            },
+          },
+        },
+      ],
+      'renderBindings': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'states': <String>['draft'],
+          'audience': 'any',
+          'tabId': 'matches',
+          'cardSurfaceFamily': 'formEntry',
+          'bindingKind': 'primary',
+          'actions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'kind': 'create',
+              'label': 'Record match',
+              'byRoleIds': <String>['chess-member'],
+              'prefill': <String, dynamic>{
+                'participantFanIds': <String>['\$actor'],
+              },
+            },
+          ],
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{
+        'resultTitle': <String, dynamic>{
+          'type': 'text',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+        'participantFanIds': <String, dynamic>{
+          'type': 'fanId[]',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+      },
+    }, 'chess-match-result');
+
+/// A synthetic workflow whose required `approverFanId` (`fanId`) is named
+/// by a `formula` guard alongside `$actor` -- the shape this dispatch
+/// cannot resolve offline, because the formula may deny the acting fan
+/// outright and satisfying it would need a genuinely different real
+/// member. Mirrors Garden's real `if(ownerFanId == $actor, false, true)`
+/// shape on a field this dispatch would otherwise have to guess at.
+LoomWorkflowStateMachine _formulaGatedFanIdFieldMachine() =>
+    LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+      'initialState': 'pending',
+      'states': <String, dynamic>{
+        'pending': <String, dynamic>{
+          'label': 'Pending',
+          'editableFields': <String>['title', 'approverFanId'],
+        },
+      },
+      'transitions': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'id': 'approve-request',
+          'label': 'Approve',
+          'from': <String>['pending'],
+          'to': null,
+          'guard': <String, dynamic>{
+            'allowedRoleIds': <String>['garden-member'],
+            'formula': 'if(approverFanId == \$actor, false, true)',
+          },
+        },
+      ],
+      'renderBindings': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'states': <String>['pending'],
+          'audience': 'any',
+          'tabId': 'requests',
+          'cardSurfaceFamily': 'formEntry',
+          'bindingKind': 'primary',
+          'actions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'kind': 'create',
+              'label': 'Submit a request',
+              'byRoleIds': <String>['garden-member'],
+              'prefill': <String, dynamic>{},
+            },
+          ],
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{
+        'title': <String, dynamic>{
+          'type': 'text',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+        'approverFanId': <String, dynamic>{
+          'type': 'fanId',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+      },
+    }, 'formula-gated-fanid-field-synthetic');
 
 /// A synthetic, text-only single-identity workflow shaped like
 /// `garden-tool-giveaway` but without its `coordinatorFanId` field --

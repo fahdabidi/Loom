@@ -6,12 +6,16 @@ import 'b25_formula_guard_reachability.dart';
 /// plain text entry, mirroring exactly what
 /// `_createAndPublishShippedAnnouncement` already does for Masjid's
 /// announcement form -- plus `date`/`time`, filled through their own picker
-/// interaction (see `arrangeRemoteInstanceFor`'s date/time handling), and
-/// `bool`, filled by toggling a `SwitchListTile` only when its rendered value
-/// does not already match what the row needs (see
-/// [b25RequiredBoolFieldValues]). Every other declared type -- `fanId`,
-/// `fanId[]`, `list`, `url` -- needs its own widget interaction this dispatch
-/// does not build; a required field of any other type throws
+/// interaction (see `arrangeRemoteInstanceFor`'s date/time handling); `bool`,
+/// filled by toggling a `SwitchListTile` only when its rendered value does
+/// not already match what the row needs (see [b25RequiredBoolFieldValues]);
+/// and `fanId`/`fanId[]`, filled by selecting a real member in a
+/// `FanIdFormPicker` rather than typing (see [b25FanIdFieldValues]). `url`
+/// and `list` render the same plain `TextField` as `text`/`textarea` --
+/// `GenericWorkflowCreationCard._editor`'s `switch` has no case for either,
+/// so both fall through to its `default`, and `list`'s only difference is
+/// that the card's own normalizer splits a comma-joined string back into a
+/// list. A required field of any other type throws
 /// [B25ArrangementOutOfScopeFailure] naming it, rather than guessing at an
 /// interaction nobody has verified.
 const b25ArrangeableFieldTypes = <String>{
@@ -21,6 +25,10 @@ const b25ArrangeableFieldTypes = <String>{
   'date',
   'time',
   'bool',
+  'url',
+  'list',
+  'fanId',
+  'fanId[]',
 };
 
 /// Date/time field types, named separately from [b25ArrangeableFieldTypes]
@@ -30,6 +38,12 @@ const b25DateTimeFieldTypes = <String>{'date', 'time'};
 /// Bool field types, named separately from [b25ArrangeableFieldTypes] because
 /// they need a `SwitchListTile` toggle rather than `tester.enterText`.
 const b25BoolFieldTypes = <String>{'bool'};
+
+/// `fanId`/`fanId[]` field types, named separately from
+/// [b25ArrangeableFieldTypes] because they need a member-directory-backed
+/// `FanIdFormPicker` selection rather than `tester.enterText` -- see
+/// [b25FanIdFieldValues].
+const b25FanIdFieldTypes = <String>{'fanId', 'fanId[]'};
 
 /// Clock functions whose presence beside a field's name in a `formula`
 /// guard marks that field as bounded relative to the clock at verification
@@ -92,6 +106,80 @@ Map<String, bool> b25RequiredBoolFieldValues({
   return result;
 }
 
+/// For each of [fanIdFields] required at creation, the real fan id(s) this
+/// dispatch must leave selected in the member-directory-backed
+/// `FanIdFormPicker` -- derived purely from whichever of
+/// [candidateTransitions]' guards names the field, never from the seed. The
+/// seed is not a safe source for this field type: this project has already
+/// shipped a row (`chess-match-result.participantFanIds`) whose recorded
+/// seed value is contaminated with role-id-shaped strings from an older,
+/// since-fixed picker (CLAUDE.md, "the field that historically held ROLE
+/// ids").
+///
+/// Two directions resolve using [actorFanId] alone -- already a real,
+/// authenticated identity, so neither needs a live directory lookup:
+/// - An `actorEqualsField` guard naming a scalar field, or an `actorInList`
+///   guard naming a field in [fanIdListFields] with `present: true`, is
+///   satisfied by the acting fan itself.
+/// - No candidate guard naming the field at all means nothing constrains
+///   it; the acting fan is used as a safe, already-real value rather than
+///   guessing a third identity nobody asked for.
+///
+/// A third shape -- a `formula` guard that names the field alongside
+/// `$actor`, e.g. Garden's `if(ownerFanId == $actor, false, true)` -- may
+/// deny the acting fan outright and would need a genuinely different real
+/// member this dispatch cannot produce offline. Rather than guess, this
+/// throws [B25ArrangementOutOfScopeFailure] naming the field, so it is
+/// never silently filled with a value a formula might deny.
+Map<String, Set<String>> b25FanIdFieldValues({
+  required String workflowType,
+  required Iterable<LoomWorkflowTransition> candidateTransitions,
+  required Set<String> fanIdFields,
+  required Set<String> fanIdListFields,
+  required String actorFanId,
+}) {
+  if (fanIdFields.isEmpty) return const <String, Set<String>>{};
+  final result = <String, Set<String>>{};
+  for (final field in fanIdFields) {
+    final isList = fanIdListFields.contains(field);
+    final selfGuardTransitionIds = <String>[];
+    final formulaTransitionIds = <String>[];
+    for (final transition in candidateTransitions) {
+      final guard = transition.guard;
+      if (!isList && guard.actorEqualsField?.key == field) {
+        selfGuardTransitionIds.add(transition.id);
+      }
+      if (isList &&
+          guard.actorInList?.key == field &&
+          guard.actorInList!.present) {
+        selfGuardTransitionIds.add(transition.id);
+      }
+      final formula = guard.formula;
+      if (formula != null &&
+          formula.contains(field) &&
+          formula.contains(r'$actor')) {
+        formulaTransitionIds.add(transition.id);
+      }
+    }
+    if (selfGuardTransitionIds.isNotEmpty) {
+      result[field] = {actorFanId};
+      continue;
+    }
+    if (formulaTransitionIds.isNotEmpty) {
+      throw B25ArrangementOutOfScopeFailure(
+        'Shipped workflow $workflowType candidate transition(s) '
+        '${formulaTransitionIds.join(', ')} guard creation field "$field" '
+        'with a formula this dispatch does not evaluate for a creation '
+        'field -- it may require a genuinely different real member, which '
+        'this dispatch cannot resolve offline.',
+        B25ArrangementOutOfScopeCategory.fanIdFieldRequiresDifferentMember,
+      );
+    }
+    result[field] = {actorFanId};
+  }
+  return result;
+}
+
 /// Why a row is out of scope, coarse enough for a caller to decide whether a
 /// second identity is worth authenticating -- see
 /// [B25ArrangementOutOfScopeFailure.category] and
@@ -107,6 +195,7 @@ enum B25ArrangementOutOfScopeCategory {
   readGuardDenied,
   unsupportedFieldType,
   missingFieldValue,
+  fanIdFieldRequiresDifferentMember,
 }
 
 /// A row B25's remote-arrangement seam cannot satisfy in this dispatch.
@@ -207,6 +296,7 @@ class B25ArrangementPlan {
     required this.clockConstrainedFields,
     required this.boolFields,
     required this.requiredBoolValues,
+    required this.fanIdFields,
     required this.arrangedState,
     required this.syntheticInstanceData,
   });
@@ -251,6 +341,13 @@ class B25ArrangementPlan {
   /// toggled). A bool field with no entry here keeps the seed's own value,
   /// exactly like every other arrangeable field type.
   final Map<String, bool> requiredBoolValues;
+
+  /// The subset of [fieldValues]' keys whose schema type is `fanId` or
+  /// `fanId[]`, so the caller knows to select a real member in a
+  /// `FanIdFormPicker` -- see [b25FanIdFieldValues] -- rather than enter
+  /// text. [fieldValues] holds the resolved fan id(s) for these keys
+  /// comma-joined, exactly like a `list` field's own representation.
+  final Set<String> fanIdFields;
 
   /// The state the created instance will actually be in: always
   /// `machine.initialState`, never the seed's own recorded `currentState`.
@@ -466,6 +563,8 @@ B25ArrangementPlan planB25RemoteArrangement({
       const <String>[];
   final dateTimeFields = <String>{};
   final boolFields = <String>{};
+  final fanIdFields = <String>{};
+  final fanIdListFields = <String>{};
   final fieldValues = <String, String>{};
   for (final field in editableFields) {
     final schema = machine.instanceDataSchema[field];
@@ -487,6 +586,13 @@ B25ArrangementPlan planB25RemoteArrangement({
     if (b25BoolFieldTypes.contains(schema.type)) {
       boolFields.add(field);
     }
+    if (b25FanIdFieldTypes.contains(schema.type)) {
+      fanIdFields.add(field);
+      if (schema.type == 'fanId[]') fanIdListFields.add(field);
+      // Resolved below from the row's own guards, never from the seed --
+      // see b25FanIdFieldValues.
+      continue;
+    }
     final seedValue = seedInstanceData[field];
     if (seedValue == null) {
       throw B25ArrangementOutOfScopeFailure(
@@ -496,7 +602,9 @@ B25ArrangementPlan planB25RemoteArrangement({
         B25ArrangementOutOfScopeCategory.missingFieldValue,
       );
     }
-    fieldValues[field] = '$seedValue';
+    fieldValues[field] = schema.type == 'list' && seedValue is Iterable
+        ? seedValue.map((item) => '$item').join(', ')
+        : '$seedValue';
   }
 
   final clockConstrainedFields = b25ClockConstrainedFields(
@@ -507,6 +615,16 @@ B25ArrangementPlan planB25RemoteArrangement({
     candidateTransitions: denialCheckCandidates,
     boolFields: boolFields,
   );
+  final fanIdFieldValues = b25FanIdFieldValues(
+    workflowType: machine.workflowType,
+    candidateTransitions: denialCheckCandidates,
+    fanIdFields: fanIdFields,
+    fanIdListFields: fanIdListFields,
+    actorFanId: actorFanId,
+  );
+  for (final entry in fanIdFieldValues.entries) {
+    fieldValues[entry.key] = entry.value.join(', ');
+  }
 
   return B25ArrangementPlan(
     creationBinding: creationBinding,
@@ -517,6 +635,7 @@ B25ArrangementPlan planB25RemoteArrangement({
     clockConstrainedFields: clockConstrainedFields,
     boolFields: boolFields,
     requiredBoolValues: requiredBoolValues,
+    fanIdFields: fanIdFields,
     arrangedState: machine.initialState,
     syntheticInstanceData: syntheticInstanceData,
   );

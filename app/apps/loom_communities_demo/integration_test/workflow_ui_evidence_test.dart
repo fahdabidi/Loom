@@ -5388,6 +5388,17 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
         requiredValue:
             plan.requiredBoolValues[entry.key] ?? entry.value == 'true',
       );
+    } else if (plan.fanIdFields.contains(entry.key)) {
+      await fillB25FanIdField(
+        tester,
+        editor: editor,
+        targetFanIds: entry.value
+            .split(', ')
+            .where((fanId) => fanId.isNotEmpty)
+            .toSet(),
+        lastCompletedStep: 'filling creation field "${entry.key}" for '
+            '$workflowType',
+      );
     } else {
       await tester.enterText(editor, entry.value);
     }

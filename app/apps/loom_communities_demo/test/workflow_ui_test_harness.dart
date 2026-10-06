@@ -427,6 +427,65 @@ Future<void> fillB25BoolField(
   }
 }
 
+/// Fills one required `fanId`/`fanId[]` creation-form field by selecting
+/// real members in its `FanIdFormPicker` (`part33_generic_creation_card.dart`'s
+/// `_editor`) -- tapping only the `fan-id-picker-member-<fanId>` checkboxes
+/// whose current state differs from [targetFanIds], exactly like
+/// [fillB25BoolField]'s own idempotent toggle.
+///
+/// This field may already be correctly selected before any tap: a
+/// `fanId[]` field's own create-action `prefill` can resolve `"$actor"`
+/// inside the array to the real acting fan before the form ever renders
+/// (chess-match-result's `participantFanIds: ["$actor"]`), and a blind tap
+/// would deselect an already-correct checkbox rather than confirm it.
+///
+/// Waits for each target member's checkbox to render before tapping it,
+/// since the picker's own member directory loads asynchronously (a real
+/// `listCommunityMembers` round trip against the live backend, not a
+/// pre-settled Future). Re-reads the rendered selection after tapping and
+/// fails loudly if it still does not match -- see [fillB25BoolField]'s own
+/// doc comment for why a tap that silently does not land must not pass.
+Future<void> fillB25FanIdField(
+  WidgetTester tester, {
+  required Finder editor,
+  required Set<String> targetFanIds,
+  String? lastCompletedStep,
+}) async {
+  for (final fanId in targetFanIds) {
+    final checkbox = find.descendant(
+      of: editor,
+      matching: find.byKey(ValueKey('fan-id-picker-member-$fanId')),
+    );
+    await waitForEngineNativeWidget(
+      tester,
+      checkbox,
+      description:
+          'real community member "$fanId" to render in the FanIdFormPicker '
+          'at $editor',
+      lastCompletedStep: lastCompletedStep,
+    );
+    final current = tester.widget<CheckboxListTile>(checkbox).value;
+    if (current != true) {
+      await tester.tap(checkbox, warnIfMissed: false);
+      await tester.pumpAndSettle();
+    }
+  }
+  for (final fanId in targetFanIds) {
+    final checkbox = find.descendant(
+      of: editor,
+      matching: find.byKey(ValueKey('fan-id-picker-member-$fanId')),
+    );
+    final observed = tester.widget<CheckboxListTile>(checkbox).value;
+    if (observed != true) {
+      fail(
+        'B25 fanId field tap did not land: expected member "$fanId" to be '
+        'selected in the FanIdFormPicker at $editor, but its checkbox still '
+        'reads $observed.',
+      );
+    }
+  }
+}
+
 /// A named primary-action candidate and the precise finder scoped to its
 /// current workflow surface.
 class PrimaryActionCandidate<T> {
