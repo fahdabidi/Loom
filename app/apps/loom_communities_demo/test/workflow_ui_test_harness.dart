@@ -466,7 +466,11 @@ Future<void> fillB25FanIdField(
     );
     final current = tester.widget<CheckboxListTile>(checkbox).value;
     if (current != true) {
-      await tester.tap(checkbox, warnIfMissed: false);
+      await tapWhenVisible(
+        tester,
+        checkbox,
+        description: 'member checkbox "$fanId" in the FanIdFormPicker at $editor',
+      );
       await tester.pumpAndSettle();
     }
   }

@@ -2235,6 +2235,104 @@ void main() {
       },
     );
   });
+
+  group('fillB25FanIdField postcondition', () {
+    testWidgets(
+      'a checkbox already selected is left untouched',
+      (WidgetTester tester) async {
+        const editorKey = ValueKey('fan-id-editor');
+        const fanId = 'fan-garden-member-1';
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: KeyedSubtree(
+                key: editorKey,
+                child: CheckboxListTile(
+                  key: const ValueKey('fan-id-picker-member-$fanId'),
+                  value: true,
+                  onChanged: (_) {},
+                  title: const Text(fanId),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await fillB25FanIdField(
+          tester,
+          editor: find.byKey(editorKey),
+          targetFanIds: const {fanId},
+        );
+
+        expect(
+          tester
+              .widget<CheckboxListTile>(
+                find.byKey(const ValueKey('fan-id-picker-member-$fanId')),
+              )
+              .value,
+          isTrue,
+        );
+      },
+    );
+
+    testWidgets(
+      'a checkbox below the fold of a SingleChildScrollView is scrolled '
+      'into view before the tap',
+      (WidgetTester tester) async {
+        // Reproduces the real FanIdFormPicker shape
+        // (part33_generic_creation_card.dart): a SingleChildScrollView
+        // builds every child regardless of viewport, so a member tile far
+        // down the member directory exists and satisfies
+        // waitForEngineNativeWidget while sitting outside the visible
+        // surface -- exactly like a creation dialog with several preceding
+        // fields and many members above the target one.
+        const editorKey = ValueKey('fan-id-editor');
+        const fanId = 'fan-garden-member-1';
+        final selected = <String>{};
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                height: 200,
+                child: KeyedSubtree(
+                  key: editorKey,
+                  child: StatefulBuilder(
+                    builder: (context, setState) => SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 2000),
+                          CheckboxListTile(
+                            key: const ValueKey('fan-id-picker-member-$fanId'),
+                            value: selected.contains(fanId),
+                            onChanged: (value) => setState(() {
+                              if (value ?? false) {
+                                selected.add(fanId);
+                              } else {
+                                selected.remove(fanId);
+                              }
+                            }),
+                            title: const Text(fanId),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await fillB25FanIdField(
+          tester,
+          editor: find.byKey(editorKey),
+          targetFanIds: const {fanId},
+        );
+
+        expect(selected, contains(fanId));
+      },
+    );
+  });
 }
 
 class _TemporarilyIgnoredWalkthroughTarget extends StatefulWidget {
