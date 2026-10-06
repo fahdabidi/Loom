@@ -437,6 +437,43 @@ A gap that stays constant is old damage, not a live leak: the 2026-08-29 inciden
 ahead of delivered ticks, and two days later it was **still exactly 70**, which is how you know
 nothing further was eaten.
 
+**2026-10-05: the emitter now has a `mkdir` SINGLETON LOCK, and every tool I reached for to inspect
+it was the wrong one. Three compounding errors in one session, all mine.**
+
+`loop_emitter.sh:116-129` takes `LOCK_DIR="$REG_DIR/.emitter.lock"` with `mkdir` (atomic), writes
+`$$` to `$LOCK_DIR/pid`, and `trap`s EXIT to remove it. A loser prints `EMITTER-SINGLETON` and exits
+0. So **the registry can no longer be served by two emitters at once** — which makes most of the
+orphan hunting above obsolete, and introduces three new traps:
+
+| what I did | why it silently failed |
+|---|---|
+| identified the emitter by matching my own invocation string | the no-args process is the **Git Bash launcher**, which exits immediately; the **real worker carries arguments** (`data/loops 30 1740`, the third being the Monitor's own timeout). I preserved launchers and killed workers. |
+| tested for the lock with `[ -f data/loops/.emitter.lock ]` | it is a **DIRECTORY**. That test can never be true, so "(no lock)" was printed all day and meant nothing. |
+| checked the lock holder with PowerShell `Get-Process -Id` | the lock stores `$$`, an **MSYS pid**. Windows tooling reports it dead for a perfectly live emitter — `ps` shows the mapping, e.g. MSYS `518171` ↔ `WINPID 31664`. |
+
+**And `SIGKILL` bypasses the EXIT trap**, so every force-kill leaves a stale lock the next emitter
+must take over. It handles that correctly (`kill -0` on the recorded holder, then takes the lock),
+but only because *its* check is in the right namespace.
+
+**The routine that actually works:**
+
+    ls -d data/loops/.emitter.lock                 # a DIRECTORY, not a file
+    h=$(cat data/loops/.emitter.lock/pid)
+    kill -0 "$h" 2>/dev/null && echo alive || echo stale   # bash, NOT Get-Process
+    ps -p "$h"                                     # shows PID and WINPID together
+
+**Prefer `kill` (TERM) over `Stop-Process -Force`** so the trap runs and the lock cleans itself up.
+
+**One retraction belongs here too.** I reported "the tick theft was real" from `fires=71` against 3
+`LOOP-FIRE` lines in the live Monitor's output. **That comparison is only valid for a single
+long-lived Monitor.** A Monitor expires every 30 minutes and each re-arm starts a *fresh* output
+file, so after ~15 re-arms a low line count is expected and says nothing about stolen ticks. The
+count-mismatch check above still works — but only against a Monitor that ran the whole window.
+
+The general shape, and it is the same one this file records everywhere else: **I identified
+processes by text I had authored rather than by what they were doing**, and I tested state with a
+predicate that could not be true. Both produce confident, stable, wrong answers.
+
 Note the registry lives in the **Windows** repo, not the VM's. Checking `~/Loom/data/loops` on the
 VM shows a different, stale set and will tell you the loop is dead when it is not.
 
