@@ -423,14 +423,35 @@ B25ArrangementPlan planB25RemoteArrangement({
   // A read-visibility gate is evaluated here, not merely a write-side guard:
   // a row this dispatch can create and whose primary formula would allow
   // the actor to act is still useless if the actor can never read the
-  // instance back. `relatedAggregate` is left unresolved -- unknown, not
-  // denied -- for the same reason b25_formula_guard_reachability.dart never
-  // routes a formula guard through the shared engine evaluator: this seam
-  // has no engine and precomputes no aggregates.
+  // instance back. The real decision (`LocalWorkflowEngineApi._isVisibleToFan`,
+  // `local_workflow_engine_api.dart:585-626`) is a three-way OR -- the
+  // creator always reads, an archetype identity field admits, or the
+  // workflow's own `readGuard` admits -- and `visibility.readGuard` is only
+  // ever consulted in the third branch, when `visibility.default ==
+  // "guarded"` (`read_visibility_resolver.dart:37-46`). This must throw only
+  // when ALL THREE deny; evaluating the third alone and failing closed on
+  // the other two converts "I don't know" into "no" (CLAUDE.md, "an offline
+  // predictor must reproduce the whole disjunction").
   final readGuard = machine.visibility.readGuard;
-  if (readGuard != null &&
+  final guardApplies =
+      readGuard != null &&
       readGuard.relatedAggregate == null &&
-      !evaluateGuard(readGuard, actorFanId, syntheticInstanceData)) {
+      machine.visibility.defaultValue == WorkflowVisibilityDefault.guarded;
+  if (guardApplies &&
+      creatorFanId != actorFanId &&
+      _archetypeFieldsAdmit(
+            machine,
+            syntheticInstanceData,
+            actorFanId,
+            roleId,
+          ) ==
+          false &&
+      !evaluateGuard(
+        readGuard,
+        actorFanId,
+        syntheticInstanceData,
+        roleId: roleId,
+      )) {
     throw B25ArrangementOutOfScopeFailure(
       'Shipped workflow ${machine.workflowType} declares a '
       'visibility.readGuard, and $roleId ($actorFanId) cannot read the '
@@ -499,4 +520,84 @@ B25ArrangementPlan planB25RemoteArrangement({
     arrangedState: machine.initialState,
     syntheticInstanceData: syntheticInstanceData,
   );
+}
+
+/// Whether [machine]'s own archetype identity fields admit [actorFanId] as a
+/// reader, reproducing the reproducible half of
+/// `LocalWorkflowEngineApi._isVisibleThroughArchetype`
+/// (`local_workflow_engine_api.dart:678-727`).
+///
+/// A row only reaches this check once [_resolveCreatorBinding] has already
+/// found a creation binding for [machine], so `machine.renderBindings` is
+/// never empty and every declared `cardSurfaceFamily` is already in hand --
+/// the response-table-inheritance branch of archetype resolution (3b in
+/// `ArchetypeResolver`), the only one needing sibling workflows this seam
+/// does not have, can therefore never apply here.
+///
+/// Returns `true` or `false` only when the model is fully reproducible from
+/// [syntheticInstanceData], [actorFanId] and [roleId] alone:
+/// - `owner`/`roles`/no resolvable family contribute nothing beyond the
+///   creator check the caller already performed, so these are confidently
+///   `false`.
+/// - `parties` principals are exactly the two shapes this dispatch can
+///   evaluate offline: a field principal passes when
+///   `syntheticInstanceData[fieldName] == actorFanId`; a role principal
+///   passes when `principal.roleId == roleId`.
+///
+/// Returns `null` -- unknown, never denied -- for every other model
+/// (`ownerAndShared`, `participants`, `recipient`) and for an unresolved
+/// multi-bespoke-family conflict, rather than fail closed on a principal
+/// shape this seam cannot compute. The caller must treat `null` the same as
+/// `true`: never raise a read-visibility refusal on an unknown verdict.
+bool? _archetypeFieldsAdmit(
+  LoomWorkflowStateMachine machine,
+  Map<String, dynamic> syntheticInstanceData,
+  String actorFanId,
+  String roleId,
+) {
+  final families = <String>{
+    for (final binding in machine.renderBindings) binding.cardSurfaceFamily,
+  };
+  if (families.isEmpty) return null;
+
+  final bespoke = families
+      .where(ArchetypeResolver.bespokeFamilies.contains)
+      .toList(growable: false)
+    ..sort();
+  final String family;
+  if (bespoke.length == 1) {
+    family = bespoke.single;
+  } else if (bespoke.isEmpty) {
+    // 3c (generic): deterministic, matching ArchetypeResolver._resolveOne.
+    family = (families.toList(growable: false)..sort()).first;
+  } else {
+    // 2+ bespoke families: the engine tie-breaks by matching each
+    // candidate's closed action vocabulary against the workflow's declared
+    // actions. This seam does not reproduce that tie-break, so which model
+    // applies is genuinely unknown rather than guessed.
+    return null;
+  }
+
+  final model = ArchetypeResolver.contracts[family]?.visibility;
+  switch (model) {
+    case null:
+    case VisibilityModel.owner:
+    case VisibilityModel.roles:
+      return false;
+    case VisibilityModel.parties:
+      final parties = machine.visibility.fields.parties;
+      if (parties.isEmpty) return false;
+      return parties.any(
+        (principal) => switch (principal) {
+          WorkflowVisibilityFieldPrincipal(fieldName: final field) =>
+            syntheticInstanceData[field] == actorFanId,
+          WorkflowVisibilityRolePrincipal(roleId: final principalRoleId) =>
+            principalRoleId == roleId,
+        },
+      );
+    case VisibilityModel.ownerAndShared:
+    case VisibilityModel.participants:
+    case VisibilityModel.recipient:
+      return null;
+  }
 }

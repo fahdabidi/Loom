@@ -459,6 +459,130 @@ void main() {
         );
       },
     );
+
+    test(
+      'a role-gated readGuard that excludes the acting role is still out '
+      'of scope for a two-identity row with no rescuing identity field '
+      '(the still-refusing case, proving the fix did not become '
+      'permissive)',
+      () {
+        Object? caught;
+        try {
+          planB25RemoteArrangement(
+            machine: _roleGatedVisibilityMachine(),
+            currentState: 'published',
+            roleId: 'garden-member',
+            creatorFanId: 'fan-garden-member-2',
+            actorFanId: 'fan-garden-member-1',
+            seedInstanceData: const {'title': 'Spare trowel'},
+            candidateTransitions: const [],
+            matchesPrimaryTerm: (_) => true,
+          );
+          fail('expected B25ArrangementOutOfScopeFailure');
+        } catch (error) {
+          caught = error;
+        }
+        expect(caught, isA<B25ArrangementOutOfScopeFailure>());
+        expect(
+          (caught as B25ArrangementOutOfScopeFailure).reason,
+          allOf(contains('readGuard'), contains('cannot read the instance')),
+        );
+      },
+    );
+
+    test(
+      'a single-identity row is in scope even though its readGuard would '
+      'deny a different actor -- the creator always reads their own '
+      'instance (branch 1 of the three-way OR)',
+      () {
+        final plan = planB25RemoteArrangement(
+          machine: _roleGatedVisibilityMachine(),
+          currentState: 'published',
+          roleId: 'garden-member',
+          creatorFanId: 'fan-garden-member-1',
+          actorFanId: 'fan-garden-member-1',
+          seedInstanceData: const {'title': 'Spare trowel'},
+          candidateTransitions: const [],
+          matchesPrimaryTerm: (_) => true,
+        );
+
+        expect(plan.arrangedState, 'published');
+      },
+    );
+
+    test(
+      'a readGuard allowedRoleIds that DOES contain the acting role is in '
+      'scope for a two-identity row -- the planner now passes its own '
+      'roleId parameter into evaluateGuard instead of failing closed on an '
+      'omitted role set (branch 3 of the three-way OR)',
+      () {
+        final plan = planB25RemoteArrangement(
+          machine: _roleGatedVisibilityAdmittingMachine(),
+          currentState: 'published',
+          roleId: 'garden-member',
+          creatorFanId: 'fan-garden-member-2',
+          actorFanId: 'fan-garden-member-1',
+          seedInstanceData: const {'title': 'Spare trowel'},
+          candidateTransitions: const [],
+          matchesPrimaryTerm: (_) => true,
+        );
+
+        expect(plan.arrangedState, 'published');
+      },
+    );
+
+    test(
+      'a parties archetype FIELD principal naming the actor is in scope '
+      'for a two-identity row even though the readGuard alone would deny '
+      'it (branch 2 of the three-way OR, field-principal shape)',
+      () {
+        final plan = planB25RemoteArrangement(
+          machine: _partiesVisibilityMachine(),
+          currentState: 'open',
+          roleId: 'garden-member',
+          creatorFanId: 'fan-garden-coordinator-1',
+          actorFanId: 'fan-garden-member-1',
+          seedInstanceData: const {
+            'title': 'Spare trowel',
+            // The field principal this archetype declares. Matches the
+            // actor, so this is what must rescue the row -- the readGuard
+            // (actorEqualsField unrelatedFanId, absent) denies on its own.
+            'requesterFanId': 'fan-garden-member-1',
+          },
+          candidateTransitions: const [],
+          matchesPrimaryTerm: (_) => true,
+        );
+
+        expect(plan.arrangedState, 'open');
+      },
+    );
+
+    test(
+      'a parties archetype ROLE principal naming the acting role is in '
+      'scope for a two-identity row even though neither the readGuard nor '
+      'the field principal admits it (branch 2 of the three-way OR, '
+      'role-principal shape)',
+      () {
+        final plan = planB25RemoteArrangement(
+          machine: _partiesVisibilityMachine(),
+          currentState: 'open',
+          roleId: 'garden-coordinator',
+          creatorFanId: 'fan-garden-coordinator-2',
+          actorFanId: 'fan-garden-coordinator-1',
+          seedInstanceData: const {
+            'title': 'Spare trowel',
+            // Deliberately NOT the actor, so only the role principal
+            // (declared as {"role": "garden-coordinator"}) can rescue this
+            // row.
+            'requesterFanId': 'fan-someone-else',
+          },
+          candidateTransitions: const [],
+          matchesPrimaryTerm: (_) => true,
+        );
+
+        expect(plan.arrangedState, 'open');
+      },
+    );
   });
 }
 
@@ -1035,3 +1159,154 @@ LoomWorkflowStateMachine _guardedVisibilityMachine() =>
         },
       },
     }, 'guarded-visibility-synthetic');
+
+/// A synthetic workflow declaring `visibility.default: "guarded"` with a
+/// ROLE-gated `readGuard` (`allowedRoleIds: ["garden-coordinator"]`) that
+/// never admits `garden-member`. Its `cardSurfaceFamily` ("equipment-loan")
+/// resolves to the `owner` archetype model, which contributes nothing
+/// beyond the creator check -- so whether a `garden-member` row is in scope
+/// depends entirely on whether the acting fan is also the creator (branch 1
+/// of the three-way OR), never on the readGuard or the archetype.
+LoomWorkflowStateMachine _roleGatedVisibilityMachine() =>
+    LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+      'initialState': 'published',
+      'visibility': <String, dynamic>{
+        'default': 'guarded',
+        'readGuard': <String, dynamic>{
+          'allowedRoleIds': <String>['garden-coordinator'],
+        },
+      },
+      'states': <String, dynamic>{
+        'published': <String, dynamic>{
+          'label': 'Available',
+          'editableFields': <String>['title'],
+        },
+      },
+      'transitions': <Map<String, dynamic>>[],
+      'renderBindings': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'states': <String>['published'],
+          'audience': 'any',
+          'tabId': 'marketplace',
+          'cardSurfaceFamily': 'equipment-loan',
+          'bindingKind': 'primary',
+          'actions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'kind': 'create',
+              'label': 'List an item',
+              'byRoleIds': <String>['garden-member'],
+              'prefill': <String, dynamic>{},
+            },
+          ],
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{
+        'title': <String, dynamic>{
+          'type': 'text',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+      },
+    }, 'role-gated-visibility-synthetic');
+
+/// Same shape as [_roleGatedVisibilityMachine], except its `readGuard`
+/// names `garden-member` itself. Proves the planner now passes its own
+/// `roleId` parameter into `evaluateGuard` rather than evaluating
+/// `allowedRoleIds` with no role set at all, which fails closed regardless
+/// of whether the acting role is actually allowed.
+LoomWorkflowStateMachine _roleGatedVisibilityAdmittingMachine() =>
+    LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+      'initialState': 'published',
+      'visibility': <String, dynamic>{
+        'default': 'guarded',
+        'readGuard': <String, dynamic>{
+          'allowedRoleIds': <String>['garden-member'],
+        },
+      },
+      'states': <String, dynamic>{
+        'published': <String, dynamic>{
+          'label': 'Available',
+          'editableFields': <String>['title'],
+        },
+      },
+      'transitions': <Map<String, dynamic>>[],
+      'renderBindings': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'states': <String>['published'],
+          'audience': 'any',
+          'tabId': 'marketplace',
+          'cardSurfaceFamily': 'equipment-loan',
+          'bindingKind': 'primary',
+          'actions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'kind': 'create',
+              'label': 'List an item',
+              'byRoleIds': <String>['garden-member'],
+              'prefill': <String, dynamic>{},
+            },
+          ],
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{
+        'title': <String, dynamic>{
+          'type': 'text',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+      },
+    }, 'role-gated-visibility-admitting-synthetic');
+
+/// A synthetic workflow whose `cardSurfaceFamily` ("approvalQueueItem")
+/// resolves to the `parties` archetype model, declaring both principal
+/// shapes `visibility.fields.parties` supports: a field principal
+/// (`requesterFanId`) and a role principal (`{"role": "garden-coordinator"}`).
+/// Its own `readGuard` (`actorEqualsField: unrelatedFanId`, a field no seed
+/// ever populates) always denies on its own, so either principal admitting
+/// must be what rescues the row -- never the readGuard itself.
+LoomWorkflowStateMachine _partiesVisibilityMachine() =>
+    LoomWorkflowStateMachine.fromJson(<String, dynamic>{
+      'initialState': 'open',
+      'visibility': <String, dynamic>{
+        'default': 'guarded',
+        'readGuard': <String, dynamic>{
+          'actorEqualsField': <String, dynamic>{'key': 'unrelatedFanId'},
+        },
+        'fields': <String, dynamic>{
+          'parties': <dynamic>[
+            'requesterFanId',
+            <String, dynamic>{'role': 'garden-coordinator'},
+          ],
+        },
+      },
+      'states': <String, dynamic>{
+        'open': <String, dynamic>{
+          'label': 'Open',
+          'editableFields': <String>['title'],
+        },
+      },
+      'transitions': <Map<String, dynamic>>[],
+      'renderBindings': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'states': <String>['open'],
+          'audience': 'any',
+          'tabId': 'approvals',
+          'cardSurfaceFamily': 'approvalQueueItem',
+          'bindingKind': 'primary',
+          'actions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'kind': 'create',
+              'label': 'Submit request',
+              'byRoleIds': <String>['garden-member', 'garden-coordinator'],
+              'prefill': <String, dynamic>{},
+            },
+          ],
+        },
+      ],
+      'instanceDataSchema': <String, dynamic>{
+        'title': <String, dynamic>{
+          'type': 'text',
+          'required': true,
+          'writableBy': 'formEntry',
+        },
+      },
+    }, 'parties-visibility-synthetic');
