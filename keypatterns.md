@@ -551,3 +551,10 @@ who is not the item owner.
 **What:** `fillB25FanIdField` tapped `fan-id-picker-member-<fanId>` with `warnIfMissed: false` and no `ensureVisible`; the creation dialog's `SingleChildScrollView` builds all children, so the existence wait passes while the tile sits below the fold and the tap lands on clipped coordinates. Its sibling `fillB25BoolField` had the `ensureVisible`; the newer filler did not.
 **Why it matters:** the failure reports as a product/state defect ("checkbox still reads false") three layers from the cause, and every diagnostic instinct (enabled?, membership status?, pump?) is wrong. Any tap-based harness filler must prepare visibility and use a hit test — the shared `tapWhenVisible` exists for exactly this; a second independent tap path reintroduces the bug.
 **Evidence:** this dispatch; `workflow_ui_test_harness.dart:450-485` vs its `fillB25BoolField` sibling; `part33_generic_creation_card.dart:165`.
+
+### 2026-10-06 -- "Instance appears on tab X" has three key namespaces, decided by archetype reconciliation
+
+**Kind:** pattern
+**What:** A tab's surface is chosen by `_derivedRendererContractIdForTab`: exactly one bound family in {calendar, event-rsvp, equipment-loan} → a dedicated surface (calendar agenda keys / marketplace-listing keys); anything else → `EngineNativeListSurface` (`engine-native-list-item-*`, or `workflow-table-row-*` for table family). Any checker that encodes one namespace as "the instance rendered" is unsatisfiable by construction on the other surfaces — the instance is created, visible, often on screen, while the wait times out. The B25 remote arrangement did exactly this for Garden's calendar and marketplace tabs and aborted full-b25.
+**Why it matters:** The failure reads as "engine persisted but never rendered" — a backend/visibility bug three layers from the cause — and green suites can't catch it because the helper's only test witnesses run on list-surface tabs.
+**Evidence:** this dispatch; `b25_created_instance_identity.dart:15` vs `part32:179` (sole emitter), `app_shell_capabilities.dart:59-70`, `part28:1308`, `part36:356`.
