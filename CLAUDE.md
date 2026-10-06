@@ -1220,6 +1220,32 @@ route's subtree, and by a disabled button. If the question is "can the user do t
 must be *hit-testable and enabled*, and it must be **non-mutating** — never implemented by trying the
 action to see whether it works.
 
+**Add a fourth thing it is satisfied by, measured 2026-10-05: a widget that is simply BELOW THE
+FOLD.** `fillB25FanIdField` tapped a correctly-keyed, enabled member checkbox belonging to an
+active member, and the checkbox stayed `false` — because the tile sat off-screen in the creation
+dialog, the pointer landed on clipped coordinates, and `warnIfMissed: false` silenced the only
+signal. **The dialog's content is a `SingleChildScrollView`, which builds every child regardless of
+viewport** (`part33_generic_creation_card.dart:165`), so unlike a lazy `ListView` it makes an
+off-screen widget *exist* and satisfy the wait. Its sibling `fillB25BoolField` had the
+`ensureVisible` all along; the filler added next to it did not — the asymmetric-sibling shape this
+file already records, in a new place.
+
+**What makes this worth its own note is the diagnostic cost, not the fix.** "Its checkbox still
+reads false" reads as a product or state defect three layers from the cause, and it sent me to four
+hypotheses — the picker's `enabled` flag, a membership-status mapping, a missing pump, a wrong row
+kind — **all four of which I disproved by measurement** (every one of the 63 memberships in the
+database is `active`; the harness does tap the member row's own key, not the container). None of
+them was the mechanism. The whole class is avoided by one habit: **a tap-based filler must prepare
+visibility and use a hit test, through the SHARED helper** — here `tapWhenVisible`, which already
+existed and was already used at two other call sites and supplies `ensureVisible`, a bounded
+re-pump, a hit test, and a loud failure *at the tap* naming off-screen versus obscured.
+
+**And `warnIfMissed: false` deserves naming on its own.** It converts "the tap hit nothing" into
+silence, so the only remaining evidence is a postcondition failing far away. Reach for it only where
+a miss is genuinely expected and harmless, never on a tap whose effect you are about to assert.
+The one thing that worked here was the postcondition itself: it caught a tap that never landed
+instead of banking three instances with an unset identity field.
+
 Two corollaries this cost real time on:
 
 - **Deliberate navigation needs explicit open/close ownership.** If a step must visit a detail
