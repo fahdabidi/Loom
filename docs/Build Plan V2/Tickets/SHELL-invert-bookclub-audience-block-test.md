@@ -1,6 +1,6 @@
 # SHELL — invert the Book Club audience-block test, which now asserts a defect that is fixed
 
-**Status:** written 2026-09-25, **NOT dispatched**.
+**Status:** written 2026-09-25, **DISPATCHED AND SHIPPED as `4192dbb8`** ("test(book-club): invert the audience-block test -- it "). Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh` (Claude CLI, sonnet, xhigh). Dart test only.
 **Size:** one test case in one file. No product code.
 

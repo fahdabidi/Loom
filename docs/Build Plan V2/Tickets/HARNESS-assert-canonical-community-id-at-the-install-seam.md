@@ -1,6 +1,6 @@
 # HARNESS — stop rewriting the package's canonical community id, and migrate the six stale catalog ids
 
-**Status:** written 2026-10-05, **NOT dispatched**.
+**Status:** written 2026-10-05. **DISPATCHED AND SHIPPED as `e0536500`** -- verified by my own five-suite run and A/B, not on the agent's word. Device-measured effect: group-id failures 10 to 0; traversal 17 to 83 workflows. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Scoped by** `data/call_root_cause_agent.sh` (session key `b25-canonical-community-id`), whose
 diagnosis I then verified line by line myself — every claim below is checked, not quoted.

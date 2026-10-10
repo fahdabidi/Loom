@@ -1,6 +1,6 @@
 # HARNESS — the readGuard predictor must reproduce the whole read decision, not one branch of it
 
-**Status:** written 2026-10-05, **NOT dispatched**.
+**Status:** written 2026-10-05. **DISPATCHED AND SHIPPED as `28224656`** -- verified by my own five-suite run and A/B, not on the agent's word. Device-measured effect: readGuard refusals 15 to 1. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Scoped by** `data/call_root_cause_agent.sh` (session key `b25-arrangement-classes`). Its diagnosis
 corrected my premise — I expected these rows to be *correct* refusals — and I then verified every

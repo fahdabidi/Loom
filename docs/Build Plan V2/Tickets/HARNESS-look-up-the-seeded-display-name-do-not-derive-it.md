@@ -1,6 +1,6 @@
 # HARNESS — look up the seeded fan's display name, do not derive it from the slug
 
-**Status:** written 2026-10-05, **NOT dispatched**.
+**Status:** written 2026-10-05. **DISPATCHED AND SHIPPED as `e2c63f0d`** -- verified by my own five-suite run and A/B, not on the agent's word. Device-measured effect: stalls 11 to 1; zero waits remain on a derived name. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Evidence:** Garden/Book precheck at `6097767f`, scratch evidence root. `exit=0`, `workflows=17`,
 `b25Proven=0/16`, `b25RowExecutionFailed=3`, 11 × `row_stalled_inconclusive`, `screenshots=15/15`,

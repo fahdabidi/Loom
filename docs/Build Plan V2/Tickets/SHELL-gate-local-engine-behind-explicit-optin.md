@@ -1,6 +1,6 @@
 # SHELL — gate the in-memory engine behind an explicit opt-in (ticket A)
 
-**Status:** written 2026-10-01, **NOT dispatched**.
+**Status:** written 2026-10-01, **DISPATCHED AND SHIPPED as `ee8e9483`** ("feat(shell): the in-memory engine is now behind an exp"). Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`.
 **Parallel with** [HARNESS-production-wiring-and-direct-grant-auth.md](HARNESS-production-wiring-and-direct-grant-auth.md) — different files, no shared edits.
 

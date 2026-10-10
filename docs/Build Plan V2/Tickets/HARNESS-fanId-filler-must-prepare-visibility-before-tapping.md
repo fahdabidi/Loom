@@ -1,6 +1,6 @@
 # HARNESS — the fanId filler taps without scrolling, with the miss suppressed
 
-**Status:** written 2026-10-05, **NOT dispatched**. One-line fix plus a regression test.
+**Status:** written 2026-10-05. **DISPATCHED AND SHIPPED as `9deba3ed`** -- verified by my own five-suite run and A/B, not on the agent's word. Device-measured effect: fanId tap failures 3 to 0; row_execution_failed 14 to 10. Kept for its reasoning; do NOT re-dispatch. One-line fix plus a regression test.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Scoped by** `data/call_root_cause_agent.sh` (session key `b25-fanid-picker-tap`). It reached a
 confident diagnosis, said plainly that **none of my four candidates was right**, and I then

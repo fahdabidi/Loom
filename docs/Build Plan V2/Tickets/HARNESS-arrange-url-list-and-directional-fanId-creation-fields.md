@@ -1,6 +1,6 @@
 # HARNESS — arrange `url` and `list` creation fields, then `fanId` with DIRECTIONAL derivation
 
-**Status:** written 2026-10-05, **NOT dispatched**.
+**Status:** written 2026-10-05. **DISPATCHED AND SHIPPED as `b11a27c6`** -- verified by my own five-suite run and A/B, not on the agent's word. Device-measured effect: field-type refusals 14 to 1; screenshots 35 to 52. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Scoped by** `data/call_root_cause_agent.sh` (session key `b25-arrangement-classes`), then
 re-scoped by me against the **current** population, because the class doubled after the readGuard
