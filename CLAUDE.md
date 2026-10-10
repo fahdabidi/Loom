@@ -2951,6 +2951,40 @@ return `verified`, `incomplete`, `red` and `failed` correctly; a marker **omitti
 Extraction was also tested against a real **stream-json** capture, since that is how the live path
 actually sees the reply.
 
+
+**VERIFIED IN THE LIVE PATH 2026-10-10, exit codes and all — and the technique that made it possible
+is the part worth reusing.** The verdict-to-exit mapping is now measured through the real script, not
+just the standalone check:
+
+| verdict | agent exit | wrapper exit | why |
+|---|---|---|---|
+| `blocked` | 0 | **3** | the dispatch never began; 3 keeps it distinct from `failed` |
+| `blocked` | 1 | **1** | a real crash status is more informative, so it is never masked |
+| `verified` | 0 | **0** | — |
+| `failed` | 0 | **2** | verification was never reported |
+
+**`blocked` originally set no override at all**, so a CLI that printed an auth error and exited 0
+would have made the wrapper exit 0 while its own text said BLOCKED — the always-quiet guard in the
+one channel automation reads. Latent rather than live, because the CLI does exit non-zero today; a
+guard that depends on that is what this file warns against everywhere else.
+
+**The reusable technique: to stub a bare-name command inside a script you must not modify, export a
+bash FUNCTION, not a PATH entry.** Two PATH-based attempts failed and both failure modes are worth
+recognising. The first silently ran the real binary, because the script sources an environment file
+*after* its own start which re-prepends the real tool's directory — **the tell was all four cases
+returning identical output**, which is this file's own invariant-output signal that the knob is not
+connected. The second neutralised that one `source` line so the stub did win, and broke the script
+earlier instead, since it needs the pub-cache and Flutter directories for its `--add-dir` arguments;
+the verdict came back empty. A function wins because **function lookup precedes PATH lookup and
+sourcing an env file does not unset functions**, so it survives exactly the thing that defeated the
+stub:
+
+    run() { export PROBE_RC="$1"; claude() { cat > /dev/null; printf '...'; return "$PROBE_RC"; }
+            export -f claude; bash data/call_implementation_agent.sh "$TICKET" --fresh; }
+
+**And the proof that it was really testing something: the four verdicts DIFFERED.** That is the only
+thing separating this run from the first invalid one, which was equally green-looking and measured
+nothing.
 Two things this cost, both worth keeping:
 
 - **The historical logs can only prove the gate FIRES.** None of them carries a marker, including the
