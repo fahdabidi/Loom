@@ -15,6 +15,15 @@
 #
 # WHAT IT CANNOT DO: tell you the recorded baseline is current. It checks agreement with
 # suite_baselines.txt, nothing more. Keep that file honest by re-measuring.
+# WHAT "PENDING" MEANS HERE, because a gate's own printed count has to be interpretable.
+# Pending = a ticket whose Status line records no completed, superseded or deferred outcome.
+# Excluded: "DISPATCHED AND SHIPPED", "SHIPPED", "SUPERSEDED", "NOTHING LEFT TO DISPATCH",
+# "DONE", "POST-PRODUCTION" (user-deferred 2026-09-02) and scoping requests, which are not
+# implementation tickets. Measured 2026-10-10: that leaves 6 -- the 5 awaiting dispatch plus
+# GAP-permission-catalog-publishing, which is genuinely open with Part A done and Part B owed.
+# The first version of this list omitted DONE and POST-PRODUCTION and printed 10, which was
+# not wrong about anything it CHECKED (only 5 state a baseline at all) but was a loose number
+# in a guard's own output, and this project is strict about those.
 set -uo pipefail
 cd "$(dirname "$0")/../../../.." || exit 2
 BASE="docs/Build Plan V2/Tools/code/suite_baselines.txt"
@@ -32,6 +41,7 @@ for f in "$DIR"/*.md; do
   # Pending = its Status line does not record a completed or superseded outcome.
   case "$status" in
     *"DISPATCHED AND SHIPPED"*|*SHIPPED*|*SUPERSEDED*|*"NOTHING LEFT TO DISPATCH"*) continue ;;
+    *DONE*|*"POST-PRODUCTION"*|*"scoping request"*) continue ;;
   esac
   pending=$((pending+1))
   # Only tickets that actually state a baseline can disagree with one.
