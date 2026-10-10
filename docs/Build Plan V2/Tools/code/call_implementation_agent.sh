@@ -273,11 +273,25 @@ GATE_VERDICT=""
 GATE_DETAIL=""
 evaluate_suites_marker() {
   local marker="${1:-}"
+  local reply="${2:-}"
   local required="demo shell judges engine service"
   local missing="" notrun="" red="" s entry val failed_count
   GATE_VERDICT=""
   GATE_DETAIL=""
   if [ -z "$(printf '%s' "$marker" | tr -d '[:space:]')" ]; then
+    # A reply that is ITSELF an infrastructure error means the agent never ran:
+    # zero turns, zero tokens, no tree change. That is a different fact from
+    # "the agent worked and did not say what it verified", and conflating them
+    # misattributes the cause -- on 2026-10-10 an expired OAuth refresh token
+    # produced the ordinary "never reported what it verified" banner, which
+    # reads as another intent-as-result when nothing had executed at all.
+    # Checked only when the marker is absent, so it can never mask a real
+    # report, and anchored on the engine's own error wording.
+    if printf '%s' "$reply" | grep -qiE 'failed to authenticate|oauth session expired|could not be refreshed|authentication_failed|invalid api key|credit balance is too low|usage limit reached|rate_limit_error'; then
+      GATE_DETAIL="the agent NEVER RAN -- its reply is an infrastructure error, not a report: $(printf '%s' "$reply" | tr '\n' ' ' | cut -c1-120)"
+      GATE_VERDICT=blocked
+      return 0
+    fi
     GATE_DETAIL="no <<<SUITES_RUN:...>>> marker in the agent's reply"
     GATE_VERDICT=failed
     return 0
@@ -333,13 +347,14 @@ if [ "${1:-}" = "--check-verification" ]; then
   CHECK_FILE="${2:?usage: call_implementation_agent.sh --check-verification <file-with-agent-reply>}"
   [ -f "$CHECK_FILE" ] || { echo "no such file: $CHECK_FILE" >&2; exit 64; }
   CHECK_MARKER="$(extract_suites_marker "$CHECK_FILE")"
-  evaluate_suites_marker "$CHECK_MARKER"
+  evaluate_suites_marker "$CHECK_MARKER" "$(cat "$CHECK_FILE")"
   CHECK_VERDICT="$GATE_VERDICT"
   echo "file=$CHECK_FILE"
   echo "verdict=$CHECK_VERDICT"
   echo "detail=$GATE_DETAIL"
   case "$CHECK_VERDICT" in
     failed) exit 2 ;;
+    blocked) exit 3 ;;
     *) exit 0 ;;
   esac
 fi
@@ -785,7 +800,7 @@ if [ "$POST_HEAD" != "$PRE_HEAD" ] && [ "$PRE_TRACKED_COUNT" -gt 0 ]; then
 fi
 
 # --- Verification marker gate (see the long note at the top) -------------
-evaluate_suites_marker "$SUITES_RUN_MARKER"
+evaluate_suites_marker "$SUITES_RUN_MARKER" "${CLAUDE_REPLY:-}"
 VERIFICATION_VERDICT="$GATE_VERDICT"
 EXIT_OVERRIDE=""
 echo "===================================================="
@@ -795,6 +810,16 @@ if [ -n "$(printf '%s' "$SUITES_RUN_MARKER" | tr -d '[:space:]')" ]; then
   echo "  marker: $SUITES_RUN_MARKER"
 fi
 case "$VERIFICATION_VERDICT" in
+  blocked)
+    echo "##################################################################"
+    echo "# BLOCKED DISPATCH: the agent NEVER RAN. This is infrastructure,  #"
+    echo "# not a verification failure and NOT another intent-as-result --  #"
+    echo "# zero turns, zero tokens, clean tree. Nothing was attempted, so  #"
+    echo "# there is no work to verify and nothing to fold into the         #"
+    echo "# tracker. Fix the credential or quota named above, then          #"
+    echo "# re-dispatch the SAME ticket unchanged.                          #"
+    echo "##################################################################"
+    ;;
   failed)
     echo "##################################################################"
     echo "# FAILED DISPATCH: the agent never reported what it verified.    #"
