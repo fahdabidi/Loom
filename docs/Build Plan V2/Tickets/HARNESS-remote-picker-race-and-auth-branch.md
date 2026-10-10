@@ -1,6 +1,6 @@
 # HARNESS — the identity picker opens asynchronously under remote wiring, and ticket B's auth is on the wrong branch
 
-**Status:** written 2026-10-01, **NOT dispatched**.
+**Status:** written 2026-10-01, **SHIPPED** -- verified 2026-10-10 by reading the harness at HEAD, and more thoroughly than prescribed. Defect A: the picker open is now `tapWhenVisible(pickerButton)` followed by a BUDGETED `waitForEngineNativeWidget` on `actor-identity-picker-dialog` (`workflow_ui_test_harness.dart:2152-2169`), with a dedicated loud-failure path `_failB25PickerNeverBecameInteractable` that captures a diagnostic frame. Defect B: the `selector.accountId` branch no longer EXISTS -- it was replaced by `authenticateEvidenceFanForRemote`, which requires a remote session, documents the role-aliased local picker as unusable once production wiring is active, and records a credential failure as `B25SelectorSetupFailure` (a blocked row, never a crash). Do NOT re-dispatch..
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Follows** [HARNESS-production-wiring-and-direct-grant-auth.md](HARNESS-production-wiring-and-direct-grant-auth.md).
 Scoped with the Root Cause Agent (`--session-key harness-remote-auth-branch`); **its enumeration was

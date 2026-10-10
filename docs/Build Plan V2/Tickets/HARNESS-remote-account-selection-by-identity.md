@@ -1,6 +1,6 @@
 # HARNESS — under remote auth, the account is selected by a locally-derived display name
 
-**Status:** written 2026-10-01, **NOT dispatched**.
+**Status:** written 2026-10-01, **SUPERSEDED by `e2c63f0d`** -- established 2026-10-10. This ticket had already STRUCK its own prescription; its one live instruction was to establish which of two causes applied by logging what `listAccounts` returned. That instrument was built (`remote_account_chooser_stall_diagnostic_test.dart`, `3cb47f8e`) and the cause was then fixed by the successor ticket `HARNESS-look-up-the-seeded-display-name` (`e2c63f0d`), which joins `listAccounts` on `accountId` -- the chooser own writer -- and drops the slug-derivation fallback. Device-measured: stalls 11 to 1. Nothing here is left to dispatch..
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Follows** [HARNESS-remote-picker-race-and-auth-branch.md](HARNESS-remote-picker-race-and-auth-branch.md), whose fixes are confirmed working on-device — see "What this run proved".
 

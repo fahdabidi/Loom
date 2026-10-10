@@ -1,6 +1,6 @@
 # SHELL — two calendar tests assert "no check-circle icon" and the state badge now renders one
 
-**Status:** written 2026-09-25, **NOT dispatched**. Follow-up to
+**Status:** written 2026-09-25, **SHIPPED** -- verified 2026-10-10 by reading both files at HEAD. `b27_calendar_tab_real_data_test.dart:123-132` and `b36_calendar_engine_rsvp_test.dart:216-226` now assert the icon IS present inside its own state badge and nowhere else, with a comment saying exactly that. The demo suite is green at 312/0/0. Do NOT re-dispatch.. Follow-up to
 [SHELL-state-label-bespoke-cards.md](SHELL-state-label-bespoke-cards.md), which is otherwise done.
 **Route:** `data/call_implementation_agent.sh --fresh`. **Two test files. No product code.**
 

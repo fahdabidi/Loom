@@ -1,6 +1,6 @@
 # HARNESS — rename the retired identity vocabulary ticket B introduced (ticket B follow-up)
 
-**Status:** written 2026-10-01, **NOT dispatched**.
+**Status:** written 2026-10-01, **SHIPPED** -- verified 2026-10-10. The demo suite measures 312 passed / 0 failed / 0 skipped, which includes `retired_vocabulary_gate_test.dart`, and ZERO Dart files have changed since that measurement (`git diff --name-only 9deba3ed..HEAD -- "*.dart"` is empty), so the gate passes at HEAD. Note a raw substring grep is the WRONG oracle here -- 17 files legitimately contain the token because the gate matches identifier shapes, not occurrences. Do NOT re-dispatch..
 **Route:** `data/call_implementation_agent.sh --fresh`. **Renames only. No behaviour change.**
 **Follows** [HARNESS-production-wiring-and-direct-grant-auth.md](HARNESS-production-wiring-and-direct-grant-auth.md), whose work is otherwise correct and must not be reverted.
 

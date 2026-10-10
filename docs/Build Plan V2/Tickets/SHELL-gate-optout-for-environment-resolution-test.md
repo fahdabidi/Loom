@@ -1,6 +1,6 @@
 # SHELL — the package-wide local opt-in broke the test that guards the live-backend default (ticket A follow-up)
 
-**Status:** written 2026-10-01, **NOT dispatched**.
+**Status:** written 2026-10-01, **SHIPPED** -- verified 2026-10-10 against HEAD, not by commit archaeology: the opt-out this ticket prescribes is present at `remote_service_configuration_environment_test.dart:56-57` (`debugForceLoomLocalBackend = false` plus an `addTearDown` restoring it), and the app-shell suite is green. Do NOT re-dispatch..
 **Route:** `data/call_implementation_agent.sh --fresh`. **One test file. No product code.**
 **Follows** [SHELL-gate-local-engine-behind-explicit-optin.md](SHELL-gate-local-engine-behind-explicit-optin.md), whose work is otherwise correct and must not be reverted.
 

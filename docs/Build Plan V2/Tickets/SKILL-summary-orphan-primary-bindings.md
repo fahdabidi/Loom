@@ -1,10 +1,43 @@
 # SKILL — add primary bindings for 5 states whose only binding is `summary` (PREREQUISITE)
 
-**Status:** written 2026-09-25, **NOT dispatched**.
+**Status:** written 2026-09-25, **2 of 5 SHIPPED, 3 SUPERSEDED -- NOTHING LEFT TO DISPATCH.** Audited 2026-10-10 against the shipped packages at HEAD.
 **Route:** the Skill only, via `data/call_skill_authoring_agent.sh`. Three packages, so three dispatches.
-**Ordering: THIS SHIPS FIRST.** The shell ticket
-[SHELL-implement-bindingkind-summary.md](SHELL-implement-bindingkind-summary.md) must not land until
-this has, or five states lose reachable actions in the interval.
+**Ordering: the gate this ticket imposed is RELEASED.** It originally said "THIS SHIPS FIRST" and
+blocked [SHELL-implement-bindingkind-summary.md](SHELL-implement-bindingkind-summary.md) from landing
+until all five states had primary bindings. Two of the five shipped and the other three turned out to
+be cascade targets that must keep their `summary`-only bindings, so there is nothing left for the
+shell ticket to wait on. The shell ticket is no longer blocked by this one.
+
+## AUDIT 2026-10-10 — DO NOT DISPATCH THIS. Two states already shipped; the other three must never be surfaced.
+
+Checked against the shipped packages in `app/packages/core/loom_communities_app_shell/assets/`.
+
+**Already shipped — the prescribed edit is present at HEAD:**
+
+| Package / workflow | State | Evidence at HEAD |
+|---|---|---|
+| Book Club `book-search-ai-digest` | `saved` | `BookClub` asset: the `books` **primary** binding is now `["open", "saved"]`, and the sibling summary is `["withdrawn"]` |
+| Ad-Free `ad-off-community-checkout` | `funded` | `AdFreeCommunity` asset (workflow key at line 642): the `giving` **primary** states include `funded`, and the sibling summary is `["refunded"]` |
+
+**The three Cedar states are SUPERSEDED and surfacing them would be a regression.** All three
+transitions this ticket wants to make reachable — `reopen-case` on `hoa-architectural-request`, and
+`owner-resubmitted` / `owner-withdraw` on `hoa-committee-decision` — are **`transitionRelated`
+CASCADE TARGETS**, which I verified in the Cedar asset's own effects: `reopen-case` is named as a
+cascade target at line 467-469, and `owner-resubmitted` / `owner-withdraw` at 193-228. Their
+member-shaped guards exist to **authorize the cascade, not to offer a button**; the member's real
+action lives on the sibling workflow, which already has a member-visible primary.
+
+CLAUDE.md's 2026-09-26 finding — written the day **after** this ticket — says this outright and names
+the consequence: *"Do not surface them either. Firing a mirror transition directly desynchronizes the
+pair… and a 'fix' adding a primary binding would have made it MORE prominent."* That is exactly the
+edit this ticket prescribes. The same finding records that `check_orphan_summary_bindings.py` flagged
+these three and had to be changed to exclude cascade-only states, because its "must report 0" exit
+condition was otherwise permanently unpassable.
+
+**So the remaining rows are not pending work; they are a prescription that was refuted.** Leaving
+them unstruck is the documented hazard that a reader skims a ticket for the imperative — which is why
+this block sits above the original text rather than being appended below it. The tables further down
+are kept for their reasoning and are **not** instructions.
 
 ## Why this exists
 
