@@ -912,6 +912,22 @@ case "$VERIFICATION_VERDICT" in
     echo "# tracker. Fix the credential or quota named above, then          #"
     echo "# re-dispatch the SAME ticket unchanged.                          #"
     echo "##################################################################"
+    # Same rule as `failed` below: override only a SUCCESSFUL agent status, so
+    # a real crash status is never masked. Found 2026-10-10 by dispatching for
+    # real against expired auth: the verdict and banner were correct and loud,
+    # and the wrapper exited with the AGENT's status (1). That is right -- but
+    # it meant a CLI that printed an auth error and exited 0 would have made
+    # this wrapper exit 0 too, so automation reading the exit status would see
+    # success while the text said BLOCKED. The hole was latent rather than
+    # live, because today's CLI does exit non-zero; a guard that depends on
+    # that is exactly what this file warns against. 3 (not 2) keeps blocked
+    # distinguishable from failed, and matches --check-verification.
+    if [ "$STATUS" = "0" ]; then
+      EXIT_OVERRIDE=3
+      echo "NOTE: the agent itself exited 0; this script exits 3 because the"
+      echo "      dispatch was BLOCKED before any work began. Exit 3 means"
+      echo "      blocked, 2 means verification was never reported."
+    fi
     ;;
   failed)
     echo "##################################################################"
