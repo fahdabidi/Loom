@@ -2898,6 +2898,33 @@ the gate rather than the safeguard itself. Today's durable artifacts are the one
 `check_role_parity.sh` (declared vs provisioned roles, proven to fail as well as pass),
 `check_b25_status.sh` (recomputes the bar and refuses to print a combined figure), the
 `make_b25_brief.sh` requirement that every walkthrough record `skillVersion` + `sha256`, the three
+**A fourth gate, added 2026-10-10: `check_ticket_baselines.sh`, because this file's own
+suite-baseline numbers keep drifting into documents that instruct someone.** Measured that day: 21
+tickets state a demo baseline across **13 distinct values**, and one ticket still awaiting dispatch
+said `demo 310` against a measured 312 — right when written, stale once a later commit added two
+tests. That is the hazard this file already records biting in both directions (a low baseline made a
+correct run look inflated and nearly triggered a fabricated-test investigation; it would equally let
+a real deletion hide inside apparent growth), so the note form had already failed.
+
+**Its scope is deliberately narrow, and the narrowness IS the design.** It checks only tickets still
+**pending** dispatch, because a shipped ticket's baseline is a correct historical record of what was
+true when it ran. Flagging those would make it an always-noisy guard that buries the one line that
+matters — proven rather than asserted: a shipped ticket stating `demo 299` is correctly ignored while
+a planted `310` in a pending one is reported by name.
+
+**A/B'd in all three directions** — passes clean (10 pending, 5 stating a baseline, 0
+disagreements), fires with the file, the stated value and the recorded value named, and passes again
+after `git checkout --` restored the planted ticket byte-identical. The drift exit is **1** and a
+setup error is **2**, kept distinct; it earned that on its first run, refusing loudly with "missing
+suite_baselines.txt" when my `cd` was one directory short rather than silently finding nothing to
+check.
+
+**And it states its own limit in its output**, because the honest claim is narrow: it proves pending
+tickets *agree with the record* in `suite_baselines.txt`, never that the record is current. Keeping
+that file true is still a measurement, not a check. Note also that unlike the dispatchers this gate
+lives in the **tracked** `Tools/code` directory, so it has none of the gitignored-copy drift the
+`data/` scripts suffer.
+
 older parity gates, the `<<<SUITES_RUN:...>>>` gate below, and — added 2026-10-10 — the same
 dispatcher's **ticket Status stamping**, which exists because the note form of that lesson failed
 in the most direct way possible: this very section said the fix was mechanical and unbuilt while

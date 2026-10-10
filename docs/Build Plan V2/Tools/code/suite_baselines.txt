@@ -1,0 +1,17 @@
+# Measured five-suite baselines — the single record the baseline gate compares tickets against.
+#
+# WHAT THIS FILE IS: the last figures *I measured myself*, all five suites, sequentially, on a
+# quiet box. WHAT IT IS NOT: automatically current. The gate that reads this file checks that
+# pending tickets AGREE with it; it cannot tell you this file is still true. Re-measure and
+# update this file (and say at which commit) whenever a suite legitimately moves — a baseline
+# nobody maintains stops being evidence.
+#
+# measured_at: 2026-10-10, HEAD 82b849f4, quiet box (97.7% idle, 4.5 GiB free)
+# re-confirmed: 2026-10-10 — zero .dart files changed between 9deba3ed and a853b0f7, so the
+#               totals cannot have moved since that measurement.
+demo=312
+app shell=448
+judges=525
+engine=345
+service=168
+analyze=3
