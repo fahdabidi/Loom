@@ -2879,7 +2879,23 @@ the gate rather than the safeguard itself. Today's durable artifacts are the one
 `check_role_parity.sh` (declared vs provisioned roles, proven to fail as well as pass),
 `check_b25_status.sh` (recomputes the bar and refuses to print a combined figure), the
 `make_b25_brief.sh` requirement that every walkthrough record `skillVersion` + `sha256`, the three
-older parity gates, and the `<<<SUITES_RUN:...>>>` gate below. The prose entries above are worth
+older parity gates, the `<<<SUITES_RUN:...>>>` gate below, and — added 2026-10-10 — the same
+dispatcher's **ticket Status stamping**, which exists because the note form of that lesson failed
+in the most direct way possible: this very section said the fix was mechanical and unbuilt while
+31 ticket headers drifted into claiming work was never dispatched, 22 of them wrongly. **One of
+those 22 was a prescription a later finding had REFUTED, still sitting in the dispatch queue with
+its imperative intact** — so the drift was not untidiness, it was a live instruction to do the
+wrong thing. `stamp_ticket_status` now writes the gate's verdict into the ticket after every
+dispatch, and four of its properties are worth copying into any similar writer: it **appends** a
+sentinel line rather than editing the Status line (four of those headers carried the *user's own*
+instructions, which are not mine to erase); it records that a dispatch **ran**, never that work
+shipped, so a `failed` or `blocked` record reads as a warning rather than a completion; it is
+**idempotent**, dropping a prior record so repeated dispatches leave one current line; and it
+**cannot fail the dispatch**, replacing the ticket only after confirming the rewrite is non-empty
+and still carries the sentinel. Proven both directions through `--stamp-ticket`, and the check
+that mattered most was neither of the verdicts but **content preservation** — `diff` showing
+exactly one line added and none removed, because a writer that silently truncates a ticket would
+be far worse than the drift it fixes. The prose entries above are worth
 keeping, but they are reminders; these are checks.
 
 ### The implementation dispatcher now refuses a run that never says what it verified
