@@ -3088,10 +3088,30 @@ Three things make this worth remembering rather than just fixing:
   from the walkthrough agent, not these phase manifests. So a tree with 3027 lines of evidence deleted
   looks perfectly healthy to the one check anyone runs — the always-quiet guard again, this time
   guarding something it was never pointed at.
-- **The effect is measured; the mechanism is not.** The plausible reading is that the tool emits a
-  manifest for its whole phase set regardless of `--phases`. Nobody has read that path, so it stays a
-  hypothesis — the same discipline as not calling a failed state check a persistence bug.
-
+- **The mechanism is now READ — and this bullet's own hypothesis was right in substance and wrong in
+  attribution, which is the reusable part.** It used to say *"the plausible reading is that the tool
+  emits a manifest for its whole phase set regardless of `--phases`; nobody has read that path, so it
+  stays a hypothesis."* Read on 2026-10-10: the phase set really is the whole canonical list, but the
+  writer is the **on-device driver** (`test_driver/workflow_ui_evidence_writer.dart`), not
+  `b25_capture_workflow_screenshots.dart`, and the cause is **one element of a set union**, not a loop
+  bound. `:109-115` unions `requestedPhases`, the phases in this run's own `entries`, **and every
+  phase in `b25CommunityTraversals` unconditionally**; `:131-133` then seeds an empty workflow list
+  for every phase in that set and `:251`/`:444` write a manifest for each, so a phase nobody asked
+  for gets a zero-workflow file over whatever was on disk. The capture tool's zero-workflow marking
+  (`:837-850`) is **correct behaviour** reacting to that file — which is also why the staleness guard
+  immediately above it (`:822-829`) cannot help: the driver has already rewritten the file, so it is
+  not stale when the guard looks.
+- **Two things that generalise past this bug.** First, **"the tool" is not a mechanism — name the
+  process and the line.** The hypothesis pointed at the component whose flag was being passed
+  (`--phases` belongs to the capture tool) when the writer was a different process entirely, on a
+  different machine; a flag's owner is not necessarily its effect's author. Second, **when a fix
+  looks like it must break an existing test, read that test before believing it.** This one looked
+  certain to break `b12_workflow_ui_evidence_harness_test.dart:829-870`, which asserts an empty phase
+  is marked `no_workflows_recorded` — and it does not, because that test's empty phase is
+  **requested** (`requestedPhases: ['B12','B15']`). Requested-and-empty should be marked;
+  never-requested should not be touched, and the data already encodes the difference through
+  `expectedWorkflowCountByPhase`. The test confirms the distinction the fix rests on rather than
+  contradicting it, so the worry would have invited weakening a correct test for no reason.
 **Operationally: `git status -- "docs/Build Plan V2/Evidence"` after any precheck run, before
 committing anything.** And prefer pointing `--evidence-root` at a scratch directory for diagnostics.
 
