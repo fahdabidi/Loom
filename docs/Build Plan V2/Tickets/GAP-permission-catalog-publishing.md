@@ -1,7 +1,10 @@
 # GAP TICKET — the permission catalog is published from a hand-maintained file and has silently drifted
 
-**Status:** 🟡 OPEN — Part A dispatched 2026-09-07 (Loom, implementation agent). Parts B and C follow in
-order; C is the one that unblocks calendar workflows live.
+**Status:** ✅ **DONE — all three parts shipped. RE-VERIFIED LIVE 2026-10-10 by my own queries, not from this ticket's text.** The header below said `🟡 OPEN — Part A dispatched; Parts B and C follow` for a month while **this ticket's own body records Part C as "DEPLOYED AND PROVEN, 2026-09-08"** — the append-without-striking pattern this project keeps paying for, and the reason the original Status line is replaced here rather than annotated. Live evidence today: the `permission` catalog in `loom_app_access` holds **143 rows, 9 of them `calendar.*`, with 0 blank display names** (`calendar.view/create/edit/cancel/reopen/set_reminder/deliver_reminder/propose_change/record_outcome`, each with a real label); `role_permission` holds 479 rows; deployed `loom/app-access:0.3.13`, three versions past the `0.3.10` that Part C shipped; and Part B's own class `PermissionCatalogReconciler` appears in the **current** pod's log at `2026-10-07T01:10:09Z`, so the startup reconciler is deployed and running.
+
+**The severity line below is now FALSE and is kept only as the record of what was found.** It claims every `calendar`-archetype community "is uninstallable today (`400 unknown_permission_id`)" and that `calendar.*` "cannot be granted to any role". All nine ids are in the live catalog. Do not act on it.
+
+**One measurement note worth keeping, because I nearly reported it wrong.** A `grep -c` over `"Reconciled permission catalog|retains retired"` returned 1 and I almost attributed it to the first branch. Per-branch counts: `reconciled permission catalog` = **0**, `retains retired` = **1**. The reconciler logs its retired-id report every start and emits a "Reconciled" line only when it actually inserts or updates — so a no-op run is silent on that phrase. **An OR pattern's count never tells you which branch matched**, and the honest evidence here is the emitting class name plus its timestamp, not the count.
 **Severity:** functional — every community whose workflows use the `calendar` archetype is
 uninstallable today (`400 unknown_permission_id`), and `calendar.*` cannot be granted to any role.
 Not a security gap: no grant is over-issued, the whitelist is merely stale.
