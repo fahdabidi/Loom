@@ -343,6 +343,99 @@ extract_suites_marker() {
   sed -n 's/.*<<<SUITES_RUN:\(.*\)>>>.*/\1/p' "$1" 2>/dev/null | head -1 || true
 }
 
+# --- Ticket Status stamping (added 2026-10-10) ----------------------------
+# WHY THIS EXISTS. On 2026-10-10 an audit found 31 tickets whose header said
+# "**NOT dispatched**" and 22 of them were shipped -- one was a prescription
+# a later finding had REFUTED, sitting in the dispatch queue. A ticket is read
+# by someone about to DO the work, so a stale header is strictly more
+# dangerous than a stale tracker row. CLAUDE.md already records the durable
+# fix twice: "prefer the gate to the note" -- make the dispatcher write the
+# outcome, because a header nobody updates is a header that drifts.
+#
+# DESIGN, and each choice is load-bearing:
+#  * It APPENDS a sentinel line and never edits the Status line. Four of the
+#    22 stale headers carried the USER's own instructions ("user-directed:
+#    create and slot, do not dispatch") and those words are not mine to erase.
+#  * It records that a DISPATCH RAN and what the gate said -- never that the
+#    work shipped. A `failed` or `blocked` verdict must not read as done.
+#  * It is idempotent: a prior record is dropped before the new one is added,
+#    so repeated dispatches leave one current line, not a pile.
+#  * It cannot fail the dispatch. Every path returns 0, and the file is only
+#    replaced after the rewrite is confirmed non-empty and to contain the
+#    sentinel -- a stamping bug must never cost a real run.
+#  * It refuses anything that is not a .md under a Tickets/ directory, so an
+#    ad-hoc prompt file is never rewritten.
+TICKET_STAMP_SENTINEL='**DISPATCH RECORD (written by call_implementation_agent.sh -- do not hand-edit):**'
+
+stamp_ticket_status() {
+  ticket_file="$1"
+  stamp_verdict="$2"
+  stamp_agent_status="$3"
+
+  if [ ! -f "$ticket_file" ]; then
+    echo "  ticket stamp SKIPPED: no such file: $ticket_file"
+    return 0
+  fi
+  case "$ticket_file" in
+    */Tickets/*.md|Tickets/*.md) : ;;
+    *)
+      echo "  ticket stamp SKIPPED: not a .md under a Tickets/ directory: $ticket_file"
+      return 0
+      ;;
+  esac
+
+  case "$stamp_verdict" in
+    verified)
+      stamp_meaning='the agent reported totals for every suite. This is NOT proof -- re-derive them yourself; the agent report is never the oracle.' ;;
+    incomplete)
+      stamp_meaning='an HONEST partial result -- the agent named suites it could not run. Run those yourself before trusting the set.' ;;
+    red)
+      stamp_meaning='the agent reported FAILING tests. Do NOT read this ticket as done; re-run the named suites and separate a TimeoutException from a failed expect.' ;;
+    failed)
+      stamp_meaning='NOT a completed run -- the agent never reported what it verified. Do NOT read this ticket as shipped and do not commit its work unverified.' ;;
+    blocked)
+      stamp_meaning='the agent NEVER RAN (infrastructure: credential or quota). Nothing was attempted, so there is nothing to verify; re-dispatch this ticket unchanged.' ;;
+    *)
+      stamp_meaning="unrecognised verdict '$stamp_verdict' -- read the dispatch log rather than trusting this line." ;;
+  esac
+
+  stamp_line="$TICKET_STAMP_SENTINEL $(date -u +%Y-%m-%dT%H:%MZ) verdict=\`$stamp_verdict\` agent-exit=$stamp_agent_status -- $stamp_meaning"
+
+  stamp_tmp="$(mktemp 2>/dev/null)" || { echo "  ticket stamp SKIPPED: mktemp failed"; return 0; }
+  if ! awk -v s="$TICKET_STAMP_SENTINEL" -v nl="$stamp_line" '
+        index($0, s) == 1 { next }
+        { print }
+        !placed && /^\*\*Status:\*\*/ { print nl; placed = 1 }
+        END { if (!placed) print nl }
+      ' "$ticket_file" > "$stamp_tmp" 2>/dev/null; then
+    rm -f "$stamp_tmp"
+    echo "  ticket stamp SKIPPED: rewrite failed, ticket left untouched"
+    return 0
+  fi
+  # Never replace the ticket on a rewrite that lost content or the sentinel.
+  if [ ! -s "$stamp_tmp" ] || ! grep -qF "$TICKET_STAMP_SENTINEL" "$stamp_tmp"; then
+    rm -f "$stamp_tmp"
+    echo "  ticket stamp SKIPPED: rewrite looked wrong, ticket left untouched"
+    return 0
+  fi
+  if ! cat "$stamp_tmp" > "$ticket_file" 2>/dev/null; then
+    rm -f "$stamp_tmp"
+    echo "  ticket stamp SKIPPED: could not write ticket (read-only?)"
+    return 0
+  fi
+  rm -f "$stamp_tmp"
+  echo "  ticket stamp WRITTEN to $ticket_file (verdict=$stamp_verdict)"
+  echo "  NOTE: this records that a dispatch RAN, never that the work shipped."
+  return 0
+}
+
+# Standalone: bash data/call_implementation_agent.sh --stamp-ticket <ticket> <verdict> [agent-exit]
+# Present so the stamping can be proven to fire AND to refuse, without a dispatch.
+if [ "${1:-}" = "--stamp-ticket" ]; then
+  stamp_ticket_status "${2:?usage: --stamp-ticket <ticket.md> <verdict> [agent-exit]}" "${3:?missing verdict}" "${4:-0}"
+  exit 0
+fi
+
 if [ "${1:-}" = "--check-verification" ]; then
   CHECK_FILE="${2:?usage: call_implementation_agent.sh --check-verification <file-with-agent-reply>}"
   [ -f "$CHECK_FILE" ] || { echo "no such file: $CHECK_FILE" >&2; exit 64; }
@@ -856,6 +949,12 @@ case "$VERIFICATION_VERDICT" in
     ;;
 esac
 
+
+# Write the verdict back onto the ticket itself. Deliberately AFTER the verdict
+# has been printed, so a stamping skip can never hide the gate's own output --
+# and deliberately not guarded by the verdict, because a `failed` or `blocked`
+# run is exactly the case a later reader must not mistake for shipped work.
+stamp_ticket_status "$PROMPT_FILE" "$VERIFICATION_VERDICT" "$STATUS" || true
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) DISPATCH_FINISHED status=$STATUS verification=$VERIFICATION_VERDICT" >> "$TODO_LOG"
 echo "##################################################################"
 echo "# NEXT STEP: fold this dispatch's outcome into the TODO record. #"
