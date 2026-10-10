@@ -41,6 +41,58 @@ Nothing caught it because the helper's only green witnesses run on list-surface 
 (`b25_workflow_row_scope_test.dart:510` uses tab `"admin"`), the planner test has no widget tree,
 and local runs use seeds rather than creation.
 
+## VERIFIED ENUMERATION 2026-10-10 — this ticket originally named FOUR namespaces and there are at least NINE, in seven files
+
+**I undercounted my own population, which is the exact failure this project records** ("an
+undercounted population is how a fix lands on some instances of a class and not the rest"). Swept by
+grepping every `ValueKey` in the shell's `lib/` whose template carries an instance id at card or row
+level. Verified templates, each read from its own line:
+
+| Surface / card | Key template | Site |
+|---|---|---|
+| engine-native list | `engine-native-list-item-${tabId}-${instanceId}-${bindingIndex}` | `part32:179` |
+| workflow table detail | `workflow-table-detail-card-${instanceId}` | `part32:445` |
+| generic instance card | `generic-instance-card-${instanceId}` | `part26:471` |
+| calendar / event-rsvp | `event-rsvp-card-${instanceId}` | `part28:2690` |
+| marketplace listing | `marketplace-listing-${instanceId}` | `part36:357` |
+| marketplace detail | `marketplace-detail-card-${instanceId}` | `part36:216` |
+| vote poll | `votepoll-card-${instanceId}` | `part35:324` |
+| vote poll attendance | `votepoll-attendance-card-${instanceId}` | `part35:243` |
+| notification rows (×3) | `notification-{bell,dedicated,fixed}-row-${instanceId}` | `notification_bell.dart:237`, `notification_dedicated_tab.dart:266`, `notification_fixed_card.dart:234` |
+
+## AND THE CONSTRAINT THAT CHANGES THE FIX: only ONE of those nine carries the tab id
+
+`engineNativeInstanceIdsForTab(tester, {required String tabId})` filters on
+`'engine-native-list-item-$tabId-'`. **Every other namespace above is keyed by `instanceId` alone —
+the tab is simply not in the key.** So a "renderer-aware" reader *cannot* keep its per-tab filter for
+eight of the nine surfaces, and an implementation that tries to will find nothing and look exactly
+like today's bug.
+
+**Decide this deliberately and say which you chose, with the reason:**
+
+- **Rely on one tab being on screen at a time** and drop the tab filter for the non-list namespaces.
+  This is probably correct, because the walkthrough navigates to a tab before reading — but it is an
+  assumption about the harness's own navigation, so **assert it** rather than leaving it implicit: if
+  two tabs' cards are ever simultaneously mounted, this silently reads the wrong instance, which is
+  the "evidence wrong in the one field nobody re-reads" shape.
+- **Or scope the search to the rendered tab's subtree** (`find.descendant` from the tab surface),
+  which keeps the per-tab guarantee and does not depend on that assumption. Prefer this if the tab
+  surface has a stable key.
+
+**Do not widen the prefix match into something that could match a sub-element.** Several of these
+files also emit `*-detail-name-`, `*-list-field-`, `*-detail-close-`, `*-attendees-`, `*-capacity-bar-`
+and `*-action-borrow-` keys carrying the same instance id, so a loose `contains`-style match would
+count one card many times, or match a control rather than a card. This project's rule against
+substring matching of product vocabulary applies to widget keys too: match a **template**, anchored,
+not a fragment.
+
+**The list namespace's trailing binding index is load-bearing and must be preserved.** Its decoder
+strips the final `-N` component precisely so instance ids may contain dashes (see the existing
+doc comment). The eight instance-id-only namespaces have **no** trailing component, so they must not
+go through that same stripping — doing so would silently truncate every id at its last dash. **That
+is the single most likely way to get this fix subtly wrong**, and it fails in a way that still
+returns a plausible-looking id.
+
 ## The change
 
 Make the reader compute the creation tab's reconciled renderer **the same way the shell does** —

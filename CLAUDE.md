@@ -1369,6 +1369,25 @@ prompt text, which states the number to the model and would have gone on asserti
 constant moved. **Verify a scoping report's enumerations before writing them into a ticket** — an
 undercounted population is exactly how a fix lands on some instances of a class and not the rest.
 
+
+**AMENDED 2026-10-10: that rule was written about an AGENT's enumeration, and it applies to your own
+with equal force — measured, by catching myself.** I wrote the bar-blocking harness ticket naming
+**four** widget-key namespaces the created-instance reader must learn. Sweeping every instance-id-bearing
+`ValueKey` in the app shell's `lib/` found **at least nine, in seven files** — the list item, the
+workflow-table detail card, the generic instance card, the calendar's `event-rsvp-card`, marketplace
+listing *and* detail, both vote-poll cards, and three notification rows. Caught **before** dispatch, by
+re-running my own ticket's evidence rather than trusting the ticket.
+
+**And the sweep found something a correct count alone would not have: only ONE of the nine carries the
+tab id.** The reader's signature filters by tab, and the other eight are keyed by `instanceId` alone —
+so an agent implementing "make the reader renderer-aware" while preserving the per-tab filter would
+find nothing and reproduce the original symptom exactly. **An enumeration is not just a count; the
+thing worth checking is whether the members share the shape your fix assumes.** Two further traps the
+same sweep exposed: a loose prefix match would also hit `*-detail-name-`, `*-capacity-bar-` and
+`*-action-borrow-` keys carrying the same instance id, so the no-substring-matching rule applies to
+widget keys and not only to product vocabulary; and the list namespace's trailing binding index must
+not be stripped from the eight namespaces that have no such component, because that silently truncates
+every id at its last dash **while still returning something that looks like an id**.
 ### The device flow and the in-process flow have OPPOSITE identity hazards — do not carry a trap across them
 
 Found 2026-10-02 while scoping two-identity arrangement. I flagged the stale-Keycloak-SSO-cookie
