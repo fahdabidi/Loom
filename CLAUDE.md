@@ -3347,6 +3347,24 @@ reminder too — gated by `reminderEnabled`, which its rows do not set, so the f
 simply the only community with *both* computed date fields and an ungated reminder, and I had latched
 onto the wrong one of the two.
 
+**Still live 2026-10-10, with the line and the fix's shape now pinned — and it is NOT a Cedar defect.**
+The assignment is `local_workflow_engine_api.dart:2720`, `if (dueAt != null) computed['reminderAt'] = dueAt;`,
+where `:2716` takes `dueAt` from `reminder.dueAtFor(computed)` and `dueAtFor` returns **`DateTime?`**
+(`workflow_models.dart:1274`). This is the **shared** engine, so Cedar and Garden are two communities
+reaching one defect. **The careful sibling is in the same file**, which is this file's asymmetric-sibling
+pattern yet again: `:945-950` resolves the identical value deliberately —
+`switch (rawDueAt) { final DateTime value => value, final String value => DateTime.tryParse(value), _ => null }`
+— so one site converts and its sibling assigns raw.
+
+**Scope it by the population, measured:** 11 `reminder` blocks across 7 of the 10 shipped packages
+(Garden **4**, Cedar 2, one each in Ad-Free, Book Club, Chess, Mosque, Youth Soccer; Camera, Data
+Portability and Member Social Space have none). Four of those packages mention `reminderEnabled` **zero**
+times — Book Club, Garden, Mosque, Youth Soccer — covering 7 of the 11 blocks, and an ungated reminder is
+exactly the condition that produces the leak. **One caveat that must travel with those numbers:** a
+per-package `reminderEnabled` count does not settle per-block gating, since Cedar has 2 blocks and 11
+mentions while one of its two is unconditional. So the per-block audit is owed before any ticket states a
+row count — the mechanism and the line are settled, the exact row total is not.
+
 **Perfect discrimination feels like proof and is not.** With ten samples, two correlated properties are
 indistinguishable, and the one you notice first is the one you already had a mechanism for. The check
 that would have caught it costs a minute: **trace one real value end to end** — read the actual stored
