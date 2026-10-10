@@ -1,6 +1,6 @@
 # HARNESS — run the capture against live backend services (ticket B)
 
-**Status:** written 2026-10-01, **NOT dispatched**.
+**Status:** written 2026-10-01, **DISPATCHED AND SHIPPED as `9672c093`** ("feat(harness): the capture harness installs production wiring and auth"), matched by subject on the 2026-10-10 audit. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`.
 **Independent of** [SHELL-gate-local-engine-behind-explicit-optin.md](SHELL-gate-local-engine-behind-explicit-optin.md) (ticket A) — different files. A makes silent-local impossible; **B is what makes remote actually work.** Neither blocks the other.
 

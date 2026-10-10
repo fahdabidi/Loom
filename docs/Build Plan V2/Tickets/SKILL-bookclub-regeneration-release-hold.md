@@ -1,6 +1,6 @@
 # SKILL — Book Club regeneration: release the hold, restore access lists, add create-time identity
 
-**Status:** written 2026-09-25, **NOT dispatched** (user-directed: write and slot, do not dispatch).
+**Status:** written 2026-09-25, **DISPATCHED AND SHIPPED as `d87f9875`** -- the original instruction is preserved below because it was yours at the time; the work shipped later (user-directed: write and slot, do not dispatch).
 **Route:** the Skill only, via `data/call_skill_authoring_agent.sh <target-doc> bookclub-release`.
 Community JSON is never hand-authored; copy the Skill's output byte-identically.
 **Supersedes the hold in** `TODO-open-detail.md` row-247.

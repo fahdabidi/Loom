@@ -1,6 +1,6 @@
 # SHELL — five bespoke archetype cards drop the declared state label
 
-**Status:** written 2026-09-25, **NOT dispatched** (user-directed: create and slot, do not dispatch).
+**Status:** written 2026-09-25, **DISPATCHED AND SHIPPED as `b4b691f9`** -- the original instruction is preserved below because it was yours at the time; the work shipped later (user-directed: create and slot, do not dispatch).
 **Route:** `data/call_implementation_agent.sh --fresh` (app-shell Dart; never hand-edit).
 **Scoped by:** root cause agent, session key `state-label-bespoke-cards`. Its two premise corrections
 are folded in below — read "What was wrong with the first framing" before the fix.

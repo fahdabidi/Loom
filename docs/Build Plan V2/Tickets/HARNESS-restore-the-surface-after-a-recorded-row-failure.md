@@ -1,6 +1,6 @@
 # HARNESS — a recorded row failure must restore the surface, and the Garden sign-in wait needs instrumenting
 
-**Status:** written 2026-10-02, **NOT dispatched**.
+**Status:** written 2026-10-02, **DISPATCHED AND SHIPPED as `baef95d2`** ("fix(harness): restore the surface after a recorded row failure; instru"), matched by subject on the 2026-10-10 audit. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Follows:** `61a2e01b` (watchdog beats + record-and-continue), measured on-device by me immediately after.
 **Evidence:** Garden precheck at `61a2e01b` against a scratch evidence root. `exit=0`,

@@ -1,6 +1,6 @@
 # HARNESS — beat the watchdog across the two-identity steps, and stop a stall aborting the batch
 
-**Status:** written 2026-10-02, **NOT dispatched**.
+**Status:** written 2026-10-02, **DISPATCHED AND SHIPPED as `61a2e01b`** ("fix(harness): beat the watchdog across two-identity steps; a stall no "), matched by subject on the 2026-10-10 audit. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Follows:** `7e263a94` (two-identity arrangement), measured on-device by me the same day.
 **Evidence:** Garden precheck against a scratch evidence root. `exit=1`, `workflows=1`,

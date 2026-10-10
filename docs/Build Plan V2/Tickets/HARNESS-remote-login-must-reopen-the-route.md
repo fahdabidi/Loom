@@ -1,6 +1,6 @@
 # HARNESS — after a remote login, reopen the community route so the auth screen re-reads the session
 
-**Status:** written 2026-10-02, **NOT dispatched**.
+**Status:** written 2026-10-02, **DISPATCHED AND SHIPPED as `ea169ea7`** ("fix(harness): reopen the community route after a remote login"), matched by subject on the 2026-10-10 audit. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Size:** one call, mirroring the sibling path that already does it.
 **Diagnosis:** fully established in [HARNESS-remote-account-selection-by-identity.md](HARNESS-remote-account-selection-by-identity.md) — read its CONFIRMED section; do not re-derive it.

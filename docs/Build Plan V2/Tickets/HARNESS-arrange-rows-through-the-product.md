@@ -1,6 +1,6 @@
 # HARNESS — stop addressing seeded instance ids; arrange each row through the product
 
-**Status:** written 2026-10-02, **NOT dispatched**.
+**Status:** written 2026-10-02, **DISPATCHED AND SHIPPED as `a8845f57`** ("feat(harness): arrange B25 rows through the product, not by seeded ins"), matched by subject on the 2026-10-10 audit. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Scoped by:** Root Cause Agent, session key `harness-remote-data-strategy`. **Two of its claims were
 re-derived by me and one of them is wrong — see "Corrections" before trusting any count here.**

@@ -1,6 +1,6 @@
 # SHELL — the B25 product-doc row count moves 77 → 78
 
-**Status:** written 2026-10-01, **NOT dispatched**.
+**Status:** written 2026-10-01, **DISPATCHED AND SHIPPED as `004fb546`** ("fix(b25): the product-doc row count is 78, and the asset matches"), matched by subject on the 2026-10-10 audit. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Size:** one constant, one comment, one test name. Deliberately tiny — read "Do not" before widening it.
 

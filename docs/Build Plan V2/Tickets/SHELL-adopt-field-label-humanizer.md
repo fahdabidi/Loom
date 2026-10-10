@@ -1,6 +1,6 @@
 # SHELL — adopt the in-repo field-label humanizer at all four sites
 
-**Status:** written 2026-09-25, **NOT dispatched** (user decided: adopt the humanizer everywhere).
+**Status:** written 2026-09-25, **DISPATCHED AND SHIPPED as `f7128ba3`** -- the original instruction is preserved below because it was yours at the time; the work shipped later (user decided: adopt the humanizer everywhere).
 **Route:** `data/call_implementation_agent.sh --fresh`. Supersedes the open question in row-256.
 
 ## The defect

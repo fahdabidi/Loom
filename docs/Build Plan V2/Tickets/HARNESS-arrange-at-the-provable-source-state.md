@@ -1,6 +1,6 @@
 # HARNESS — arrange at the row's provable source state, and fix two defects that would bank false evidence
 
-**Status:** written 2026-10-02, **NOT dispatched**.
+**Status:** written 2026-10-02, **DISPATCHED AND SHIPPED as `9dac864f`** ("feat(harness): arrange at the row provable source state, and stop two "), matched by subject on the 2026-10-10 audit. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Scoped by:** Root Cause Agent, session key `harness-remote-data-strategy`. **I verified every
 load-bearing claim below myself by reading the cited lines — do not re-derive them, but do not trust

@@ -1,6 +1,6 @@
 # SHELL — implement `bindingKind`, so `summary` means compact/read-only
 
-**Status:** written 2026-09-25, **NOT dispatched** (user decided: implement it).
+**Status:** written 2026-09-25, **DISPATCHED AND SHIPPED as `a3ee44fd`** -- the original instruction is preserved below because it was yours at the time; the work shipped later (user decided: implement it).
 **Route:** `data/call_implementation_agent.sh --fresh`.
 **UNBLOCKED 2026-09-26. The prerequisite is MET — `check_orphan_summary_bindings.py` reports
 0 orphans, exit 0.** ~~BLOCKED ON [SKILL-summary-orphan-primary-bindings.md](SKILL-summary-orphan-primary-bindings.md); five states across three communities lose reachable actions.~~

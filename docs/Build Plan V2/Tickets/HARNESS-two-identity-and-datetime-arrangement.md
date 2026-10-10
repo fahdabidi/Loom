@@ -1,6 +1,6 @@
 # HARNESS — two-identity arrangement (create as A, act as B) plus date/time creation fields
 
-**Status:** written 2026-10-02, **NOT dispatched**.
+**Status:** written 2026-10-02, **DISPATCHED AND SHIPPED as `7e263a94`** ("feat(harness): two-identity arrangement plus date-time creation fi"), matched by subject on the 2026-10-10 audit. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Scoped by:** Root Cause Agent, session key `harness-remote-data-strategy`. **Load-bearing claims
 re-verified by me against the cited lines; the citations are exact.**

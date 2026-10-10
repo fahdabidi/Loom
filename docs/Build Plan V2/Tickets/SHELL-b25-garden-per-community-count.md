@@ -1,6 +1,6 @@
 # SHELL — Garden's per-community B25 count moves 5 → 6
 
-**Status:** written 2026-10-01, **NOT dispatched**.
+**Status:** written 2026-10-01, **DISPATCHED AND SHIPPED as `2a78e641`** ("fix(b25): Garden's per-community row count is 6"), matched by subject on the 2026-10-10 audit. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Size:** one number. Follows [SHELL-b25-row-count-77-to-78.md](SHELL-b25-row-count-77-to-78.md), which was correct but incomplete — see below.
 

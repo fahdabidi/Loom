@@ -1,6 +1,6 @@
 # HARNESS — the arrangement seam must beat its own steps (stop fixing this one site at a time)
 
-**Status:** written 2026-10-02, **NOT dispatched**.
+**Status:** written 2026-10-02, **DISPATCHED AND SHIPPED as `d4430982`** ("fix(harness): beat each internal arrangement step; the bool setter now"), matched by subject on the 2026-10-10 audit. Kept for its reasoning; do NOT re-dispatch.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Follows:** `1efdfd30`, measured on-device by me immediately after.
 **Evidence:** Garden precheck at `1efdfd30`, scratch evidence root. `exit=1`, `workflows=2`,
