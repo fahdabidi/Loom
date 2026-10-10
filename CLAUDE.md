@@ -130,6 +130,26 @@ After a VM reboot `/tmp` is cleared and the **validator service on :8787 does no
 itself**. Bring it back with
 `cd ~/Loom/app && dart run packages/tooling/loom_ux_judges/bin/validator_server.dart`.
 
+**And `/tmp` clearing takes YOUR OWN TOOLING with it, which is the half this note was missing
+until 2026-10-10.** Every helper this file tells you to put in `/tmp` — a five-suite runner, a
+mutation script for an A/B, a commit message staged for `git commit -F`, a brief for a dispatch —
+is gone after a reboot, and `data/` is gitignored so there is no committed copy to restore from.
+**Keep the authoritative copy outside `/tmp` (the session scratchpad on Windows works) and re-`scp`
+it after any reboot.** The tell is a wrapper exit of **127**: command not found, because the script
+does not exist.
+
+**The expensive part was not the missing script; it was that the failure was SILENT.** My waiter
+printed only the `sed`-extracted `SUMMARY` block from the run log, so a run that never started
+produced an *empty* section and read almost exactly like a quiet success — an always-quiet guard,
+authored by me, inside the tooling I use to check everything else. **Any waiter or reporter that
+extracts a SECTION must fall back to the raw tail when that section is empty**, and should print
+the wrapper's exit status unconditionally. Had the status been on screen, `127` would have
+diagnosed it instantly.
+
+Same family as reading a suite's own summary line rather than counting lines, and as capturing a
+status from the command itself rather than through a pipe: **the signal you need is the one you
+suppressed for tidiness.**
+
 **`k3s` is `disabled`, so the whole backend stack is down after any VM restart.** All five
 services — app-access, fan-passport, keycloak, postgres, workflow-service — are deployed in the
 `loom` namespace and come straight back, but nothing starts them. `sudo systemctl start k3s`, then
