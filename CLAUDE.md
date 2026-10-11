@@ -759,6 +759,25 @@ authorization one). Worse, the detail states the defect is **LATENT rather than 
 distinction matters, citing two earlier mis-scopings from conflating "the pattern is wrong" with "this
 instance misbehaves".
 
+
+**And WRITE the verification back into the DETAIL, not only the row — otherwise your own next survey
+mis-ranks it (measured on myself, 2026-10-10).** Having audited about a dozen anchored rows, I had
+put the finding sometimes in `TODO.md` and sometimes in `TODO-open-detail.md` with no rule. Six
+anchors ended up with their 2026-10-10 verification **only** in the row. So a survey of the detail
+file for "which entries have been checked recently" scored those six as untouched, and I twice picked
+one to audit that I had already audited or that already carried a re-test.
+
+**The marker has to live where the next reader looks, and for this pair that is the detail**, because
+the detail is what a row's `[detail]` link sends you to and it is where the substance lives. Fixed by
+mirroring a one-line summary of each finding into its entry — a summary, not a signpost, so the
+entry stands alone.
+
+**Two classifier failures came out of the same exercise, and both are the same shape.** A pattern for
+"has this been verified?" missed **`RE-TESTED`** on one entry and **`STILL TRUE`** on two others —
+the second being the most assertive phrasing in the corpus. Each time the miss pushed a
+finished row back into the candidate pool. **When a scan decides what you work on next, its
+false-negative list is the thing to widen**, and the cheap check is to hand-read two entries the scan
+scored as harmless.
 **The cheap check is one command before writing anything:** take the row's `#row-N` anchor, read that
 entry, and look for a dated verification marker. Measured across the six anchored rows I touched this
 session: `row-248` carried a 2026-10-01 re-verification I missed, `row-275` carried a 2026-10-01
