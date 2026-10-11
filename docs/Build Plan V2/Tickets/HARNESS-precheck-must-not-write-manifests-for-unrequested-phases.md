@@ -58,6 +58,35 @@ today — safe by construction rather than by argument.
 **Keep element 2.** A phase that genuinely produced entries must still be written even if it was not
 named, or a real result would be dropped. Only the unconditional canonical union goes.
 
+
+## CONSEQUENCE STILL REACHES THE SURFACE — checked 2026-10-10, and the guard ASYMMETRY is the sharper finding
+
+Applied the same check that rescoped the sibling one-row-stall ticket: a cited mechanism being intact
+does not prove its consequence still lands. Here it does, and nothing mitigates it.
+
+**The tool is meticulous about one direction and silent about the other.** It carries **three**
+separate refusals to stop canonical evidence being weakened — `--phases` narrower than B12-B20
+(`:79`), `--communities` filtering (`:87`), and `--shards`/`--only-shard` (`:96`) — each with error
+text telling the caller to use `targeted-precheck` for *"remediation diagnostics that must not be
+committed as canonical B25 evidence"*. And it labels precheck aggregates `commitEligible: false`
+(`:509`, `:531`).
+
+**Yet nothing keeps precheck output out of the canonical directory.** A search for any
+mode-dependent defaulting or forcing of `evidenceRoot` returns nothing: precheck writes wherever
+`--evidence-root` points, and that defaults to the canonical location. **So the tool disclaims its
+output in words while writing it to the committable place** — the author plainly cared about this
+exact class of mistake, and the one protection that would have prevented the 2026-10-02 data loss is
+the one that is missing.
+
+**An alternative fix shape, offered as an observation rather than a change of scope.** Defaulting
+`evidenceRoot` to a scratch path whenever `mode == 'targeted-precheck'` would close the whole class,
+not just the unrequested-phase instance this ticket fixes, and it would compose with the `isEmpty`
+guard rather than replace it. **But it changes an existing default**, so any caller currently relying
+on precheck writing to the canonical root would silently start writing elsewhere — which is its own
+indistinguishable-from-success hazard. **Do not fold it into this ticket.** If it is wanted, it is a
+deliberate decision with that trade stated, and the operational rule (point `--evidence-root` at a
+scratch path yourself, then `git status` the Evidence directory) stays either way.
+
 ## Honesty test — it must fail against today's code
 
 - **A writer test with `requestedPhases: ['B16']` and entries only for B16 must assert that
