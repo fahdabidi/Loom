@@ -259,6 +259,40 @@ APK at HEAD on the VM (~5 minutes there; Windows cannot build it without Develop
 showing `granted=true` rather than trusting the installer's `Success`. And point `--evidence-root`
 at a scratch path.
 
+
+### DO NOT PRE-BUILD THE APK — and do not rebuild between tickets. Measured 2026-10-10.
+
+I could have closed gap 5 before auth returned: `ssh` and `flutter` work, and only the Claude CLI
+auth is down, so a VM build is available right now. **It would have been wasted, and the reason
+generalises to the whole dispatch batch.**
+
+`integration_test/workflow_ui_evidence_test.dart` pulls **10 files from `../test/`** into the
+instrumented build:
+`b25_visible_postcondition`, `b25_actor_audience_resolution`, **`b25_created_instance_identity`**,
+`b25_formula_guard_reachability`, `b25_product_doc_role_resolution`, **`b25_remote_arrangement`**,
+`b25_shipped_state_postcondition`, **`b25_workflow_row_selection`**, `workflow_ui_test_harness`,
+`walkthrough_wait`.
+
+**Every one of the five queued tickets invalidates that binary**, which is the part worth knowing
+before sequencing any of them:
+
+| ticket | touches | effect on the APK |
+|---|---|---|
+| this one | `b25_created_instance_identity.dart` | **imported** — invalidates |
+| direction test | `b25_remote_arrangement.dart` | **imported** — invalidates |
+| one-row stall (test-only) | `b25_workflow_row_selection.dart` | **imported** — invalidates |
+| precheck manifests | `test_driver/workflow_ui_evidence_writer.dart` | driver half of the same build |
+| `reminderAt` | `loom_workflow_engine` | app half of the same build |
+
+**So build the instrumented APK ONCE, after the whole batch lands — not before it, and not between
+tickets.** Each build is ~5 minutes on the VM plus a ~157 MB transfer, so rebuilding per ticket costs
+five of each for no gain, and pre-building costs one that the first dispatch throws away.
+
+**One nuance about the standing loop prompt:** it says to rebuild the APK immediately after
+committing a fix. That was correct when there was **one** fix in flight; with five queued it becomes
+the per-ticket rebuild this note argues against. The instruction is not wrong, it is scoped to a
+single-fix cadence.
+
 ## Verification
 
 - All five suites, **sequentially** (judges beside engine gives a false timeout), skip counts before
