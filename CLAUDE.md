@@ -1739,6 +1739,45 @@ Three things to carry, and the third is the one that generalises furthest:
   disagree, **the screenshot wins**; run a control on a surface known to have the affordance before
   reporting one absent.
 
+## A one-sample infrastructure reading can be transient, and acting on it invites false credit
+
+Found 2026-10-11, by reading a line of my own output that contradicted my own earlier measurement.
+
+A `git pull` on the VM failed with `Could not resolve host: github.com`. Diagnosis found no DNS, no
+reachable public IP, and `ip route | grep -c ^default` returning **0** — measured twice, by the
+count and by the full route dump, which agreed. The interface itself was healthy: `enp0s3` UP,
+`carrier=1`, a real DHCP address, and the LAN gateway answering ping. So "the default route is
+missing" was a sound reading of the evidence in front of me.
+
+**It had already healed by the time I acted.** My own `ip route add` printed
+`BEFORE: default routes = 1`, and the AFTER showed two — mine at metric 100 and a **pre-existing
+`proto dhcp` one at metric 102**. A lease renewal had restored it in the minutes between my
+measurement and my fix. Had I not printed the before-count, I would have reported restoring
+networking that restored itself, and left a hand-added duplicate default route behind as permanent
+undocumented state — the hand-made-cluster-state debt this tracker already carries, created while
+being careful.
+
+Three things to carry:
+
+- **Re-measure immediately before a fix, in the same command, and print the before-state.** This is
+  the cheapest possible guard and it is the only reason the truth was visible. A fix that does not
+  observe the state it is about to change cannot tell a repair from a coincidence.
+- **Remove your own redundant intervention once it is shown to be redundant**, and re-verify the
+  system without it. Outbound worked with my route deleted and one DHCP default remaining, which is
+  what proves the recovery was not mine.
+- **An infrastructure fault that self-heals is still worth recording, because it invalidates
+  measurements taken during its window** — not because it needs fixing. Anything measured on that VM
+  in those minutes was measured on a box with no outbound route.
+
+**And the valuable half is the hypothesis it KILLED.** A missing default route would explain the
+Claude CLI's `OAuth session expired and could not be refreshed` without any credential being wrong,
+since a token refresh needs the network — so for a moment the whole 52-tick auth blocker looked like
+it might dissolve. **It does not.** With outbound confirmed working (`github.com` resolves,
+`1.1.1.1:443` reachable, `git pull` succeeding in the same session), the CLI returns the **identical**
+error. That blocker is credential-side, now established rather than assumed. **A blocker you have
+reported many times deserves one test of its most load-bearing unexamined premise** — here, that the
+machine could reach the service at all, which nobody had checked in 52 reports.
+
 ## Instrument the silence before theorising about it
 
 Five explanations for one walkthrough stall were wrong, each reasoned from a symptom — a
