@@ -834,6 +834,22 @@ Three habits, in the order they would have saved the most time:
 - **Never truncate a listing you are about to conclude from.** `head -N` on `\dt`, on a `find`, or on
   a `grep -l` invents absences at the boundary.
 - **When a name returns nothing, search for the neighbourhood before concluding** — the file, the
+- **Never extract a JSON value by FIELD POSITION — key-anchor the match first, then index inside it.
+  Three failed attempts in one sitting, 2026-10-10, and the house style already had it right.**
+  Anti-joining 124 package seed states against their declared states, hand-counted `substr` offsets
+  dropped the first character of every name and reported **124 of 124** mismatched — an invariant
+  result across all inputs, which this file already names as the signal that the query is broken.
+  Replacing offsets with positional quote-splitting (`split($0, a, "\""); a[4]`) then reported
+  exactly **36**, **all from Book Club and Cedar alone**, because those two packages write several
+  seed fields on one line so the fourth quoted field was the `instanceId` rather than the keyed
+  value. **A failure clustering on a MINORITY of inputs is subtler than a uniform one and nearly
+  passed as a real finding** — treat it with the same suspicion. The form that works is
+  key-anchored: match `"<key>"[[:space:]]*:[[:space:]]*"[^"]*"` and split **within that fragment**.
+  **And the humbling half: every committed gate already does exactly this** —
+  `grep -o '"access_token":"[^"]*' | cut -d'"' -f4` anchors on the key and only then cuts by
+  position. A sweep of `Tools/code` found no gate with the positional bug, so those three failures
+  were departures from an established convention rather than a new trap. When a parsing idiom keeps
+  recurring in the existing tooling, copy it before inventing one.
   callers, any symbol from the same feature. Four of the five above were real, working code sitting
   under a name I had assumed rather than checked.
 
