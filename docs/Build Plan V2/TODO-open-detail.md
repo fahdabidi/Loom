@@ -269,6 +269,8 @@ plus a `createInstance` into `hoa-owner-notification`. The package does not wait
 
 ### row-247 — HOLD RELEASED 2026-09-25 by user decision; ticketed, not dispatched — ~~Book Club regeneration is HELD by user decision — dispatching now would bake in a known loss permanently~~
 
+**⛔ AND THE TICKET IS NO LONGER "not dispatched" — verified 2026-10-10.** The note below correctly records the hold being released on 2026-09-25, and then says the ticket was *deliberately not dispatched*. It shipped afterwards as **`d87f9875`** (`feat(book-club): release the hold -- access lists, create-time identity, saved binding`), regenerating both Book Club `.jsonc` assets and the provenance manifest; the ticket's own Status now reads `DISPATCHED AND SHIPPED`. `TODO.md`'s summary row still said **HELD** until today, so this anchor had a stale summary above it and a stale dispatch status inside it, in opposite directions.
+
 > **HOLD RELEASED 2026-09-25. The condition this row waited for is MET, and two of the row's own
 > premises below are now false — read this before acting on anything in the original text.**
 > Ticket: [SKILL-bookclub-regeneration-release-hold.md](Tickets/SKILL-bookclub-regeneration-release-hold.md),
