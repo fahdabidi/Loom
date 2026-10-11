@@ -119,6 +119,39 @@ reconciliation rule cannot drift from `appShellTabNativeRendererContractIdsByArc
 hand-copied rule that silently diverges is how this class recurs; the test should fail if an entry
 is added, removed or re-pointed.
 
+
+## THE CALLERS, READ 2026-10-10 — the fix is NARROWER and SAFER than it looks, and one message needs updating
+
+Swept every reference before dispatch, because widening a reader can break a caller that depended on
+its narrowness. **It cannot here, and the reason is worth knowing rather than assuming.**
+
+**Six references, of which two are real call sites** — `integration_test/workflow_ui_evidence_test.dart:5422`
+and `:5734` — plus the declaration, its internal use at `b25_created_instance_identity.dart:56`, and
+its own test file.
+
+**Both call sites use the reader SYMMETRICALLY**, in a before/after diff: snapshot
+`existingInstanceIds`, tap submit, then `waitForCreatedEngineNativeInstanceId(..., existingInstanceIds: …)`,
+which polls the **same** function and takes the set difference. So widening one function widens both
+sides of the comparison at once — there is no way for the snapshot and the poll to disagree about
+which namespaces count. **That is what makes this a single-function change.**
+
+**And the ambiguity risk I went looking for is already handled — do NOT rebuild it.** With 8 of the 9
+namespaces carrying no tab id, the diff can in principle span any mounted surface, so I expected to
+have to ask for a uniqueness assertion. `b25_created_instance_identity.dart:60-78` already has one,
+and a good one: it returns only when `candidateIds.length == 1`, keeps polling so a transient
+two-candidate state resolves rather than failing instantly, and on expiry throws naming the **count
+and every candidate, sorted**. Its own doc comment states the contract — *"accepts exactly one new
+identity. Zero or multiple candidates remain loud result-verification failures"*. **So a widened
+reader cannot silently attribute the wrong instance id; it can only fail loudly when genuinely
+ambiguous.**
+
+**The one thing that DOES need changing, and it is easy to miss:** that failure message currently
+reads *"exactly one newly rendered engine-native **list** key on tab \"$tabId\""*. After this fix it
+will fire for nine namespaces, eight of which are not the list surface and carry no tab at all, so
+the message would misdescribe its own failure — a stale specific in a diagnostic, which this project
+records as worse than a vague one. **Update the wording along with the reader**, and keep it naming
+the candidates.
+
 ## Honesty tests — each must be able to FAIL
 
 - **A widget test per surface**: render a tab whose single bound family is `event-rsvp`, create an
