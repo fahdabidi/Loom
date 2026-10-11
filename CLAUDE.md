@@ -746,6 +746,25 @@ every row you're about to repeat, not only the ones that already look suspicious
 **Cite a tracker row by its `row-N` ANCHOR, never by its line number — the two numbers collide, and
 I spent part of a tick resolving one I had created myself (2026-10-10).** `TODO.md` rows link to
 `TODO-open-detail.md#row-N`, and those anchors are stable ids from an earlier migration that have
+
+**And FOLLOW the `[detail]` link before annotating a row — I did not, three rows running, and one of
+those annotations was pure re-derivation (2026-10-10).** `TODO.md` rows are one-line summaries; the
+substance, and every prior verification, lives in `TODO-open-detail.md`. On `row-248` I recorded "the
+mechanism, plus a consequence the row does not state" — and **both** were already in that row's
+detail, dated 2026-10-01, with the consequence phrased better (*"a selected-but-null identity
+resolves to NO actor, never implicitly to the creator"*, framed as an availability bug becoming an
+authorization one). Worse, the detail states the defect is **LATENT rather than live** — the first
+`actorEqualsField` transition in the real package carries the correct actor — and my headline said
+"CONFIRMED STILL TRUE" with no such qualifier, overstating severity. The detail even explains why that
+distinction matters, citing two earlier mis-scopings from conflating "the pattern is wrong" with "this
+instance misbehaves".
+
+**The cheap check is one command before writing anything:** take the row's `#row-N` anchor, read that
+entry, and look for a dated verification marker. Measured across the six anchored rows I touched this
+session: `row-248` carried a 2026-10-01 re-verification I missed, `row-275` carried a 2026-10-01
+retag whose premise-is-false finding was *different* from mine (so that one was genuinely additive,
+and now cross-references), and the other four carried none. **One of six was a duplicate, one of six
+needed a cross-reference — a 33% hit rate that a single link-follow would have caught.**
 **no relationship to line numbers in either file**. Measured: all 36 referenced anchors exist and
 none is broken, but the row at `TODO.md` **line 279** is anchor **`row-197`**, line 350 is `row-248`,
 line 354 is `row-275`, line 376 is `row-355`, line 384 is `row-245`, line 732 is `row-230`.
