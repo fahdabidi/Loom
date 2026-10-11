@@ -2446,6 +2446,27 @@ shell's `lib`, so they are absent from the path B25 drives. The share is limited
 that accounting was always built on. A denominator is the number nobody re-derives, which is exactly how this one
 stayed wrong while the tables underneath said otherwise.
 
+**`b25Proven` IS A PER-RUN RATIO, NOT A BAR FIGURE, AND A BARE "b25Proven 0" IS MALFORMED — caught
+2026-10-10 by auditing my own status line, which had carried it for 45 consecutive reports.**
+`check_b25_status.sh` does not compute it: the string appears **zero** times in that gate. It is
+emitted by the capture run's own writer, `workflow_ui_evidence_writer.dart:457`, as
+`b25Proven=${b25RowSummary['provenRows']}/<attempted>` — **proven out of the rows THAT RUN
+attempted**. So its denominator changes with every run, which is why the record carries `0/16`,
+`1/82` and `9/49` for it at different times. **Quoting it without a denominator is therefore not a
+weak claim but an ill-formed one.**
+
+**Worse, pairing it with `CONFIRMED` as though the two were co-equal is the exact conflation this
+file already records** ("`b25Proven` from a capture run is NOT the production bar, and I conflated
+them repeatedly"). They differ in kind: `CONFIRMED` is gate-measured over the fixed 73-row
+denominator and is re-derivable at any time; `b25Proven` is a run's self-report over whatever subset
+it attempted, and cannot be measured at all without running a capture.
+
+**So report `CONFIRMED` from the gate, and mention a run figure only with its run and its
+denominator** — "`b25Proven` was 0/16 on the 2026-10-05 run" is sayable; "b25Proven is 0" is not.
+**And note where mine came from: the standing loop prompt words it that way**, so I inherited the
+malformed shape rather than inventing it, which is precisely how a bad number survives — it arrives
+in an instruction and nobody re-derives it.
+
 ## Disk hygiene — check it before it stops the VM
 
 **A full host disk pauses the VM, and it does not look like a disk problem.** VirtualBox pauses a
