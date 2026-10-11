@@ -224,6 +224,41 @@ getting past Garden's creation rows: `workflows` well above 5, and the three
 quote a completion figure** — `targeted-precheck` and scratch-root output are
 `commitEligible: false`, `CONFIRMED` is 0 and `b25Proven` is 0.
 
+
+## CAPTURE READINESS, MEASURED 2026-10-10 — three gaps to close BEFORE the verifying run
+
+This ticket's measurement step is a capture run, so I audited the five Windows prerequisites now
+rather than discovering them mid-run. **Two are fine, three are not**, and each of the three has
+cost a run before.
+
+| # | Prerequisite | State |
+|---|---|---|
+| 1 | `cd <repo>/app` | ✅ present |
+| 2 | `flutter` on PATH (`C:\Android\flutter\bin`) | ✅ binary present |
+| 3 | `adb` on PATH (`C:\Android\Sdk\platform-tools`) | ✅ binary present |
+| 4 | **`ANDROID_SDK_ROOT=C:\Android\Sdk`** | ⛔ **UNSET** — the directory exists, the variable does not |
+| 5 | instrumented APK installed `-r -g` | ⛔ **no instrumented APK, and nothing installed** |
+| — | emulator alive | ✅ `emulator-5554 device` |
+
+**Gap 4 is the documented killer.** `b25_device_dialog_guard.dart` reads `ANDROID_SDK_ROOT` then
+`ANDROID_HOME` then bare `adb`; with `flutter` and `adb` on PATH but neither variable set, a run
+binds remote, launches, emits real telemetry, reaches the first screenshot and **then** throws
+`Bad state: Unable to start Android Debug Bridge` having written nothing. Export it before running.
+
+**Gap 5 is two problems, not one.** The newest APK in the tree is **2026-08-11** — 60 days old — and
+it is the **plain debug** build, not an instrumented one; this project records that those are
+different builds with different entrypoints, so there is effectively **no instrumented APK at all**.
+And `pm list packages` returns **0** matches for `com.example.loom_communities_demo`, so **nothing is
+installed on the device**. That means `POST_NOTIFICATIONS` cannot even be queried yet, and
+`adb install -r -g` is mandatory rather than a precaution — the permission will be granted fresh by
+that install, which is the state the capture needs.
+
+**So "the emulator is ready" would have been wrong**: it is running and empty. Build the instrumented
+APK at HEAD on the VM (~5 minutes there; Windows cannot build it without Developer Mode), transfer,
+`install -r -g`, then **verify on the device** with `dumpsys package … | grep POST_NOTIFICATIONS`
+showing `granted=true` rather than trusting the installer's `Success`. And point `--evidence-root`
+at a scratch path.
+
 ## Verification
 
 - All five suites, **sequentially** (judges beside engine gives a false timeout), skip counts before
