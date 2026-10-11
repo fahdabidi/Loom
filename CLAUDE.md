@@ -2973,6 +2973,37 @@ that file true is still a measurement, not a check. Note also that unlike the di
 lives in the **tracked** `Tools/code` directory, so it has none of the gitignored-copy drift the
 `data/` scripts suffer.
 
+**AND THERE IS NOW ONE RUNNER FOR ALL OF THEM — `run_all_gates.sh`, added 2026-10-10, because this
+section had grown to ten gates that nothing invoked together.** That is the failure this file states
+in its own words about `check_permission_parity.sh` ("a gate nobody runs is a gate that does not
+exist"), and two of the ten were ones I had added myself days earlier and then run only from memory.
+
+**Run it on the VM with `--with-cluster`.** Measured that day: **all ten PASS there** — the three
+cluster parity gates (role, permission, published definitions), spec parity, the three Python audits,
+`check_b25_status.sh`, and the two newer tracker gates. That is the first recorded run of the whole
+set together, and it is the baseline to compare against. **From Windows only 3 of 10 can run**, so a
+green result there means much less than it looks.
+
+**It reports three outcomes and the third is the load-bearing one:** PASS, FAIL, and
+SKIPPED-with-a-reason. A skipped gate is never silently omitted and never counted as a pass, only
+FAIL exits non-zero — the same deliberate choice as the `<<<SUITES_RUN:...>>>` gate, where punishing
+an honest gap pushes the next run toward inventing numbers — and the summary ends by saying that no
+failure is **not** the same as everything verified, with the skipped count named.
+
+**On its first execution it found a gate that could not run at all here.** `check_spec_parity.sh`
+exited 2 on a path that does not exist, because it compares the Loom repo against the **backend**
+repo and that repo lives only on the VM. Verified green there (8 identical, 0 differ, 0 missing, plus
+the generated artifact), so it is now classified VM-only rather than failing — a runner permanently
+red on the machine it is usually invoked from is the always-noisy guard this file warns gets scrolled
+past. The real lesson is the one underneath: **one of the three parity gates this file tells you to
+run after every spec change had been unrunnable on this host, and nobody knew because nobody ran it.**
+
+**One trap it had to be built around.** The Python-gate skip probes whether the interpreter **runs**,
+not whether it resolves: on Windows `command -v python3` finds the Microsoft Store **stub**, which
+prints "Python was not found" and exits non-zero. A presence check that succeeds while the thing is
+absent — the exact shape catalogued throughout this file, and it would have reported three gates as
+failing rather than skipped.
+
 older parity gates, the `<<<SUITES_RUN:...>>>` gate below, and — added 2026-10-10 — the same
 dispatcher's **ticket Status stamping**, which exists because the note form of that lesson failed
 in the most direct way possible: this very section said the fix was mechanical and unbuilt while
