@@ -1549,6 +1549,17 @@ Three things to carry, and the third is the one that generalises furthest:
   `"Join waitlist"` contains `wait`. Match on word boundaries, and never let a span claimed by an
   ALTERNATE term also count as a PRIMARY one.
 - Process checks lie in both directions: `pgrep -c qemu-system-x86_64` returns 0 when it IS
+  **And it applies to LOG greps, not just product text — 2026-10-10, caught by an empty follow-up.**
+  Hunting a serialization failure in `workflow-service` logs, I counted `grep -aicE 'GET|POST'` → 130
+  and read that as "request logging exists, so a zero for the error is meaningful". **All 130 matches
+  were the word `postgres`.** The service does no request logging whatever
+  (`\bGET\b|\bPOST\b` = 0, `HTTP/[0-9]` = 0, across 466 current and 3362 previous-container lines), so
+  the error's absence was never evidence — the channel does not carry the signal. **The tell was the
+  NEXT command printing nothing** when I asked to display four of those 130 lines: an empty result
+  immediately after a confident count means the count matched something other than what you meant.
+  Case-insensitive three-letter tokens are the worst offenders — `GET` is inside `target`, `budget`,
+  `forget` and `postgres`. Anchor on word boundaries, and **before interpreting a zero from a log, ask
+  whether that log ever carries the thing you are counting.**
   running (15-char `comm` truncation), and `pgrep -fc` returns 1 when nothing is (it matches its
   own command line). Use `adb devices` plus a bracketed `pgrep -fc '[q]emu...'`.
   **And `kill -0` cannot tell "gone" from "not yours" — found 2026-10-01, by scaring myself.** It

@@ -141,3 +141,29 @@ continue.
   line, with the working directory stated.
 - **Emit `<<<SUITES_RUN: ...>>>`.** The dispatcher refuses a reply without it and exits 2;
   `NOT_RUN(reason)` is correct for anything you genuinely could not run.
+
+## DO NOT TRY TO CONFIRM THIS FROM THE SERVICE LOG — measured 2026-10-10, it cannot work
+
+I attempted exactly that, reasoning that 18 live instances of ungated reminder types should make the
+failure appear in `workflow-service` logs on real traffic. **The service does no request logging at
+all:** `\bGET\b|\bPOST\b` matches **0** lines and `HTTP/[0-9]` matches **0**, across both the current
+container (466 lines) and the previous one (3362 lines). So `JsonUnsupportedObjectError` = 0 and
+`Instance of 'DateTime'` = 0 are **not evidence of anything** — the channel never carries the signal.
+
+**And my "control passed" claim was itself false, which is the part worth copying.** I counted 130
+lines matching `GET|POST` case-insensitively and read that as "request logging exists". All 130 were
+the word **`postgres`**. The tell was the *next* command printing nothing when I asked to see four of
+those lines — an empty result immediately after a confident count is the signal that the count
+matched something other than what I meant.
+
+**So this defect's reachability rests on the data plus the code, which is sufficient** — 8 ungated
+deployed types, 18 live instances, and the assignment at `local_workflow_engine_api.dart:2720` — and
+on the Cedar 500 this project already recorded by observation. **Confirming it live needs a real
+authenticated request against an affected instance, not a log grep.**
+
+**One benign thing seen while looking, recorded so nobody chases it:** the log's dominant content is
+13 `Workflow service startup failed; retrying Postgres in 5 seconds` frames
+(`SocketException: Connection timed out` then `Connection refused`). That is the pod starting before
+Postgres is ready, handled by the service's own retry loop — it **succeeded**, the log ends with
+`Document storage ready on minio…`, and the pod is `Running ready=true`. Not a defect, and not
+related to this ticket.
