@@ -104,6 +104,30 @@ a per-package count called it gated; its *dues* block has no `enabledField` at a
 signal cannot settle a per-block question, which is why the caveat was in the ticket — and why it
 needed this query rather than more reading.
 
+
+## RULED OUT 2026-10-10: nothing masks this, and that absence is probably CORRECT
+
+Before dispatching, I checked the one thing that could have made this defect unreachable — a JSON
+encoder that handles `DateTime`. **There is none.** `toEncodable` appears **zero** times in both
+`loom_workflow_service/lib` and `loom_workflow_engine/lib`, while the control shows the service calls
+`jsonEncode` at **32 sites**. `jsonEncode` without a `toEncodable` throws `JsonUnsupportedObjectError`
+on a `DateTime`, which is exactly the error recorded against Cedar's listing. **So the defect is real
+and unmasked**, and this check is why that is now stated rather than assumed.
+
+**Why I checked at all, and the lesson that prompted it:** the sibling one-row-stall ticket turned out
+already implemented, because the handling existed *elsewhere* than the line the ticket cited. Verifying
+a cited line proves the mechanism is intact; it does **not** prove the consequence still reaches the
+surface. Those are two different claims and this ticket now carries both.
+
+**One observation, deliberately NOT a recommendation.** 32 unguarded `jsonEncode` sites means *any*
+`DateTime` reaching instance data breaks a response, not only one arriving via `reminderAt`. The
+obvious belt-and-braces move is a `toEncodable` that ISO-formats dates globally. **Do not add one as
+part of this ticket, and think twice before proposing it separately:** it would convert a loud 500
+into a silent coercion, so the next writer that leaks a `DateTime` would ship quietly instead of
+failing. This project consistently prefers the loud failure, and the fix belongs at the writer. If a
+global handler is ever wanted, it is a deliberate design decision with that trade stated, not a
+hardening tweak smuggled into a one-line fix.
+
 ## Honesty test — it must fail against today's code
 
 - **A unit test over the computed-data resolution asserting `instanceData['reminderAt']` is
