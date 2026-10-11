@@ -33,6 +33,45 @@ This is the shape this project already records: *"a defect that belongs to one i
 change that item's recorded outcome, not the batch's control flow."* The earlier instance was a
 `StateError` thrown with a perfectly accurate diagnostic that still aborted all eighty workflows.
 
+
+## ⛔ RESCOPED 2026-10-10 — THE CHANGE BELOW IS ALREADY IMPLEMENTED. Only its TEST is missing.
+
+Re-verified this ticket's own claim before dispatching it, and the behaviour it asks for exists.
+`b25_workflow_row_selection.dart:389-400` already maps a stall into a per-row outcome and continues:
+
+    if (error is WalkthroughStallFailure) {
+      // Attempted and inconclusive, not a confirmed defect ... Frames captured before the
+      // stall ARE kept, same as row_execution_failed -- unlike a blocked row,
+      // this one genuinely started executing.
+      return B25RowScopedFailure(rowOutcome: 'row_stalled_inconclusive', ...);
+
+**All three constraints in "The change" are already met.** It has its own outcome name
+(`row_stalled_inconclusive`), it is explicitly distinguished from both *"the action was not
+offered"* and *"the row could not be attempted at all"* — the three-facts distinction this ticket
+asks for, in the code's own comment — and the watchdog is untouched, so stalls are still detected.
+Confirmed in passing that the sibling class is handled the same way: `B25SelectorSetupFailure`
+becomes `blocked_by_selector_setup`, one of four `blocked_by_*` outcomes recorded per row.
+
+**What is genuinely still owed is the regression test, and that is the half this project says
+matters most.** `b25_workflow_row_scope_test.dart` covers **nine** failure types — `StateError`,
+`B25SelectorSetupFailure`, `B25ResultFramePositioningFailure`, `B25DependentReceiverBlockedFailure`,
+`B25ActorAudienceResolutionFailure`, `B25ArrangementOutOfScopeFailure`, `B25ProductFindingFailure`,
+`B25PostconditionNotObservedFailure`, `B25CommunityTeardownFailure` — and **`WalkthroughStallFailure`
+is not among them.** So the continuation behaviour is implemented and unasserted, which is exactly
+the gap CLAUDE.md names: *"assert the continuation in a test, because 'it kept going' is the property
+that is invisible in a single-row fixture."* An asymmetric-sibling shape too — nine types covered,
+the tenth missed.
+
+**So dispatch this as a TEST-ONLY ticket:** add the `WalkthroughStallFailure` case to that file,
+asserting the outcome is `row_stalled_inconclusive`, that frames captured before the stall are kept,
+and that the scope **returns** rather than rethrows. Keep the nine existing cases green. **Do not
+re-implement the mapping** — it is there, and rewriting it would risk changing an outcome name that
+`check_b25_status.sh` and the judge both read.
+
+**Why this was worth checking rather than dispatching:** the ticket reads as an implementation job
+and would have been dispatched as one. This is the fifth already-done item this session, and the
+prompt's own opening warning — five of six listed items turned out already done — now has a sixth.
+
 ## The change
 
 **A stall watchdog expiry for one row must record that row's outcome and continue to the next
