@@ -2937,6 +2937,37 @@ WORKFLOW" …` returning 5 on the VM is what made the second run meaningful. Thi
 git: the same shape is the stale validator on :8787 answering from last week's grammar, and a
 deployed service tested while the repo holds the fix.
 
+**AND IT APPLIES TO THE TICKET THE AGENT READS, WHERE THE FAILURE MODE IS THE OPPOSITE ONE —
+measured 2026-10-10, on a prerequisite I had just called fully audited.** The dispatcher hands the
+agent a ticket *path*, and the agent reads it from the **VM's** checkout. That VM was **15 commits
+behind**, so it held the **pre-retraction** body of every ticket I had rescoped. There is no false
+green here: the agent would have read a withdrawn instruction and correctly executed it.
+
+The sharpest case, and it is exactly the hazard this file records about stale prescriptions in
+tickets: the VM's copy of `HARNESS-one-row-stall-…` was **missing the entire 39-line
+`⛔ RESCOPED` section**, so its body still prescribed implementing behaviour that already exists at
+`b25_workflow_row_selection.dart:389-400`. A reader skims a ticket for the imperative, and the
+imperative was the stale half.
+
+**Two things make this worth separating from the test-code version of the rule.**
+
+- **Check what the gap actually touches, because the instinct fears the wrong thing.** Those 15
+  commits changed **zero `.dart` files** — 6 `.md`, 2 `.txt`, 1 `.sh` — so a five-suite run on that
+  VM would have produced identical totals and the baselines were never at risk. The damage was
+  confined to **documents the agent reads as instructions**, plus two baseline records and
+  `check_ticket_baselines.sh`, where the VM held the broken version my own prose had caused
+  (md5 `2246ff7e` against HEAD's `39253df2`). "Behind" is not one risk; measure which files moved.
+- **A readiness audit must include the DISPATCH HOST'S CHECKOUT.** I had audited the emulator, the
+  `POST_NOTIFICATIONS` grant, backend reachability from the device with a working control, and the
+  APK build order — and declared no unknown prerequisites remained, without once checking that the
+  machine which runs the dispatches held the tickets I had written. The check is
+  `ssh loom-vm 'cd ~/Loom && git log --oneline -1 && git status --short | wc -l'` against local
+  `HEAD`, and it belongs beside the device checks rather than being assumed.
+
+`git pull --ff-only` on a clean VM tree is the whole fix, and it is ordinary maintenance. The
+expensive part is remembering that `git pull` on the VM is a **dispatch prerequisite**, not
+housekeeping — the same standing as `adb install -r -g` before a capture.
+
 **Related, from the same edit: annotating a row does not change what counts it.** Masjid's five
 non-workflow B25 rows now read `⛔ NOT A WORKFLOW — wf_…` so a *reader* cannot mistake them, but a
 naive row counter still counts six pipes and adds one. The annotation fixes the human hazard and

@@ -261,6 +261,31 @@ at a scratch path.
 
 
 
+### THE DISPATCH HOST'S CHECKOUT — a sixth prerequisite, and the readiness audit above MISSED it
+
+Found 2026-10-10, the tick after I declared no unknown prerequisites remained. The audit above covers
+the **Windows** capture prerequisites; the **dispatch** prerequisite is that the VM holds the ticket
+you are dispatching. It did not: the VM was **15 commits behind**, clean tree, so every rescoped
+ticket on it was the **pre-retraction** version — including a copy of
+`HARNESS-one-row-stall-…` missing its entire `⛔ RESCOPED` section, whose body therefore still
+prescribed implementing behaviour that already exists in the code.
+
+**This is not the usual wrong-checkout failure.** There is no false green: the agent reads a
+withdrawn instruction and correctly carries it out. And the suites were never at risk — those 15
+commits touched **zero `.dart` files** (6 `.md`, 2 `.txt`, 1 `.sh`), so totals would have matched
+exactly. What was stale was everything the agent reads as an **instruction**, plus
+`check_ticket_baselines.sh` (the VM held the version my own prose had broken) and both baseline
+records.
+
+**Before any dispatch, two lines:**
+
+    ssh loom-vm 'cd ~/Loom && git log --oneline -1 && git status --short | wc -l'   # vs local HEAD
+    ssh loom-vm 'cd ~/Loom && git pull --ff-only'                                   # if behind and CLEAN
+
+Done for this ticket: the VM is at `ae8e6bad`, tree clean, the `⛔ RESCOPED` section present, and the
+gate's md5 now matches HEAD. **Re-check it anyway if any commit lands between now and the dispatch**
+— the gap reopens every time I commit on Windows, which during this work is constantly.
+
 ### Backend reachability FROM THE DEVICE — verified 2026-10-10 with a control
 
 The remaining unknown in the readiness audit was whether the emulator can route to the cluster at
