@@ -335,3 +335,49 @@ single-fix cadence.
   `N issues found` line, with the working directory stated.
 - **Emit `<<<SUITES_RUN: ...>>>`.** The dispatcher refuses a reply without it and exits 2;
   `NOT_RUN(reason)` is a correct entry for anything you genuinely could not run.
+
+## RECORD THE RUN, NOT JUST ITS TOTAL — four fields, and three of them have never been written down
+
+Audited 2026-10-10 across all nine recorded device runs. **Every one of them used a scratch
+`--evidence-root`, which is correct, and not one committed a manifest** — `git show --stat` for
+`e0536500`, `28224656`, `b11a27c6` and `9deba3ed` each touch **zero** files under `Evidence/`. The
+run logs lived in the VM's `/tmp`, which a reboot cleared. So every per-row composition this
+project has ever measured on a device is **gone**, and only scalar totals survive, in ticket prose.
+
+**The concrete cost, which lands on this ticket's own verifying run.** `row_execution_failed` went
+**14 → 10** across `9deba3ed`. Nobody can say whether the remaining 10 are a subset of the 14, or
+ten different rows with the first set fixed and new ones broken — so a run that comes back at 10
+again is indistinguishable from no progress *and* from a complete swap. The three Garden
+`No element` rows and the picker stall that the loop brief names as the next targets were measured
+over **17** workflows; traversal is now **83**, and whether those four are still among the failures
+has never been re-measured.
+
+**And the denominators were never comparable.** `b25Proven` appears in the tickets as 0/0, 0/1,
+0/3, 0/5, 0/7, 0/16 and 1/82 — seven distinct denominators, differing partly by improved reach and partly by
+run scope (Garden-only versus Garden/Book, different `--phases`), **which was never recorded for any
+run**. The sharpest instance: `workflows` fell 8 (`61a2e01b`) → 4 (`c88b9b67`), and those two runs
+are presented in a ticket as a before/after on `b25RowExecutionFailed` (6 → 0). That may well be
+right; it cannot be *checked*, because neither run's scope was written down. Unverifiable, not wrong.
+
+**So this run records four fields, in a tracked file, in the same sitting:**
+
+1. **COMMIT** — the HEAD the instrumented APK was *built* from, not the tree it ran against. This
+   project has already attributed one run's log lines to a different binary; two builds of the same
+   app can differ in the one way that matters.
+2. **SCOPE** — verbatim `--mode`, `--phases`, `--communities`, `--evidence-root`. Without it the
+   totals are not comparable to anything, including themselves on a later run.
+3. **COMPOSITION** — every non-proven row by `workflowId` **and** outcome. Not a bucket count. A
+   count tells you a number moved; only the row list tells you which, and this project's own rule is
+   that a total that moves needs its reason named.
+4. **TOTALS** — each with its denominator as part of the figure (`1/82`, never `1`), because
+   `b25Proven` is a per-run ratio and a bare numerator is malformed.
+
+`docs/Build Plan V2/Tools/code/device_run_baselines.txt` holds this frame with every surviving
+figure already in it and the unrecorded columns marked `unrecorded` rather than left blank. Fill
+your run's row there.
+
+**Keep the scratch evidence root.** The mode is `commitEligible: false` and the default root
+destroys canonical manifests for phases it never ran — that part is right and must not change. What
+changes is that the *result* stops living only there. The one composition that did survive — the
+45-row `blocked_by_arrangement` decomposition at `e0536500` — survived for exactly one reason: it
+was written into a ticket as a table instead of left in a run log.

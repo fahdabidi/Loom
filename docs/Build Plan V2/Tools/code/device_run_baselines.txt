@@ -1,0 +1,81 @@
+# Device-run outcome baselines — the frame the next capture run must fill.
+#
+# WHAT THIS FILE IS: every device figure this project has recorded, with the commit it was
+# measured at, assembled from the ticket prose that is its only surviving source. WHAT IT IS
+# NOT: a set of comparable measurements. Read the two warnings below before using any number
+# here as a baseline, because most of them cannot serve as one.
+#
+# assembled: 2026-10-10 at HEAD 352c2448, from ticket prose only. No run was re-executed.
+#
+# ---------------------------------------------------------------------------------------
+# WARNING 1 — THE COMPOSITIONS ARE GONE, AND THAT IS NOT RECOVERABLE
+# ---------------------------------------------------------------------------------------
+# Every run below used `--mode targeted-precheck` with a scratch `--evidence-root`, which is
+# CORRECT (that mode is `commitEligible: false` and writing to the canonical root destroys
+# manifests for phases it never ran). The consequence is that no manifest was committed:
+# `git show --stat` for e0536500, 28224656, b11a27c6 and 9deba3ed each touch ZERO files under
+# `Evidence/`. The run logs lived in the VM's `/tmp`, which a reboot cleared; the VM has been
+# up 4d5h and `/tmp` holds no b25 or precheck artifact.
+#
+# So for every figure below, the TOTAL survives and the PER-ROW COMPOSITION does not. Nobody
+# can say which rows were in a bucket, only how many. The practical cost: `row_execution_failed`
+# went 14 -> 10 across `9deba3ed`, and there is no way to tell whether the remaining 10 are a
+# subset of the 14 or ten different rows with the first set fixed and new ones broken.
+#
+# An absence of committed manifests is NOT evidence that nothing failed. It is evidence that
+# the run was correctly scratch-rooted and nobody wrote the result down.
+#
+# ---------------------------------------------------------------------------------------
+# WARNING 2 — THE DENOMINATORS DIFFER BY RUN SCOPE, SO THE ROWS BELOW ARE NOT A TREND
+# ---------------------------------------------------------------------------------------
+# `b25Proven` is a PER-RUN RATIO over the workflows that run traversed, never a bar figure.
+# Seven distinct denominators appear in the tickets: 0/0, 0/1, 0/3, 0/5, 0/7, 0/16, 1/82.
+# They differ partly because reach improved and partly because the runs had different scopes
+# — Garden-only versus Garden/Book, and different `--phases`. **Which, for each run, was never
+# recorded.** So a figure falling between two rows cannot be read as a regression, and one
+# rising cannot be read as a fix, without the scope that produced it.
+#
+# The clearest case: `workflows` went 8 (at 61a2e01b) to 4 (at c88b9b67), and those two runs
+# are presented in a ticket as a before/after on `b25RowExecutionFailed` (6 -> 0). That may
+# well be right. It cannot be CHECKED, because neither run's `--phases`/`--communities` was
+# written down. Flagged as unverifiable, not as wrong.
+#
+# ---------------------------------------------------------------------------------------
+# WHAT IS RECORDED (commit, totals, exit). Scope and composition columns are empty BY DEFECT.
+# ---------------------------------------------------------------------------------------
+# commit     workflows  b25Proven  execFailed  screenshots  exit   scope        composition
+# --------   ---------  ---------  ----------  -----------  ----   ----------   -----------
+  (unnamed)          1       0/0   -                   3/3     1   unrecorded   unrecorded
+  1efdfd30           2       0/1   0                   3/3     1   unrecorded   unrecorded
+  61a2e01b           8       0/7   6                   9/9     0   unrecorded   unrecorded
+  c88b9b67           4       0/3   0                   3/3    66   unrecorded   unrecorded
+  6097767f          17      0/16   3                 15/15     0   Garden/Book  unrecorded
+  e2c63f0d          17      0/16   11 (8 group-id)    5/5      0   unrecorded   unrecorded
+  e0536500          83      1/82   -                 29/29     0   unrecorded   unrecorded
+  b11a27c6          83         -   -                    52     -   unrecorded   unrecorded
+  9deba3ed          83         -   10                     -     -   unrecorded   unrecorded
+#
+# Sub-bucket figures recorded as deltas only, each with no composition:
+#   readGuard refusals        15 -> 1    (28224656)
+#   field-type refusals       14 -> 1    (b11a27c6)
+#   group-id failures         10 -> 0    (e0536500)
+#   fanId tap failures         3 -> 0    (9deba3ed)
+#   blocked_by_arrangement    45 at e0536500, decomposed into 5 classes summing to 45
+#
+# The arrangement decomposition at e0536500 is the ONE composition that survives, because it
+# was written into a ticket as a table rather than left in a run log. That is the whole fix:
+# a figure written into a tracked file survives; a figure in `/tmp` does not.
+#
+# ---------------------------------------------------------------------------------------
+# WHAT THE NEXT RUN MUST RECORD — four things, not one
+# ---------------------------------------------------------------------------------------
+# 1. COMMIT. The HEAD the instrumented APK was built from, not the tree it ran against.
+# 2. SCOPE. Verbatim: `--mode`, `--phases`, `--communities`, `--evidence-root`. Without this
+#    the totals are not comparable to anything, including themselves on a later run.
+# 3. COMPOSITION. Every non-proven row by `workflowId` and outcome — not a bucket count. A
+#    count tells you a number moved; only the row list tells you WHICH, and this project's own
+#    rule is that a total that moves needs its reason named.
+# 4. TOTALS, with the denominator stated as part of the figure (`1/82`, never `1`).
+#
+# Write all four into a TRACKED file in the same sitting as the run. The scratch evidence root
+# is correct and must stay; what must change is that the result stops living only there.

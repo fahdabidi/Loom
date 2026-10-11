@@ -45,12 +45,19 @@ for f in "$DIR"/*.md; do
   esac
   pending=$((pending+1))
   # Only tickets that actually state a baseline can disagree with one.
-  grep -qE 'demo \*\*[0-9]+\*\*' "$f" || continue
+  # Match ONLY inside the "## Verification" section. A ticket's PROSE legitimately contains
+  # strings like "workflow-service **404**" (a real HTTP status from a reachability probe), and
+  # the old file-wide match with `head -1` took the FIRST hit anywhere, so prose appearing
+  # before the Verification section always beat the real figure. Measured 2026-10-10: that is
+  # exactly how this gate reported "states service 404, recorded baseline is 168".
+  V=$(sed -n '/^## Verification/,$p' "$f")
+  printf '%s' "$V" | grep -qE 'demo \*\*[0-9]+\*\*' || continue
   checked=$((checked+1))
   for pair in "demo:$D" "app shell:$A" "judges:$J" "engine:$E" "service:$S"; do
     label=${pair%%:*}; expected=${pair##*:}
     [ -n "$expected" ] || continue
-    found=$(grep -ohE "$label \*\*[0-9]+\*\*" "$f" | head -1 | grep -oE '[0-9]+' || true)
+    # (^|[^a-z-]) stops the label "service" from matching inside "workflow-service".
+    found=$(printf '%s' "$V" | grep -ohE "(^|[^a-z-])$label \*\*[0-9]+\*\*" | head -1 | grep -oE '[0-9]+' || true)
     [ -n "$found" ] || continue
     if [ "$found" != "$expected" ]; then
       echo "DRIFT  $(basename "$f")"
