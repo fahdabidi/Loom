@@ -1644,6 +1644,21 @@ Three things to carry, and the third is the one that generalises furthest:
   use. **So the defect was re-derivable from code and its measurement was not**, and the practical
   cost is that no before-figure exists to compare an after-figure against. **Separate the two kinds
   of claim explicitly in any ticket**, and have the next real run commit its own record.
+  **That last clause now has a frame to fill, built 2026-10-10 once the scale of the loss was
+  measured: `docs/Build Plan V2/Tools/code/device_run_baselines.txt`.** All nine recorded runs used a
+  scratch `--evidence-root`, which is correct, so **not one committed a manifest** — and the `/tmp`
+  logs went with a reboot, so every per-row COMPOSITION ever measured on a device is irrecoverable
+  while only scalar totals survive in ticket prose. Two consequences worth stating: a delta like
+  `row_execution_failed 14 -> 10` cannot distinguish real progress from a complete swap of which rows
+  fail; and the seven distinct `b25Proven` denominators in the tickets (0/0 through 1/82) are not a
+  trend, because they differ partly by reach and partly by **run scope, which was never recorded for
+  any run** — so `workflows` falling 8 (`61a2e01b`) to 4 (`c88b9b67`) across a cited before/after is
+  unverifiable rather than wrong. **A run therefore records four things, not one:** the commit the APK
+  was BUILT from, the verbatim scope (`--mode`, `--phases`, `--communities`, `--evidence-root`), the
+  per-row composition by `workflowId` and outcome, and totals carrying their denominators. Keep the
+  scratch root; what must change is the result no longer living only there. **The one composition that
+  survived — the 45-row arrangement decomposition at `e0536500` — survived solely because it was
+  written into a ticket as a table instead of left in a run log.**
   `"Join waitlist"` contains `wait`. Match on word boundaries, and never let a span claimed by an
   ALTERNATE term also count as a PRIMARY one.
 - Process checks lie in both directions: `pgrep -c qemu-system-x86_64` returns 0 when it IS
