@@ -767,6 +767,22 @@ anchors ended up with their 2026-10-10 verification **only** in the row. So a su
 file for "which entries have been checked recently" scored those six as untouched, and I twice picked
 one to audit that I had already audited or that already carried a re-test.
 
+
+**RETIRED 2026-10-10: do not prioritise from a marker scan of this file at all — read the entry.**
+I built one to pick which rows to audit, widened it twice after it mis-scored entries, and it still
+produced a classification I **cannot reproduce**: `row-138` was listed as unverified while its entry
+opens *"MEASURED IN FULL 2026-09-12"* with a complete ten-community mapping table. Re-running the
+identical command today returns a mark of 1 for it, so the scan and I disagree about its own past
+output, and I did not manufacture an explanation for the gap.
+
+**The operational conclusion is the simple one, and it is already the rule above:** open the entry.
+Detail-first caught three finished rows in three consecutive attempts — the archetype-bookkeeping row
+(`RE-TESTED 2026-09-12`), the document-ACL row (genuinely open, and audited), and this one — which is
+a better hit rate than any pattern I wrote. **A scan over prose cannot reliably answer "has somebody
+already done this", because the answer is written in a different form every time**: `RE-VERIFIED`,
+`RE-TESTED`, `RETAGGED`, `MEASURED IN FULL`, `STILL TRUE`, `CLOSED`, a bare date. Each widening
+found another spelling, which is the signal that the set is open-ended rather than nearly complete.
+**Three ticks of my own output went into chasing that, and the cheap alternative was always there.**
 **The marker has to live where the next reader looks, and for this pair that is the detail**, because
 the detail is what a row's `[detail]` link sends you to and it is where the substance lives. Fixed by
 mirroring a one-line summary of each finding into its entry — a summary, not a signpost, so the
