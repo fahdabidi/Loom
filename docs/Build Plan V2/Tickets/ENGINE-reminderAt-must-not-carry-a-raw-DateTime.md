@@ -63,6 +63,47 @@ is a package-level signal, not a per-block one. **Part of this ticket is to read
 and report, per block, whether its reminder is gated and by what** — then state how many workflows the
 fix actually repairs. Report that list in your reply.
 
+
+## MEASURED AGAINST THE DEPLOYED CATALOG 2026-10-10 — this supersedes the repo-side estimate above, which was wrong
+
+The section above estimated the population from package-level `reminderEnabled` mentions and said
+plainly that a per-block audit was still owed. **That audit is now done, against the live
+`workflow_definitions` and `workflow_instances` tables, and the estimate was wrong in both
+directions.**
+
+**First, the key.** A reminder block's gate is **`enabledField`** — the block's real keys are
+`anchorDateField`, `anchorTimeField`, `enabledField`, `leadHours`, `leadHoursField`. My first query
+guessed `enabledWhen` and a text match on `reminderEnabled`, and produced verdicts that were right
+only by accident for three types. **Read the keys the data uses before trusting any gating column.**
+
+| Deployed type | `enabledField` | Live instances |
+|---|---|---:|
+| `ad-off-community-checkout` | `reminderEnabled` | 5 |
+| `chess-match-meetup` | `reminderEnabled` | 0 |
+| `hoa-facility-reservation` | `reminderEnabled` | 4 |
+| `book-meeting-rsvp` | **absent — UNGATED** | 2 |
+| `garden-event-rsvp` | **absent — UNGATED** | 6 |
+| `garden-tool-loan` | **absent — UNGATED** | 4 |
+| `garden-volunteer-shift` | **absent — UNGATED** | 0 |
+| `hoa-dues-payment` | **absent — UNGATED** | 2 |
+| `mosque-event-rsvp` | **absent — UNGATED** | 1 |
+| `plant-exchange-submission` | **absent — UNGATED** | 2 |
+| `soccer-practice-schedule` | **absent — UNGATED** | 1 |
+
+**So the blast radius is 8 ungated types carrying 18 live instances** — of 85 deployed definitions,
+11 of which declare a reminder, and 196 live instances. Not zero, and not all 11.
+
+**Two things corroborate the measurement rather than resting on it.** The deployed count of 11
+reminder-declaring definitions matches the repo-side count of 11 blocks exactly, so catalog and
+packages agree. And the split reproduces CLAUDE.md's documented Cedar case precisely without being
+told: `hoa-dues-payment` is **ungated** — the workflow recorded as 500ing — while
+`hoa-facility-reservation` is **gated** — the one recorded as its healthy control.
+
+**And it refutes the package-level proxy I used first.** Cedar mentions `reminderEnabled` 11 times, so
+a per-package count called it gated; its *dues* block has no `enabledField` at all. A package-level
+signal cannot settle a per-block question, which is why the caveat was in the ticket — and why it
+needed this query rather than more reading.
+
 ## Honesty test — it must fail against today's code
 
 - **A unit test over the computed-data resolution asserting `instanceData['reminderAt']` is
