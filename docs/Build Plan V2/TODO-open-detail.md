@@ -60,6 +60,12 @@ Also found: **7 `fan_passport` rows keyed by UUID** (`fan_<uuid>`) rather than t
 
 ### row-298 — Rotate three exposed secrets before GA — Google client secret, Facebook app secret, DeepSeek API key
 
+**AUDITED 2026-10-10 — NOT EXPOSED IN THE REPO, which narrows this row without closing it.** Checked tracked files only, because tracked is the exposure question, and with a working control (`LOOM_POSTGRES_PASSWORD` appears in **21** tracked files, so the query mechanism is sound). Results: **0** tracked files name the Google client secret or the Facebook app secret under any spelling I tried, and **0** Keycloak realm/identity-provider configs are tracked at all. `DEEPSEEK_API_KEY` appears in **2** tracked files — both `Tools/code` dispatcher mirrors — and in neither as a literal: the forms are env references, with **0** literal-assignment-with-value matches. The single commit in all of history touching that name (`03a5f9f9`) added an env-reference line, **0** literals. No `.env` file is tracked anywhere, and `/data/` is `.gitignore` line 1, so the DeepSeek key lives in the gitignored gateway `.env` rather than in the repo.
+
+**One apparent hit was my own false positive, and it is the reusable part.** A `>=20`-character "value-shaped token" heuristic flagged one line in the Access Control tracker; read with the token masked, it is a **closed** `deploy-blocker` row whose long hyphenated service names matched the pattern. A length test with no entropy test matches ordinary identifiers — the same shape as counting `postgres` as a `POST`.
+
+**The limit, stated rather than glossed: I cannot prove no VALUE was ever committed, because I do not have the values.** What is established is that the three secret NAMES carry no literal in any tracked file and that the one commit touching them committed none. A value committed under some other name would not be found by this method. **So rotation before GA remains a legitimate action** — these are credentials that exist and have been used in a dev setup — but this row should not be read as "secrets are sitting in the repo", because they are not, and that framing invites history-rewriting the evidence does not support.
+
 `new-ticket` — **rotate three exposed secrets before GA**: Google client secret, Facebook app secret, DeepSeek API key. Deferred by user decision until production-ready, which makes it a release blocker rather than a backlog item
 
 ## 2. Decisions owed by the user

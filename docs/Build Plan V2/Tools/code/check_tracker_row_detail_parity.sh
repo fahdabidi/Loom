@@ -18,6 +18,12 @@
 # action-inviting on `new-ticket`, `needs-` and "not dispatched", and missed **"STILL TRUE"** —
 # the most assertive phrase in the corpus — catching it only by hand-reading the two rows the
 # sweep had scored harmless. Add to OPEN_PAT when a new assertive phrasing appears.
+# RUNTIME: this takes OVER 200 SECONDS on Windows and about a minute on the VM. It spawns three
+# subprocesses per row (grep + awk + sed inside detail_block) across ~38 rows, and Windows process
+# creation is slow. On 2026-10-11 a `timeout 150` and then a `timeout 200` both killed it at 0 bytes
+# output, which reads exactly like a hang -- it is not. Hung and slow differ in a trend, not in one
+# sample: give it 600s before concluding anything, and capture the status from the command itself
+# rather than through a pipe whose last stage always succeeds.
 set -uo pipefail
 cd "$(dirname "$0")/../../../.." || exit 2
 T="docs/Build Plan V2/TODO.md"
@@ -40,7 +46,12 @@ detail_block() { # $1 anchor -> prints that entry's lines
 bad=0; checked=0; noanchor=0
 while IFS=: read -r ln rest; do
   [ -n "${ln:-}" ] || continue
-  a=$(printf '%s' "$rest" | grep -oE 'row-[0-9]+' | head -1)
+  # Anchor on the LINK, not on any `row-N` text in the row. A row's PROSE can legitimately
+  # mention another row ("...belonging to row-197"), and the old `grep -oE 'row-[0-9]+' | head -1`
+  # took the FIRST match anywhere in the line -- so on 2026-10-11 a row whose prose cited row-197
+  # resolved to row-197 and was compared against the wrong entry. The link is the contract; the
+  # prose is not. Same shape as the label "service" matching inside "workflow-service **404**".
+  a=$(printf '%s' "$rest" | grep -oE 'TODO-open-detail\.md#row-[0-9]+' | head -1 | grep -oE 'row-[0-9]+')
   [ -n "$a" ] || continue
   if ! blk=$(detail_block "$a"); then
     echo "MISSING ANCHOR  $a  (referenced from $T line $ln)"; noanchor=$((noanchor+1)); bad=$((bad+1)); continue
