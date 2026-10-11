@@ -260,6 +260,35 @@ showing `granted=true` rather than trusting the installer's `Success`. And point
 at a scratch path.
 
 
+
+### Backend reachability FROM THE DEVICE — verified 2026-10-10 with a control
+
+The remaining unknown in the readiness audit was whether the emulator can route to the cluster at
+all; the capture must bind remote, and this project records a whole class of misdiagnosis when it
+cannot ("a failed call is not evidence that a service is unreachable"). **All four NodePorts answer
+from the device**, probed with `toybox nc` over `adb shell`:
+
+| service | port | from the device |
+|---|---|---|
+| app-access | 30080 | REACHABLE |
+| fan-passport | 30081 | REACHABLE |
+| keycloak | 30082 | REACHABLE |
+| workflow-service | 30083 | REACHABLE |
+
+**Controlled, so "reachable" is a measurement rather than a probe that always succeeds:** port
+**30999** on the same host came back **refused**. Without that, four reachable results would prove
+only that the probe returns success.
+
+**And from Windows the services are not merely accepting TCP but serving:** app-access returns
+**HTTP 401** and workflow-service **404** — an auth demand and a wrong-path answer respectively, both
+of which require a running service, unlike a bare connect.
+
+**So the readiness position is now complete:** emulator alive, all four services reachable and
+answering, `flutter` and `adb` present; `ANDROID_SDK_ROOT` to export at run time; and the
+instrumented APK deliberately left unbuilt until after the dispatch batch, per the note above. **No
+unknown prerequisites remain** — which matters because this project records two consecutive
+walkthroughs lost to infrastructure that one cheap check beforehand would have caught.
+
 ### DO NOT PRE-BUILD THE APK — and do not rebuild between tickets. Measured 2026-10-10.
 
 I could have closed gap 5 before auth returned: `ssh` and `flutter` work, and only the Claude CLI
