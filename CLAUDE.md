@@ -743,6 +743,24 @@ current accuracy rather than something to verify like every other row. **A track
 never a substitute for reading the code it claims to describe — apply that check uniformly across
 every row you're about to repeat, not only the ones that already look suspicious.**
 
+**Cite a tracker row by its `row-N` ANCHOR, never by its line number — the two numbers collide, and
+I spent part of a tick resolving one I had created myself (2026-10-10).** `TODO.md` rows link to
+`TODO-open-detail.md#row-N`, and those anchors are stable ids from an earlier migration that have
+**no relationship to line numbers in either file**. Measured: all 36 referenced anchors exist and
+none is broken, but the row at `TODO.md` **line 279** is anchor **`row-197`**, line 350 is `row-248`,
+line 354 is `row-275`, line 376 is `row-355`, line 384 is `row-245`, line 732 is `row-230`.
+
+**The collision is live and it misled me first.** A detail entry told me to "land `row-354` first";
+`row-354` is *"Ending a record must revoke its dependents"*, a milestone item, while **line 354** of
+`TODO.md` is the `queryInstances` date-window row I had audited an hour earlier. Resolving that
+reference by jumping to the line would have sequenced the wrong work. **Read the anchor's own heading
+to resolve it.**
+
+**And about 10 of the newer rows have no anchor at all** — they were written inline from 2026-09
+onward with no detail link, so they have no stable id. For those, quote the row's opening phrase
+rather than a number: a line number shifts the moment anything is inserted above it, which is exactly
+what makes "row 279" useless in a commit message a week later.
+
 **2026-08-31 produced five more in one session, and they are a different flavour worth naming: the
 query was broken, not narrow.** The earlier three asked the wrong question; these failed to ask at
 all, and every one printed a clean empty that read as data:
