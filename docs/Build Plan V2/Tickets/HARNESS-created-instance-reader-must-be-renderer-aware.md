@@ -120,6 +120,36 @@ hand-copied rule that silently diverges is how this class recurs; the test shoul
 is added, removed or re-pointed.
 
 
+
+## PROVENANCE OF THE EVIDENCE IN THIS TICKET — checked 2026-10-10, and the two halves are NOT equally solid
+
+Everything on the bar now waits on this ticket, so I checked which of its claims can be re-derived
+and which cannot. **They split cleanly, and the split is worth knowing before anyone acts.**
+
+**VERIFIED, re-derivable at any time from the code:** the reader recognises exactly one widget-key
+namespace (`engine-native-list-item-$tabId-`, `b25_created_instance_identity.dart:15`), while **nine**
+namespaces across seven files emit an instance-identifying card key — enumerated with their line
+numbers in the section above. Both call sites use the reader symmetrically, and the uniqueness guard
+already exists. **That is the defect, and it stands on its own.**
+
+**NOT independently verifiable — session-reported, with no committed source:** the run figures
+*"died at 5 of 83 workflows, `exit=1`, `b25Communities=0/14`"*. I searched the committed evidence for
+them and found **nothing**: zero files under `docs/Build Plan V2/Evidence` record 83 workflows.
+**Controlled, so that zero is real** — evidence files do carry `workflows=` lines, four of them saying
+`workflows=1` and one `workflows=0`, so the pattern matches and the corpus simply has no 83. The
+newest file in `Evidence/B25` by modification time is a **2026-08-25** `b25-capture-progress.json`
+from `targeted-precheck`, whose `evidenceRoot` points at `C:\LoomWin` — a checkout path not in use
+here — so it is 46 days stale and describes a different run entirely.
+
+**Why this does not weaken the ticket, and what it does change.** The fix is justified by the code
+claim alone, which is why the two are separated above. What the missing provenance costs is the
+*expected measurement*: nobody can confirm afterwards that the run moved from 5 to 83, because
+there is no committed before-figure to compare against. **So the first `full-b25` after this fix must
+commit its own run record** — the manifest and the workflow count — or the next person will be in
+exactly this position again. This project already records that `*.png` is gitignored and only a
+committed manifest is durable; the run-level counters decay the same way, and that is the half the
+rule does not currently name.
+
 ## THE CALLERS, READ 2026-10-10 — the fix is NARROWER and SAFER than it looks, and one message needs updating
 
 Swept every reference before dispatch, because widening a reader can break a caller that depended on

@@ -1583,6 +1583,16 @@ Three things to carry, and the third is the one that generalises furthest:
 - `*.png` is gitignored: screenshots are transient. **Only a committed manifest is durable.** A
   capture run that does not commit its manifest has proven nothing.
 - Never match product vocabulary by substring. `"Not attending"` contains `attend`;
+  **And the RUN-LEVEL counters decay the same way, which this rule did not name until 2026-10-10.**
+  A capture run's workflow count, exit status and `b25Communities` figure are as transient as its
+  PNGs unless something commits them. Measured that day: the ticket the whole bar was waiting on
+  cited *"died at 5 of 83 workflows, exit=1, b25Communities=0/14"* as its headline evidence, and
+  **no committed file under `Evidence/` records 83 workflows at all** — controlled, since such files
+  do carry `workflows=` lines, four saying `workflows=1`. The newest progress record there was 46
+  days old, from `targeted-precheck`, with an `evidenceRoot` pointing at a checkout path no longer in
+  use. **So the defect was re-derivable from code and its measurement was not**, and the practical
+  cost is that no before-figure exists to compare an after-figure against. **Separate the two kinds
+  of claim explicitly in any ticket**, and have the next real run commit its own record.
   `"Join waitlist"` contains `wait`. Match on word boundaries, and never let a span claimed by an
   ALTERNATE term also count as a PRIMARY one.
 - Process checks lie in both directions: `pgrep -c qemu-system-x86_64` returns 0 when it IS
