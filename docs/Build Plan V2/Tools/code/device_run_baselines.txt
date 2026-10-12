@@ -79,3 +79,57 @@
 #
 # Write all four into a TRACKED file in the same sitting as the run. The scratch evidence root
 # is correct and must stay; what must change is that the result stops living only there.
+
+# =======================================================================================
+# 2026-10-11/12 — A VOID RUN, RECORDED SO NOBODY READS IT AS A MEASUREMENT
+# =======================================================================================
+# commit     ae8e6bad..6691e818 (docs only; ZERO .dart changed in the 69 commits since the
+#            APK was built, control: 120 files changed total)
+# scope      --mode targeted-precheck --phases B12,B13 --device emulator-5554
+#            --evidence-root <scratch>  --use-application-binary <prebuilt, instrumented>
+# attempt 1  HOST: Windows.   FAILED BEFORE THE DEVICE. CAPTURE_EXIT=66.
+#            `flutter drive` could not resolve packages:
+#              Cannot read link, path = 'C:\Users\fahd_\OneDrive'
+#              (OS Error: The file or directory is not a reparse point, errno = 4390)
+#            Reproduced directly: `flutter pub get` in the app dir fails identically
+#            (exit 66), and .dart_tool/package_config.json is ABSENT — so `--no-pub`
+#            would not rescue it either. This is current environment state, not a
+#            capture-tool defect, and it is upstream of the emulator entirely.
+# attempt 2  HOST: the VM, driving the Windows emulator over the adb reverse tunnel.
+#            The VM resolves packages fine (`flutter pub get` exit 0). Tunnel verified
+#            FROM THE VM (`adb devices` → emulator-5554 device, `get-state` → device).
+#            `flutter drive` then crashed on the Dart VM-service websocket:
+#              HttpException: Invalid response line, uri = http://127.0.0.1:55952/…/ws
+#            Concurrently the box saturated (load 51.95 / 29.94 / 13.27 on 8 cores) and
+#            the reverse tunnel dropped (ssh exit 255, "server not responding").
+#
+# VERDICT: VOID. Not a measurement, and must never be cited as one. Two independent
+# reasons, either of which alone disqualifies it: the tunnel vanished DURING the run
+# (this project's rule is that a vanished tunnel is an infrastructure fault, never
+# evidence about a workflow), and the box was saturated, which is the documented
+# condition under which suite/row results are worthless.
+#
+# NO COMPOSITION WAS OBTAINED, so the gap this file exists to close is still open.
+#
+# MECHANISM NOT ESTABLISHED, stated as such deliberately. A plausible reading of the
+# websocket failure is that `adb forward` binds on the machine running the adb SERVER
+# — Windows — while a VM-hosted `flutter drive` connects to its OWN 127.0.0.1, so the
+# forwarded VM-service port is never reachable from the VM. That would make
+# `flutter drive` structurally impossible across a reverse tunnel even though plain
+# `adb` commands work. It is UNVERIFIED: saturation alone could produce a failed
+# websocket handshake, and "Invalid response line" implies something answered rather
+# than nothing listening. Do not write it into a ticket as the cause without a trace.
+#
+# WHAT THE ATTEMPT DID ESTABLISH (all re-usable):
+#   - the capture path needs NO Claude CLI auth; it was mis-reported as auth-blocked
+#   - the prebuilt APK IS instrumented and current: kernel_blob.bin carries 4
+#     `workflow_ui_evidence_test` and 45 `integration_test` matches (control 23 for
+#     `loom_communities_demo`), and launching it logs the test's own first line,
+#     `00:00 +0: wf_full-ui-screenshot-evidence-b12-b20`
+#   - POST_NOTIFICATIONS granted=true, verified on the DEVICE not from `adb install`
+#   - the binary binds REMOTE: LOOM_BINDING service=auth-token-endpoint mode=remote
+#     endpoint=http://192.168.56.10:30082/realms/loom/... — the live-backend wiring
+#   - the scratch --evidence-root held: canonical Evidence/ 0 files modified, tree clean
+#   - the VM recovered WITHOUT a power cycle; all four host-side checks said "loaded,
+#     not wedged" (Guest Additions answering, :22 accepting, cluster :30083 serving,
+#     412 GB free on D:), and afterwards the cluster was healthy with 6 pods 1/1

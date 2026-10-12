@@ -237,7 +237,7 @@ cost a run before.
 | 2 | `flutter` on PATH (`C:\Android\flutter\bin`) | ✅ binary present |
 | 3 | `adb` on PATH (`C:\Android\Sdk\platform-tools`) | ✅ binary present |
 | 4 | **`ANDROID_SDK_ROOT=C:\Android\Sdk`** | ⛔ **UNSET** — the directory exists, the variable does not |
-| 5 | instrumented APK installed `-r -g` | ⛔ **no instrumented APK, and nothing installed** |
+| 5 | instrumented APK installed `-r -g` | ⛔→✅ **I WAS WRONG — see the correction below. An instrumented APK existed on the VM all along; it is now installed and verified** |
 | — | emulator alive | ✅ `emulator-5554 device` |
 
 **Gap 4 is the documented killer.** `b25_device_dialog_guard.dart` reads `ANDROID_SDK_ROOT` then
@@ -285,6 +285,62 @@ records.
 Done for this ticket: the VM is at `ae8e6bad`, tree clean, the `⛔ RESCOPED` section present, and the
 gate's md5 now matches HEAD. **Re-check it anyway if any commit lands between now and the dispatch**
 — the gap reopens every time I commit on Windows, which during this work is constantly.
+
+### ⛔ GAP 5 WAS WRONG — I checked ONE HOST and generalised to the system (corrected 2026-10-12)
+
+Gap 5 above said *"no instrumented APK, and nothing installed"* and the prose concluded *"it is the
+plain debug build… so there is effectively no instrumented APK at all."* **The second half was
+false, and it cost an avoided-by-luck rebuild.** What I actually measured was the **Windows** tree,
+whose newest APK is `2026-08-11`, **156,821,482 bytes** — genuinely a stale plain-debug build. The
+**VM** tree holds `2026-10-05`, **233,970,341 bytes**, and that one is instrumented:
+
+| evidence | result |
+|---|---|
+| `kernel_blob.bin` matches for `workflow_ui_evidence_test` | **4** |
+| …for `integration_test` | **45** |
+| control, `loom_communities_demo` | 23 |
+| launching it logs the test's own first line | `00:00 +0: wf_full-ui-screenshot-evidence-b12-b20` |
+| size vs recorded instrumented build (233,789,377) / plain debug (166,844,907) | matches the former |
+
+**And no rebuild was needed:** **zero `.dart` files changed across the 69 commits** since it was
+built (control: 120 files changed in total), so it is current at HEAD for every code purpose. The
+"do not pre-build" note above is still right about *sequencing* — the five queued tickets each
+invalidate this binary — but its premise that no instrumented binary existed was wrong.
+
+**The reusable error is the one this project calls its worst: one host's answer is not the
+system's.** The check that settled it took one command per host (`find app -name '*.apk'`), and the
+same discipline this file applies to authorization layers and capability layers applies to
+*machines*. Before recording an artifact as absent, say which host you looked on.
+
+**Also corrected: the missing "Loaded N example communities" line is a NON-FINDING for this
+binary.** That message is printed by the app's `main()` (`main.dart:117`), and the instrumented
+build runs `workflow_ui_evidence_test.dart`, which never calls `main()`. Reading the source wording
+is what stopped me filing a broken preload; the cheap-confirmation trick in `CLAUDE.md` belongs to
+the **plain debug** APK only.
+
+### ⛔ BOTH CAPTURE HOSTS ARE CURRENTLY BLOCKED, FOR DIFFERENT REASONS (measured 2026-10-11/12)
+
+A real run was attempted on each host. Neither produced a measurement; the full record, including
+the void verdict, is in `Tools/code/device_run_baselines.txt`.
+
+- **Windows cannot resolve this app's Flutter packages.** `flutter drive` failed at
+  `CAPTURE_EXIT=66` before touching the device, and `flutter pub get` in the app directory
+  reproduces it exactly: `Cannot read link, path = 'C:\Users\fahd_\OneDrive' (OS Error: … not a
+  reparse point, errno = 4390)`. `.dart_tool/package_config.json` is **absent**, so `--no-pub`
+  cannot rescue it. This is environment state, not a tool defect, and it kills the documented
+  five-prerequisite Windows recipe until the path problem is solved.
+- **The VM resolves packages (exit 0) but its `flutter drive` crashed on the Dart VM-service
+  websocket** — `HttpException: Invalid response line, uri = http://127.0.0.1:55952/…/ws` — while
+  the box saturated to load **51.95** and the reverse tunnel dropped. **The mechanism is NOT
+  established** and must not be written into a ticket as fact; a candidate reading is that
+  `adb forward` binds on the adb SERVER's host (Windows) while a VM-hosted drive connects to its own
+  `127.0.0.1`, which would make `flutter drive` structurally impossible across a reverse tunnel even
+  though plain `adb` commands work — but saturation alone could produce the same failure.
+
+**Note the tunnel IS restorable and was verified working from the VM** (`adb devices` →
+`emulator-5554 device`, `get-state` → `device`) before saturation, so "no device" was not the
+problem. **And the VM recovered without a power cycle:** all four host-side checks said *loaded, not
+wedged*, and rebooting would have destroyed the diagnosis.
 
 ### Backend reachability FROM THE DEVICE — verified 2026-10-10 with a control
 

@@ -126,6 +126,39 @@ wasted dispatch, because one cheap check beforehand would have caught it. **A va
 never be recorded as evidence about a workflow**; it is an infrastructure fault and the manifest
 should say so.
 
+**AND THE TUNNEL CARRIES `adb` BUT MAY NOT CARRY `flutter drive` — measured once, 2026-10-12, and
+BOTH capture hosts are blocked today.** The claim above that a VM-hosted session can drive the
+Windows emulator is true for **adb commands**: the tunnel was restored (squatter confirmed by
+resolved pid `295828`, `adb kill-server`, re-opened with `ExitOnForwardFailure=yes`) and verified
+from the VM — `adb devices` → `emulator-5554 device`, `get-state` → `device`. A `flutter drive`
+capture launched there then crashed on the Dart VM-service websocket
+(`HttpException: Invalid response line, uri = http://127.0.0.1:55952/…/ws`) while the box saturated
+to **load 51.95** and the tunnel dropped. **The mechanism is NOT established** — a candidate is that
+`adb forward` binds on the adb SERVER's host (Windows) while a VM-hosted drive connects to its own
+`127.0.0.1`, which would make `flutter drive` structurally impossible across a reverse tunnel; but
+saturation alone could produce the same crash, and "Invalid response line" implies something
+answered rather than nothing listening. **Do not write that mechanism into a ticket as fact.**
+
+**And the Windows host cannot resolve this app's packages at all right now**, which kills the
+five-prerequisite recipe below before it reaches the device: `flutter pub get` in the app directory
+fails with `Cannot read link, path = 'C:\Users\fahd_\OneDrive' (OS Error: … not a reparse point,
+errno = 4390)`, `.dart_tool/package_config.json` is **absent** so `--no-pub` cannot rescue it, and a
+`flutter drive` capture returns `CAPTURE_EXIT=66` for the same reason. The VM resolves the same
+packages at exit 0. So the two hosts fail for *different* reasons and neither currently produces a
+capture — recorded in `Tools/code/device_run_baselines.txt` with a **VOID** verdict, because a
+vanished tunnel plus a saturated box disqualifies the run twice over.
+
+**The reusable error from the same episode: ONE HOST'S ANSWER IS NOT THE SYSTEM'S.** I audited
+capture readiness, found the newest APK in the tree was `2026-08-11` / 156,821,482 bytes, and
+recorded *"there is effectively no instrumented APK at all"*. I had looked only at **Windows**. The
+VM held `2026-10-05` / 233,970,341 bytes, and it **is** instrumented — `kernel_blob.bin` carries 4
+`workflow_ui_evidence_test` and 45 `integration_test` matches against a control of 23 for
+`loom_communities_demo`, and launching it logs the test's own first line
+`00:00 +0: wf_full-ui-screenshot-evidence-b12-b20`. With **zero `.dart` changed across 69 commits**
+it was current, so the rebuild I had scheduled was unnecessary. This file already says one
+authorization layer's answer is not the system's; **the same applies to machines, and the check is
+one command per host.** Before recording an artifact as absent, say which host you looked on.
+
 After a VM reboot `/tmp` is cleared and the **validator service on :8787 does not restart
 itself**. Bring it back with
 `cd ~/Loom/app && dart run packages/tooling/loom_ux_judges/bin/validator_server.dart`.
