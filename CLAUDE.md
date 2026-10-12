@@ -148,6 +148,44 @@ packages at exit 0. So the two hosts fail for *different* reasons and neither cu
 capture — recorded in `Tools/code/device_run_baselines.txt` with a **VOID** verdict, because a
 vanished tunnel plus a saturated box disqualifies the run twice over.
 
+**THE WINDOWS CAUSE IS NOW FULLY DIAGNOSED, WITH A CONTROL, AND THE CHEAP WORKAROUNDS ARE RULED
+OUT — 2026-10-12.** Three measurements settle it:
+
+| measurement | result |
+|---|---|
+| `Get-Item -Force 'C:\Users\fahd_\OneDrive'` | `Attributes: ReadOnly, Directory, Archive, **ReparsePoint**`, with `LinkType` and `Target` both **empty**; reparse tag `0x9000701a` (the OneDrive cloud-files sync root — not a symlink or junction Dart can resolve) |
+| `HKCU:…\User Shell Folders` → `Personal` | `C:\Users\fahd_\OneDrive\Documents` — **Documents is Known-Folder-Moved into OneDrive**, so the repo path *must* traverse that reparse point |
+| **CONTROL** — `dart pub get` in `AppData\Local\Temp` | **exit 0, "Got dependencies!"** |
+
+So pub is healthy and the reparse point is the entire problem. It is **repo-wide, not app-specific**:
+`loom_workflow_engine` and `loom_ux_judges` both fail with the identical `errno = 4390`.
+
+**Two hypotheses tested and KILLED, recorded so nobody spends a tick on them again:**
+
+- **A junction outside OneDrive does not help.** Created `…\Temp\loomjx` → the repo with
+  `New-Item -ItemType Junction` (no elevation needed), confirmed readable through it, ran
+  `flutter pub get` from inside it — **exit 66, byte-identical error**. Dart canonicalises past the
+  junction to the real path.
+- **It is not a toolchain skew.** Both hosts run **Flutter 3.41.7, framework `cc0734ac71`, engine
+  `59aa584fdf`** — identical. The VM resolves these packages at exit 0 and Windows cannot, on the
+  same SDK, so the difference is purely the path.
+
+**So the only remaining Windows fixes are structural** — relocating the repo out of OneDrive, or
+un-redirecting Documents — and both are user decisions with wide blast radius. Do not keep
+re-attempting the capture on Windows in the meantime; it fails before reaching the device.
+
+**One hazard met while cleaning up, worth more than the experiment: NEVER `Remove-Item -Recurse` a
+junction.** It can delete the **target's** contents — here, the entire repository. `Remove-Item`
+without `-Recurse` silently did nothing (`Test-Path` still true, `Attributes: Directory,
+ReparsePoint`), and the instinct when a delete does nothing is to add `-Recurse`. The safe form
+deletes the link alone:
+
+    [System.IO.Directory]::Delete('<junction path>', $false)
+
+Verified afterwards by control that the repo was intact — 2777 tracked files, clean tree, HEAD
+unmoved. **When a cleanup step fails on a link, check what `-Recurse` would traverse before
+reaching for it.**
+
 **The reusable error from the same episode: ONE HOST'S ANSWER IS NOT THE SYSTEM'S.** I audited
 capture readiness, found the newest APK in the tree was `2026-08-11` / 156,821,482 bytes, and
 recorded *"there is effectively no instrumented APK at all"*. I had looked only at **Windows**. The
