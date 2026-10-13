@@ -111,15 +111,19 @@
 #
 # NO COMPOSITION WAS OBTAINED, so the gap this file exists to close is still open.
 #
-# MECHANISM NOT ESTABLISHED, stated as such deliberately. A plausible reading of the
-# websocket failure is that `adb forward` binds on the machine running the adb SERVER
-# — Windows — while a VM-hosted `flutter drive` connects to its OWN 127.0.0.1, so the
-# forwarded VM-service port is never reachable from the VM. That would make
-# `flutter drive` structurally impossible across a reverse tunnel even though plain
-# `adb` commands work. It is UNVERIFIED: saturation alone could produce a failed
-# websocket handshake, and "Invalid response line" implies something answered rather
-# than nothing listening. Do not write it into a ticket as the cause without a trace.
+# MECHANISM NOW ESTABLISHED (2026-10-12), superseding the "not established" note that stood
+# here: `adb forward` creates its listener on the adb SERVER's host -- Windows -- wherever the
+# client runs. Measured with controls: a forward issued FROM THE VM gave 0 VM listeners and 1
+# on Windows (127.0.0.1:18765, pid 43448); a never-forwarded control port gave 0; the VM's own
+# :5037 gave 2, proving the VM-side query works; and the VM connecting to its own
+# 127.0.0.1:55952 was REFUSED. Corroboration: `adb forward --list` still carried tcp:55952
+# from this very run, and 55952 is the exact port its crash named. So a VM-hosted
+# `flutter drive` connects to a port that cannot exist on the VM, and that route is
+# STRUCTURALLY DEAD rather than merely unlucky.
 #
+# STILL UNEXPLAINED, and left unexplained on purpose: the crash text was
+# "HttpException: Invalid response line", not a connection refusal, which implies bytes
+# arrived. The structural claim is proven; this wording is not accounted for.
 # WHAT THE ATTEMPT DID ESTABLISH (all re-usable):
 #   - the capture path needs NO Claude CLI auth; it was mis-reported as auth-blocked
 #   - the prebuilt APK IS instrumented and current: kernel_blob.bin carries 4

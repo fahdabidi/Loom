@@ -126,18 +126,52 @@ wasted dispatch, because one cheap check beforehand would have caught it. **A va
 never be recorded as evidence about a workflow**; it is an infrastructure fault and the manifest
 should say so.
 
-**AND THE TUNNEL CARRIES `adb` BUT MAY NOT CARRY `flutter drive` — measured once, 2026-10-12, and
-BOTH capture hosts are blocked today.** The claim above that a VM-hosted session can drive the
-Windows emulator is true for **adb commands**: the tunnel was restored (squatter confirmed by
-resolved pid `295828`, `adb kill-server`, re-opened with `ExitOnForwardFailure=yes`) and verified
-from the VM — `adb devices` → `emulator-5554 device`, `get-state` → `device`. A `flutter drive`
-capture launched there then crashed on the Dart VM-service websocket
-(`HttpException: Invalid response line, uri = http://127.0.0.1:55952/…/ws`) while the box saturated
-to **load 51.95** and the tunnel dropped. **The mechanism is NOT established** — a candidate is that
-`adb forward` binds on the adb SERVER's host (Windows) while a VM-hosted drive connects to its own
-`127.0.0.1`, which would make `flutter drive` structurally impossible across a reverse tunnel; but
-saturation alone could produce the same crash, and "Invalid response line" implies something
-answered rather than nothing listening. **Do not write that mechanism into a ticket as fact.**
+**AND THE TUNNEL CARRIES `adb` BUT CANNOT CARRY `flutter drive` — MECHANISM NOW PROVEN BY
+MEASUREMENT, 2026-10-12.** An earlier entry recorded this as a hypothesis; it is now established,
+and the structural conclusion is that a **VM-hosted `flutter drive` against the Windows emulator
+cannot work**, however healthy the tunnel is.
+
+The experiment, with a control at every step. Tunnel up and verified from the VM
+(`get-state` → `device`, no squatter), then `adb forward tcp:18765 tcp:5555` issued **from the VM**:
+
+| measurement | result |
+|---|---|
+| the forward command itself | succeeded, printed `18765` |
+| listener on the **VM** for 18765 | **0** |
+| listener on **Windows** for 18765 | **1** — `127.0.0.1:18765`, owning pid 43448 |
+| control: Windows listener on 18766 (nobody forwarded it) | **0** |
+| control: VM listener on `:5037` (the tunnel itself) | **2** — so the VM-side query works |
+| VM connecting to its own `127.0.0.1:55952` | **Connection refused** |
+
+**So `adb forward` creates its listener on the machine running the adb SERVER — Windows — no matter
+where the client runs.** A VM-hosted `flutter drive` then connects to `http://127.0.0.1:<port>` on
+**the VM**, where nothing listens. Corroborated independently: `adb forward --list` still carried
+`emulator-5554 tcp:55952 tcp:35065` from the failed capture, and **55952 is the exact port named in
+that run's crash** (`uri = http://127.0.0.1:55952/…/ws`), listening on Windows and refused on the VM.
+
+**What this does NOT explain, stated rather than glossed: the crash text was
+`HttpException: Invalid response line`, not a connection refusal.** That wording implies bytes were
+received, and a connect to a port with no listener is refused. So the *structural* claim is proven
+and the *exact error text* is not accounted for — perhaps the drive obtained a different port, or
+something answered on it. **Do not write the error text into a ticket as explained.** The structural
+conclusion stands on its own and is enough to stop re-attempting this route.
+
+Both experimental forwards were removed afterwards (`adb forward --remove`), leaving an empty
+forward list, so no hand-made state survives the experiment.
+
+**And the tunnel is FRAGILE independently of all this.** Two long-lived `-N -R` sessions died inside
+one tick — `Timeout, server … not responding` once while the box was saturated, and
+`Connection … port 22 timed out` once while it was quiet at load 1.16 — in a window where ordinary
+short ssh calls to the same host kept working. **Every death lets the VM re-spawn its own adb server
+on `:5037`** (confirmed twice by resolved pid: `295828`, then `3176830`), which squats the port the
+next tunnel needs. So re-opening the tunnel always means: confirm the squatter by pid, `adb
+kill-server`, verify zero listeners, *then* open the tunnel, *then* verify `get-state` from the VM.
+
+**A verification that prints NOTHING is a failure, not a pass.** My tunnel check printed an empty
+`get-state` line and I ran the experiment anyway; the VM had meanwhile started its own daemon and
+answered `device 'emulator-5554' not found`, so the whole measurement was void. The fixed form
+substitutes a sentinel (`${S:-<EMPTY -- treat as failure>}`) and **skips the experiment unless the
+state is literally `device`** — because a result computed against no device is worse than no result.
 
 **And the Windows host cannot resolve this app's packages at all right now**, which kills the
 five-prerequisite recipe below before it reaches the device: `flutter pub get` in the app directory

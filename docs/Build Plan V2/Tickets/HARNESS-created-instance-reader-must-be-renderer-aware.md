@@ -329,13 +329,18 @@ the void verdict, is in `Tools/code/device_run_baselines.txt`.
   reparse point, errno = 4390)`. `.dart_tool/package_config.json` is **absent**, so `--no-pub`
   cannot rescue it. This is environment state, not a tool defect, and it kills the documented
   five-prerequisite Windows recipe until the path problem is solved.
-- **The VM resolves packages (exit 0) but its `flutter drive` crashed on the Dart VM-service
-  websocket** — `HttpException: Invalid response line, uri = http://127.0.0.1:55952/…/ws` — while
-  the box saturated to load **51.95** and the reverse tunnel dropped. **The mechanism is NOT
-  established** and must not be written into a ticket as fact; a candidate reading is that
-  `adb forward` binds on the adb SERVER's host (Windows) while a VM-hosted drive connects to its own
-  `127.0.0.1`, which would make `flutter drive` structurally impossible across a reverse tunnel even
-  though plain `adb` commands work — but saturation alone could produce the same failure.
+- **The VM path is STRUCTURALLY DEAD — proven 2026-10-12, no longer a hypothesis.** The VM resolves
+  packages (exit 0) and the tunnel genuinely carries `adb` (`get-state` → `device`), but
+  **`adb forward` creates its listener on the adb SERVER's host — Windows — wherever the client
+  runs.** Measured with controls: a forward issued from the VM gave **0** VM listeners and **1** on
+  Windows (`127.0.0.1:18765`, pid 43448), a never-forwarded control port gave 0, the VM's own
+  `:5037` gave 2 (so the VM-side query works), and the VM connecting to its own `127.0.0.1:55952`
+  was **refused**. Corroboration: `adb forward --list` still held `tcp:55952` from the failed run,
+  and **55952 is the exact port that run's crash named**. So a VM-hosted `flutter drive` connects to
+  a port on the VM that can never exist. **One thing this does NOT explain:** the crash text was
+  `HttpException: Invalid response line`, not a refusal, which implies bytes arrived — so the
+  structural claim is proven and the error wording is not accounted for. Do not write the wording
+  into a ticket as explained. Both experimental forwards were removed afterwards.
 
 **Note the tunnel IS restorable and was verified working from the VM** (`adb devices` →
 `emulator-5554 device`, `get-state` → `device`) before saturation, so "no device" was not the
