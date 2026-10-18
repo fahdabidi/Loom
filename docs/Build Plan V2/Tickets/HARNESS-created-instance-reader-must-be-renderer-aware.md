@@ -1,6 +1,16 @@
 # HARNESS — the created-instance reader must be renderer-aware
 
-**Status:** written 2026-10-10, **NOT dispatched**.
+**Status:** written 2026-10-10. **SHIPPED 2026-10-18** — dispatched on Muse (`muse-spark-1.3`,
+`medium`) and verified by the validation session's own oracle, not the agent's report: all five
+suites sequentially with both Postgres credential sets (demo **319** = 312 + 7 declared, 0 failed,
+0 skipped; app shell 448 (+2); judges 525; engine 345 (+1); service 168 (+1); analyze 3); a mutation
+A/B in which disabling the dedicated surfaces, dropping the `facts-` exclusion, dropping the `tap-`
+exclusion and adding a fourth map entry each turned exactly the intended test red; and every cited
+key template re-read at its line. **The device measurement below is still owed** — no capture host
+works yet. One known gap: the per-surface honesty tests use hand-keyed fixtures, so they prove the
+parser against the template as copied, not that the shell still emits it; a drifted key still
+fails loudly (0 candidates, named), never silently.
+**DISPATCH RECORD (written by call_implementation_agent.sh -- do not hand-edit):** 2026-10-18T23:03Z verdict=`verified` agent-exit=0 -- the agent reported totals for every suite. This is NOT proof -- re-derive them yourself; the agent report is never the oracle.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Scoped by** `data/call_root_cause_agent.sh` (session key `b25-instance-does-not-render`). It
 attacked and destroyed my framing — I had committed "instances persist and never render" as a

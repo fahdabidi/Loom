@@ -155,7 +155,7 @@ continue.
 
 ## Verification
 
-- All five suites, **sequentially**, skip counts before pass counts: demo **312** (0 failed,
+- All five suites, **sequentially**, skip counts before pass counts: demo **319** (0 failed,
   0 skipped), app shell **448** (+2), judges **525**, engine **345** (+1, BOTH Postgres credential
   sets), service **168** (+1, the one skip being App Access and **not** PostgreSQL). The engine and
   service suites are the ones this change can move, so account for any delta there by name.

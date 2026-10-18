@@ -17,7 +17,14 @@
 #               community-provenance.json, so the query works. (3) Zero files changed under
 #               docs/references, so neither of those read paths moved. A suite total cannot have
 #               changed, so re-running would cost an hour and prove nothing.
-demo=312
+# re-measured: 2026-10-18 on the Hyper-V VM, HEAD cb6b043a + the renderer-aware-reader fix (the
+#               commit that carries this line), all five sequentially with BOTH Postgres credential
+#               sets. demo 312 -> 319, accounted exactly: declared tests 304 -> 311 (+3 in
+#               b25_created_instance_identity_test.dart, +4 in the new
+#               b25_created_instance_renderer_awareness_test.dart). The other four and analyze
+#               unchanged. Engine's one skip is the live workflow-service test and service's is App
+#               Access, so neither skip is PostgreSQL.
+demo=319
 app shell=448
 judges=525
 engine=345

@@ -5419,9 +5419,14 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
 
   final submit = find.byKey(ValueKey('$keyPrefix-submit'));
   await tester.ensureVisible(submit);
+  final creationTabBoundSurfaceFamilies = b25TabBoundSurfaceFamilies(
+    package.experience,
+    plan.creationBinding.tabId,
+  );
   final existingInstanceIds = engineNativeInstanceIdsForTab(
     tester,
     tabId: plan.creationBinding.tabId,
+    tabBoundSurfaceFamilies: creationTabBoundSurfaceFamilies,
   );
   await tester.tap(submit, warnIfMissed: false);
   bodyWatch.beat(
@@ -5435,6 +5440,7 @@ Future<_ShippedWorkflowSelector> arrangeRemoteInstanceFor(
     tester,
     workflowType: workflowType,
     tabId: plan.creationBinding.tabId,
+    tabBoundSurfaceFamilies: creationTabBoundSurfaceFamilies,
     existingInstanceIds: existingInstanceIds,
   );
   bodyWatch.beat(
@@ -5731,15 +5737,21 @@ Future<_PublishedShippedAnnouncement> _createAndPublishShippedAnnouncement({
   }
   final submit = find.byKey(ValueKey('$keyPrefix-submit'));
   await tester.ensureVisible(submit);
+  final creationTabBoundSurfaceFamilies = b25TabBoundSurfaceFamilies(
+    package.experience,
+    creationBinding.tabId,
+  );
   final existingInstanceIds = engineNativeInstanceIdsForTab(
     tester,
     tabId: creationBinding.tabId,
+    tabBoundSurfaceFamilies: creationTabBoundSurfaceFamilies,
   );
   await tester.tap(submit, warnIfMissed: false);
   final instanceId = await waitForCreatedEngineNativeInstanceId(
     tester,
     workflowType: workflowType,
     tabId: creationBinding.tabId,
+    tabBoundSurfaceFamilies: creationTabBoundSurfaceFamilies,
     existingInstanceIds: existingInstanceIds,
   );
 

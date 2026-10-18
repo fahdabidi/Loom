@@ -110,7 +110,7 @@ which is, fittingly, the behaviour this ticket is about.
 ## Verification
 
 - All five suites, **sequentially** (judges beside engine gives a false timeout), skip counts before
-  pass counts: demo **312** (0 failed, 0 skipped), app shell **448** (+2), judges **525**, engine
+  pass counts: demo **319** (0 failed, 0 skipped), app shell **448** (+2), judges **525**, engine
   **345** (+1, BOTH Postgres credential sets), service **168** (+1, the one skip being App Access
   and **not** PostgreSQL). `b25_capture_prebuilt_binary_test.dart` is flaky about 1 run in 3 with a
   rotating test name; confirm a `TimeoutException` and an isolated pass before believing it.

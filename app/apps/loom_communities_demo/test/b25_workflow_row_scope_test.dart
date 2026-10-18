@@ -508,8 +508,9 @@ void main() {
         const identityFailure =
             'The shipped mosque-announcement creation completed, but the '
             'created instance did not expose its engine-native identity key.\n'
-            'Expected: exactly one newly rendered engine-native list key on '
-            'tab "admin" that was absent before creation.\n'
+            'Expected: exactly one newly rendered engine-native identity key '
+            'for tab "admin" (renderer "engine-native-generic-list") that '
+            'was absent before creation.\n'
             'Actual: 0 matching candidate(s): [].';
         final attempted = <String>[];
         final admin = await runB25WorkflowRowScope<void>(() async {

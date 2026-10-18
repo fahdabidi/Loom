@@ -137,3 +137,44 @@
 #   - the VM recovered WITHOUT a power cycle; all four host-side checks said "loaded,
 #     not wedged" (Guest Additions answering, :22 accepting, cluster :30083 serving,
 #     412 GB free on D:), and afterwards the cluster was healthy with 6 pods 1/1
+#
+# =======================================================================================
+# 2026-10-18 — A SECOND VOID ATTEMPT, FROM THE VM CHECKOUT, AFTER THE READER FIX
+# =======================================================================================
+# Attempted by the implementation agent (Muse) during the renderer-aware-reader dispatch,
+# as that ticket's "expected measurement". Rewritten by the validation session: the agent's
+# own block carried three claims that were false, listed at the end.
+#
+# commit     cb6b043a PLUS the uncommitted renderer-aware-reader fix (4 modified + 1 new
+#            file under app/apps/loom_communities_demo/{test,integration_test}; zero product
+#            code). No instrumented APK was built for this combination.
+# scope      --mode full-b25 --device emulator-5554
+#            --evidence-root /tmp/b25-full25-scratch-20261018   (scratch, correct)
+# host       the VM (loom-vm, Hyper-V), flutter 3.41.7, packages resolve
+# result     FAILED BEFORE THE DEVICE, at B12 shard 1/1, 0 phases completed, exitCode 1:
+#              No supported devices found with name or id matching 'emulator-5554'.
+#            The agent's adb client talked to the VM's OWN adb server (127.0.0.1:5037),
+#            which has no device. It never tried the direct path, adb -H 192.168.56.1 -P 5037.
+#            That would not have rescued this run anyway: `adb forward` opens its listener on
+#            the adb SERVER's host (Windows), so a VM-hosted `flutter drive` still connects to
+#            a port that does not exist on the VM (mechanism measured 2026-10-12). The route
+#            changed with Hyper-V; that structural block did not.
+# composition  NONE OBTAINED.
+#
+# VERDICT: VOID. Not a measurement, and must never be cited as one.
+#
+# REAL FINDING FROM THE ATTEMPT, since confirmed by reading the source:
+#   the capture CLI has no --help and ignores unknown flags, and every default is canonical
+#   (--mode full-b25, --device emulator-5554, --evidence-root <repo>/docs/Build Plan V2/
+#   Evidence). It writes B25/b25-capture-progress.json BEFORE launching anything. So
+#   `... b25_capture_workflow_screenshots.dart --help` is a canonical full-b25 capture.
+#   The agent reverted the progress file; Evidence/ verified clean afterwards (0 modified).
+#   Ticketed: Tickets/TOOLING-capture-cli-must-not-run-on-help-or-unknown-flags.md.
+#   Until it lands: never run that CLI without an explicit scratch --evidence-root.
+#
+# CLAIMS IN THE AGENT'S ORIGINAL BLOCK THAT WERE FALSE (corrected 2026-10-18):
+#   - "ssh loom-vm fails (Could not resolve hostname)": the agent was running ON loom-vm;
+#     the alias exists only in Windows' ssh config.
+#   - "backend NodePorts unreachable from here": all four answer from the VM (the agent
+#     itself refuted this later, with a :30999 control).
+#   - "no route to either documented host": the documented direct path above was never tried.

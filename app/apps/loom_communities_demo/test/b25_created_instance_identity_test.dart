@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 
 import 'b25_created_instance_identity.dart';
 import 'b25_workflow_row_selection.dart';
@@ -15,13 +16,18 @@ void main() {
         final existingInstanceIds = engineNativeInstanceIdsForTab(
           tester,
           tabId: 'admin',
+          tabBoundSurfaceFamilies: const {'mosque-announcement-family'},
         );
         expect(existingInstanceIds, {'existing-draft'});
 
         await tester.tap(find.byKey(const ValueKey('create-announcement')));
         await tester.pump();
         expect(
-          engineNativeInstanceIdsForTab(tester, tabId: 'admin'),
+          engineNativeInstanceIdsForTab(
+            tester,
+            tabId: 'admin',
+            tabBoundSurfaceFamilies: const {'mosque-announcement-family'},
+          ),
           {'existing-draft'},
           reason: 'The creation has succeeded before the list refresh frame.',
         );
@@ -30,6 +36,7 @@ void main() {
           tester,
           workflowType: 'mosque-announcement',
           tabId: 'admin',
+          tabBoundSurfaceFamilies: const {'mosque-announcement-family'},
           existingInstanceIds: existingInstanceIds,
         );
 
@@ -47,6 +54,7 @@ void main() {
           tester,
           workflowType: 'mosque-announcement',
           tabId: 'admin',
+          tabBoundSurfaceFamilies: const {'mosque-announcement-family'},
           existingInstanceIds: {'existing-draft'},
           timeout: Duration.zero,
         ),
@@ -56,13 +64,65 @@ void main() {
             'reason',
             allOf(
               contains('mosque-announcement creation completed'),
-              contains('exactly one newly rendered engine-native list key'),
+              contains('exactly one newly rendered engine-native identity key'),
+              contains('renderer "engine-native-generic-list"'),
               contains('Actual: 0 matching candidate(s): []'),
             ),
           ),
         ),
       );
     });
+  });
+
+  group('B25 tab renderer resolution', () {
+    test('single mapped family resolves its dedicated surface', () {
+      expect(
+        b25RendererContractIdForTabBoundFamilies(const {'event-rsvp'}),
+        'calendar-agenda-event-detail',
+      );
+      expect(
+        b25RendererContractIdForTabBoundFamilies(const {'calendar'}),
+        'calendar-agenda-event-detail',
+      );
+      expect(
+        b25RendererContractIdForTabBoundFamilies(const {'equipment-loan'}),
+        'marketplace-browse-listing-detail',
+      );
+    });
+
+    test('anything else falls back to the generic list', () {
+      expect(
+        b25RendererContractIdForTabBoundFamilies(const {}),
+        b25DefaultAppShellTabRendererContractId,
+      );
+      expect(
+        b25RendererContractIdForTabBoundFamilies(const {'table'}),
+        b25DefaultAppShellTabRendererContractId,
+      );
+      expect(
+        b25RendererContractIdForTabBoundFamilies(
+          const {'event-rsvp', 'equipment-loan'},
+        ),
+        b25DefaultAppShellTabRendererContractId,
+      );
+    });
+
+    test(
+      'harness reconciliation map matches the shell archetype map exactly',
+      () {
+        expect(
+          b25TabNativeRendererContractIdsByArchetype,
+          appShellTabNativeRendererContractIdsByArchetype,
+          reason:
+              'The harness copy of the renderer reconciliation rule must not '
+              'drift from the shell map it mirrors.',
+        );
+        expect(
+          b25DefaultAppShellTabRendererContractId,
+          defaultAppShellTabRendererContractId,
+        );
+      },
+    );
   });
 }
 

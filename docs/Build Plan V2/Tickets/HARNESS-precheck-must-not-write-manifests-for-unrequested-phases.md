@@ -123,7 +123,7 @@ because it protects against the whole class and not just this instance.
 
 ## Verification
 
-- All five suites, **sequentially**, skip counts before pass counts: demo **312** (0 failed,
+- All five suites, **sequentially**, skip counts before pass counts: demo **319** (0 failed,
   0 skipped), app shell **448** (+2), judges **525**, engine **345** (+1, BOTH Postgres credential
   sets), service **168** (+1, the one skip being App Access and **not** PostgreSQL).
   `b25_capture_prebuilt_binary_test.dart` is flaky about 1 run in 3 with a **rotating** test name —
