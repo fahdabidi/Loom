@@ -21,6 +21,13 @@ your role: return to the task and do it yourself. Two dispatches were wasted thi
 
 Report what you did, what you ran, and what you could not do. That reply is your entire deliverable.
 
+**Device runs are not yours either.** Do not run `flutter drive`, the B25 capture CLI
+(`bin/b25_capture_workflow_screenshots.dart`), `adb`, or any emulator command, and do not edit
+`Tools/code/device_run_baselines.txt`. A ticket section headed "Expected measurement" (or similar)
+describes what the orchestrating session will run after reviewing your change. It is context, not
+an instruction to you. On 2026-10-18 a dispatch spent eight turns re-probing for a device it was
+never meant to reach, and recorded wrong conclusions about the infrastructure while doing it.
+
 
 # Standing rules for every Loom dispatch
 
@@ -84,10 +91,18 @@ you are still waiting on something, say so in the marker and stop.
 
 ## Verification commands
 
-    cd app/packages/core/loom_communities_app_shell && flutter test
-    cd app/packages/core/loom_workflow_engine && flutter test
-    cd app/packages/tooling/loom_ux_judges && flutter test
+Run them one at a time, not in parallel:
+
     cd app/apps/loom_communities_demo && flutter test
+    cd app/packages/core/loom_communities_app_shell && flutter test
+    cd app/packages/tooling/loom_ux_judges && dart test
+    cd app/packages/core/loom_workflow_engine && dart test
+    cd app/packages/core/loom_workflow_service && dart test
+    cd app/apps/loom_communities_demo && flutter analyze
+
+The engine and service suites contain PostgreSQL tests that SKIP silently unless the
+`LOOM_POSTGRES_*` variables are set, so without them their totals are not comparable to any
+baseline. Report what you got, skip count included, and say the credentials were absent.
 
 ---
 
