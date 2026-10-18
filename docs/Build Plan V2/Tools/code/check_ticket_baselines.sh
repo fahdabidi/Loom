@@ -50,7 +50,10 @@ for f in "$DIR"/*.md; do
   # the old file-wide match with `head -1` took the FIRST hit anywhere, so prose appearing
   # before the Verification section always beat the real figure. Measured 2026-10-10: that is
   # exactly how this gate reported "states service 404, recorded baseline is 168".
-  V=$(sed -n '/^## Verification/,$p' "$f")
+  # Joined onto one line, because tickets wrap prose: on 2026-10-18 a pending ticket stated
+  # "demo" at the end of one line and "**319**" at the start of the next, and the single-line
+  # match below never saw it -- so a WRONG wrapped figure would have passed just as silently.
+  V=$(sed -n '/^## Verification/,$p' "$f" | tr '\n' ' ' | tr -s ' ')
   printf '%s' "$V" | grep -qE 'demo \*\*[0-9]+\*\*' || continue
   checked=$((checked+1))
   for pair in "demo:$D" "app shell:$A" "judges:$J" "engine:$E" "service:$S"; do
