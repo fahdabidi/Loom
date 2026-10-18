@@ -158,17 +158,26 @@ the VM reaches it through an **ssh reverse tunnel**, and a walkthrough that repo
 almost always that tunnel, not a dead emulator. Same shape as the APK-build lesson below: check
 whether a limitation is intrinsic to the task or incidental to where it is running.
 
-**SINCE 2026-10-18 THE DIRECT PATH WORKS — `adb -H 192.168.56.1 -P 5037` — BUT ONLY WHILE THE
-WINDOWS ADB SERVER LISTENS ON ALL INTERFACES, WHICH IS STATE, NOT CONFIGURATION.** Measured from the
-guest with a control: `adb -H 192.168.56.1 -P 5037 devices` → `emulator-5554 device`, `get-state` →
-`device`, TCP to `192.168.56.1:5037` open while `192.168.56.1:5038` is closed. It works because the
-Windows server was started by hand as **`adb.exe -a nodaemon server`** (2026-10-18 13:14:50, pid
-11172) and so listens on `0.0.0.0:5037`. **Nothing makes that durable**: no `ADB_SERVER_SOCKET` is
-set, so after a host reboot, an `adb kill-server`, or any `adb` call that has to start a fresh
-server, it comes back on `127.0.0.1` and the next paragraph is true again.
+**SINCE 2026-10-18 THE DIRECT PATH WORKS — `adb -H 192.168.56.1 -P 5037` — WHILE THE WINDOWS ADB
+SERVER LISTENS ON ALL INTERFACES, AND A LOGON LAUNCHER NOW KEEPS IT THAT WAY.** Measured from the guest
+with a control: `adb -H 192.168.56.1 -P 5037 devices` → `emulator-5554 device`, `get-state` →
+`device`, `192.168.56.1:5037` open while `:5038` is closed. It needs the server started as
+`adb.exe -a nodaemon server`; a default `adb start-server` binds `127.0.0.1` and the next paragraph is
+true again. **`docs/Build Plan V2/Tools/code/adb-all-interfaces.ps1` repairs that idempotently**, and runs
+at logon from a Startup-folder shortcut (local copy in `%LOCALAPPDATA%\Loom`, since the repo is under
+OneDrive). Proven 2026-10-18 by simulating the post-reboot state: loopback-only server, VM path failing,
+then the shortcut's exact command → `0.0.0.0:5037`, VM `device`. A real logon running it is still unproven.
 
-    loom-vm.ps1 status                              # its 'adb server:' line says which case you are in
-    adb kill-server; adb -a nodaemon server         # restore, in a window of its own -- it does not detach
+**`-a` MEANS ALL INTERFACES, AND IT EXPOSED THE EMULATOR TO THE WHOLE LAN.** Measured 2026-10-18 from a
+LAN source address: `192.168.50.134:5037` (the host's LAN IP) was open and listed `emulator-5554
+device`, because Windows' auto-created `adb` firewall rules admitted remote address **Any** on Private
+and Public. They are now scoped to **192.168.56.0/24 with edge traversal Block** — afterwards the LAN probe
+is closed and the VM path still works — and the launcher **refuses (exit 3)** to start an all-interfaces
+server while any `adb` rule admits Any, because an adb update can re-create the rules on its firewall
+prompt. Full record: `Tickets/INFRA-adb-direct-path-durable-and-lan-scoped.md`.
+
+    loom-vm.ps1 status                    # its 'adb server:' line says which case you are in
+    powershell -File "$env:LOCALAPPDATA\Loom\adb-all-interfaces.ps1"   # repair by hand; log beside it
 
 While it holds, the reverse tunnel and its squatter dance below are unnecessary: put
 `-H 192.168.56.1 -P 5037` on every `adb` call from the VM. **One thing this does not settle:**
@@ -1981,7 +1990,7 @@ as evidence**; example output inside an agent's report is prose, not telemetry.
 
 - Community JSON is authored only by the Skill. Copy/relocate is allowed; hand-editing is not.
 - The product doc is upstream of the JSON: the Skill designs the doc, then derives the package.
-- Application code changes go through `data/call_implementation_agent.sh`. **Since 2026-09-14 its default engine is the Claude Code CLI, `sonnet` at effort `xhigh`** (`IMPLEMENTATION_ENGINE=claude`; `muse` and `codex` remain selectable). Verified live through the script: a `--fresh` multi-step ticket ran as separate Read/Bash/Write calls on `claude-sonnet-5`, and a follow-up without `--fresh` resumed the same `--session-id` and recalled earlier values with no tool calls. Output is stream-json, so the log grows during a run; the answer is printed between `=== AGENT REPLY ===` markers. **Muse is selectable but `muse-spark-1.3` is refused by the Meta API for this account** as of 2026-09-14 — the server's catalog now lists only 1.2 — and headless Muse resume is `muse exec --session-id`, never `muse resume` (that is the interactive picker).
+- Application code changes go through `data/call_implementation_agent.sh`. **Since 2026-10-18 (user-directed) its default engine is the Muse CLI, `muse-spark-1.3` at reasoning effort `medium`** (`IMPLEMENTATION_ENGINE=muse`; `claude` and `codex` remain selectable). Verified through the real dispatcher with a smoke ticket and no overrides: the banner named Muse, `muse-spark-1.3`, `medium`; the agent returned the exact `SUITES_RUN` marker; `DISPATCH_VERIFICATION: incomplete`, tree clean. The 2026-09-14 finding that the Meta API refused `muse-spark-1.3` for this account **no longer holds** after a fresh `muse login`. **Muse SKIPS this file**: at ~325 KB it is over Muse's 256,000-byte rules limit (tracker row-360), so **anything an implementation agent must obey goes in its ticket or `dispatch_preamble.md`, never only here.** Muse prints only its final answer, so a small log during a run is normal — judge liveness by the pid. Headless resume is `muse exec --session-id`, never `muse resume` (that is the interactive picker). The Claude engine (`sonnet` at `xhigh`, 2026-09-14 → 10-18) streams stream-json and prints its answer between `=== AGENT REPLY ===` markers.
 - UX judging runs on the Claude Code CLI with **`fable` at effort `medium`** (user-directed 2026-09-14; `MODEL`/`EFFORT` in `data/call_ux_judge_agent.sh`). **Check the VM copy, not just the repo's**: on 2026-09-14 the VM ran `fable` under a header saying Sonnet while the repo copy and its `Tools/code` mirror had a header saying `fable` over code defaulting to `sonnet` — the same drift in opposite directions, visible only by `cmp`-ing the copies. Live walkthroughs run on
   Claude Opus (`data/call_live_verification_agent.sh`) — the DeepSeek gateway is text-only and
   refuses images, which a UX judge fundamentally needs.

@@ -70,7 +70,35 @@ Also found: **7 `fan_passport` rows keyed by UUID** (`fan_<uuid>`) rather than t
 
 ## 2. Decisions owed by the user
 
+### row-360 — Muse skips CLAUDE.md: at 324,953 bytes it is over Muse's 256,000-byte rules limit
+
+`blocked` — **Found 2026-10-18 while switching the implementation agent to Muse `muse-spark-1.3` at
+`medium` (user-directed; done and verified, `Tickets/INFRA-implementation-agent-on-muse-spark-1.3-medium.md`).**
+Every Muse run prints `rules file at /home/fahd/Loom/CLAUDE.md is 324953 bytes, over the 256000 byte
+load limit; it is skipped for this session` — confirmed in both a bare `muse exec` and a real dispatch
+through `data/call_implementation_agent.sh`. So the implementation agent now works **without the
+project's rules file**. Dispatches still work: the dispatch preamble and the ticket carry the essential
+contract, including the `SUITES_RUN` marker the dispatcher enforces, and the smoke dispatch returned it
+exactly. But nothing else in CLAUDE.md reaches the agent, and much of CLAUDE.md's bulk is the validation
+role's own incident write-ups, a large share added in the 2026-10 sessions. **Options for the user:**
+(1) split CLAUDE.md below 256 KB, keeping project-wide rules and moving the validation agent's notes
+into a file it reads itself; (2) a short dedicated rules file for implementation agents, if Muse loads
+one besides CLAUDE.md — unverified; (3) accept it and keep every agent-facing rule in the preamble or
+the ticket. **Until decided, the working rule is (3)**: anything an implementation agent must obey goes
+in its ticket or `dispatch_preamble.md`, never only in CLAUDE.md.
+
 ### row-358 — The Loom VM moved to Hyper-V 2026-10-18: two host-side decisions remain
+
+**CLOSED 2026-10-18 — the user approved both ("do all of these"), so this decision row is resolved; the
+dated disk cleanup moved to its own open row, row-361.** Decision 1 is **DONE and verified**:
+`Tickets/INFRA-adb-direct-path-durable-and-lan-scoped.md`. Doing it surfaced that the emulator had been
+**open to the whole LAN** — the `adb` firewall rules admitted remote address Any and `192.168.50.134:5037`
+answered `emulator-5554 device` to a LAN source — so the rules were scoped to 192.168.56.0/24 *before*
+the all-interfaces server was made permanent; afterwards the LAN probe is closed and the VM path works.
+Decision 2 is **QUEUED** with its preconditions in `Tickets/INFRA-delete-virtualbox-vdis-after-2026-11-01.md`.
+The elevated check of `loom-vm.ps1` is **DONE** (`Tickets/INFRA-hyperv-admin-check-of-loom-vm-ps1.md`:
+`state` → `Running`, `Get-VM` confirms Gen 1 / 8 CPU / 8 GiB static). The text below is the record as
+first written.
 
 `blocked` — **The migration itself is done and verified; what is left are two host changes that are the user's to make.** The VM was moved by the ai-controller orchestrator (its tracker §8 "INFRA-1 landed"; runbook `docs/Build Plan V2/Tools/Migration-to-Hyper-V.md`). Loom-side follow-ups done 2026-10-18 and checked by my own commands rather than taken from the runbook: the guest reports `systemd-detect-virt` = `microsoft`, 8 CPUs / 7.7 GiB, five `hv_*` modules, `eth0`/`eth1` on the old MACs and addresses; all three NodePorts answer from the host; the VirtualBox copy is `poweroff` and its host-only adapter disabled. **`loom-vm.ps1` was retargeted to Hyper-V** — hard-locked to `loom-vm`, never touching any VirtualBox VM, and refusing to start while the VirtualBox copy runs, a guard A/B'd against stub `VBoxManage` binaries in all four states (`running` and `unknown` refuse; `poweroff` and `not-registered` pass). **CLAUDE.md's opening section was the urgent part**: it told the next session to run `loom-vm.ps1 start`, which would have booted the VirtualBox copy with the Hyper-V VM's MACs and IPs and broken the network for both.
 
@@ -193,6 +221,16 @@ symptom this row records is the calendar tab, and the calendar tab is covered.
 `needs-spec-decision` — **RE-VERIFIED 2026-09-10 — both load-bearing call sites still read exactly as recorded, so this decision rests on current facts.** `remote_workflow_engine_api.dart`'s `queryInstances` still accepts only `workflowType` / `sortKey` / `limit` / `cursor` and puts only `workflowType` in the query map — **no date-window parameter of any kind** — and `part27_engine_native_binding_dispatcher.dart:~167` is still an unfiltered cursor loop (`String? cursor; while (true) { … queryInstances(limit: pageSize, cursor: cursor) … }`) that pages the entire tab's instance set. No drift since 2026-09-06. **RETAGGED 2026-09-06, confirmed live, not just recalled — this is a spec question, not a plain implementation ticket.** Read the actual call sites: exactly one caller in the whole app-shell constructs a non-empty `SurfaceQuery` at all (`part02_tab_shell.dart:818`, Messages tab, sorts by `subject` — unrelated to dates), the remote engine's `queryInstances` never sends a date-window query parameter (`remote_workflow_engine_api.dart:102-112` sends only `workflowType`/`sortKey`/`limit`/`cursor`), and the calendar's own load path (`part27_engine_native_binding_dispatcher.dart:169`, shared by every tab) pages the *entire* tab's instance set with no query filter at all, looping cursors until `hasMore` is false. So the TODO's original claim is exactly right, confirmed rather than assumed. **Why this can't be a blind implementation ticket:** `instance_data` is a generic per-workflow-type JSON blob with no fixed schema at the DB layer — filtering by date requires the server to know *which* key means "date" for a given `workflowType` (a calendar event's `eventDate` is not a reminder's `dueAt`), and nothing in the current contract carries that mapping. Same failure shape as the two already-recorded specs written this migration that assumed a mechanism the contract didn't carry (`platformDefault`, the change-feed `resyncRequired`) — propose the field→workflowType mapping as a spec addition first (e.g. an archetype-declared `dateField` used by both the query builder and the server-side filter), then dispatch the plumbing. Also worth flagging: the calendar surface has already regressed twice on a much smaller reminder-only change (two reverted implementation attempts, 2026-08-20) — do not treat this as low-risk just because the field is already declared.
 
 ## 3. Ready to ticket
+
+### row-361 — Delete the Loom VM's two VirtualBox disks, on or after 2026-11-01
+
+`blocked` — **Blocked on a date and a proof, by design.** User-approved 2026-10-18 (moved here from
+row-358 when that decision row closed). Fully specified in
+`Tickets/INFRA-delete-virtualbox-vdis-after-2026-11-01.md`: `C:\VirtualBox\ubuntu-24.04.4-loom\loom-root-300g.vdi`
+(176.3 GB, the only rollback path) and `D:\VirtualBox\ubuntu-24.04.4-loom\ubuntu-24.04.4-loom.vdi`
+(285.8 GB, unattached). Preconditions to check **at the time**, not carry forward: the date, the 24-hour
+stall proof (row-359) passed, and no VirtualBox registration still referencing either file. Irreversible,
+so never run it early and never touch the other two VirtualBox VMs.
 
 ### row-158 — A product doc contradicts itself internally — it disclaims rows in its header while its own tables still count them
 

@@ -1,8 +1,9 @@
 #!/bin/bash
 # data/call_implementation_agent.sh
 #
-# CURRENT DEFAULT (2026-09-14, later the same day): Claude Code CLI, model `sonnet`,
-# effort `xhigh` -- see the "Engine selection" block just below `set -euo pipefail`.
+# CURRENT DEFAULT (2026-10-18, user-directed): Muse CLI, model `muse-spark-1.3`, effort
+# `medium` -- see the "Engine selection" block just below `set -euo pipefail`. (It was
+# the Claude Code CLI, `sonnet` at `xhigh`, from 2026-09-14 to 2026-10-18.)
 # That block and its ENGINE/CLAUDE_*/MUSE_* variables are the authority. The long Codex/DeepSeek commentary
 # that follows describes the IMPLEMENTATION_ENGINE=codex path, including a
 # "defaults to DeepSeek V4 Flash" line that was already false before this change
@@ -455,15 +456,24 @@ fi
 PROMPT_FILE="${1:?usage: call_implementation_agent.sh <prompt-file> [--fresh]}"
 MODE="${2:-}"
 
-# --- Engine selection (2026-09-14, user-directed) ------------------------
-# DEFAULT: Claude Code CLI, `claude -p --model sonnet --effort xhigh`.
-# History of this default, all on 2026-09-14: Codex gpt5_6_terra_xhigh (OpenAI usage
+# --- Engine selection (2026-10-18, user-directed) ------------------------
+# DEFAULT: Muse CLI, `muse exec --model muse-spark-1.3 --reasoning-effort medium`.
+# History of this default: on 2026-09-14, Codex gpt5_6_terra_xhigh (OpenAI usage
 # limit until Sep 19) -> DeepSeek V4 Flash via Codex (stopped mid-ticket three times at
-# ~70-77k tokens with exit 0) -> Muse muse-spark-1.3 (API refused 1.3 for this account)
-# -> Claude Code CLI Sonnet at xhigh.
+# ~70-77k tokens with exit 0) -> Muse muse-spark-1.3 (API refused 1.3 for this account
+# that day) -> Claude Code CLI Sonnet at xhigh. On 2026-10-18 -> Muse muse-spark-1.3 at
+# medium, after a fresh `muse login` made 1.3 reachable again (verified below).
 #
-#   IMPLEMENTATION_ENGINE=claude (default)  claude -p
-#   IMPLEMENTATION_ENGINE=muse              ~/.local/bin/muse exec
+# RE-VERIFIED 2026-10-18 before switching: after `muse login`, the catalog lists
+# muse-spark-1.3 and muse-spark-1.3-contributor, and
+# `muse exec --workspace ~/Loom --model muse-spark-1.3 --reasoning-effort medium --yolo`
+# replied READY with exit 0. KNOWN GAP: that run printed "rules file at ~/Loom/CLAUDE.md
+# is 324953 bytes, over the 256000 byte load limit; it is skipped for this session", so a
+# Muse implementation agent works WITHOUT CLAUDE.md. The dispatch preamble and the ticket
+# are its whole contract -- put anything an agent must obey in one of those.
+#
+#   IMPLEMENTATION_ENGINE=muse (default)    ~/.local/bin/muse exec
+#   IMPLEMENTATION_ENGINE=claude            claude -p
 #   IMPLEMENTATION_ENGINE=codex             the Codex path below, unchanged
 #                                           (CODEX_IMPLEMENTATION_PROFILE still applies,
 #                                           e.g. =deepseek_v4_flash)
@@ -479,7 +489,7 @@ MODE="${2:-}"
 # and reach pub; the git integrity guard below is the backstop.
 #
 # Muse knobs: MUSE_IMPLEMENTATION_MODEL (default muse-spark-1.3) and
-# MUSE_IMPLEMENTATION_REASONING_EFFORT (default xhigh; the model catalog at
+# MUSE_IMPLEMENTATION_REASONING_EFFORT (default medium since 2026-10-18; the model catalog at
 # ~/.local/share/muse/model-catalog lists minimal|low|medium|high|xhigh|max).
 #
 # Invocation recovered from commit 16150863 (2026-09-06), which ran the ROOT CAUSE
@@ -510,12 +520,12 @@ MODE="${2:-}"
 #
 # Completion line for this engine: "muse exec exited with status N" --
 # watch_dispatch_log.sh and recover_loom_vm.sh already recognise it.
-ENGINE="${IMPLEMENTATION_ENGINE:-claude}"
+ENGINE="${IMPLEMENTATION_ENGINE:-muse}"
 CLAUDE_MODEL="${CLAUDE_IMPLEMENTATION_MODEL:-sonnet}"
 CLAUDE_EFFORT="${CLAUDE_IMPLEMENTATION_EFFORT:-xhigh}"
 MUSE_BIN="${MUSE_BIN:-$HOME/.local/bin/muse}"
 MUSE_MODEL="${MUSE_IMPLEMENTATION_MODEL:-muse-spark-1.3}"
-MUSE_EFFORT="${MUSE_IMPLEMENTATION_REASONING_EFFORT:-xhigh}"
+MUSE_EFFORT="${MUSE_IMPLEMENTATION_REASONING_EFFORT:-medium}"
 case "$ENGINE" in
   claude) ;;
   muse)
