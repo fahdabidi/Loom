@@ -2,34 +2,92 @@
 
 ## Infrastructure is recoverable; recover it and keep going
 
+**The Loom VM runs on HYPER-V since 2026-10-18, as `loom-vm`.** It moved from VirtualBox with
+nothing changed inside the guest — same disk contents, `~/Loom`, k3s cluster and addresses. The
+VirtualBox copy `ubuntu-24.04.4-loom` is kept **powered off** for rollback until 2026-11-01, and it
+has the **same MACs and IPs**, so starting it while the Hyper-V VM runs breaks the network for both.
+**Never start a VirtualBox VM for this project.** The migration record is
+`docs/Build Plan V2/Tools/Migration-to-Hyper-V.md`; what changed is tabled in the section below.
+
 **Never stop work because the Loom VM is unreachable.** Symptoms: ssh times out during banner
-exchange, `VBoxManage guestcontrol` refuses a session ("current status is: starting"), console
-screenshot blank. The VM can still report `running` while sshd cannot complete a handshake —
-that is resource exhaustion, not a decision point.
+exchange, the console is blank or frozen. The VM can still be `Running` while sshd cannot complete
+a handshake — that is resource exhaustion, not a decision point.
 
-Recover it:
+Diagnose first. This works from an ordinary, non-elevated shell:
 
-    docs/Build Plan V2/Tools/code/loom-vm.ps1 stop        # ACPI; may time out
+    docs/Build Plan V2/Tools/code/loom-vm.ps1 status
+
+Recover it. **These need an elevated PowerShell**, or membership of `Hyper-V Administrators`:
+
+    docs/Build Plan V2/Tools/code/loom-vm.ps1 stop        # integration-services shutdown; may time out
     docs/Build Plan V2/Tools/code/loom-vm.ps1 poweroff    # if stop times out
-    docs/Build Plan V2/Tools/code/loom-vm.ps1 start
+    docs/Build Plan V2/Tools/code/loom-vm.ps1 start       # refuses while the VirtualBox copy runs
 
-Then wait for ssh, re-arm the loop (`enabled=1`, push `expires_at` forward in
-`data/loops/v4final.loop`), and continue. Always go through `loom-vm.ps1` — it is hard-locked
-to `ubuntu-24.04.4-loom`, which prevents targeting the unrelated `Ubuntu-24.04.4` VM.
+Then `loom-vm.ps1 wait-ready`, `ssh loom-vm 'sudo systemctl start k3s'` (k3s is not enabled at
+boot), re-arm the loop (`enabled=1`, push `expires_at` forward in `data/loops/v4final.loop`), and
+continue. Always go through `loom-vm.ps1`: it is hard-locked to the Hyper-V VM `loom-vm`, and it
+never starts, stops or modifies any VirtualBox VM — there are three on this host, two of them
+another project's.
 
-Rebooting a dev VM whose emulator is wedged is routine maintenance. Do not wait for a human.
+Rebooting a dev VM whose emulator is wedged is routine maintenance and needs nobody's permission.
+**But an agent's shell is not elevated, so it cannot do the reboot itself.** Hyper-V refuses even
+to *read* the VM's state from a normal shell (`Get-VM` → "You do not have the required
+permission"), and that refusal is a permission fact, never evidence the VM is missing or stopped.
+So: run `status` to establish wedged rather than loaded (see below), ask the user to run the
+elevated recovery, and carry on with work that does not need the VM meanwhile.
+
+### The 2026-10-18 move to Hyper-V — what changed, measured rather than copied
+
+| | VirtualBox (until 2026-10-18) | Hyper-V (now) |
+|---|---|---|
+| VM | `ubuntu-24.04.4-loom` | `loom-vm`, Generation 1, 8 vCPU, 8 GB **static** memory |
+| lifecycle | `loom-vm.ps1` via VBoxManage, no elevation | `loom-vm.ps1` via Hyper-V cmdlets, **elevated** |
+| disk | `C:\VirtualBox\ubuntu-24.04.4-loom\loom-root-300g.vdi` | `C:\Hyper-V\loom\loom-root.vhdx` (dynamic; 183.3 GB on disk) |
+| guest NICs | `enp0s3` (LAN), `enp0s8` (host-only) | `eth0`, `eth1` — same MACs, same addresses; netplan matches by MAC |
+| host side of 192.168.56.1 | VirtualBox host-only adapter `Ethernet 2` (now **Disabled**) | `vEthernet (loom-internal)` |
+| reaching the guest without ssh | Guest Additions (`run`, `screenshot`, `fix-network`) | none; `loom-vm.ps1 console` opens `vmconnect`, elevated |
+| adb from the guest | reverse ssh tunnel only | `adb -H 192.168.56.1 -P 5037` — **while** the Windows server runs with `-a`; see the emulator section |
+| k3s | node IP followed DHCP | `node-ip: 192.168.56.10` pinned; still not enabled at boot |
+| guest stalls | `rcu_preempt kthread starved`, 60–229 s each, up to 57 a day | 0 so far — not yet meaningful, see below |
+
+**Verified 2026-10-18 by my own commands, not taken from the runbook:** `systemd-detect-virt` →
+`microsoft`; 8 CPUs and 7.7 GiB; five `hv_*` modules loaded; both `vboxadd` services disabled;
+`eth0`/`eth1` carrying the old VirtualBox MACs `08:00:27:3f:05:f1`/`08:00:27:90:57:fd` and the old
+addresses; from the host Keycloak 200, app-access 401 (correct without a token), workflow-service
+200; the VirtualBox copy `poweroff`; `Ethernet 2` disabled. `Get-VM` itself could not be checked:
+this session is not elevated.
+
+**The STALLS row is the one to read carefully, because it reframes incidents recorded further down.**
+The guest journal kept the VirtualBox boots, and on that engine the kernel logged
+`rcu: rcu_preempt kthread starved for N jiffies` with `CONFIG_HZ=1000` — so N/1000 seconds of a
+frozen RCU kthread. The boot covering 2026-10-06..16 logged **323 of them, 60–229 s each, median
+85 s**: about an hour a day of a guest stalled in 1–4 minute chunks. **50 fell on 2026-10-11 and 48
+on 2026-10-12**, the days this file records reverse tunnels dying (one at load 1.16, written up as
+unexplained) and sshd failing at banner exchange. A guest that freezes for minutes is the most
+likely mechanism for both, and for a load average that spikes while nothing is busy. **That is a
+day-level correlation, not a proof for any one incident** — those incidents were never recorded
+with minute-level times — so do not rewrite old entries as solved.
+
+**And the Hyper-V side is NOT yet shown to be clean.** The current boot logged 0 stalls in its first
+31 minutes, but VirtualBox boots also went 73 and 26 minutes with 0, so a short zero discriminates
+nothing. The bar is zero over **24 hours** from the 2026-10-18 14:26 boot:
+
+    ssh loom-vm 'journalctl -k -b --no-pager | grep -c "kthread starved"'
 
 ### The build and the cluster share one machine
 
 **The VM is 8 cores and 8 GB as of 2026-09-19 — it has been shrinking, and every warning in this
-section gets sharper each time.** `VBoxManage showvminfo ubuntu-24.04.4-loom` reports
-`memory=8192, cpus=8`, and the guest confirms 7.7 GiB total. The recorded history is 16 GB → 12 GB
+section gets sharper each time.** On Hyper-V (since 2026-10-18) it is configured 8 vCPU and 8 GB of
+**static** memory — readable with `Get-VM loom-vm` from an elevated shell — and the guest confirms
+`nproc` 8 and 7.7 GiB total; on VirtualBox, `VBoxManage showvminfo` reported the same
+`memory=8192, cpus=8`. The recorded history is 16 GB → 12 GB
 (2026-09-04) → 8 GB, the last step taking effect at a reboot on 2026-09-19. **Read the memory
 figures in the incident reports below as relative to a larger box than you have now**: the
 2026-08-31 note reasoning that "a 15 GB VM with 12 GB available did not fail for lack of memory" was
 measured on nearly twice today's RAM, so the same workload has far less headroom. Check
-`free -h` — not just load — before any build or five-suite dispatch, and re-read `memory=` from the
-host rather than trusting this paragraph, since it has now been wrong twice.
+`free -h` — not just load — before any build or five-suite dispatch, and re-read the size itself
+(`nproc` and `free -h` in the guest, or `Get-VM` elevated) rather than trusting this paragraph,
+since it has now been wrong twice.
 
 The k3s cluster runs on the same 8-core VM that builds images and hosts dispatches. A Maven or
 Docker build starves it: on 2026-08-30 an `app-access` image build stalled the node hard enough
@@ -61,11 +119,20 @@ definitions, 137 permissions, 425 grants.
 **Two judgments from it worth reusing.**
 
 *Do not power-cycle a VM that is merely loaded.* The documented recovery is for a **wedged** VM, and
-the two look identical over ssh. What distinguishes them is cheap and host-side:
-`loom-vm.ps1 status` reporting `running` (not `paused`, which means the host disk filled), Guest
-Additions still answering, the TCP port still accepting, and free space on D:. All four said "loaded,
-not wedged" — and rebooting would have destroyed a dispatch with eight modified files and no record
-of what it had finished. It finished fine.
+the two look identical over ssh. What distinguishes them is cheap and host-side. On 2026-09-08, on
+VirtualBox, four checks — state `running` rather than `paused`, Guest Additions still answering, the
+TCP port still accepting, free space on D: — all said "loaded, not wedged", and rebooting would have
+destroyed a dispatch with eight modified files and no record of what it had finished. It finished
+fine.
+
+**On Hyper-V the checks are:** the guest's TCP ports still accepting and the cluster still serving
+(`loom-vm.ps1 status` probes :22 and the three NodePorts, no elevation needed); free space on **C:**,
+where the VHDX now lives (`status` prints it); and, elevated, a state of `Running` rather than
+`Paused` or `PausedCritical` — the second is Hyper-V pausing a VM whose volume filled. Guest
+Additions no longer exist, so that check is gone. **There is also a third case, neither loaded nor
+wedged, now with evidence behind it:** the 60–229 s guest stalls tabled above, which on VirtualBox
+cleared on their own. Whether they persist on Hyper-V is the 24-hour proof; until then, meet an ssh
+timeout with one waiter and a few minutes of patience, not a reboot.
 
 *Stop polling.* Each `ssh` probe adds load to the box whose load you are measuring, and under
 saturation the probes time out anyway — so they cost something and return nothing. Arm one waiter
@@ -91,8 +158,27 @@ the VM reaches it through an **ssh reverse tunnel**, and a walkthrough that repo
 almost always that tunnel, not a dead emulator. Same shape as the APK-build lesson below: check
 whether a limitation is intrinsic to the task or incidental to where it is running.
 
-**The recovery recorded here until 2026-09-19 — `adb -H 192.168.56.1 -P 5037 …` — does not work,
-and following it costs a dispatch.** Windows' adb server binds **127.0.0.1 only**, so the host's
+**SINCE 2026-10-18 THE DIRECT PATH WORKS — `adb -H 192.168.56.1 -P 5037` — BUT ONLY WHILE THE
+WINDOWS ADB SERVER LISTENS ON ALL INTERFACES, WHICH IS STATE, NOT CONFIGURATION.** Measured from the
+guest with a control: `adb -H 192.168.56.1 -P 5037 devices` → `emulator-5554 device`, `get-state` →
+`device`, TCP to `192.168.56.1:5037` open while `192.168.56.1:5038` is closed. It works because the
+Windows server was started by hand as **`adb.exe -a nodaemon server`** (2026-10-18 13:14:50, pid
+11172) and so listens on `0.0.0.0:5037`. **Nothing makes that durable**: no `ADB_SERVER_SOCKET` is
+set, so after a host reboot, an `adb kill-server`, or any `adb` call that has to start a fresh
+server, it comes back on `127.0.0.1` and the next paragraph is true again.
+
+    loom-vm.ps1 status                              # its 'adb server:' line says which case you are in
+    adb kill-server; adb -a nodaemon server         # restore, in a window of its own -- it does not detach
+
+While it holds, the reverse tunnel and its squatter dance below are unnecessary: put
+`-H 192.168.56.1 -P 5037` on every `adb` call from the VM. **One thing this does not settle:**
+whether a VM-hosted `flutter drive` can now work. The finding that it cannot was measured over the
+reverse tunnel, where `adb forward` listened on Windows' loopback; with the server on `0.0.0.0`
+that has not been re-measured, so do not assume it either way.
+
+**Historical, and true again whenever the Windows server is loopback-only — recorded 2026-09-19: the
+recovery `adb -H 192.168.56.1 -P 5037 …` does not work, and following it costs a dispatch.**
+Windows' adb server binds **127.0.0.1 only**, so the host's
 `:5037` is not reachable across the host-only network at all. Measured that day *with a control*, so
 this is not another empty-query trap: a TCP probe from the VM to `192.168.56.1:5037` was refused
 while a probe to `192.168.56.10:30083` on the same network succeeded, and `adb devices` on the VM
@@ -1850,7 +1936,8 @@ Found 2026-10-11, by reading a line of my own output that contradicted my own ea
 
 A `git pull` on the VM failed with `Could not resolve host: github.com`. Diagnosis found no DNS, no
 reachable public IP, and `ip route | grep -c ^default` returning **0** — measured twice, by the
-count and by the full route dump, which agreed. The interface itself was healthy: `enp0s3` UP,
+count and by the full route dump, which agreed. The interface itself was healthy: `enp0s3` (the
+VirtualBox name; it is `eth0` on Hyper-V) UP,
 `carrier=1`, a real DHCP address, and the LAN gateway answering ping. So "the default route is
 missing" was a sound reading of the evidence in front of me.
 
@@ -2628,23 +2715,37 @@ in an instruction and nobody re-derives it.
 
 ## Disk hygiene — check it before it stops the VM
 
-**A full host disk pauses the VM, and it does not look like a disk problem.** VirtualBox pauses a
-guest whose backing store cannot grow. `ssh` times out exactly as it does for a wedged VM, so the
-recovery instructions above appear to apply and do not work: resume succeeds, the guest writes, it
-pauses again within seconds. `loom-vm.ps1 status` reporting `paused` rather than `running` is the
-only thing that distinguishes the two. Check free space before power-cycling anything.
+**A full host disk pauses the VM, and it does not look like a disk problem.** Both hypervisors pause
+a guest whose backing store cannot grow — Hyper-V reports it as `PausedCritical`. `ssh` times out
+exactly as it does for a wedged VM, so the recovery instructions above appear to apply and do not
+work: resume succeeds, the guest writes, it pauses again within seconds. The VM's state is the only
+thing that distinguishes the two (`loom-vm.ps1 state`, elevated; `resume` warns on
+`PausedCritical`). Check free space before power-cycling anything.
 
-The VM's disk lives at `D:\VirtualBox\ubuntu-24.04.4-loom\ubuntu-24.04.4-loom.vdi`. **D: is not a
-data drive** — it holds an old Windows installation plus that VDI, and it hit 0 bytes free on
-2026-08-28.
+**Where the disks are, measured 2026-10-18:**
 
-**Check monthly, or after any long autonomous run:**
+| file | size on disk | role |
+|---|---|---|
+| `C:\Hyper-V\loom\loom-root.vhdx` | 183.3 GB | **the live disk** (dynamic, 300 GB virtual) |
+| `C:\VirtualBox\ubuntu-24.04.4-loom\loom-root-300g.vdi` | 176.3 GB | VirtualBox rollback copy, attached to the powered-off `ubuntu-24.04.4-loom`; keep until 2026-11-01 |
+| `D:\VirtualBox\ubuntu-24.04.4-loom\ubuntu-24.04.4-loom.vdi` | 285.8 GB | **unattached** stale copy, last written 2026-09-18 |
+
+So the live disk is on **C:** (2,549.7 GB free that day), and this section's D: warnings describe the
+VirtualBox era — the VM had in fact already left D: by 2026-09-19, well before this note said so.
+**Deleting either VDI is the user's call**, made after the rollback window and the 24-hour stall
+proof, not something to tidy up unprompted: the C: one is the only rollback path.
+
+**Check monthly, or after any long autonomous run** — `loom-vm.ps1 status` prints C: free space, or:
 
 ```powershell
-Get-PSDrive D | Select-Object @{n='FreeGB';e={[math]::Round($_.Free/1GB,2)}}
+Get-PSDrive C,D | Select-Object Name,@{n='FreeGB';e={[math]::Round($_.Free/1GB,2)}}
 ```
 
-Below ~20 GB, act. The VDI grows and never shrinks, so this only goes one way on its own.
+Below ~20 GB on C:, act. A dynamic VHDX grows and never shrinks on its own, like the VDI before it.
+
+**Historical — the D: drive while the VM lived there.** D: is not a data drive: it holds an old
+Windows installation plus that stale VDI, and it hit 0 bytes free on 2026-08-28, which is what first
+paused the VM.
 
 ### Safe to delete on the host
 

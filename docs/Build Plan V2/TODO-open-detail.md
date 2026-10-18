@@ -70,6 +70,16 @@ Also found: **7 `fan_passport` rows keyed by UUID** (`fan_<uuid>`) rather than t
 
 ## 2. Decisions owed by the user
 
+### row-358 — The Loom VM moved to Hyper-V 2026-10-18: two host-side decisions remain
+
+`blocked` — **The migration itself is done and verified; what is left are two host changes that are the user's to make.** The VM was moved by the ai-controller orchestrator (its tracker §8 "INFRA-1 landed"; runbook `docs/Build Plan V2/Tools/Migration-to-Hyper-V.md`). Loom-side follow-ups done 2026-10-18 and checked by my own commands rather than taken from the runbook: the guest reports `systemd-detect-virt` = `microsoft`, 8 CPUs / 7.7 GiB, five `hv_*` modules, `eth0`/`eth1` on the old MACs and addresses; all three NodePorts answer from the host; the VirtualBox copy is `poweroff` and its host-only adapter disabled. **`loom-vm.ps1` was retargeted to Hyper-V** — hard-locked to `loom-vm`, never touching any VirtualBox VM, and refusing to start while the VirtualBox copy runs, a guard A/B'd against stub `VBoxManage` binaries in all four states (`running` and `unknown` refuse; `poweroff` and `not-registered` pass). **CLAUDE.md's opening section was the urgent part**: it told the next session to run `loom-vm.ps1 start`, which would have booted the VirtualBox copy with the Hyper-V VM's MACs and IPs and broken the network for both.
+
+**Decision 1 — make the direct adb path durable, or accept the tunnel as the fallback.** From the guest, `adb -H 192.168.56.1 -P 5037` now works (measured with a control: `emulator-5554 device`; port 5038 closed). It works only because the Windows adb server was started by hand as `adb.exe -a nodaemon server` (2026-10-18 13:14:50) and so listens on `0.0.0.0:5037`. Nothing makes that survive a host reboot or an `adb kill-server`: no `ADB_SERVER_SOCKET` is set, so a default server comes back on loopback and the guest is back on the reverse tunnel, which died twice in one tick on 2026-10-12. Making it durable is a Windows logon task or startup entry — a host configuration change, not mine to make unasked.
+
+**Decision 2 — the two VDIs, after 2026-11-01.** `C:\VirtualBox\ubuntu-24.04.4-loom\loom-root-300g.vdi` (176.3 GB) is the **only rollback path** and is attached to the powered-off VirtualBox copy; `D:\VirtualBox\ubuntu-24.04.4-loom\ubuntu-24.04.4-loom.vdi` (285.8 GB) is an unattached stale copy last written 2026-09-18. The runbook keeps both two weeks; deleting either should wait for that and for the 24-hour stall proof ([row-359](#row-359)).
+
+**Not tested, stated plainly:** the elevated paths of the new `loom-vm.ps1` — the real `Start-VM`, `stop`, `poweroff`, `restart`, `resume`, `console`. This session cannot elevate, and `stop`/`poweroff`/`restart` would take the live VM down. The first elevated `status` or `state` run is the cheap check. **And one question deliberately left open:** whether a VM-hosted `flutter drive` can now reach the emulator. It was shown structurally impossible over the reverse tunnel, where `adb forward` listened on Windows' loopback; with the server on `0.0.0.0` that has not been re-measured.
+
 ### row-248 — `deriveInstanceRoles` picks the FIRST `actorEqualsField` guard — array order is not a business-party selector
 
 **AUDITED 2026-10-10, AND MY ANNOTATION WAS RETRACTED — see the `TODO.md` row.** What I recorded there re-derived what this entry already said, and dropped its load-bearing qualifier: the defect is **LATENT, not live**, because the first `actorEqualsField` transition in the real package carries the correct actor. The real deliverable remains a validator rule refusing an ambiguous package, not a resolver change.
@@ -576,6 +586,14 @@ so land row-354's scoping first and re-count, rather than fixing all 33 and then
 `needs-debug-agent` — CJM.16 Messages-tab fix, landing with Phase F rather than as its own dispatch — see [Access Control and Workflow Service Tracker.md §8](Access%20Control%20and%20Workflow%20Service%20Tracker.md)
 
 ## 7. Delegated — detail lives in the owning tracker
+
+### row-359 — 24-hour guest-stall proof on Hyper-V — owned by ai-controller INFRA-1
+
+`needs-verification` — **The reason the VM moved, and the one claim about the move nobody can check yet.** On VirtualBox (Hyper-V fallback engine) the guest kernel logged `rcu: rcu_preempt kthread starved for N jiffies` stalls. Measured from the guest's own journal, which kept the VirtualBox boots, with `CONFIG_HZ=1000`: the boot of 2026-10-06..16 logged **323**, each **60–229 s (median 85 s)**, peaking at 57 on 2026-10-09; the boot of 2026-10-16..18 logged **62**. **50 fell on 2026-10-11 and 48 on 2026-10-12**, the days the Loom session recorded dropped reverse tunnels and sshd failing at banner exchange — a day-level correlation, not a per-incident proof, since those incidents were never timed to the minute. **The current Hyper-V boot (started 2026-10-18 14:26:38) logged 0 in its first 31 minutes, which proves nothing:** two VirtualBox boots that same day also logged 0, over 73 and 26 minutes. The bar is zero over 24 hours, i.e. from about 2026-10-19 14:27:
+
+    ssh loom-vm 'journalctl -k -b --no-pager | grep -c "kthread starved"'
+
+The ai-controller orchestrator owns this proof (runbook Part 1: "24 h proof in progress"); this row exists so the Loom side reads the result rather than assuming it. If stalls persist on Hyper-V, the CLAUDE.md guidance to meet an ssh timeout with patience rather than a reboot still holds; if they are gone, the incidents above stop being an environmental hazard for capture runs and dispatches.
 
 ### row-138 — Never derive the community key from the group id — underscored vs hyphenated
 
