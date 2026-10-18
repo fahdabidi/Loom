@@ -1332,6 +1332,17 @@ The general shape: **when you ask for a failure to become louder or faster, say 
 take down with it.** Diagnosis and throughput are independent properties, and improving one at the
 cost of the other reads as progress right up until you look at the totals.
 
+**And a per-row outcome is not per-row containment, found 2026-10-18.** The stall-to-
+`row_stalled_inconclusive` mapping existed and was reached, yet one stall still ended a whole
+`full-b25` run. The race is `Future.any([run(), bodyWatch.deadline])`, which never stops the losing
+`run()`. So the abandoned row kept driving the tester while the batch restored, tore down and opened
+the next community on that same tester. I had rescoped the fix as "test-only" by reading the mapping.
+**When a stall is "caught" by racing a future, ask what the loser is still doing.** A race reports;
+only cooperative cancellation plus waiting for the loser to settle recovers. The Root Cause Agent's
+first diagnosis also miscounted: the stalled row was evidence entry **5**, not 6, because a B12
+harness entry comes first. Count entries from the writer's own order before inferring which step
+never ran. Ticket: `HARNESS-one-row-stall-must-not-abort-the-full-b25-batch.md`.
+
 ### A tap that returned is not a transition that happened — and the gap between them gets written up as an engine defect
 
 Found 2026-09-14, and it is the closest this project has come to publishing a false claim about its

@@ -1,124 +1,132 @@
-# HARNESS — one row's stall must not abort the whole `full-b25` batch
+# HARNESS — a row the watchdog abandons must stop running before the batch continues
 
-**Status:** written 2026-10-10, **NOT dispatched**. Separable from, and lower priority than,
-`HARNESS-created-instance-reader-must-be-renderer-aware.md` — **dispatch that one first.**
+**Status:** written 2026-10-10, **REWRITTEN 2026-10-18, NOT dispatched**. The 2026-10-10 version
+said "the behaviour already exists, only its test is missing — dispatch as test-only". **That was
+wrong and its instruction has been deleted.** A Root Cause Agent (session key
+`b25-stall-abort-path`) attacked it, and I then re-derived the mechanism myself from the code at
+`9deba3ed` and HEAD. Read "The defect" before anything else.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 
-## The evidence
+## The defect — derivable from the code alone
 
-The `full-b25` run on 2026-10-06 (commit `9deba3ed`, live backend, instrumented APK) ended:
+`runB25WorkflowRowScope` (`test/b25_workflow_row_selection.dart:270-288`) races a row's work
+against the stall watchdog:
 
-    exit=1, workflows=5, b25Communities=0/14, b25IncompletelyTraversed=14
+    final value = bodyWatch == null
+        ? await run()
+        : await Future.any<T>([run(), bodyWatch.deadline]);
 
-One row — Garden's `garden-tool-giveaway` — waited on a condition it could not satisfy, its 3m
-stall watchdog expired at **3m 51s**, and that **aborted `flutter drive`, taking all nine phases
-with it**. The same build in `--mode targeted-precheck` traverses **83** workflows. So 78 rows went
-unattempted because of one.
+When the deadline wins, the scope catches the `WalkthroughStallFailure` and maps it to
+`row_stalled_inconclusive` (`:390-401`). **That mapping is correct and is reached.** The defect is
+what `Future.any` does to the loser: **nothing**. A Dart future cannot be cancelled, so `run()` keeps
+executing — still awaiting, still calling `tester`, still tapping — after the scope has returned.
 
-Three sibling rows hit the *identical* condition and recorded
-`action_succeeded_result_unverified` instead of stalling, which is the designed behaviour — the row
-is marked unproven and the run continues. **Only the fourth escalated to a watchdog abort.** Why
-that one differed was not traced; it becomes moot once the wait condition is correct, but the
-fragility it exposed does not.
+The harness already knows this and guards exactly one symptom of it.
+`integration_test/workflow_ui_evidence_test.dart:1549-1556` says the race *"never cancels the loser
+-- a row whose race the deadline wins keeps executing in the background"*, and `capture` (`:252-265`)
+refuses a screenshot once `finish()` has run. Nothing guards the rest. After the scope returns, the
+batch drives the tester again while the loser is still driving it:
 
-## Why this is worth a ticket even after the reader fix
+| step after the scope returns | where |
+|---|---|
+| `recordEvidenceEntry` (the stall IS recorded) | `:490-492` |
+| `await restoreB25SurfaceAfterRowFailure(tester: …)` | `:578` |
+| `await tearDownB25CommunityWalkthrough(…)` | `:591` |
+| the next community's `ensureTargetInstalled` / `openEvidenceTarget(tester, …)` | `:408-409` |
 
-Fixing the reader removes **today's** trigger, not the class. `full-b25` is the only bar-eligible
-capture mode and it refuses to narrow by community or shard, so **any** single row that can stall
-to the watchdog costs the entire canonical run — all nine phases, every other community. With 73
-rows to prove and a run measured in tens of minutes, a one-row abort is the difference between a
-usable artifact and nothing.
+Two drivers on one `WidgetTester` is the failure. Each later community's first tester call can
+collide with the abandoned row, and `runB25CommunityScope` (`:404`) then records a community failure
+with no rows.
 
-This is the shape this project already records: *"a defect that belongs to one item in a batch must
-change that item's recorded outcome, not the batch's control flow."* The earlier instance was a
-`StateError` thrown with a perfectly accurate diagnostic that still aborted all eighty workflows.
+**There are THREE callers of the race, and all three need the fix**:
+`workflow_ui_evidence_test.dart:422` (the main community loop), `:773` (the dedicated Mosque
+B17-B20 rows) and `:1238` (the B20 segment). Do not fix only the first.
 
+## The run evidence — session-reported, so corroboration only
 
-## ⛔ RESCOPED 2026-10-10 — THE CHANGE BELOW IS ALREADY IMPLEMENTED. Only its TEST is missing.
+The `full-b25` run of 2026-10-06 (commit recorded as `9deba3ed`; the APK's build commit was never
+recorded) ended `exit=1, workflows=5, b25IncompletelyTraversed=14` after
+`garden-tool-giveaway` stalled to its 3m watchdog at 3m 51s. Those figures live only in ticket prose;
+the run log is gone. **They are consistent with the defect above, and here is the arithmetic, checked
+at `9deba3ed`:** a full run records the B12 harness entry first (`:364`); Garden is the first target
+(`part15_evidence_catalog.dart`, phase `B13`); Garden's rows run `garden-event-rsvp`,
+`plant-exchange-submission`, `garden-tool-loan`, **`garden-tool-giveaway`**, … So the giveaway is
+**entry 5**. `workflows=5` means its stall entry was written and **nothing after it** was, while all
+14 traversals stayed incomplete. That is what an abandoned row colliding with everything after it
+looks like.
 
-Re-verified this ticket's own claim before dispatching it, and the behaviour it asks for exists.
-`b25_workflow_row_selection.dart:389-400` already maps a stall into a per-row outcome and continues:
-
-    if (error is WalkthroughStallFailure) {
-      // Attempted and inconclusive, not a confirmed defect ... Frames captured before the
-      // stall ARE kept, same as row_execution_failed -- unlike a blocked row,
-      // this one genuinely started executing.
-      return B25RowScopedFailure(rowOutcome: 'row_stalled_inconclusive', ...);
-
-**All three constraints in "The change" are already met.** It has its own outcome name
-(`row_stalled_inconclusive`), it is explicitly distinguished from both *"the action was not
-offered"* and *"the row could not be attempted at all"* — the three-facts distinction this ticket
-asks for, in the code's own comment — and the watchdog is untouched, so stalls are still detected.
-Confirmed in passing that the sibling class is handled the same way: `B25SelectorSetupFailure`
-becomes `blocked_by_selector_setup`, one of four `blocked_by_*` outcomes recorded per row.
-
-**What is genuinely still owed is the regression test, and that is the half this project says
-matters most.** `b25_workflow_row_scope_test.dart` covers **nine** failure types — `StateError`,
-`B25SelectorSetupFailure`, `B25ResultFramePositioningFailure`, `B25DependentReceiverBlockedFailure`,
-`B25ActorAudienceResolutionFailure`, `B25ArrangementOutOfScopeFailure`, `B25ProductFindingFailure`,
-`B25PostconditionNotObservedFailure`, `B25CommunityTeardownFailure` — and **`WalkthroughStallFailure`
-is not among them.** So the continuation behaviour is implemented and unasserted, which is exactly
-the gap CLAUDE.md names: *"assert the continuation in a test, because 'it kept going' is the property
-that is invisible in a single-row fixture."* An asymmetric-sibling shape too — nine types covered,
-the tenth missed.
-
-**So dispatch this as a TEST-ONLY ticket:** add the `WalkthroughStallFailure` case to that file,
-asserting the outcome is `row_stalled_inconclusive`, that frames captured before the stall are kept,
-and that the scope **returns** rather than rethrows. Keep the nine existing cases green. **Do not
-re-implement the mapping** — it is there, and rewriting it would risk changing an outcome name that
-`check_b25_status.sh` and the judge both read.
-
-**Why this was worth checking rather than dispatching:** the ticket reads as an implementation job
-and would have been dispatched as one. This is the fifth already-done item this session, and the
-prompt's own opening warning — five of six listed items turned out already done — now has a sixth.
+**The alternative, stated rather than dropped:** the Root Cause Agent proposed that the loser was
+parked inside one `tester` call and the scope never returned at all. It reached that by counting the
+giveaway as entry 6. With the harness entry counted, the entry total favours "the scope returned and
+the batch collided with the loser". Both readings agree that a test-only fix is wrong. **The change
+below is correct under both**: it stops the loser where it can be stopped and fails loudly where it
+cannot.
 
 ## The change
 
-**A stall watchdog expiry for one row must record that row's outcome and continue to the next
-row.** It must not propagate out of the per-row scope and kill the driver.
+1. **The scope must not return while its `run()` is still executing.** When the deadline wins,
+   signal cancellation to the loser, then await the loser's settlement for a bounded grace period.
+   Name that period as a constant whose relationship to the watchdog is stated in code, the way
+   `innerWaitSafetyMargin` is (`test/walkthrough_wait.dart:35`). The loser's own error is swallowed;
+   the row's reported outcome stays `row_stalled_inconclusive`.
+2. **Make a polling loser unwind promptly, through ONE shared mechanism.** Every harness poll loop
+   notices expiry only through `WalkthroughWaitBudget.expired` (`walkthrough_wait.dart:32`). The loops
+   I count, as a floor (re-grep `budget.expired` and `WalkthroughWaitBudget(` yourself):
+   `test/b25_created_instance_identity.dart:262-267`; `test/workflow_ui_test_harness.dart:257,
+   1210, 1322, 2564, 2638, 2678`; plus two budgets constructed in
+   `integration_test/workflow_ui_evidence_test.dart`. Prefer one seam — for example, `expired` also
+   reporting true once the current row has been cancelled — over editing each loop, because a rule
+   copied into seven places gets missed in the eighth. Say which seam you chose.
+3. **If the loser has NOT settled within the grace period, the batch must stop, loudly.** A
+   genuinely parked `await` cannot be preempted in Dart. Driving the tester on top of it produces
+   fourteen communities of misleading collision failures, which is worse than one honest stop. So the
+   scope's result must carry whether the loser settled. When it did not, each of the three callers
+   records that row's outcome first, then ends the traversal with a diagnostic that names the row and
+   says the abandoned row never settled. Put the stop/continue decision in a pure function so it can
+   be unit-tested.
+4. **Keep, unchanged:** the watchdog and its timeout, `innerWaitSafetyMargin`, every outcome name
+   (`check_b25_status.sh` and the judge read them), the `capture`-after-`finish` guard, and the
+   created-instance reader. Do not raise any timeout.
 
-Three constraints:
+## Honesty tests — each must FAIL against today's code
 
-- **Give it its own outcome name.** Do not reuse `action_succeeded_result_unverified` or
-  `row_stalled_inconclusive` if either already means something narrower. *"The row ran and its
-  action was not offered"*, *"the row ran and its result was not observed"*, and *"the row could
-  not be attempted at all"* are three different facts, and the third must never be counted as
-  evidence about the first two.
-- **Say explicitly that a skipped-over row is not proven**, in its own bucket with its own total, so
-  no completion figure can quietly absorb it.
-- **Keep the watchdog.** The point is not to wait longer or to stop detecting stalls; it is that
-  detecting a stall in row N must not prevent rows N+1..73 from being attempted.
+Run each new test against the unmodified code first and put the verbatim failure in your reply. A
+test that passes before and after proves nothing. Use injected timers and short durations; no real
+three-minute waits.
 
-## Honesty test — the property is invisible in a single-row fixture
-
-- **A test asserting CONTINUATION**: a batch of at least three rows where the middle one stalls to
-  its watchdog; the run must record that row's outcome and still attempt and report the third.
-  "It kept going" is exactly the property a one-row fixture cannot show.
-- **Run it against the current code first** and record the verbatim abort, so the test is proven
-  able to fail.
-- **Assert the bucket totals add up**: attempted = proven + each non-proven bucket, with the
-  stalled-and-skipped row in its own column. A test that only checks "no exception escaped" would
-  pass against code that silently dropped the row.
+- **The loser must not run after the scope returns.** A `bodyWatch` with a 50 ms timeout; a `run()`
+  that awaits 300 ms and then records whether the scope has already returned. Today the scope
+  returns at 50 ms and the loser runs on, so asserting "no work after the scope returned" fails.
+- **A polling loser is cancelled.** A `run()` polling through a `WalkthroughWaitBudget` loop is
+  stopped within about one poll interval of the deadline. The scope returns `row_stalled_inconclusive`
+  with the loser settled.
+- **A never-settling loser** (awaiting a `Completer` that never completes) makes the scope return
+  after the grace period. The outcome is still `row_stalled_inconclusive`, the result says the loser
+  did not settle, and the decision function says stop.
+- **A row that completes normally is unaffected**, and the existing stall tests
+  (`b25_workflow_row_scope_test.dart`, around `:728-783`) stay green and unweakened.
 
 ## Scope limit
 
-Only the per-row stall boundary and its outcome recording, plus tests. Do **not** change the
-watchdog's duration, the inner wait budgets, the created-instance reader (separate ticket), the
-arrangement planner, or any product code. If a row fails while you work, record it and continue —
-which is, fittingly, the behaviour this ticket is about.
+Only `test/b25_workflow_row_selection.dart`, `test/walkthrough_wait.dart`, the three callers in
+`integration_test/workflow_ui_evidence_test.dart`, and their tests. No product code, no community
+JSON, nothing under `docs/references/**`. The top-level `watchWalkthroughBodyWith` race
+(`walkthrough_wait.dart:258`) ends the whole run when it fires, so leave it alone. **Do not run
+`flutter drive`, the capture CLI, `adb` or an emulator.** Device runs are the orchestrating
+session's job. If another row or test fails while you work, record it and continue.
 
 ## Verification
 
 - All five suites, **sequentially** (judges beside engine gives a false timeout), skip counts before
   pass counts: demo **319** (0 failed, 0 skipped), app shell **448** (+2), judges **525**, engine
   **345** (+1, BOTH Postgres credential sets), service **168** (+1, the one skip being App Access
-  and **not** PostgreSQL). `b25_capture_prebuilt_binary_test.dart` is flaky about 1 run in 3 with a
-  rotating test name; confirm a `TimeoutException` and an isolated pass before believing it.
-- Account for every total that moves: declared-count delta plus an offset of **8** has predicted the
-  demo total exactly eleven times.
-- `flutter analyze` on the demo app: **3** pre-existing issues, from the tool's own total, with the
-  working directory stated.
+  and **not** PostgreSQL). Without the Postgres credentials, report engine and service with their
+  skip counts and say the credentials were absent. `b25_capture_prebuilt_binary_test.dart` is flaky
+  about 1 run in 3 with a rotating test name; confirm a `TimeoutException` and an isolated pass
+  before believing it.
+- Name every test you add and the file it is in, so the demo total's movement can be accounted for.
+- `flutter analyze` in `app/apps/loom_communities_demo`: **3** pre-existing issues, from the tool's
+  own `N issues found` line.
 - **Emit `<<<SUITES_RUN: ...>>>`.** The dispatcher refuses a reply without it; it exits 2 for a
   missing report and 3 for an infrastructure failure where the agent never ran.
-- **Do not quote a completion figure.** The bar is 73 real rows; `CONFIRMED` is 0 and `b25Proven`
-  is 0.
+- **Do not quote a completion figure.** The bar is 73 real rows and `CONFIRMED` is 0.
