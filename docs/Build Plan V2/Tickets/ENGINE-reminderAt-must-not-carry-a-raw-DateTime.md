@@ -1,7 +1,6 @@
 # ENGINE — `reminderAt` is assigned a raw `DateTime`, so any ungated reminder breaks JSON encoding
 
-**Status:** written 2026-10-10, **NOT dispatched**. VM auth is expired so no dispatcher is reachable;
-this is ready to go the moment it is back.
+**Status:** written 2026-10-10, **NOT dispatched**. Re-checked against HEAD `114628a1` on 2026-10-18: every cited line (`:2716`, `:2720`, `:948`, `workflow_models.dart:1274`) still holds. Fifth in the dispatch queue.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Traced by me to the exact line, with the fix's shape demonstrated in the same file** — so this did
 not need a root-cause scoping dispatch. What it does still need is the per-block audit below, and

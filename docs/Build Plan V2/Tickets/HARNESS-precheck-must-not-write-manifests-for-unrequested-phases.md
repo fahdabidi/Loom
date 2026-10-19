@@ -1,7 +1,6 @@
 # HARNESS — a narrowed precheck writes (and destroys) manifests for phases it never ran
 
-**Status:** written 2026-10-10, **NOT dispatched**. Auth on the VM is expired, so no dispatcher is
-reachable; this ticket is ready to go the moment it is back.
+**Status:** written 2026-10-10, **NOT dispatched**. Re-checked against HEAD `114628a1` on 2026-10-18: the union at `:109-115`, the seeding at `:131-133` and the write loop at `:251` (its write is at `:378`) are unchanged. Fourth in the dispatch queue.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 **Mechanism established by me, by reading the code** — this ticket is NOT scoped from a hypothesis.
 CLAUDE.md recorded the effect as measured and the mechanism as **unread** (*"The plausible reading
