@@ -739,6 +739,15 @@ same check catches a second thing worth knowing: a locally built image that is *
 normal when a ticket said "build, do not deploy" — `loom-workflow-service:1.0.3` exists for exactly
 that reason — so an image with no matching deployment is not automatically drift.
 
+**And the audit runs in the opposite direction too: `git fetch` first, then compare against
+`origin/main`, never just the local checkout.** On 2026-10-18 I reported a live Keycloak hostname
+change as "drift the repo does not know about", because `~/loom-backend` was clean and no local
+manifest mentioned the host. The change had been committed and pushed a minute after it was
+applied (`98a5945`, from another session), and **the VM's checkout was simply one commit behind**.
+A clean tree proves the checkout has no local edits, not that it is current. Since more than one
+session now deploys to this cluster, `git log origin/main` is the record and the local checkout is
+just one copy of it.
+
 ### The OpenAPI spec twins drift silently — check them, nothing else will
 
 The service contracts live **twice**: in `Loom/docs/API/OpenAPI/**` where the app writes clients
