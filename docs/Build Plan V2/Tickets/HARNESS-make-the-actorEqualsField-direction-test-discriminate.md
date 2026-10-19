@@ -1,6 +1,6 @@
 # HARNESS — make the `actorEqualsField` direction test able to fail
 
-**Status:** written 2026-10-05, **NOT dispatched**. Small and self-contained.
+**Status:** written 2026-10-05, **NOT completed**. Dispatched 2026-10-18 on Muse and **stopped by the validation session mid-run** (during its own `flutter test`) so the ai-controller project could have the VM, by user direction. Its partial edits (`b25_remote_arrangement.dart` +52/-6, `b25_remote_arrangement_test.dart` +19) are kept unverified as VM `stash@{0}` ("ticket-3 partial (Muse), stopped 2026-10-18…") and as `~/ticket3-partial-2026-10-18.patch`. Re-dispatch `--fresh` on a clean tree when the VM is free; the stash is reference, not a starting point. Small and self-contained.
 **Route:** `data/call_implementation_agent.sh --fresh`. Confirm the `Mode: fresh session` line.
 
 ## The finding — a test that passes against an implementation ignoring guards
