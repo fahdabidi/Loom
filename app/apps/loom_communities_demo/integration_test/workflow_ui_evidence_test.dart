@@ -401,6 +401,7 @@ void main() {
         }
 
         String? lastRowWalked;
+        B25AbandonedRowFailure? abandonedRowStop;
         final communityScope = await runB25CommunityScope(() async {
           _assertB25AssetCoversTargets(
             catalog: b25InteractionCatalog,
@@ -568,6 +569,20 @@ void main() {
                   ? walkthroughResult.rowOutcome
                   : null,
             );
+            if (b25BatchMustStopAfterRowScope(rowScope)) {
+              // The stalled row's outcome is recorded above; its abandoned
+              // work never settled, so NOTHING below may drive the tester --
+              // no restore, no teardown, no next row. Throwing inside the
+              // community scope ends this traversal with the diagnostic, and
+              // the rethrow after recordCommunityTraversal stops the batch.
+              abandonedRowStop = B25AbandonedRowFailure(
+                row: lastRowWalked ?? productDocRow.workflowId,
+                rowOutcome: rowScope.failure!.rowOutcome,
+                settleGracePeriod:
+                    WalkthroughWaitBudget.abandonedRowSettleGracePeriod,
+              );
+              throw abandonedRowStop!;
+            }
             if (rowScope.failure != null) {
               // This row's own `boundary: 'after'` check never ran -- the
               // failure that was just recorded happened before reaching it.
@@ -604,6 +619,12 @@ void main() {
           lastRowWalked: lastRowWalked,
         );
         recordCommunityTraversal(communityTraversal);
+        if (abandonedRowStop != null) {
+          // Stop the whole batch loudly: the abandoned row is still driving
+          // the tester, so no later community, mosque row, or B20 segment
+          // may run. The traversal above already carries the diagnostic.
+          throw abandonedRowStop!;
+        }
         if (communityTraversal.isIncomplete) {
           bodyWatch.beat(
             lastCompletedStep:
@@ -701,6 +722,7 @@ void main() {
         );
         String? mosqueLastRowWalked;
         String mosqueLastRole = 'admin';
+        B25AbandonedRowFailure? mosqueAbandonedRowStop;
         final mosqueScope = await runB25CommunityScope(() async {
           _assertB25AssetCoversTargets(
             catalog: b25InteractionCatalog,
@@ -792,6 +814,20 @@ void main() {
                   ? result.rowOutcome
                   : null,
             );
+            if (b25BatchMustStopAfterRowScope(scoped)) {
+              // The stalled row's outcome is recorded above; its abandoned
+              // work never settled, so NOTHING below may drive the tester --
+              // no restore and no next dedicated row. Throwing inside the
+              // mosque scope ends its traversal with the diagnostic, and the
+              // rethrow after recordCommunityTraversal stops the batch.
+              mosqueAbandonedRowStop = B25AbandonedRowFailure(
+                row: mosqueLastRowWalked ?? workflowId,
+                rowOutcome: scoped.failure!.rowOutcome,
+                settleGracePeriod:
+                    WalkthroughWaitBudget.abandonedRowSettleGracePeriod,
+              );
+              throw mosqueAbandonedRowStop!;
+            }
             if (scoped.failure != null) {
               // Same cascade risk as the main community loop: this row's own
               // `boundary` check never ran, so restore the surface before
@@ -1208,6 +1244,12 @@ void main() {
             lastRowWalked: mosqueLastRowWalked,
           ),
         );
+        if (mosqueAbandonedRowStop != null) {
+          // Stop the whole batch loudly: the abandoned row is still driving
+          // the tester, so no B20 segment may run. The traversal above
+          // already carries the diagnostic.
+          throw mosqueAbandonedRowStop!;
+        }
       }
 
       final capabilityTargets = <String, LoomEvidenceTarget>{
@@ -1221,6 +1263,7 @@ void main() {
         required Future<T> Function() setup,
         required Future<_B25WalkthroughResult> Function(T setup) prepare,
       }) async {
+        B25AbandonedRowFailure? segmentAbandonedRowStop;
         final scope = await runB25CommunityScope(() async {
           _assertB25AssetCoversTargets(
             catalog: b25InteractionCatalog,
@@ -1269,6 +1312,21 @@ void main() {
                 ? result.rowOutcome
                 : null,
           );
+          if (b25BatchMustStopAfterRowScope(rowScope)) {
+            // The stalled row's outcome is recorded above; its abandoned
+            // work never settled, so NOTHING below may drive the tester --
+            // no boundary check, no teardown, no next segment. Throwing
+            // inside the community scope ends this traversal with the
+            // diagnostic, and the rethrow after recordCommunityTraversal
+            // stops the batch.
+            segmentAbandonedRowStop = B25AbandonedRowFailure(
+              row: '$workflowId/$role',
+              rowOutcome: rowScope.failure!.rowOutcome,
+              settleGracePeriod:
+                  WalkthroughWaitBudget.abandonedRowSettleGracePeriod,
+            );
+            throw segmentAbandonedRowStop!;
+          }
           await assertB25CommunityRowSurface(
             tester: tester,
             target: target,
@@ -1294,6 +1352,12 @@ void main() {
             lastRowWalked: '$workflowId/$role',
           ),
         );
+        if (segmentAbandonedRowStop != null) {
+          // Stop the whole batch loudly: the abandoned row is still driving
+          // the tester, so no later segment may run. The traversal above
+          // already carries the diagnostic.
+          throw segmentAbandonedRowStop!;
+        }
       }
 
       if (_includePhase('B20') &&

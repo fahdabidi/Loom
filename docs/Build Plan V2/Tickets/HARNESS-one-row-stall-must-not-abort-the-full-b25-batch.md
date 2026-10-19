@@ -1,6 +1,7 @@
 # HARNESS — a row the watchdog abandons must stop running before the batch continues
 
-**Status:** written 2026-10-10, **REWRITTEN 2026-10-18, NOT dispatched**. The 2026-10-10 version
+**Status:** written 2026-10-10, **REWRITTEN and SHIPPED 2026-10-18** — dispatched on Muse, plus the one-test follow-up `HARNESS-ticket2-followup-the-loser-test-must-wait-before-asserting.md`, and verified by the validation session's own oracle: a four-mutation A/B (seam ignores cancellation, no settle wait, stop decision always continue, no cancel signal) in which every mutation turned its intended test red; all five suites sequentially with both Postgres credential sets (demo **324** = 319 + 5 declared, the rest at baseline). Known gap, not fixed: frames the loser captures while unwinding are still attributed to the stalled row. That row is never proven, so the bar cannot be inflated by it. The device measurement is owed with the rest of the batch. The 2026-10-10 version
+**DISPATCH RECORD (written by call_implementation_agent.sh -- do not hand-edit):** 2026-10-18T23:50Z verdict=`verified` agent-exit=0 -- the agent reported totals for every suite. This is NOT proof -- re-derive them yourself; the agent report is never the oracle.
 said "the behaviour already exists, only its test is missing — dispatch as test-only". **That was
 wrong and its instruction has been deleted.** A Root Cause Agent (session key
 `b25-stall-abort-path`) attacked it, and I then re-derived the mechanism myself from the code at

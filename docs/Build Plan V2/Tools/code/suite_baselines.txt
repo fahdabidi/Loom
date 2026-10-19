@@ -24,7 +24,13 @@
 #               b25_created_instance_renderer_awareness_test.dart). The other four and analyze
 #               unchanged. Engine's one skip is the live workflow-service test and service's is App
 #               Access, so neither skip is PostgreSQL.
-demo=319
+# re-measured: 2026-10-18, HEAD dd618e6c + ticket 2 (abandoned-row cancellation) and its one-test
+#               follow-up (the commit that carries this line), same method. demo 319 -> 324,
+#               accounted exactly: declared tests in b25_workflow_row_scope_test.dart 23 -> 28, no
+#               other test file changed its count. The other four and analyze unchanged; same two
+#               non-PostgreSQL skips. Ran beside another project's Muse dispatch (ai-range), with no
+#               timeouts.
+demo=324
 app shell=448
 judges=525
 engine=345

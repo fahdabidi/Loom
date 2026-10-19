@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'b25_actor_audience_resolution.dart';
 import 'b25_remote_arrangement.dart';
 import 'walkthrough_wait.dart';
@@ -124,14 +126,64 @@ class B25RowScopedFailure {
 
 /// The completed value or recorded failure from one B25 row scope.
 class B25WorkflowRowScopeResult<T> {
-  const B25WorkflowRowScopeResult.completed(this.value) : failure = null;
+  const B25WorkflowRowScopeResult.completed(this.value)
+    : failure = null,
+      loserSettled = true;
 
-  const B25WorkflowRowScopeResult.failed(this.failure) : value = null;
+  const B25WorkflowRowScopeResult.failed(this.failure, {this.loserSettled = true})
+    : value = null;
 
   final T? value;
   final B25RowScopedFailure? failure;
 
   bool get completed => failure == null;
+
+  /// Whether the row's `run()` had settled by the time this scope returned.
+  /// Always true except when the watchdog won the race and the abandoned
+  /// loser was still executing after the settle grace period elapsed. When
+  /// false, the batch must stop driving the tester -- see
+  /// [b25BatchMustStopAfterRowScope].
+  final bool loserSettled;
+}
+
+/// Whether the batch must stop driving the tester after [scope] returned.
+///
+/// Pure so it can be unit-tested: the batch may continue only when the row's
+/// loser settled. A loser that never settled is still executing -- still
+/// awaiting, still calling the tester -- so every later row, restore, and
+/// teardown would collide with it. Stopping loudly with one diagnostic is
+/// honest; driving on produces a batch of misleading collision failures.
+bool b25BatchMustStopAfterRowScope<T>(B25WorkflowRowScopeResult<T> scope) =>
+    !scope.loserSettled;
+
+/// Ends the batch when a stalled row's abandoned work never settled.
+///
+/// Thrown by a row caller AFTER it has recorded the stalled row's own
+/// outcome, and BEFORE any further tester use (no restore, no teardown, no
+/// next row). The message names the row and says the abandoned row never
+/// settled, so the aborted run diagnoses itself.
+class B25AbandonedRowFailure extends StateError {
+  B25AbandonedRowFailure({
+    required this.row,
+    required this.rowOutcome,
+    required this.settleGracePeriod,
+  }) : super(
+         'B25 batch stopped after row $row: the watchdog recorded '
+         '$rowOutcome for this row, but its abandoned work never settled '
+         'within the ${settleGracePeriod.inSeconds}s grace period, so the '
+         'batch cannot safely drive the tester again. No further rows, '
+         'restores, teardowns, or communities were attempted after this '
+         'point.',
+       );
+
+  /// The `workflowId/role` label of the row whose loser never settled.
+  final String row;
+
+  /// The outcome already recorded for that row (`row_stalled_inconclusive`).
+  final String rowOutcome;
+
+  /// The grace period the scope waited before reporting the loser unsettled.
+  final Duration settleGracePeriod;
 }
 
 /// Whether a dedicated B25 community setup may run for this dispatch.
@@ -266,17 +318,60 @@ class B25CommunityTraversalRecord {
 /// resolve the instant it fires, aborting everything regardless of what this
 /// function does with it, because a Dart `Future` cannot be "un-resolved"
 /// once multiple listeners are already awaiting it.
+///
+/// When the deadline wins, the loser is NOT cancelled -- a Dart future cannot
+/// be cancelled -- so this scope signals [WalkthroughRowCancellation] (which
+/// every harness poll loop observes through `WalkthroughWaitBudget.expired`)
+/// and then awaits the loser's settlement for [settleGracePeriod] (default
+/// [WalkthroughWaitBudget.abandonedRowSettleGracePeriod]) before returning.
+/// The scope therefore does not return while its `run()` is still executing
+/// unless the grace period elapses; the loser's own late error is swallowed
+/// and the row's reported outcome stays `row_stalled_inconclusive`. The
+/// result carries whether the loser settled in [B25WorkflowRowScopeResult.loserSettled]:
+/// when it did not, the caller must stop the batch -- see
+/// [b25BatchMustStopAfterRowScope] and [B25AbandonedRowFailure].
 Future<B25WorkflowRowScopeResult<T>> runB25WorkflowRowScope<T>(
   Future<T> Function() run, {
   WalkthroughBodyWatch? bodyWatch,
   List<String> Function()? capturedScreenshotNames,
+  Duration? settleGracePeriod,
 }) async {
   bodyWatch?.rearm();
+  final cancellation = WalkthroughRowCancellation();
+  WalkthroughWaitBudget.beginRowScope(cancellation);
   try {
-    final value = bodyWatch == null
-        ? await run()
-        : await Future.any<T>([run(), bodyWatch.deadline]);
-    return B25WorkflowRowScopeResult<T>.completed(value);
+    if (bodyWatch == null) {
+      return B25WorkflowRowScopeResult<T>.completed(await run());
+    }
+    final runFuture = run();
+    try {
+      final value = await Future.any<T>([runFuture, bodyWatch.deadline]);
+      return B25WorkflowRowScopeResult<T>.completed(value);
+    } on WalkthroughStallFailure catch (stallError) {
+      cancellation.cancel();
+      final grace =
+          settleGracePeriod ??
+          WalkthroughWaitBudget.abandonedRowSettleGracePeriod;
+      var settled = false;
+      try {
+        await runFuture.timeout(grace);
+        settled = true;
+      } on TimeoutException {
+        settled = false;
+      } catch (_) {
+        // The loser's own late error is swallowed: the row's reported
+        // outcome stays the stall, never the loser's failure.
+        settled = true;
+      }
+      return B25WorkflowRowScopeResult<T>.failed(
+        _b25RowScopedFailureFor(
+          stallError,
+          capturedScreenshotNames:
+              capturedScreenshotNames?.call() ?? const <String>[],
+        ),
+        loserSettled: settled,
+      );
+    }
   } catch (error) {
     return B25WorkflowRowScopeResult<T>.failed(
       _b25RowScopedFailureFor(
@@ -285,6 +380,8 @@ Future<B25WorkflowRowScopeResult<T>> runB25WorkflowRowScope<T>(
             capturedScreenshotNames?.call() ?? const <String>[],
       ),
     );
+  } finally {
+    WalkthroughWaitBudget.endRowScope(cancellation);
   }
 }
 

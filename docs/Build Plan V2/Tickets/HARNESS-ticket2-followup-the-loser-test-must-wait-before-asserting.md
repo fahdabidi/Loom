@@ -1,6 +1,7 @@
 # HARNESS — follow-up: the "scope does not return while run() executes" test must be able to fail
 
-**Status:** written 2026-10-18, **NOT dispatched**. A one-test follow-up to
+**Status:** written 2026-10-18, **SHIPPED 2026-10-18** with ticket 2 (mutation B now reddens the target test; verified by the validation session). A one-test follow-up to
+**DISPATCH RECORD (written by call_implementation_agent.sh -- do not hand-edit):** 2026-10-18T23:58Z verdict=`verified` agent-exit=0 -- the agent reported totals for every suite. This is NOT proof -- re-derive them yourself; the agent report is never the oracle.
 `HARNESS-one-row-stall-must-not-abort-the-full-b25-batch.md`, whose work is **in the working tree
 and NOT yet committed**. Leave every other uncommitted change exactly as it is. Do not revert,
 reformat or "tidy" any of it.

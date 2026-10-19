@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'b25_actor_audience_resolution.dart';
@@ -794,6 +796,173 @@ void main() {
         expect(attemptedRows, ['book-vote']);
         expect(completed.completed, isTrue);
         expect(completed.value, 'continued');
+      },
+    );
+  });
+
+  group('an abandoned row stops running before the batch continues', () {
+    // A stalled scope used to return the instant the watchdog fired while its
+    // loser kept executing -- still awaiting, still calling the tester --
+    // colliding with every later row, restore, and teardown. The scope now
+    // signals cancellation and awaits the loser's settlement for a bounded
+    // grace period instead, and the batch stops loudly when the loser never
+    // settles.
+    test(
+      'the scope does not return while its run() is still executing',
+      () async {
+        final bodyWatch = WalkthroughBodyWatch(
+          timeout: const Duration(milliseconds: 50),
+          lastCompletedStep: 'garden-tool-giveaway row started',
+          attemptedStep: 'waiting for the giveaway list',
+          waitingFor: 'the giveaway list to render',
+        );
+        var scopeReturned = false;
+        var ranAfterReturn = false;
+        final stalled = await runB25WorkflowRowScope<String>(
+          () async {
+            await Future<void>.delayed(const Duration(milliseconds: 300));
+            if (scopeReturned) ranAfterReturn = true;
+            return 'unreachable';
+          },
+          bodyWatch: bodyWatch,
+          settleGracePeriod: const Duration(seconds: 2),
+        );
+        scopeReturned = true;
+        // Give the loser time to wake if it is still running: its delay
+        // is 300ms, so 400ms proves the scope waited for it rather than
+        // returning at the 50ms deadline while it slept.
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+
+        expect(stalled.completed, isFalse);
+        expect(stalled.failure!.rowOutcome, 'row_stalled_inconclusive');
+        expect(stalled.loserSettled, isTrue);
+        expect(b25BatchMustStopAfterRowScope(stalled), isFalse);
+        expect(ranAfterReturn, isFalse,
+            reason: 'no work may run after the scope returned');
+      },
+    );
+
+    test(
+      'a polling loser is cancelled within about one poll interval',
+      () async {
+        final bodyWatch = WalkthroughBodyWatch(
+          timeout: const Duration(milliseconds: 50),
+          lastCompletedStep: 'garden-tool-giveaway row started',
+          attemptedStep: 'waiting for the giveaway list',
+          waitingFor: 'the giveaway list to render',
+        );
+        final stopwatch = Stopwatch()..start();
+        var loserExitedAtMs = -1;
+        final stalled = await runB25WorkflowRowScope<String>(
+          () async {
+            final budget = WalkthroughWaitBudget(
+              timeout: const Duration(seconds: 30),
+            );
+            while (!budget.expired) {
+              await Future<void>.delayed(const Duration(milliseconds: 10));
+            }
+            loserExitedAtMs = stopwatch.elapsedMilliseconds;
+            return 'unreachable';
+          },
+          bodyWatch: bodyWatch,
+          settleGracePeriod: const Duration(seconds: 2),
+        );
+        stopwatch.stop();
+
+        expect(stalled.completed, isFalse);
+        expect(stalled.failure!.rowOutcome, 'row_stalled_inconclusive');
+        expect(stalled.loserSettled, isTrue);
+        expect(b25BatchMustStopAfterRowScope(stalled), isFalse);
+        expect(loserExitedAtMs, lessThan(1000),
+            reason: 'the polling loser must observe cancellation at the 50ms '
+                'deadline, not run its own 30s budget');
+      },
+    );
+
+    test(
+      'a never-settling loser returns after the grace period and says stop',
+      () async {
+        final bodyWatch = WalkthroughBodyWatch(
+          timeout: const Duration(milliseconds: 50),
+          lastCompletedStep: 'garden-tool-giveaway row started',
+          attemptedStep: 'waiting for the giveaway list',
+          waitingFor: 'the giveaway list to render',
+        );
+        final neverCompletes = Completer<String>();
+        final stopwatch = Stopwatch()..start();
+        final stalled = await runB25WorkflowRowScope<String>(
+          () => neverCompletes.future,
+          bodyWatch: bodyWatch,
+          settleGracePeriod: const Duration(milliseconds: 200),
+        );
+        stopwatch.stop();
+
+        expect(stalled.completed, isFalse);
+        expect(stalled.failure!.rowOutcome, 'row_stalled_inconclusive');
+        expect(stalled.loserSettled, isFalse);
+        expect(b25BatchMustStopAfterRowScope(stalled), isTrue);
+        // The scope waited out the 200ms grace on top of the 50ms watchdog
+        // instead of returning at the deadline -- and instead of hanging.
+        expect(stopwatch.elapsed, greaterThanOrEqualTo(
+          const Duration(milliseconds: 200),
+        ));
+        expect(stopwatch.elapsed, lessThan(const Duration(seconds: 10)));
+      },
+    );
+
+    test(
+      'the stop decision is pure: settled rows continue, unsettled rows stop',
+      () {
+        const completed = B25WorkflowRowScopeResult<String>.completed('pass');
+        expect(b25BatchMustStopAfterRowScope(completed), isFalse);
+
+        final settledStall = B25WorkflowRowScopeResult<String>.failed(
+          const B25RowScopedFailure(
+            rowOutcome: 'row_stalled_inconclusive',
+            actionProofStatus: 'row_stalled_inconclusive',
+            reason: 'Walkthrough stalled (simulated)',
+          ),
+        );
+        expect(b25BatchMustStopAfterRowScope(settledStall), isFalse);
+
+        final unsettledStall = B25WorkflowRowScopeResult<String>.failed(
+          const B25RowScopedFailure(
+            rowOutcome: 'row_stalled_inconclusive',
+            actionProofStatus: 'row_stalled_inconclusive',
+            reason: 'Walkthrough stalled (simulated)',
+          ),
+          loserSettled: false,
+        );
+        expect(b25BatchMustStopAfterRowScope(unsettledStall), isTrue);
+
+        final stop = B25AbandonedRowFailure(
+          row: 'garden-tool-giveaway/member',
+          rowOutcome: 'row_stalled_inconclusive',
+          settleGracePeriod: const Duration(seconds: 10),
+        );
+        expect(stop.message.toString(), contains('garden-tool-giveaway/member'));
+        expect(stop.message.toString(), contains('never settled'));
+      },
+    );
+
+    test(
+      'a row that completes normally is unaffected',
+      () async {
+        final bodyWatch = WalkthroughBodyWatch(
+          timeout: const Duration(seconds: 30),
+          lastCompletedStep: 'garden-event-rsvp row started',
+          attemptedStep: 'waiting for the RSVP action',
+          waitingFor: 'the RSVP action to become tappable',
+        );
+        final completed = await runB25WorkflowRowScope<String>(
+          () async => 'rsvp-pass',
+          bodyWatch: bodyWatch,
+        );
+
+        expect(completed.completed, isTrue);
+        expect(completed.value, 'rsvp-pass');
+        expect(completed.loserSettled, isTrue);
+        expect(b25BatchMustStopAfterRowScope(completed), isFalse);
       },
     );
   });

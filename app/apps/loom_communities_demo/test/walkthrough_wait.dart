@@ -40,6 +40,38 @@ class WalkthroughWaitBudget {
   static final Duration defaultInnerWaitTimeout =
       defaultTimeout - innerWaitSafetyMargin;
 
+  /// How long a row scope waits for its abandoned loser to settle after the
+  /// watchdog fires before the batch must stop instead of driving the tester
+  /// on top of it. Seconds, not minutes: far below [defaultTimeout], because
+  /// a polling loser observes the row cancellation (see
+  /// [WalkthroughRowCancellation]) on its next poll -- pumps run about every
+  /// 50ms even on a slow emulator -- and unwinds, while a genuinely parked
+  /// `await` cannot be preempted in Dart no matter how long the wait, so
+  /// waiting longer only delays the honest stop.
+  static const Duration abandonedRowSettleGracePeriod = Duration(seconds: 10);
+
+  /// The row scope currently allowed to cancel polling losers, if any. Set by
+  /// the scope that owns the current row and cleared when it returns, so
+  /// [expired] needs no per-loop edits: every harness poll loop already
+  /// notices expiry only through [expired]. Row scopes never nest, so a
+  /// single slot -- replaced on entry, cleared on exit -- is enough.
+  static WalkthroughRowCancellation? _activeRowCancellation;
+
+  /// Registers [cancellation] as the current row's cancellation. Called by
+  /// the row scope before racing its work against the watchdog.
+  static void beginRowScope(WalkthroughRowCancellation cancellation) {
+    _activeRowCancellation = cancellation;
+  }
+
+  /// Unregisters [cancellation] if it is still the current row's. Called by
+  /// the row scope in a `finally` so a later row or wait never observes a
+  /// stale cancellation.
+  static void endRowScope(WalkthroughRowCancellation cancellation) {
+    if (identical(_activeRowCancellation, cancellation)) {
+      _activeRowCancellation = null;
+    }
+  }
+
   final Duration timeout;
   final DateTime Function() now;
   final DateTime _startedAt;
@@ -48,7 +80,32 @@ class WalkthroughWaitBudget {
 
   Duration get elapsed => now().toUtc().difference(_startedAt);
 
-  bool get expired => elapsed >= timeout;
+  /// True once this wait's own deadline passes, or once the current row has
+  /// been cancelled -- whichever comes first. The second clause is the one
+  /// shared seam that lets every poll loop unwind promptly when its row's
+  /// watchdog fires, without editing each loop.
+  bool get expired =>
+      elapsed >= timeout || (_activeRowCancellation?.isCancelled ?? false);
+}
+
+/// Cooperative cancellation for the row a row scope is currently racing.
+///
+/// A Dart future cannot be cancelled, so when the watchdog wins the race the
+/// scope cannot preempt its loser: it can only signal it. This is that
+/// signal. Polling losers observe it through [WalkthroughWaitBudget.expired];
+/// a loser parked inside a single non-polling `await` never observes it and
+/// is reported as unsettled once [WalkthroughWaitBudget.abandonedRowSettleGracePeriod]
+/// elapses.
+class WalkthroughRowCancellation {
+  bool _cancelled = false;
+
+  /// Whether the owning row scope has signalled this row's work to stop.
+  bool get isCancelled => _cancelled;
+
+  /// Signals the row's work to stop unwinding promptly. Idempotent.
+  void cancel() {
+    _cancelled = true;
+  }
 }
 
 /// Renders a `Duration` the way a human reads a wait: `3m 0s`, `12m 40s`.

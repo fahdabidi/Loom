@@ -83,7 +83,7 @@ capture CLI against a device and do not run it without a scratch `--evidence-roo
 
 ## Verification
 
-- All five suites, **sequentially**, skip counts before pass counts: demo **319** (0 failed, 0
+- All five suites, **sequentially**, skip counts before pass counts: demo **324** (0 failed, 0
   skipped), app shell **448** (+2), judges **525**, engine **345** (+1, with BOTH Postgres
   credential sets), service **168** (+1, the one skip being App Access, not PostgreSQL). If you
   cannot supply the Postgres credentials, report engine and service as `NOT_RUN(reason)` rather than
