@@ -599,6 +599,8 @@ asserts a mechanism nobody has traced" rule.
 
 ### row-355 — `{id}` inside a `transitionRelated` filter resolves to nothing — 33 dead cascade sites
 
+**STILL CURRENT 2026-10-18, by evidence rather than re-count:** zero commits to `loom_workflow_engine/lib` and zero to the shipped community packages since the 2026-10-10 audit (control: 51 package commits ever), so neither the mechanism nor the 33 can have moved. Still sequenced behind row-354.
+
 **AUDITED 2026-10-10 — see the `TODO.md` row. The count VERIFIED at 33**, by a structure-aware pass classifying each `{id}` by its enclosing key, reproducing the per-package split exactly; the same pass finds the working contexts (23 in effect `fields`, 1 in a `prefill`), which is what proves the classification real rather than an artifact.
 
 `new-ticket` — **A plain bug with a working reference implementation in the same codebase; needs no spec
